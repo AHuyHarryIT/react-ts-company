@@ -1,28 +1,23 @@
-import { FaRegFaceSmile } from 'react-icons/fa6'
-import { useEffect, useState } from 'react'
+import Home from '@pages/Home';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import AppLayout from '@layouts/Layout';
+import NotFound from '@pages/NotFound';
 
 function App() {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCount((prevCount) => prevCount + 1)
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <>
-      <div className="flex h-screen flex-col items-center justify-center gap-3">
-        <h1 className="text-5xl font-bold text-red-500">Hello world!</h1>
-        <h2 className="flex gap-3 text-3xl font-bold text-red-500">
-          <FaRegFaceSmile />
-          <FaRegFaceSmile />
-          <FaRegFaceSmile />
-        </h2>
-        <h2 className="text-3xl text-blue-500">{count}</h2>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<Home />} />
+            <Route path="projects" element={<> Projects</>} />
+            <Route path="about" element={<>About</>} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
