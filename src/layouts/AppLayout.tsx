@@ -5,23 +5,27 @@ import {
   Layout,
   theme as antTheme,
 } from 'antd';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 
 import Sidebar from '@partials/Sidebar';
 import { AppDispatch, RootState } from '@stores/index';
 import { updateScreenSize } from '@stores/sidebarSlice';
-import { toggleTheme } from '@stores/themeSlice';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Header from '@partials/Header';
+import axiosPrivate from '@/api/axiosInstance';
 
 const { Content, Footer } = Layout;
+
+const handleFetchData = async () => {
+  const response = await axiosPrivate.get('/api/dashboard');
+  console.log('response', response.data);
+};
 
 function AppLayout() {
   const dispatch = useDispatch<AppDispatch>();
 
   const { isMobile } = useSelector((state: RootState) => state.sidebar);
-  // const { theme } = useSelector((state: RootState) => state.theme);
 
   useEffect(() => {
     const handleResize = () => {
@@ -63,7 +67,10 @@ function AppLayout() {
                   }}
                 >
                   Bill is a cat.
-                  <Button onClick={() => dispatch(toggleTheme())}>theme</Button>
+                  <Button onClick={handleFetchData}>Fetch Data</Button>
+                  <Link to="/login">
+                    <Button>Login</Button>
+                  </Link>
                   <Outlet />
                 </div>
               </Content>
