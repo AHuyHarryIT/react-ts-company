@@ -8,8 +8,9 @@ export default function Blank() {
           </h3>
 
           <p className="text-sm text-gray-500 sm:text-base dark:text-gray-400">
-            Start putting content on grids or panels, you can also use different
-            combinations of grids.Please check out the dashboard and other pages
+            div Start putting content on grids or panels, you can also use
+            different combinations of grids.Please check out the dashboard and
+            other pages
           </p>
         </div>
       </div>

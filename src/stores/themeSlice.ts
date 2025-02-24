@@ -27,11 +27,13 @@ const themeSlice = createSlice({
       state.isInitialized = true;
       localStorage.setItem('theme', state.theme);
       document.documentElement.classList.toggle('dark', state.theme === 'dark');
+      document.documentElement.setAttribute('data-theme', state.theme);
     },
     toggleTheme: (state) => {
       state.theme = state.theme === 'light' ? 'dark' : 'light';
       localStorage.setItem('theme', state.theme);
       document.documentElement.classList.toggle('dark', state.theme === 'dark');
+      document.documentElement.setAttribute('data-theme', state.theme);
     },
   },
 });

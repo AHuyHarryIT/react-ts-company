@@ -1,19 +1,13 @@
-import {
-  Breadcrumb,
-  Button,
-  ConfigProvider,
-  Layout,
-  theme as antTheme,
-} from 'antd';
+import { Button, ConfigProvider, Layout, theme as antTheme } from 'antd';
 import { Link, Outlet } from 'react-router-dom';
 
+import axiosPrivate from '@/api/axiosInstance';
+import Header from '@partials/Header';
 import Sidebar from '@partials/Sidebar';
 import { AppDispatch, RootState } from '@stores/index';
 import { updateScreenSize } from '@stores/sidebarSlice';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Header from '@partials/Header';
-import axiosPrivate from '@/api/axiosInstance';
 
 const { Content, Footer } = Layout;
 
@@ -26,7 +20,7 @@ function AppLayout() {
   const dispatch = useDispatch<AppDispatch>();
 
   const { isMobile } = useSelector((state: RootState) => state.sidebar);
-
+  const { theme } = useSelector((state: RootState) => state.theme);
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
@@ -47,19 +41,23 @@ function AppLayout() {
 
   return (
     <>
-      <ConfigProvider>
+      <ConfigProvider
+        theme={{
+          algorithm:
+            theme == 'dark'
+              ? antTheme.compactAlgorithm
+              : antTheme.defaultAlgorithm,
+        }}
+      >
         <Layout style={{ minHeight: '100vh' }} className="relative">
           <Header />
           <Layout>
             <Sidebar />
             <Layout>
-              <Content style={{ margin: '0 16px' }}>
-                <Breadcrumb style={{ margin: '16px 0' }}>
-                  <Breadcrumb.Item>User</Breadcrumb.Item>
-                  <Breadcrumb.Item>Bill</Breadcrumb.Item>
-                </Breadcrumb>
+              <Content className="p-6">
                 <div
                   style={{
+                    margin: '16px 0',
                     padding: 24,
                     minHeight: 360,
                     background: colorBgContainer,
