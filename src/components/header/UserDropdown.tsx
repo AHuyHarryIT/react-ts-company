@@ -1,5 +1,4 @@
 import { Avatar, Dropdown, MenuProps } from 'antd';
-import { Key, ReactNode } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -13,22 +12,6 @@ import { IoIosLogOut } from 'react-icons/io';
 import { IoInformationCircleOutline } from 'react-icons/io5';
 
 type MenuItem = Required<MenuProps>['items'][number];
-
-function getItem(
-  label: ReactNode,
-  key: Key,
-  icon?: ReactNode,
-  children?: MenuItem[],
-  type?: 'group'
-): MenuItem {
-  return {
-    key,
-    icon,
-    children,
-    label,
-    type,
-  } as MenuItem;
-}
 
 export default function UserDropdown() {
   const dispatch = useDispatch<AppDispatch>();
@@ -55,19 +38,28 @@ export default function UserDropdown() {
       disabled: true,
       style: { cursor: 'default' },
     },
-    getItem(<Link to={'/'}>Profile</Link>, 'profile', <FaUserCircle />),
-    getItem(<Link to={'/'}>Setting</Link>, 'setting', <GoGear />),
-    getItem(
-      <Link to={'/'}>Support</Link>,
-      'Support',
-      <IoInformationCircleOutline />
-    ),
+    {
+      key: 'profile',
+      label: <Link to={'/'}>Profile</Link>,
+      icon: <FaUserCircle />,
+    },
+    {
+      key: 'setting',
+      label: <Link to={'/'}>Setting</Link>,
+      icon: <GoGear />,
+    },
+    {
+      key: 'support',
+      label: <Link to={'/'}>Support</Link>,
+      icon: <IoInformationCircleOutline />,
+    },
     { type: 'divider' },
-    getItem(
-      <button onClick={handleLogout}>Log out</button>,
-      'log-out',
-      <IoIosLogOut onClick={handleLogout} />
-    ),
+    {
+      key: 'log-out',
+      label: 'Log out',
+      icon: <IoIosLogOut />,
+      onClick: handleLogout,
+    },
   ];
 
   return (

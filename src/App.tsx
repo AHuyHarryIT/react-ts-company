@@ -3,6 +3,7 @@ import ProtectedRoute from '@components/ProtectedRoute';
 import RoleProtectedRoute from '@components/RoleProtectedRoute';
 import AppLayout from '@layouts/AppLayout';
 import Login from '@pages/auth/Login';
+import Blank from '@pages/Blank';
 import Home from '@pages/Home';
 import NotFound from '@pages/NotFound';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -29,6 +30,7 @@ function App() {
               <Route path="logout" element={<>LOGOUT</>} />
             </Route>
 
+            <Route path="blank" element={<Blank />} />
             <Route
               path="unauthorized"
               element={
