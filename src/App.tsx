@@ -1,28 +1,55 @@
-import { FaRegFaceSmile } from 'react-icons/fa6'
-import { useEffect, useState } from 'react'
+import AuthRedirect from '@components/AuthRedirect';
+import ProtectedRoute from '@components/ProtectedRoute';
+import RoleProtectedRoute from '@components/RoleProtectedRoute';
+import AppLayout from '@layouts/AppLayout';
+import AuthLayout from '@layouts/AuthLayout';
+import Login from '@pages/auth/Login';
+import Blank from '@pages/Blank';
+import Dashboard from '@pages/Dashboard';
+import NotFound from '@pages/NotFound';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 function App() {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCount((prevCount) => prevCount + 1)
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <>
-      <div className="flex h-screen flex-col items-center justify-center gap-3">
-        <h1 className="text-5xl font-bold text-red-500">Hello world!</h1>
-        <h2 className="flex gap-3 text-3xl font-bold text-red-500">
-          <FaRegFaceSmile />
-          <FaRegFaceSmile />
-          <FaRegFaceSmile />
-        </h2>
-        <h2 className="text-3xl text-blue-500">{count}</h2>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          {/* public routes */}
+          <Route element={<AuthRedirect />}>
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={<Login />} />
+            </Route>
+          </Route>
+
+          {/* private routes */}
+          <Route path="/" element={<AppLayout />}>
+            <Route element={<ProtectedRoute />}>
+              <Route index element={<Dashboard />} />
+              <Route path="about" element={<>About</>} />
+            </Route>
+            <Route
+              path="admin/"
+              element={<RoleProtectedRoute allowedRoles={['admin']} />}
+            >
+              <Route path="employee" element={<> Employee</>} />
+            </Route>
+
+            <Route path="blank" element={<Blank />} />
+            <Route
+              path="unauthorized"
+              element={
+                <>
+                  <h1>Unauthorized</h1>
+                </>
+              }
+            />
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
