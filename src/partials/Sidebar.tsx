@@ -1,12 +1,12 @@
 import { CSSProperties, Key, ReactNode } from 'react';
 import { Link } from 'react-router';
+import type { MenuProps } from 'antd';
+import { Layout, Menu } from 'antd';
 
 import { AppDispatch, RootState } from '@stores/index';
 import { toggleSidebar } from '@stores/sidebarSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-import type { MenuProps } from 'antd';
-import { Layout, Menu } from 'antd';
 import { IconContext } from 'react-icons';
 import { AiOutlineHome } from 'react-icons/ai';
 import { BsCalendar2Check, BsCalendar2Week } from 'react-icons/bs';
@@ -19,6 +19,8 @@ import {
   IoCheckboxOutline,
   IoHomeOutline,
 } from 'react-icons/io5';
+
+import logo from '@assets/images/logo/logoAsset.svg';
 
 const { Sider: Side } = Layout;
 
@@ -211,6 +213,16 @@ function Sidebar() {
         collapsed={!isExpanded}
         onCollapse={() => dispatch(toggleSidebar())}
       >
+        <div className="flex items-center justify-center p-4">
+          <Link to="/">
+            <img
+              className="w-full"
+              src={logo}
+              alt="Logo"
+              // height={"40px"}
+            />
+          </Link>
+        </div>
         <IconContext.Provider value={{ size: '1rem' }}>
           <Menu
             theme={theme}

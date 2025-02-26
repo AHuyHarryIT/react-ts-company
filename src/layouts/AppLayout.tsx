@@ -45,15 +45,13 @@ function AppLayout() {
           }}
           className="relative"
         >
-          <Header />
+          <Sidebar />
           <Layout>
-            <Sidebar />
-            <Layout>
-              <Content className="p-6 dark:bg-gray-900">
-                <Outlet />
-              </Content>
-              <AppFooter />
-            </Layout>
+            <Header />
+            <Content className="p-6 dark:bg-gray-900">
+              <Outlet />
+            </Content>
+            <AppFooter />
           </Layout>
         </Layout>
       </ConfigProvider>
