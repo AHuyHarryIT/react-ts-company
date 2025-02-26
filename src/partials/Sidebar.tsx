@@ -59,13 +59,13 @@ const items: MenuItem[] = [
   ),
   getItem(<span className="capitalize">Nhân sự</span>, 'HR', <FiUsers />, [
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/employees'}>
         <span className="capitalize">Nhân viên</span>
       </Link>,
       'employees'
     ),
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/roles'}>
         <span className="capitalize">Chức vụ</span>
       </Link>,
       'role'

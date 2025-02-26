@@ -8,7 +8,7 @@ import { handleApiError } from '@utils/handleApiError';
 
 export const fetchDashboardData = async () => {
   try {
-    const response = await axiosPrivate.get('/api/dashboard');
+    const response = await axiosPrivate.get('/api/admin/dashboard');
 
     const dashboardData: DashboardDataType = {
       totalEmployee: response.data.totalEmployee || 0,

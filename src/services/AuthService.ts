@@ -28,7 +28,7 @@ export const authLogin = async (
 
 export const authLogout = async () => {
   try {
-    const response = await axiosPrivate.post('/api/logout');
+    const response = await axiosPrivate.post('/api/admin/logout');
     const notification = response.data.message || 'Logout successfully';
     message.success(notification);
   } catch (error) {

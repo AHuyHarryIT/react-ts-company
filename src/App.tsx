@@ -24,13 +24,14 @@ function App() {
           {/* private routes */}
           <Route path="/" element={<AppLayout />}>
             <Route element={<ProtectedRoute />}>
-              <Route path="dashboard" element={<>Dashboard</>} />
               <Route index element={<Dashboard />} />
-            </Route>
-            <Route element={<RoleProtectedRoute allowedRoles={['admin']} />}>
-              <Route path="projects" element={<> Projects</>} />
               <Route path="about" element={<>About</>} />
-              <Route path="logout" element={<>LOGOUT</>} />
+            </Route>
+            <Route
+              path="admin/"
+              element={<RoleProtectedRoute allowedRoles={['admin']} />}
+            >
+              <Route path="employee" element={<> Employee</>} />
             </Route>
 
             <Route path="blank" element={<Blank />} />
