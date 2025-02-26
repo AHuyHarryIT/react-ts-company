@@ -54,7 +54,10 @@ axiosPrivate.interceptors.response.use(
     return response;
   },
   async (error) => {
-    if (error.response && error.response.status === 401) {
+    if (
+      window.location.pathname != '/login' &&
+      error?.response?.status === 401
+    ) {
       store.dispatch(logout()); // Logout user
       window.location.href = '/login'; // Redirect to login
     }
