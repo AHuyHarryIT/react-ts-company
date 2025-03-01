@@ -1,17 +1,28 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authReducer from '@stores/authSlice';
+import employeesReducer from '@stores/employeeSlice';
 import sidebarReducer from '@stores/sidebarSlice';
 import themeReducer from '@stores/themeSlice';
-import { persistStore } from 'redux-persist';
+import { persistReducer, persistStore } from 'redux-persist';
+import localStorage from 'redux-persist/lib/storage';
+
+const persistConfig = {
+  key: 'root',
+  storage: localStorage,
+  whitelist: ['auth', 'sidebar', 'theme'],
+};
 
 const rootReducer = combineReducers({
   auth: authReducer,
   sidebar: sidebarReducer,
   theme: themeReducer,
+  employees: employeesReducer,
 });
 
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
 export const store = configureStore({
-  reducer: rootReducer,
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       // serializableCheck: {

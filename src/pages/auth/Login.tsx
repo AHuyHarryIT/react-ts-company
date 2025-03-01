@@ -39,33 +39,29 @@ function Login() {
       );
 
       const userData: AuthState = {
-        accessToken: response.data.token,
+        accessToken: response.token,
         user: {
-          name: response.data.name,
+          name: response.name,
           role: {
-            id: response.data.role_id,
-            name: response.data.role_name,
+            id: response.role_id.toString(),
+            name: response.role_name,
           },
         },
-        tokenExpiresAt: new Date(response.data.expires_at).getTime(),
+        tokenExpiresAt: new Date(response.expires_at).getTime(),
       };
-      if (
-        response?.data?.image &&
-        response?.data?.role_id == 15 &&
-        userData.user
-      ) {
+      if (response?.image && response?.role_id == 15 && userData.user) {
         userData.user.image_url = [
           BASE_URL,
           'storage',
           'admin',
-          response.data.image,
+          response.image,
         ].join('/');
-      } else if (response?.data?.image && userData.user) {
+      } else if (response?.image && userData.user) {
         userData.user.image_url = [
           BASE_URL,
           'storage',
           'employee',
-          response.data.image,
+          response.image,
         ].join('/');
       }
 

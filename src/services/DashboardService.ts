@@ -6,27 +6,42 @@ import {
 } from '@/types/dashboardType';
 import { handleApiError } from '@utils/handleApiError';
 
+type DashboardDataResponse = {
+  totalEmployee: number;
+  totalRole: number;
+  totalSalary: number;
+  totalCelender: number;
+  totalProduct: number;
+  totalHistory: number;
+  totalPlan: number;
+  totalRecord: number;
+  totalCheckEmployee: number;
+  salaryManagers: SalaryTableType[];
+  celenders: WorkCalendarTableType[];
+};
+
 export const fetchDashboardData = async () => {
   try {
-    const response = await axiosPrivate.get('/api/admin/dashboard');
+    const response: DashboardDataResponse = await axiosPrivate.get(
+      '/api/admin/dashboard'
+    );
 
     const dashboardData: DashboardDataType = {
-      totalEmployee: response.data.totalEmployee || 0,
-      totalRole: response.data.totalRole || 0,
-      totalSalary: response.data.totalSalary || 0,
-      totalCalender: response.data.totalCelender || 0,
-      totalProduct: response.data.totalProduct || 0,
-      totalHistory: response.data.totalHistory || 0,
-      totalPlan: response.data.totalPlan || 0,
-      totalRecord: response.data.totalRecord || 0,
-      totalCheckEmployee: response.data.totalCheckEmployee || 0,
+      totalEmployee: response.totalEmployee || 0,
+      totalRole: response.totalRole || 0,
+      totalSalary: response.totalSalary || 0,
+      totalCalender: response.totalCelender || 0,
+      totalProduct: response.totalProduct || 0,
+      totalHistory: response.totalHistory || 0,
+      totalPlan: response.totalPlan || 0,
+      totalRecord: response.totalRecord || 0,
+      totalCheckEmployee: response.totalCheckEmployee || 0,
     };
 
-    const salaryTableData: SalaryTableType[] =
-      response.data.salaryManagers || [];
+    const salaryTableData: SalaryTableType[] = response.salaryManagers || [];
 
     const workCalendarTableData: WorkCalendarTableType[] =
-      response.data.celenders || [];
+      response.celenders || [];
 
     return { dashboardData, salaryTableData, workCalendarTableData };
   } catch (error) {

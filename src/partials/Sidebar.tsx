@@ -1,7 +1,7 @@
-import { CSSProperties, Key, ReactNode } from 'react';
-import { Link } from 'react-router';
 import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
+import { CSSProperties, Key, ReactNode } from 'react';
+import { Link } from 'react-router';
 
 import { AppDispatch, RootState } from '@stores/index';
 import { toggleSidebar } from '@stores/sidebarSlice';
@@ -194,13 +194,13 @@ function Sidebar() {
   const { isExpanded, isMobile } = useSelector(
     (state: RootState) => state.sidebar
   );
-  const { theme } = useSelector((state: RootState) => state.theme);
+  const { themeMode: theme } = useSelector((state: RootState) => state.theme);
 
   const sideStyle: CSSProperties = {};
   if (isMobile) {
     sideStyle.position = 'absolute';
     sideStyle.zIndex = 1;
-    sideStyle.height = '100vh';
+    sideStyle.height = '100%';
   }
   return (
     <>
@@ -215,12 +215,7 @@ function Sidebar() {
       >
         <div className="flex items-center justify-center p-4">
           <Link to="/">
-            <img
-              className="w-full"
-              src={logo}
-              alt="Logo"
-              // height={"40px"}
-            />
+            <img className="w-full" src={logo} alt="Logo" />
           </Link>
         </div>
         <IconContext.Provider value={{ size: '1rem' }}>
@@ -228,7 +223,6 @@ function Sidebar() {
             theme={theme}
             defaultSelectedKeys={['dashboard']}
             mode="inline"
-            // className='w-[256px]'
             items={items}
           />
         </IconContext.Provider>

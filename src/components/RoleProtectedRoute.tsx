@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@stores/index';
-import { isTokenExpired } from '../utils/auth';
+import { isTokenExpired } from '@utils/auth';
 import { logout } from '@stores/authSlice';
 
 interface RoleProtectedRouteProps {

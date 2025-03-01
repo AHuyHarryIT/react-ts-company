@@ -12,6 +12,7 @@ const ProtectedRoute = () => {
 
   if (!accessToken || isTokenExpired(tokenExpiresAt)) {
     dispatch(logout());
+
     return <Navigate to="/login" replace />;
   }
 

@@ -1,3 +1,5 @@
+import { TableType } from '@/types';
+
 export interface DashboardDataType {
   totalEmployee: number;
   totalRole: number;
@@ -9,11 +11,6 @@ export interface DashboardDataType {
   totalRecord: number;
   totalCheckEmployee: number;
 }
-
-export type TableType = {
-  id: string;
-  title: string;
-};
 
 export type SalaryTableType = TableType & {
   total: string;

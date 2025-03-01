@@ -6,10 +6,21 @@ import AuthLayout from '@layouts/AuthLayout';
 import Login from '@pages/auth/Login';
 import Blank from '@pages/Blank';
 import Dashboard from '@pages/Dashboard';
+import Employee from '@pages/Employees';
 import NotFound from '@pages/NotFound';
+import { useSelector } from 'react-redux';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { RootState } from './stores';
+import { useMemo } from 'react';
 
 function App() {
+  const { themeMode } = useSelector((state: RootState) => state.theme);
+
+  useMemo(() => {
+    document.documentElement.classList.toggle('dark', themeMode === 'dark');
+    document.documentElement.setAttribute('data-theme', themeMode);
+  }, [themeMode]);
+
   return (
     <>
       <BrowserRouter>
@@ -31,7 +42,9 @@ function App() {
               path="admin/"
               element={<RoleProtectedRoute allowedRoles={['admin']} />}
             >
-              <Route path="employee" element={<> Employee</>} />
+              <Route path="employees" element={<Employee />} />
+              <Route path="employees/edit/:id" element={<>Edit emp</>} />
+              <Route path="roles" element={<> Role</>} />
             </Route>
 
             <Route path="blank" element={<Blank />} />

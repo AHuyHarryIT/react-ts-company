@@ -37,7 +37,7 @@ axiosPrivate.interceptors.request.use(
 axiosPrivate.interceptors.request.use(
   (config) => {
     const tokenExpiresAt = store.getState().auth.tokenExpiresAt;
-    if (tokenExpiresAt && tokenExpiresAt < Date.now() / 1000) {
+    if (tokenExpiresAt && tokenExpiresAt < Date.now()) {
       store.dispatch(logout());
       return Promise.reject(new Error('Token expired'));
     }
@@ -51,7 +51,7 @@ axiosPrivate.interceptors.request.use(
 // Handle 401 Unauthorized (Token Expired)
 axiosPrivate.interceptors.response.use(
   (response) => {
-    return response;
+    return response.data;
   },
   async (error) => {
     if (
