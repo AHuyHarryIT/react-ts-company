@@ -1,7 +1,7 @@
 import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
 import { CSSProperties, Key, ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 import { AppDispatch, RootState } from '@stores/index';
 import { toggleSidebar } from '@stores/sidebarSlice';

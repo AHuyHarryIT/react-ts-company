@@ -1,20 +1,21 @@
+import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { RootState } from './stores';
-import { useMemo } from 'react';
 
 import AuthRedirect from '@components/AuthRedirect';
 import ProtectedRoute from '@components/ProtectedRoute';
 import RoleProtectedRoute from '@components/RoleProtectedRoute';
 import AppLayout from '@layouts/AppLayout';
 import AuthLayout from '@layouts/AuthLayout';
+import { PageLayout } from '@layouts/PageLayout';
 import Login from '@pages/auth/Login';
 import Blank from '@pages/Blank';
 import Dashboard from '@pages/Dashboard';
 import Employees from '@pages/Employees';
 import { AddEmployee } from '@pages/Employees/Add';
-import { PageLayout } from '@layouts/PageLayout';
 import NotFound from '@pages/NotFound';
+import { Roles } from '@pages/roles';
 
 function App() {
   const { themeMode } = useSelector((state: RootState) => state.theme);
@@ -59,7 +60,7 @@ function App() {
                 path="roles"
                 element={<PageLayout title="Chức vụ" metaTitle="Chức vụ" />}
               >
-                <Route index element={<> Role</>} />
+                <Route index element={<Roles />} />
               </Route>
             </Route>
 

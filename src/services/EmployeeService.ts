@@ -66,7 +66,7 @@ export const apiFetchEmployees = async ({
     return { employeeList, totalEmployees };
   } catch (error) {
     message.error(handleApiError(error));
-    throw new Error(handleApiError(error));
+    throw handleApiError(error);
   }
 };
 
@@ -75,6 +75,6 @@ export const apiDeleteEmployee = async (id: string) => {
     await axiosPrivate.delete(`/api/employees/${id}`);
     message.success('Xóa nhân viên thành công');
   } catch (error) {
-    throw new Error(handleApiError(error));
+    throw handleApiError(error);
   }
 };

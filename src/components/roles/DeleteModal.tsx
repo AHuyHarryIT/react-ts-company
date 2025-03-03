@@ -1,16 +1,16 @@
-import { Button, Modal } from 'antd';
+import { Button, message, Modal } from 'antd';
 import React, { ReactNode, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-import { AppDispatch, RootState } from '@stores/index';
-import { deleteEmployee } from '@stores/employeeSlice';
+import { AppDispatch } from '@stores/index';
+import { fetchRoles, setError } from '@stores/roleSlice';
 
+import { apiDeleteRole } from '@services/RoleService';
 import { BiTrash } from 'react-icons/bi';
 
 interface DeleteProps {
   id: string;
   name: string;
-  code: string;
   page: number;
   limit: number;
 }
@@ -18,19 +18,18 @@ interface DeleteProps {
 export const DeleteModal: React.FC<DeleteProps> = ({
   id,
   name,
-  code,
   page,
   limit,
 }: DeleteProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { deletingId } = useSelector((state: RootState) => state.employees);
 
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [modalText, setModalText] = useState<ReactNode>(
     <p>
-      Bạn có chắc chắn muốn xóa nhân viên{' '}
+      Bạn có chắc chắn muốn xóa chức vụ{' '}
       <strong>
-        {name} - {code}
+        {name} - {id}
       </strong>{' '}
       không?
     </p>
@@ -40,17 +39,31 @@ export const DeleteModal: React.FC<DeleteProps> = ({
     setOpen(true);
   };
 
-  const handleOk = () => {
+  const handleOk = async () => {
+    setLoading(true);
+
     setModalText(
       <p>
-        Đang xóa nhân viên{' '}
+        Đang xóa chức vụ{' '}
         <strong>
-          {name} - {code}
+          {name} - {id}
         </strong>
         ...
       </p>
     );
-    dispatch(deleteEmployee({ id, page, limit }));
+
+    try {
+      await apiDeleteRole(id);
+      dispatch(fetchRoles({ params: { page, limit } }));
+
+      message.success('Xóa chức vụ thành công!');
+    } catch (error) {
+      console.error(error);
+      message.error(error as string);
+      dispatch(setError(error as string));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -72,10 +85,11 @@ export const DeleteModal: React.FC<DeleteProps> = ({
         open={open}
         onOk={handleOk}
         onCancel={handleCancel}
-        confirmLoading={deletingId === id}
+        confirmLoading={loading}
         okButtonProps={{ danger: true }}
         okText="Xóa"
         cancelText="Hủy"
+        centered
       >
         {modalText}
       </Modal>
