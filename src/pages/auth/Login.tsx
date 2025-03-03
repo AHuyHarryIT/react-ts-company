@@ -20,10 +20,6 @@ type FieldType = {
   remember: boolean;
 };
 
-const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
-  console.log('Failed:', errorInfo);
-};
-
 function Login() {
   headTitle('Login');
 
@@ -85,10 +81,9 @@ function Login() {
       </div>
       <div>
         <Form
-          name="basic"
+          name="auth-login"
           initialValues={{ remember: false }}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
           layout="vertical"
         >
           <Form.Item<FieldType>

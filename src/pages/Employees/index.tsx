@@ -5,6 +5,7 @@ import {
   Table,
   TableColumnsType,
   TableProps,
+  Tooltip,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,17 +14,17 @@ import { EmployeeType } from '@/types/employeeType';
 import { DeleteModal } from '@components/employees/DeleteModal';
 import { fetchEmployees } from '@stores/employeeSlice';
 import { AppDispatch, RootState } from '@stores/index';
-import { headTitle } from '@utils/headMeta';
 
 import { BiTrash } from 'react-icons/bi';
 import { FaUser } from 'react-icons/fa';
-import { FaPen } from 'react-icons/fa6';
+import { FaFingerprint, FaPen } from 'react-icons/fa6';
 import { IoReload } from 'react-icons/io5';
 import { LuUserRoundPlus } from 'react-icons/lu';
 import { FilterEmployee } from '@services/EmployeeService';
+import { Link } from 'react-router-dom';
+import ComponentCard from '@components/common/ComponentCard';
 
-export default function Employee() {
-  headTitle('Employee Page');
+export default function Employees() {
   const dispatch = useDispatch<AppDispatch>();
   const { employees, totalEmployees, loading, error } = useSelector(
     (state: RootState) => state.employees
@@ -82,7 +83,7 @@ export default function Employee() {
     },
     {
       title: 'Chức vụ',
-      minWidth: 75,
+      minWidth: 100,
       dataIndex: 'role',
       render: (value) => value.name,
       key: 'role',
@@ -153,6 +154,7 @@ export default function Employee() {
     // style: { textWrap: 'nowrap' },
     tableLayout: 'auto',
     pagination: {
+      size: 'default',
       hideOnSinglePage: true,
       showSizeChanger: true,
       pageSize: limit,
@@ -179,10 +181,9 @@ export default function Employee() {
   const Actions = () => {
     return (
       <>
-        <div className="">
-          <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
+          <Tooltip title="Làm mới">
             <Button
-              title="Làm mới"
               color="primary"
               variant="solid"
               icon={<IoReload />}
@@ -191,17 +192,21 @@ export default function Employee() {
             >
               {!isMobile && <>Làm mới</>}
             </Button>
+          </Tooltip>
+          <Tooltip title="Thêm nhân viên">
+            <Link to="/admin/employees/add">
+              <Button
+                color="green"
+                variant="solid"
+                icon={<LuUserRoundPlus />}
+                size="large"
+              >
+                {!isMobile && <>Thêm</>}
+              </Button>
+            </Link>
+          </Tooltip>
+          <Tooltip title="Đã xóa">
             <Button
-              title="Thêm"
-              color="green"
-              variant="solid"
-              icon={<LuUserRoundPlus />}
-              size="large"
-            >
-              {!isMobile && <>Thêm</>}
-            </Button>
-            <Button
-              title="Đã xóa"
               color="gold"
               variant="solid"
               icon={<BiTrash />}
@@ -209,7 +214,12 @@ export default function Employee() {
             >
               {!isMobile && <>Đã xóa</>}
             </Button>
-          </div>
+          </Tooltip>
+          <Tooltip title="Thêm chấm công">
+            <Button variant="solid" icon={<FaFingerprint />} size="large">
+              {!isMobile && <>Thêm chấm công</>}
+            </Button>
+          </Tooltip>
         </div>
       </>
     );
@@ -217,19 +227,11 @@ export default function Employee() {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2
-          className="text-xl font-semibold text-gray-800 dark:text-white/90"
-          x-text="pageName"
-        >
-          Employee Page
-        </h2>
-      </div>
-      <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <ComponentCard title="Danh sách nhân viên">
         <Actions />
         {error && <Alert message={error} type="error" showIcon closable />}
         <Table<EmployeeType> {...tableProps} />
-      </div>
+      </ComponentCard>
     </>
   );
 }

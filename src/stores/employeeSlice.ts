@@ -43,13 +43,13 @@ export const fetchEmployees = createAsyncThunk<
 // delete an employee
 export const deleteEmployee = createAsyncThunk<
   void,
-  { id: string; params: FetchEmployeesParams }
+  { id: string; page: number; limit: number }
 >(
   'employee/deleteEmployee',
-  async ({ id, params }, { dispatch, rejectWithValue }) => {
+  async ({ id, page, limit }, { dispatch, rejectWithValue }) => {
     try {
       await apiDeleteEmployee(id);
-      dispatch(fetchEmployees({ params }));
+      dispatch(fetchEmployees({ params: { page, limit } }));
     } catch (error) {
       return rejectWithValue(error as string);
     }

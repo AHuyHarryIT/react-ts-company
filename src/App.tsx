@@ -1,3 +1,8 @@
+import { useSelector } from 'react-redux';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { RootState } from './stores';
+import { useMemo } from 'react';
+
 import AuthRedirect from '@components/AuthRedirect';
 import ProtectedRoute from '@components/ProtectedRoute';
 import RoleProtectedRoute from '@components/RoleProtectedRoute';
@@ -6,12 +11,10 @@ import AuthLayout from '@layouts/AuthLayout';
 import Login from '@pages/auth/Login';
 import Blank from '@pages/Blank';
 import Dashboard from '@pages/Dashboard';
-import Employee from '@pages/Employees';
+import Employees from '@pages/Employees';
+import { AddEmployee } from '@pages/Employees/Add';
+import { PageLayout } from '@layouts/PageLayout';
 import NotFound from '@pages/NotFound';
-import { useSelector } from 'react-redux';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { RootState } from './stores';
-import { useMemo } from 'react';
 
 function App() {
   const { themeMode } = useSelector((state: RootState) => state.theme);
@@ -39,12 +42,25 @@ function App() {
               <Route path="about" element={<>About</>} />
             </Route>
             <Route
-              path="admin/"
+              path="admin"
               element={<RoleProtectedRoute allowedRoles={['admin']} />}
             >
-              <Route path="employees" element={<Employee />} />
-              <Route path="employees/edit/:id" element={<>Edit emp</>} />
-              <Route path="roles" element={<> Role</>} />
+              <Route
+                path="employees"
+                element={<PageLayout title="Nhân viên" metaTitle="Nhân viên" />}
+              >
+                <Route index element={<Employees />} />
+                <Route path="add" element={<AddEmployee />} />
+                <Route path="view/:id" element={<>View emp</>} />
+                <Route path="edit/:id" element={<>Edit emp</>} />
+              </Route>
+
+              <Route
+                path="roles"
+                element={<PageLayout title="Chức vụ" metaTitle="Chức vụ" />}
+              >
+                <Route index element={<> Role</>} />
+              </Route>
             </Route>
 
             <Route path="blank" element={<Blank />} />
