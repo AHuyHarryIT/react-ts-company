@@ -5,7 +5,6 @@ import { message } from 'antd';
 
 interface RoleState {
   roles: RoleType[];
-  deletingId: string | null;
   totalRoles: number;
   loading: boolean;
   error: string | null;
@@ -13,7 +12,6 @@ interface RoleState {
 
 const initialState: RoleState = {
   roles: [],
-  deletingId: null,
   totalRoles: 0,
   loading: false,
   error: null,
