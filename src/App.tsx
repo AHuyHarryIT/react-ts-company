@@ -15,7 +15,8 @@ import Dashboard from '@pages/Dashboard';
 import Employees from '@pages/Employees';
 import { AddEmployee } from '@pages/Employees/Add';
 import NotFound from '@pages/NotFound';
-import { Roles } from '@pages/roles';
+import { Roles } from '@pages/Roles';
+import { WorkScheduleCategories } from '@pages/WorkCategories';
 
 function App() {
   const { themeMode } = useSelector((state: RootState) => state.theme);
@@ -61,6 +62,183 @@ function App() {
                 element={<PageLayout title="Chức vụ" metaTitle="Chức vụ" />}
               >
                 <Route index element={<Roles />} />
+              </Route>
+
+              <Route
+                path="products"
+                element={<PageLayout title="Sản phẩm" metaTitle="Sản phẩm" />}
+              >
+                <Route index element={<>Products</>} />
+              </Route>
+
+              {/* Plans */}
+              <Route path="plans">
+                <Route
+                  path="production"
+                  element={
+                    <PageLayout
+                      title="Kế hoạch sản xuất"
+                      metaTitle="Kế hoạch sản xuất"
+                    />
+                  }
+                >
+                  <Route index element={<>Plan production</>} />
+                </Route>
+
+                <Route
+                  path="material"
+                  element={
+                    <PageLayout
+                      title="Kế hoạch nguyên liệu"
+                      metaTitle="Kế hoạch nguyên liệu"
+                    />
+                  }
+                >
+                  <Route index element={<>Plan material</>} />
+                </Route>
+              </Route>
+
+              {/* Stamps */}
+              <Route path="stamps">
+                <Route
+                  path="box"
+                  element={
+                    <PageLayout
+                      title="Tao tem thùng"
+                      metaTitle="Tao tem thùng"
+                    />
+                  }
+                >
+                  <Route index element={<>Box stamp</>} />
+                </Route>
+
+                <Route
+                  path="bag"
+                  element={
+                    <PageLayout title="Tao tem bịch" metaTitle="Tao tem bịch" />
+                  }
+                >
+                  <Route index element={<>Bag stamp</>} />
+                </Route>
+
+                <Route
+                  path="history"
+                  element={
+                    <PageLayout
+                      title="Lịch sử in tem"
+                      metaTitle="Lịch sử in tem"
+                    />
+                  }
+                >
+                  <Route index element={<>Stamp history</>} />
+                </Route>
+                <Route
+                  path="request"
+                  element={
+                    <PageLayout
+                      title="Yêu cầu in tem"
+                      metaTitle="Yêu cầu in tem"
+                    />
+                  }
+                >
+                  <Route index element={<>Request stamp</>} />
+                </Route>
+              </Route>
+
+              {/* Attendance */}
+              <Route path="attendances">
+                <Route
+                  path="history"
+                  element={
+                    <PageLayout
+                      title="Lịch sử chấm công"
+                      metaTitle="Lịch sử chấm công"
+                    />
+                  }
+                >
+                  <Route index element={<>Attendance history</>} />
+                </Route>
+
+                <Route
+                  path="sheet"
+                  element={
+                    <PageLayout
+                      title="Bảng tính công"
+                      metaTitle="Bảng tính công"
+                    />
+                  }
+                >
+                  <Route index element={<>Attendance sheet</>} />
+                </Route>
+              </Route>
+
+              {/* Check PO */}
+              <Route
+                path="check-po"
+                element={
+                  <PageLayout title="Kiểm tra PO" metaTitle="Kiểm tra PO" />
+                }
+              >
+                <Route index element={<>Check PO</>} />
+              </Route>
+
+              {/* Work schedule */}
+              <Route
+                path="work-schedule"
+                element={
+                  <PageLayout title="Lịch làm việc" metaTitle="Lịch làm việc" />
+                }
+              >
+                <Route index element={<>Work schedule</>} />
+              </Route>
+
+              {/* Work schedule categories */}
+              <Route
+                path="work-schedule-categories"
+                element={
+                  <PageLayout
+                    title="Danh mục lịch làm việc"
+                    metaTitle="Danh mục lịch làm việc"
+                  />
+                }
+              >
+                <Route index element={<WorkScheduleCategories />} />
+              </Route>
+
+              {/* Salary */}
+              <Route
+                path="salary"
+                element={
+                  <PageLayout title="Bảng lương" metaTitle="Bảng lương" />
+                }
+              >
+                <Route index element={<>Salary</>} />
+              </Route>
+
+              {/* Schedule */}
+              <Route
+                path="activity-schedule"
+                element={
+                  <PageLayout
+                    title="Lịch hoạt động / ngày"
+                    metaTitle="Lịch hoạt động / ngày"
+                  />
+                }
+              >
+                <Route index element={<>Activity schedule</>} />
+              </Route>
+
+              {/* Activity history */}
+              <Route
+                path="activity-history"
+                element={
+                  <PageLayout
+                    title="Lịch sử hoạt động"
+                    metaTitle="Lịch sử hoạt động"
+                  />
+                }
+              >
+                <Route index element={<>Activity history</>} />
               </Route>
             </Route>
 

@@ -72,7 +72,7 @@ const items: MenuItem[] = [
     ),
   ]),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/products'}>
       <span className="capitalize">Sản Phẩm</span>
     </Link>,
     'product',
@@ -84,47 +84,41 @@ const items: MenuItem[] = [
     <BsCalendar2Week />,
     [
       getItem(
-        <Link to={'/'}>
+        <Link to={'/admin/plans/production'}>
           <span className="capitalize">Kế hoạch sản xuất</span>
         </Link>,
         'plan-production'
       ),
       getItem(
-        <Link to={'/'}>
+        <Link to={'/admin/plans/material'}>
           <span className="capitalize">Kế hoạch nguyên liệu</span>
         </Link>,
         'plan-material'
       ),
     ]
   ),
-  getItem(
-    <Link to={'/'}>
-      <span className="capitalize">Lịch hoạt động / ngày</span>
-    </Link>,
-    ' activity-schedule',
-    <IoCalendarNumberOutline />
-  ),
+
   getItem(<span className="capitalize">Tạo Tem</span>, 'stamp', <FaPrint />, [
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/stamps/box'}>
         <span className="capitalize">Tem Thùng</span>
       </Link>,
       'box-stamp'
     ),
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/stamps/bag'}>
         <span className="capitalize">Tem Bịch</span>
       </Link>,
       'bag-stamp'
     ),
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/stamps/history'}>
         <span className="capitalize">Lịch Sử In Tem</span>
       </Link>,
-      'history-stamp'
+      'stamp-history'
     ),
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/stamps/request'}>
         <span className="capitalize">Yêu Cầu In Tem</span>
       </Link>,
       'request-stamp'
@@ -136,13 +130,13 @@ const items: MenuItem[] = [
     <BsCalendar2Check />,
     [
       getItem(
-        <Link to={'/'}>
+        <Link to={'/admin/attendances/history'}>
           <span className="capitalize">Lịch Sử Chấm Công</span>
         </Link>,
-        'history-attendance'
+        'attendance-history'
       ),
       getItem(
-        <Link to={'/'}>
+        <Link to={'/admin/attendances/sheet'}>
           <span className="capitalize">Bảng Tính Công</span>
         </Link>,
         'attendance-sheet'
@@ -150,41 +144,48 @@ const items: MenuItem[] = [
     ]
   ),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/check-po'}>
       <span className="capitalize">Kiểm tra PO</span>
     </Link>,
     'check-po',
     <IoCheckboxOutline />
   ),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/work-schedule'}>
       <span className="capitalize">Lịch làm việc</span>
     </Link>,
-    'schedule',
+    'work-schedule',
     <FaRegCalendarAlt />
   ),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/work-schedule-categories'}>
       <span className="capitalize">Danh mục lịch làm việc</span>
     </Link>,
-    ' schedule-category',
+    'schedule-categories',
     <FaBriefcase />
   ),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/salary'}>
       <span className="capitalize">Bảng lương</span>
     </Link>,
-    ' salary',
+    'salary',
     <FaMoneyCheckAlt />
+  ),
+  getItem(
+    <Link to={'/admin/activity-schedule'}>
+      <span className="capitalize">Lịch hoạt động / ngày</span>
+    </Link>,
+    'activity-schedule',
+    <IoCalendarNumberOutline />
   ),
   {
     type: 'divider',
   },
   getItem(
-    <Link to={'/'}>
-      <span className="capitalize">Lịch sử</span>
+    <Link to={'/admin/activity-history'}>
+      <span className="capitalize">Lịch sử hoạt động</span>
     </Link>,
-    'history',
+    'activity-history',
     <FaHistory />
   ),
 ];
