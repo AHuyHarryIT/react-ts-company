@@ -1,31 +1,26 @@
-import {
-  Button,
-  Form,
-  Input,
-  message,
-  Modal,
-  Tooltip,
-  type FormProps,
-} from 'antd';
-import React, { useState } from 'react';
+import { Button, Form, FormProps, Input, Modal, Tooltip, message } from 'antd';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { apiAddRole } from '@services/RoleService';
+import { apiAddWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
 import { AppDispatch, RootState } from '@stores/index';
-import { fetchRoles } from '@stores/roleSlice';
+import { fetchWorkScheduleCategories } from '@stores/workScheduleCategorySlice';
 
-import { FaPlus } from 'react-icons/fa6';
+import { FaPlus } from 'react-icons/fa';
 
-interface AddRoleProps {
+interface AddWorkScheduleCategoryProps {
   page: number;
   limit: number;
 }
 
 type FormField = {
-  role_name: string;
+  name: string;
 };
 
-export const AddRole: React.FC<AddRoleProps> = ({ page, limit }) => {
+export const AddModal: React.FC<AddWorkScheduleCategoryProps> = ({
+  page,
+  limit,
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const { isMobile } = useSelector((state: RootState) => state.sidebar);
 
@@ -46,9 +41,9 @@ export const AddRole: React.FC<AddRoleProps> = ({ page, limit }) => {
     setLoading(true);
 
     try {
-      await apiAddRole(values.role_name);
+      await apiAddWorkScheduleCategory(values.name);
       message.success('Thêm thành công!');
-      dispatch(fetchRoles({ params: { page, limit } }));
+      dispatch(fetchWorkScheduleCategories({ params: { page, limit } }));
 
       setOpen(false);
     } catch (error) {
@@ -73,20 +68,29 @@ export const AddRole: React.FC<AddRoleProps> = ({ page, limit }) => {
         </Button>
       </Tooltip>
       <Modal
-        title="Thêm chức vụ"
+        title="Thêm danh mục lịch làm việc"
         open={open}
         onCancel={onCancel}
         destroyOnClose
         centered
         footer={null}
       >
-        <Form layout="vertical" name="add-role" onFinish={onFinish}>
+        <Form
+          layout="vertical"
+          name="add-work-schedule-calendar"
+          onFinish={onFinish}
+        >
           <Form.Item<FormField>
-            label="Tên chức vụ"
-            name="role_name"
-            rules={[{ required: true, message: 'Vui lòng nhập tên chức vụ!' }]}
+            label="Tên danh mục lịch làm việc"
+            name="name"
+            rules={[
+              {
+                required: true,
+                message: 'Vui lòng nhập tên danh mục lịch làm việc!',
+              },
+            ]}
           >
-            <Input placeholder="Tên chức vụ" size="large" />
+            <Input placeholder="Tên danh mục lịch làm việc" size="large" />
           </Form.Item>
           <div className="text-right">
             <Button

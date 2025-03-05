@@ -16,7 +16,7 @@ import Employees from '@pages/Employees';
 import { AddEmployee } from '@pages/Employees/Add';
 import NotFound from '@pages/NotFound';
 import { Roles } from '@pages/Roles';
-import { WorkScheduleCategories } from '@pages/WorkCategories';
+import { WorkScheduleCategories } from '@pages/WorkScheduleCategories';
 
 function App() {
   const { themeMode } = useSelector((state: RootState) => state.theme);
