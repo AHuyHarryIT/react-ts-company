@@ -17,6 +17,7 @@ import { AddEmployee } from '@pages/Employees/Add';
 import NotFound from '@pages/NotFound';
 import { Roles } from '@pages/Roles';
 import { WorkScheduleCategories } from '@pages/WorkScheduleCategories';
+import { WorkSchedules } from '@pages/WorkSchedules';
 
 function App() {
   const { themeMode } = useSelector((state: RootState) => state.theme);
@@ -189,7 +190,8 @@ function App() {
                   <PageLayout title="Lịch làm việc" metaTitle="Lịch làm việc" />
                 }
               >
-                <Route index element={<>Work schedule</>} />
+                <Route index element={<WorkSchedules />} />
+                <Route path="detail/:id" element={<>Detail</>} />
               </Route>
 
               {/* Work schedule categories */}

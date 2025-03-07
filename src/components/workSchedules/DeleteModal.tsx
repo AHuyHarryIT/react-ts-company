@@ -1,25 +1,24 @@
 import { Button, message, Modal } from 'antd';
-import React, { ReactNode, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useDispatch } from 'react-redux';
-
 import { AppDispatch } from '@stores/index';
-import { fetchRoles, setError } from '@stores/roleSlice';
-
-import { apiDeleteRole } from '@services/RoleService';
+import { fetchWorkSchedules } from '@stores/workScheduleSlice';
+import { apiDeleteWorkSchedule } from '@services/workScheduleService';
+import { setError } from '@stores/roleSlice';
 import { BiTrash } from 'react-icons/bi';
 
-interface DeleteProps {
-  id: string;
-  name: string;
+interface DeleteModalProps {
   page: number;
   limit: number;
+  id: string;
+  name: string;
 }
 
-export const DeleteModal: React.FC<DeleteProps> = ({
-  id,
-  name,
+export const DeleteModal: React.FC<DeleteModalProps> = ({
   page,
   limit,
+  id,
+  name,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -27,7 +26,7 @@ export const DeleteModal: React.FC<DeleteProps> = ({
   const [loading, setLoading] = useState(false);
   const [modalText, setModalText] = useState<ReactNode>(
     <p>
-      Bạn có chắc chắn muốn xóa chức vụ{' '}
+      Bạn có chắc chắn muốn xóa lịch làm việc{' '}
       <strong>
         {name} - {id}
       </strong>{' '}
@@ -43,12 +42,12 @@ export const DeleteModal: React.FC<DeleteProps> = ({
     setOpen(false);
   };
 
-  const handleOk = async () => {
+  const handleDelete = async () => {
     setLoading(true);
 
     setModalText(
       <p>
-        Đang xóa chức vụ{' '}
+        Đang xóa lịch làm việc{' '}
         <strong>
           {name} - {id}
         </strong>
@@ -57,10 +56,9 @@ export const DeleteModal: React.FC<DeleteProps> = ({
     );
 
     try {
-      await apiDeleteRole(id);
-      dispatch(fetchRoles({ params: { page, limit } }));
-
-      message.success('Xóa chức vụ thành công!');
+      await apiDeleteWorkSchedule(id);
+      dispatch(fetchWorkSchedules({ params: { page, limit } }));
+      message.success('Xóa lịch làm việc thành công');
     } catch (error) {
       console.error(error);
       message.error(error as string);
@@ -81,10 +79,10 @@ export const DeleteModal: React.FC<DeleteProps> = ({
         Xóa
       </Button>
       <Modal
-        title="Xác nhận xóa"
+        title="Xóa lịch làm việc"
         open={open}
-        onOk={handleOk}
         onCancel={handleCancel}
+        onOk={handleDelete}
         confirmLoading={loading}
         okButtonProps={{ danger: true }}
         okText="Xóa"

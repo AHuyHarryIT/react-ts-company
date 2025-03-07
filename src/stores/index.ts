@@ -5,6 +5,7 @@ import sidebarReducer from '@stores/sidebarSlice';
 import themeReducer from '@stores/themeSlice';
 import rolesReducer from '@stores/roleSlice';
 import WorkScheduleCategoriesReducer from '@stores/workScheduleCategorySlice';
+import workScheduleReducer from './workScheduleSlice';
 import { persistReducer, persistStore } from 'redux-persist';
 import localStorage from 'redux-persist/lib/storage';
 
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   employees: employeesReducer,
   roles: rolesReducer,
   workScheduleCategories: WorkScheduleCategoriesReducer,
+  workSchedules: workScheduleReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
