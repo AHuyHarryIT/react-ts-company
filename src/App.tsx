@@ -18,6 +18,7 @@ import NotFound from '@pages/NotFound';
 import { Roles } from '@pages/Roles';
 import { WorkScheduleCategories } from '@pages/WorkScheduleCategories';
 import { WorkSchedules } from '@pages/WorkSchedules';
+import { SalaryTable } from '@pages/Salaries';
 
 function App() {
   const { themeMode } = useSelector((state: RootState) => state.theme);
@@ -214,7 +215,7 @@ function App() {
                   <PageLayout title="Bảng lương" metaTitle="Bảng lương" />
                 }
               >
-                <Route index element={<>Salary</>} />
+                <Route index element={<SalaryTable />} />
               </Route>
 
               {/* Schedule */}
