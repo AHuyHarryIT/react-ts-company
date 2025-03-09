@@ -3,8 +3,6 @@ import { EmployeeType } from '@/types/employeeType';
 import { handleApiError } from '@utils/handleApiError';
 import { message } from 'antd';
 
-const BASE_URL = import.meta.env.VITE_BASE_API_URL;
-
 type EmployeeResponse = Omit<EmployeeType, 'role' | 'category_calender'> & {
   role: {
     id: string;
@@ -47,7 +45,7 @@ export const apiFetchEmployees = async ({
           id: employee.id,
           name: employee.name,
           phone: employee.phone,
-          photo: [BASE_URL, 'storage', 'employee', employee.photo].join('/'),
+          photo: ['/storage', 'employee', employee.photo].join('/'),
           company: employee.company,
           code: employee.code,
           role: {

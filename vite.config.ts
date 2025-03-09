@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react-swc';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
+const BASE_URL = process.env.VITE_BASE_API_URL;
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -17,6 +19,12 @@ export default defineConfig({
       '@stores': path.resolve(__dirname, 'src/stores'),
       '@partials': path.resolve(__dirname, 'src/partials'),
       '@': path.resolve(__dirname, 'src'),
+    },
+  },
+  server: {
+    proxy: {
+      '/api': BASE_URL || 'http://localhost:8000',
+      '/storage': BASE_URL || 'http://localhost:8000',
     },
   },
 });
