@@ -1,13 +1,10 @@
-import { headTitle } from '@utils/headMeta';
-import { Outlet } from 'react-router-dom';
+import { Outlet } from '@tanstack/react-router';
 
 interface PageLayoutProps {
   title: string;
-  metaTitle: string;
 }
 
-export const PageLayout = ({ title, metaTitle }: PageLayoutProps) => {
-  headTitle(metaTitle);
+export const PageLayout = ({ title }: PageLayoutProps) => {
   return (
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">

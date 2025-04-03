@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from '@tanstack/react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@stores/index';
 import { isTokenExpired } from '@utils/auth';

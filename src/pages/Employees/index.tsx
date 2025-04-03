@@ -21,7 +21,7 @@ import { FaFingerprint, FaPen } from 'react-icons/fa6';
 import { IoReload } from 'react-icons/io5';
 import { LuUserRoundPlus } from 'react-icons/lu';
 import { FilterEmployee } from '@services/EmployeeService';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import ComponentCard from '@components/common/ComponentCard';
 
 export default function Employees() {

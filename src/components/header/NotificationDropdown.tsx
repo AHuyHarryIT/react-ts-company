@@ -1,5 +1,5 @@
 import { Dropdown, MenuProps } from 'antd';
-import React, { Key, ReactNode } from 'react';
+import { Key, ReactNode } from 'react';
 import { FaRegBell } from 'react-icons/fa';
 
 type MenuItem = Required<MenuProps>['items'][number];

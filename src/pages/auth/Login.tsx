@@ -1,18 +1,12 @@
+import { useNavigate } from '@tanstack/react-router';
 import type { FormProps } from 'antd';
 import { Button, Checkbox, Form, Input, message } from 'antd';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 
 import { authLogin } from '@services/AuthService';
-import type { AuthState } from '@stores/authSlice';
-import { login } from '@stores/authSlice';
-import { AppDispatch } from '@stores/index';
-import { headTitle } from '@utils/headMeta';
 
+import { useState } from 'react';
 import { FaRegUser } from 'react-icons/fa';
 import { IoLockClosedOutline } from 'react-icons/io5';
-
-const BASE_URL = import.meta.env.VITE_BASE_API_URL || 'http://localhost:8000';
 
 type FieldType = {
   username: string;
@@ -21,54 +15,22 @@ type FieldType = {
 };
 
 function Login() {
-  headTitle('Login');
-
-  const dispatch = useDispatch<AppDispatch>();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
+    setLoading(true);
     try {
-      const response = await authLogin(
-        values.username!,
-        values.password!,
-        values.remember!
-      );
-
-      const userData: AuthState = {
-        accessToken: response.token,
-        user: {
-          name: response.name,
-          role: {
-            id: response.role_id.toString(),
-            name: response.role_name,
-          },
-        },
-        tokenExpiresAt: new Date(response.expires_at).getTime(),
-      };
-      if (response?.image && response?.role_id == 15 && userData.user) {
-        userData.user.image_url = [
-          BASE_URL,
-          'storage',
-          'admin',
-          response.image,
-        ].join('/');
-      } else if (response?.image && userData.user) {
-        userData.user.image_url = [
-          BASE_URL,
-          'storage',
-          'employee',
-          response.image,
-        ].join('/');
-      }
-
-      dispatch(login(userData));
+      await authLogin(values.username!, values.password!, values.remember!);
 
       message.success('Login success!');
 
-      navigate('/');
+      navigate({ to: '/admin' });
     } catch (error) {
       message.error(String(error));
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,7 +75,13 @@ function Login() {
           </Form.Item>
 
           <Form.Item>
-            <Button block type="primary" htmlType="submit" size="large">
+            <Button
+              block
+              type="primary"
+              htmlType="submit"
+              size="large"
+              loading={loading}
+            >
               Sign in
             </Button>
           </Form.Item>

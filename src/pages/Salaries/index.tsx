@@ -17,7 +17,7 @@ import { DeleteModal } from '@components/salaries/DeleteModal';
 import { AppDispatch, RootState } from '@stores/index';
 import { fetchSalaries, setError } from '@stores/salarySlice';
 import { GoInfo } from 'react-icons/go';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 
 export const SalaryTable = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -83,7 +83,7 @@ export const SalaryTable = () => {
       render: (_value, _record) => {
         return (
           <div className="flex gap-2">
-            <Link to={`/admin/salary/detail/${_record.id}`}>
+            <Link to={`/admin/salaries/$id`} params={{ id: _record.id }}>
               <Button color="primary" variant="solid" icon={<GoInfo />}>
                 Chi tiết
               </Button>

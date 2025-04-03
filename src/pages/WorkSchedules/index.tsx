@@ -17,7 +17,7 @@ import { DeleteModal } from '@components/workSchedules/DeleteModal';
 import { AppDispatch, RootState } from '@stores/index';
 import { fetchWorkSchedules, setError } from '@stores/workScheduleSlice';
 import { GoInfo } from 'react-icons/go';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 
 export const WorkSchedules = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -77,7 +77,12 @@ export const WorkSchedules = () => {
       render: (_value, _record) => {
         return (
           <div className="flex gap-2">
-            <Link to={`/admin/work-schedule/detail/${_record.id}`}>
+            <Link
+              to={'/admin/work-schedules/$id'}
+              params={{
+                id: _record.id,
+              }}
+            >
               <Button color="primary" variant="solid" icon={<GoInfo />}>
                 Chi tiết
               </Button>

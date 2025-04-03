@@ -1,11 +1,9 @@
+import { Link } from '@tanstack/react-router';
 import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
 import { CSSProperties, Key, ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 
-import { AppDispatch, RootState } from '@stores/index';
-import { toggleSidebar } from '@stores/sidebarSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { toggleSidebar, uiStore } from '@stores/uiStore';
 
 import { IconContext } from 'react-icons';
 import { AiOutlineHome } from 'react-icons/ai';
@@ -21,6 +19,7 @@ import {
 } from 'react-icons/io5';
 
 import logo from '@assets/images/logo/logoAsset.svg';
+import { useStore } from '@tanstack/react-store';
 
 const { Sider: Side } = Layout;
 
@@ -44,14 +43,14 @@ function getItem(
 
 const items: MenuItem[] = [
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin'}>
       <span className="capitalize">Trang chủ</span>
     </Link>,
     'dashboard',
     <IoHomeOutline />
   ),
   getItem(
-    <Link to="/about">
+    <Link to={'/admin/about'}>
       <span className="capitalize">about</span>
     </Link>,
     'about',
@@ -165,7 +164,7 @@ const items: MenuItem[] = [
     <FaBriefcase />
   ),
   getItem(
-    <Link to={'/admin/salary'}>
+    <Link to={'/admin/salaries'}>
       <span className="capitalize">Bảng lương</span>
     </Link>,
     'salary',
@@ -191,11 +190,7 @@ const items: MenuItem[] = [
 ];
 
 function Sidebar() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { isExpanded, isMobile } = useSelector(
-    (state: RootState) => state.sidebar
-  );
-  const { themeMode: theme } = useSelector((state: RootState) => state.theme);
+  const { isSidebarClose, theme, isMobile } = useStore(uiStore);
 
   const sideStyle: CSSProperties = {};
   if (isMobile) {
@@ -211,11 +206,11 @@ function Sidebar() {
         theme={theme}
         breakpoint="md"
         collapsedWidth="0"
-        collapsed={!isExpanded}
-        onCollapse={() => dispatch(toggleSidebar())}
+        collapsed={isSidebarClose}
+        onCollapse={toggleSidebar}
       >
         <div className="flex items-center justify-center p-4">
-          <Link to="/">
+          <Link to="/admin">
             <img className="w-full" src={logo} alt="Logo" />
           </Link>
         </div>

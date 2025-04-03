@@ -12,7 +12,6 @@ import DashboardWidget, {
 import { SalaryTable } from '@components/dashboard/SalaryTable';
 import { WorkCalendarTable } from '@components/dashboard/WorkCalendarTable';
 import { fetchDashboardData } from '@services/DashboardService';
-import { headTitle } from '@utils/headMeta';
 
 import { FaHistory, FaRegClock } from 'react-icons/fa';
 import { FaFileInvoiceDollar, FaPrint } from 'react-icons/fa6';
@@ -23,7 +22,6 @@ import { LiaMoneyCheckAltSolid, LiaUserTagSolid } from 'react-icons/lia';
 import { LuBoxes, LuCalendarFold, LuClipboardList } from 'react-icons/lu';
 
 function Dashboard() {
-  headTitle('Dashboard');
   const [salaryTable, setSalaryTable] = useState<SalaryTableType[]>([]);
   const [workCalendarTable, setWorkCalendarTable] = useState<
     WorkCalendarTableType[]

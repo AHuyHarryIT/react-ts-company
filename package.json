@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
+    "lint": "eslint . && tsc -b",
+    "preview": "vite preview --host",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -20,6 +20,8 @@
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@reduxjs/toolkit": "^2.5.1",
     "@tailwindcss/vite": "^4.0.7",
+    "@tanstack/react-router": "^1.114.32",
+    "@tanstack/react-store": "^0.7.0",
     "antd": "^5.24.2",
     "antd-img-crop": "^4.24.0",
     "axios": "^1.7.9",
@@ -27,12 +29,14 @@
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.2.0",
     "redux-persist": "^6.0.0",
     "tailwindcss": "^4.0.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@tanstack/eslint-plugin-router": "^1.114.29",
+    "@tanstack/react-router-devtools": "^1.114.32",
+    "@tanstack/router-plugin": "^1.114.32",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react-swc": "^3.5.0",
