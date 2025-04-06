@@ -1,1 +1,4 @@
+# build before commit
+npm run build
+# lint staged files before commit
 npx lint-staged

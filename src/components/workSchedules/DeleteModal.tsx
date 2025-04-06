@@ -1,29 +1,20 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, message, Modal } from 'antd';
 import { ReactNode, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@stores/index';
-import { fetchWorkSchedules } from '@stores/workScheduleSlice';
-import { apiDeleteWorkSchedule } from '@services/workScheduleService';
-import { setError } from '@stores/roleSlice';
+
+import { deleteWorkSchedule } from '@services/workScheduleService';
+
 import { BiTrash } from 'react-icons/bi';
 
 interface DeleteModalProps {
-  page: number;
-  limit: number;
   id: string;
   name: string;
 }
 
-export const DeleteModal: React.FC<DeleteModalProps> = ({
-  page,
-  limit,
-  id,
-  name,
-}) => {
-  const dispatch = useDispatch<AppDispatch>();
+export const DeleteModal: React.FC<DeleteModalProps> = ({ id, name }) => {
+  const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [modalText, setModalText] = useState<ReactNode>(
     <p>
       Bạn có chắc chắn muốn xóa lịch làm việc{' '}
@@ -42,30 +33,32 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
     setOpen(false);
   };
 
-  const handleDelete = async () => {
-    setLoading(true);
-
-    setModalText(
-      <p>
-        Đang xóa lịch làm việc{' '}
-        <strong>
-          {name} - {id}
-        </strong>
-        ...
-      </p>
-    );
-
-    try {
-      await apiDeleteWorkSchedule(id);
-      dispatch(fetchWorkSchedules({ params: { page, limit } }));
+  const { mutate, isPending } = useMutation({
+    mutationFn: deleteWorkSchedule,
+    mutationKey: ['deleteWorkSchedule'],
+    onSuccess: () => {
       message.success('Xóa lịch làm việc thành công');
-    } catch (error) {
-      console.error(error);
-      message.error(error as string);
-      dispatch(setError(error as string));
-    } finally {
-      setLoading(false);
+      handleCancel();
+      queryClient.invalidateQueries({ queryKey: ['workSchedules'] });
+    },
+    onError: (error) => {
+      message.error(error.message);
+    },
+    onMutate: () => {
+      setModalText(
+        <p>
+          Đang xóa lịch làm việc{' '}
+          <strong>
+            {name} - {id}
+          </strong>
+          ...
+        </p>
+      );
     }
+  });
+
+  const handleDelete = async () => {
+    mutate(id);
   };
 
   return (
@@ -83,7 +76,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
         open={open}
         onCancel={handleCancel}
         onOk={handleDelete}
-        confirmLoading={loading}
+        confirmLoading={isPending}
         okButtonProps={{ danger: true }}
         okText="Xóa"
         cancelText="Hủy"

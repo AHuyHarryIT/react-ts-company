@@ -1,27 +1,22 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useStore } from '@tanstack/react-store';
 import {
   Button,
   DatePicker,
   Form,
   FormProps,
   Input,
-  Modal,
-  Tooltip,
   message,
+  Modal,
+  Tooltip
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
-import { AppDispatch, RootState } from '@stores/index';
-import { fetchWorkSchedules } from '@stores/workScheduleSlice';
+import { addWorkSchedule } from '@services/workScheduleService';
+import { uiStore } from '@stores/uiStore';
 
-import { apiAddWorkSchedule } from '@services/workScheduleService';
 import { FaPlus } from 'react-icons/fa';
-
-interface AddWorkScheduleProps {
-  page: number;
-  limit: number;
-}
 
 type FormField = {
   title: string;
@@ -29,15 +24,12 @@ type FormField = {
   fileImport: File;
 };
 
-export const AddWorkSchedule: React.FC<AddWorkScheduleProps> = ({
-  page,
-  limit,
-}) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { isMobile } = useSelector((state: RootState) => state.sidebar);
+export const AddWorkSchedule = () => {
+  const { isMobile } = useStore(uiStore);
+
+  const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const showModal = () => {
     setOpen(true);
@@ -47,33 +39,33 @@ export const AddWorkSchedule: React.FC<AddWorkScheduleProps> = ({
     setOpen(false);
   };
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: addWorkSchedule,
+    mutationKey: ['addWorkSchedule'],
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['workSchedules'] });
+      message.success('Thêm lịch làm việc thành công');
+    },
+    onError: (error) => {
+      message.error(error.message);
+    }
+  });
+
   const onFinish: FormProps<FormField>['onFinish'] = async (
     value: FormField
   ) => {
-    setLoading(true);
     const data = {
       title: value.title,
       start_date: value.start_date?.format('YYYY/MM/01') || '',
-      fileImport: value.fileImport,
+      fileImport: value.fileImport
     };
-
-    try {
-      await apiAddWorkSchedule(data.title, data.start_date, data.fileImport);
-      fetchWorkSchedules({ params: { page, limit } });
-      dispatch(fetchWorkSchedules({ params: { page, limit } }));
-      message.success('Thêm lịch làm việc thành công');
-      setOpen(false);
-    } catch (error) {
-      console.error(error);
-      message.error(error as string);
-    } finally {
-      setLoading(false);
-    }
+    mutate(data);
   };
 
   const formProps: FormProps = {
     layout: 'vertical',
-    onFinish: onFinish,
+    onFinish: onFinish
   };
 
   return (
@@ -134,7 +126,7 @@ export const AddWorkSchedule: React.FC<AddWorkScheduleProps> = ({
               color="green"
               variant="solid"
               htmlType="submit"
-              loading={loading}
+              loading={isPending}
               size="large"
             >
               Import

@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { useStore } from '@tanstack/react-store';
 import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
 import { CSSProperties, Key, ReactNode } from 'react';
@@ -15,11 +16,10 @@ import { FiUsers } from 'react-icons/fi';
 import {
   IoCalendarNumberOutline,
   IoCheckboxOutline,
-  IoHomeOutline,
+  IoHomeOutline
 } from 'react-icons/io5';
 
 import logo from '@assets/images/logo/logoAsset.svg';
-import { useStore } from '@tanstack/react-store';
 
 const { Sider: Side } = Layout;
 
@@ -37,7 +37,7 @@ function getItem(
     icon,
     children,
     label,
-    type,
+    type
   } as MenuItem;
 }
 
@@ -68,7 +68,7 @@ const items: MenuItem[] = [
         <span className="capitalize">Chức vụ</span>
       </Link>,
       'role'
-    ),
+    )
   ]),
   getItem(
     <Link to={'/admin/products'}>
@@ -93,7 +93,7 @@ const items: MenuItem[] = [
           <span className="capitalize">Kế hoạch nguyên liệu</span>
         </Link>,
         'plan-material'
-      ),
+      )
     ]
   ),
 
@@ -121,7 +121,7 @@ const items: MenuItem[] = [
         <span className="capitalize">Yêu Cầu In Tem</span>
       </Link>,
       'request-stamp'
-    ),
+    )
   ]),
   getItem(
     <span className="capitalize">Chấm Công</span>,
@@ -139,7 +139,7 @@ const items: MenuItem[] = [
           <span className="capitalize">Bảng Tính Công</span>
         </Link>,
         'attendance-sheet'
-      ),
+      )
     ]
   ),
   getItem(
@@ -150,7 +150,7 @@ const items: MenuItem[] = [
     <IoCheckboxOutline />
   ),
   getItem(
-    <Link to={'/admin/work-schedule'}>
+    <Link to={'/admin/work-schedules'}>
       <span className="capitalize">Lịch làm việc</span>
     </Link>,
     'work-schedule',
@@ -178,7 +178,7 @@ const items: MenuItem[] = [
     <IoCalendarNumberOutline />
   ),
   {
-    type: 'divider',
+    type: 'divider'
   },
   getItem(
     <Link to={'/admin/activity-history'}>
@@ -186,7 +186,7 @@ const items: MenuItem[] = [
     </Link>,
     'activity-history',
     <FaHistory />
-  ),
+  )
 ];
 
 function Sidebar() {
@@ -197,6 +197,7 @@ function Sidebar() {
     sideStyle.position = 'absolute';
     sideStyle.zIndex = 1;
     sideStyle.height = '100%';
+    sideStyle.zIndex = 99999;
   }
   return (
     <>

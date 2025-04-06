@@ -5,7 +5,6 @@ import sidebarReducer from '@stores/sidebarSlice';
 import themeReducer from '@stores/themeSlice';
 import rolesReducer from '@stores/roleSlice';
 import WorkScheduleCategoriesReducer from '@stores/workScheduleCategorySlice';
-import workScheduleReducer from '@stores/workScheduleSlice';
 import salaryTableReducer from '@stores/salarySlice';
 import { persistReducer, persistStore } from 'redux-persist';
 import localStorage from 'redux-persist/lib/storage';
@@ -13,7 +12,7 @@ import localStorage from 'redux-persist/lib/storage';
 const persistConfig = {
   key: 'root',
   storage: localStorage,
-  whitelist: ['auth', 'sidebar', 'theme'],
+  whitelist: ['auth', 'sidebar', 'theme']
 };
 
 const rootReducer = combineReducers({
@@ -23,8 +22,7 @@ const rootReducer = combineReducers({
   employees: employeesReducer,
   roles: rolesReducer,
   workScheduleCategories: WorkScheduleCategoriesReducer,
-  workSchedules: workScheduleReducer,
-  salaryTable: salaryTableReducer,
+  salaryTable: salaryTableReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -36,8 +34,8 @@ export const store = configureStore({
       // serializableCheck: {
       //   ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'], // Ignore non-serializable warnings
       // },
-      serializableCheck: false,
-    }),
+      serializableCheck: false
+    })
 });
 
 export const persistor = persistStore(store);

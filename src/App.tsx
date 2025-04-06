@@ -1,4 +1,6 @@
 import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
@@ -9,12 +11,14 @@ const router = createRouter({
   routeTree,
   context: {
     user: null,
-    authenticated: undefined!,
+    authenticated: undefined!
   },
   defaultNotFoundComponent: () => {
     return <NotFound />;
-  },
+  }
 });
+
+const queryClient = new QueryClient();
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -29,7 +33,10 @@ function App() {
 
   return (
     <>
-      <RouterProvider router={router} context={{ user, authenticated }} />
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} context={{ user, authenticated }} />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </>
   );
 }
