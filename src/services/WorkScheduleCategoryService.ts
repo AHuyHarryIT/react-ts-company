@@ -57,18 +57,18 @@ export const fetchWorkScheduleCategories = async ({
 };
 
 // Add a new work schedule category
-export const addWorkScheduleCategory = async (name: string) => {
-  return await axiosPrivate.post(API_URL, { name });
+export const addWorkScheduleCategory = (name: string) => {
+  return axiosPrivate.post(API_URL, { name });
 };
 
 // Update a work schedule category
-export const updateWorkScheduleCategory = async (id: string, name: string) => {
-  return await axiosPrivate.patch(`${API_URL}/${id}`, {
+export const updateWorkScheduleCategory = (id: string, name: string) => {
+  return axiosPrivate.patch(`${API_URL}/${id}`, {
     name
   });
 };
 
 // Delete a work schedule category
-export const deleteWorkScheduleCategory = async (id: string) => {
-  return await axiosPrivate.delete(`${API_URL}/${id}`);
+export const deleteWorkScheduleCategory = (id: string) => {
+  return axiosPrivate.delete(`${API_URL}/${id}`);
 };

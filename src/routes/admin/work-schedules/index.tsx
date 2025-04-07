@@ -30,7 +30,10 @@ function RouteComponent() {
     queryFn: () =>
       fetchWorkSchedules({
         page,
-        limit
+        limit,
+        filters: {
+          sort: 'date:desc'
+        }
       }),
     refetchOnWindowFocus: true
   });

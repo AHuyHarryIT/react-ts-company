@@ -1,5 +1,4 @@
 import apiPrivate from '@/api/axiosInstance';
-import { handleApiError } from '@utils/handleApiError';
 
 import {
   EmployeeSchedule,
@@ -10,6 +9,7 @@ import {
 
 type FilterWorkSchedule = {
   name?: string;
+  sort?: string;
 };
 
 export type FetchWorkScheduleParams = {
@@ -101,142 +101,134 @@ export const fetchWorkSchedules = async ({
   limit,
   filters
 }: FetchWorkScheduleParams) => {
-  try {
-    const response: { data: WorkSchedulesResponse[]; total: number } =
-      await apiPrivate.get(API_URL, {
-        params: {
-          page: page,
-          limit: limit,
-          ...filters
-        }
-      });
-
-    const workScheduleList: WorkScheduleType[] = response.data.map(
-      (workSchedule: WorkSchedulesResponse) => {
-        return {
-          id: workSchedule.id,
-          title: workSchedule.title,
-          start_date: workSchedule.date
-        };
+  const response: { data: WorkSchedulesResponse[]; total: number } =
+    await apiPrivate.get(API_URL, {
+      params: {
+        page: page,
+        limit: limit,
+        ...filters
       }
-    );
+    });
 
-    const total = response.total;
+  const workScheduleList: WorkScheduleType[] = response.data.map(
+    (workSchedule: WorkSchedulesResponse) => {
+      return {
+        id: workSchedule.id,
+        title: workSchedule.title,
+        start_date: workSchedule.date
+      };
+    }
+  );
 
-    return {
-      workSchedules: workScheduleList,
-      total: total
-    };
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  const total = response.total;
+
+  return {
+    workSchedules: workScheduleList,
+    total: total
+  };
 };
 
 // Fetch a work calendar by ID
 export const fetchWorkScheduleById = async (id: string) => {
-  console.log('id', id);
-  try {
-    const response: WorkScheduleResponse = await apiPrivate.get(
-      `${API_URL}/${id}`
-    );
+  const response: WorkScheduleResponse = await apiPrivate.get(
+    `${API_URL}/${id}`
+  );
 
-    const categories = response.categories;
+  const categories = response.categories;
 
-    const schedule: WorkScheduleType = {
-      id: response.schedule.id,
-      title: response.schedule.title,
-      start_date: response.schedule.date
-    };
+  const schedule: WorkScheduleType = {
+    id: response.schedule.id,
+    title: response.schedule.title,
+    start_date: response.schedule.date
+  };
 
-    const schedule_hnhc: EmployeeSchedule[] = response.scheduleDetailsHNHC.map(
-      ({ employee, ...rest }) => {
-        const {
-          code: employee_id,
-          category_celender_id: category_schedule_id,
-          name: employee_name
-        } = employee;
-        return {
-          ...rest,
-          employee_id,
-          category_schedule_id,
-          employee_name
-        };
-      }
-    );
+  const schedule_hnhc: EmployeeSchedule[] = response.scheduleDetailsHNHC.map(
+    ({ employee, ...rest }) => {
+      const {
+        code: employee_id,
+        category_celender_id: category_schedule_id,
+        name: employee_name
+      } = employee;
+      return {
+        ...rest,
+        employee_id,
+        category_schedule_id,
+        employee_name
+      };
+    }
+  );
 
-    const schedule_eat_room: EmployeeSchedule[] =
-      response.scheduleDetailsEatRoom.map(({ employee, ...rest }) => {
-        const {
-          code: employee_id,
-          category_celender_id: category_schedule_id,
-          name: employee_name
-        } = employee;
-        return {
-          ...rest,
-          employee_id,
-          category_schedule_id,
-          employee_name
-        };
-      });
+  const schedule_eat_room: EmployeeSchedule[] =
+    response.scheduleDetailsEatRoom.map(({ employee, ...rest }) => {
+      const {
+        code: employee_id,
+        category_celender_id: category_schedule_id,
+        name: employee_name
+      } = employee;
+      return {
+        ...rest,
+        employee_id,
+        category_schedule_id,
+        employee_name
+      };
+    });
 
-    const schedule_wc: EmployeeTrashWCSchedule[] =
-      response.scheduleDetailsWC.map(({ employee, ...rest }) => {
-        const {
-          code: employee_id,
-          category_celender_id: category_schedule_id,
-          name: employee_name
-        } = employee;
-        return {
-          ...rest,
-          employee_id,
-          category_schedule_id,
-          employee_name
-        };
-      });
+  const schedule_wc: EmployeeTrashWCSchedule[] = response.scheduleDetailsWC.map(
+    ({ employee, ...rest }) => {
+      const {
+        code: employee_id,
+        category_celender_id: category_schedule_id,
+        name: employee_name
+      } = employee;
+      return {
+        ...rest,
+        employee_id,
+        category_schedule_id,
+        employee_name
+      };
+    }
+  );
 
-    const schedule_wc_women: EmployeeSchedule[] =
-      response.scheduleDetailsWCCleanWomen.map(({ employee, ...rest }) => {
-        const {
-          code: employee_id,
-          category_celender_id: category_schedule_id,
-          name: employee_name
-        } = employee;
-        return {
-          ...rest,
-          employee_id,
-          category_schedule_id,
-          employee_name
-        };
-      });
+  const schedule_wc_women: EmployeeSchedule[] =
+    response.scheduleDetailsWCCleanWomen.map(({ employee, ...rest }) => {
+      const {
+        code: employee_id,
+        category_celender_id: category_schedule_id,
+        name: employee_name
+      } = employee;
+      return {
+        ...rest,
+        employee_id,
+        category_schedule_id,
+        employee_name
+      };
+    });
 
-    const schedule_wc_men: EmployeeSchedule[] =
-      response.scheduleDetailsWCCleanMen.map(({ employee, ...rest }) => {
-        const {
-          code: employee_id,
-          category_celender_id: category_schedule_id,
-          name: employee_name
-        } = employee;
-        return {
-          ...rest,
-          employee_id,
-          category_schedule_id,
-          employee_name
-        };
-      });
+  const schedule_wc_men: EmployeeSchedule[] =
+    response.scheduleDetailsWCCleanMen.map(({ employee, ...rest }) => {
+      const {
+        code: employee_id,
+        category_celender_id: category_schedule_id,
+        name: employee_name
+      } = employee;
+      return {
+        ...rest,
+        employee_id,
+        category_schedule_id,
+        employee_name
+      };
+    });
 
-    return {
-      response,
-      schedule: schedule,
-      categories: categories,
-      schedule_hnhc: schedule_hnhc,
-      schedule_eat_room: schedule_eat_room,
-      schedule_wc: schedule_wc,
-      schedule_wc_women: schedule_wc_women,
-      schedule_wc_men: schedule_wc_men
-    };
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  return {
+    response,
+    schedule: schedule,
+    categories: categories,
+    schedule_hnhc: schedule_hnhc,
+    schedule_eat_room: schedule_eat_room,
+    schedule_wc: schedule_wc,
+    schedule_wc_women: schedule_wc_women,
+    schedule_wc_men: schedule_wc_men
+  };
 };
 
 // Add a new work schedule
@@ -246,24 +238,16 @@ export const addWorkSchedule = async (newWorkSchedule: NewWorkScheduleType) => {
   formData.append('date', newWorkSchedule.start_date);
   formData.append('fileImport', newWorkSchedule.fileImport);
 
-  try {
-    const response = await apiPrivate.post(API_URL, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  const response = await apiPrivate.post(API_URL, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  return response.data;
 };
 
 // Delete a work calendar
 export const deleteWorkSchedule = async (id: string) => {
-  try {
-    const response = await apiPrivate.delete(`${API_URL}/${id}`);
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  const response = await apiPrivate.delete(`${API_URL}/${id}`);
+  return response.data;
 };
