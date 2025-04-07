@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import AppLayout from '@layouts/AppLayout';
+import { authGuard } from '@utils/auth';
 
 export const Route = createFileRoute('/admin')({
-  component: RouteComponent,
+  beforeLoad: authGuard,
+  component: RouteComponent
 });
 
 function RouteComponent() {

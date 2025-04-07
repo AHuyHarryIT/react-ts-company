@@ -1,4 +1,4 @@
-# build before commit
-npm run build
+# check build 
+npx tsc -b
 # lint staged files before commit
 npx lint-staged

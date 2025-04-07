@@ -1,21 +1,24 @@
 import { authCheck } from '@services/AuthService';
-import { clearAuth, setAuth } from '@stores/authStore';
+import { redirect } from '@tanstack/react-router';
 
-export async function isAuthenticated() {
+// Protect all routes except login
+export const authGuard = async () => {
   try {
     await authCheck();
-    setAuth(true);
-    return true;
+    return;
   } catch {
-    clearAuth();
-    return false;
+    // Redirect to login if not authenticated
+    throw redirect({ to: '/', replace: true });
   }
-}
+};
 
-export async function loginFnc() {
-  localStorage.setItem('isAuthenticated', 'true');
-}
-
-export function logoutFnc() {
-  clearAuth();
-}
+// Prevent logged-in users from seeing /login
+export const guestOnly = async () => {
+  try {
+    await authCheck();
+    throw redirect({ to: '/admin', replace: true });
+  } catch {
+    // Not logged in — allow to continue
+    return;
+  }
+};

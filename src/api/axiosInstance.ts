@@ -26,8 +26,6 @@ axiosPrivate.interceptors.response.use(
   async (error) => {
     // Handle token expiration or invalid token
     if (error.response?.status === 401) {
-      const notification = error.response?.data?.message || 'Unauthorized';
-      console.error('[ERROR]', notification);
       clearAuth();
     }
     return Promise.reject(error);

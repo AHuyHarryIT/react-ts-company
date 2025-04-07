@@ -9,7 +9,7 @@ type AuthState = {
 // Load state from localStorage or set default values
 const initialState: AuthState = {
   user: JSON.parse(localStorage.getItem('user') || 'null'),
-  isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
+  isAuthenticated: localStorage.getItem('isAuthenticated') === 'true'
 };
 
 // Create the store instance

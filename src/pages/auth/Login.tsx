@@ -22,8 +22,7 @@ function Login() {
     mutationFn: ({ username, password, remember }: FieldType) =>
       authLogin(username, password, remember),
 
-    onSuccess: (data) => {
-      console.log('Login success:', data);
+    onSuccess: () => {
       message.success('Login success!');
       navigate({ to: '/admin' });
     },
