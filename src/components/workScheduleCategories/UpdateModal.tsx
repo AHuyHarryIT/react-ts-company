@@ -1,16 +1,14 @@
-import { apiUpdateWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
-import { AppDispatch } from '@stores/index';
-import { fetchWorkScheduleCategories } from '@stores/workScheduleCategorySlice';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, Form, FormProps, Input, message, Modal, Tooltip } from 'antd';
 import { useState } from 'react';
+
+import { updateWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
+
 import { FaPen } from 'react-icons/fa6';
-import { useDispatch } from 'react-redux';
 
 interface UpdateWorkScheduleCategoryProps {
   categoryId: string;
   categoryName: string;
-  page: number;
-  limit: number;
 }
 
 type FormField = {
@@ -19,11 +17,10 @@ type FormField = {
 
 export const UpdateWorkScheduleCategory: React.FC<
   UpdateWorkScheduleCategoryProps
-> = ({ categoryId, categoryName, page, limit }) => {
-  const dispatch = useDispatch<AppDispatch>();
-
+> = ({ categoryId, categoryName }) => {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const showModal = () => {
     setOpen(true);
@@ -33,23 +30,37 @@ export const UpdateWorkScheduleCategory: React.FC<
     setOpen(false);
   };
 
-  const onFinish: FormProps<FormField>['onFinish'] = async (
-    values: FormField
-  ) => {
-    setLoading(true);
-
-    try {
-      await apiUpdateWorkScheduleCategory(categoryId, values.name);
-      message.success('Cập nhật chức vụ thành công!');
-      dispatch(fetchWorkScheduleCategories({ params: { page, limit } }));
-
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['updateWorkScheduleCategory'],
+    mutationFn: (values: FormField) =>
+      updateWorkScheduleCategory(categoryId, values.name),
+    onSuccess: () => {
+      message.success({
+        content: 'Cập nhật thành công!',
+        key: 'update-work-schedule-category'
+      });
       setOpen(false);
-    } catch (error) {
+      queryClient.invalidateQueries({
+        queryKey: ['workScheduleCategories']
+      });
+    },
+    onError: (error) => {
       console.error(error);
-      message.error(error as string);
-    } finally {
-      setLoading(false);
+      message.error({
+        content: error.message || String(error),
+        key: 'update-work-schedule-category'
+      });
+    },
+    onMutate: () => {
+      message.loading({
+        content: 'Đang cập nhật danh mục lịch làm việc...',
+        key: 'update-work-schedule-category'
+      });
     }
+  });
+
+  const onFinish: FormProps<FormField>['onFinish'] = (values: FormField) => {
+    mutate(values);
   };
 
   return (
@@ -84,8 +95,8 @@ export const UpdateWorkScheduleCategory: React.FC<
             rules={[
               {
                 required: true,
-                message: 'Vui lòng nhập tên danh mục lịch làm việc!',
-              },
+                message: 'Vui lòng nhập tên danh mục lịch làm việc!'
+              }
             ]}
           >
             <Input placeholder="Tên danh mục lịch làm việc" size="large" />
@@ -96,7 +107,7 @@ export const UpdateWorkScheduleCategory: React.FC<
               variant="solid"
               htmlType="submit"
               size="large"
-              loading={loading}
+              loading={isPending}
             >
               Cập nhật
             </Button>

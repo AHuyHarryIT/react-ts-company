@@ -1,26 +1,36 @@
 import { User } from '@/types/authType';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   createRootRouteWithContext,
   Outlet,
-  redirect,
+  redirect
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { isAuthenticated } from '@utils/auth';
 
 type RouterContext = {
   user: User | null;
   authenticated: boolean;
 };
 
+const queryClient = new QueryClient();
+
 export const Route = createRootRouteWithContext<RouterContext>()({
-  beforeLoad: ({ context }) => {
-    if (location.pathname !== '/' && !context.authenticated) {
+  beforeLoad: async ({ location }) => {
+    const isAuth = await isAuthenticated();
+
+    if (location.pathname !== '/' && !isAuth) {
       throw redirect({ to: '/', replace: true });
     }
   },
   component: () => (
     <>
-      <Outlet />
-      <TanStackRouterDevtools />
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+        <TanStackRouterDevtools />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </>
-  ),
+  )
 });

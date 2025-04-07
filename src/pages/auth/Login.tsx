@@ -4,7 +4,7 @@ import { Button, Checkbox, Form, Input, message } from 'antd';
 
 import { authLogin } from '@services/AuthService';
 
-import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { FaRegUser } from 'react-icons/fa';
 import { IoLockClosedOutline } from 'react-icons/io5';
 
@@ -15,23 +15,30 @@ type FieldType = {
 };
 
 function Login() {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
-    setLoading(true);
-    try {
-      await authLogin(values.username!, values.password!, values.remember!);
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['authLogin'],
+    mutationFn: ({ username, password, remember }: FieldType) =>
+      authLogin(username, password, remember),
 
+    onSuccess: (data) => {
+      console.log('Login success:', data);
       message.success('Login success!');
-
       navigate({ to: '/admin' });
-    } catch (error) {
+    },
+    onError: (error) => {
       message.error(String(error));
-      console.error(error);
-    } finally {
-      setLoading(false);
+      console.error('Login error:', error);
     }
+  });
+
+  const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
+    mutate({
+      username: values.username,
+      password: values.password,
+      remember: values.remember
+    });
   };
 
   return (
@@ -80,7 +87,7 @@ function Login() {
               type="primary"
               htmlType="submit"
               size="large"
-              loading={loading}
+              loading={isPending}
             >
               Sign in
             </Button>

@@ -1,32 +1,18 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, message, Modal } from 'antd';
 import { ReactNode, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
-import { apiDeleteWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
-import { AppDispatch } from '@stores/index';
-import {
-  fetchWorkScheduleCategories,
-  setError,
-} from '@stores/workScheduleCategorySlice';
+import { deleteWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
+
 import { BiTrash } from 'react-icons/bi';
 
 interface DeleteModalProps {
   id: string;
   name: string;
-  page: number;
-  limit: number;
 }
 
-export const DeleteModal: React.FC<DeleteModalProps> = ({
-  id,
-  name,
-  page,
-  limit,
-}) => {
-  const dispatch = useDispatch<AppDispatch>();
-
+export const DeleteModal: React.FC<DeleteModalProps> = ({ id, name }) => {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [modalText, setModalText] = useState<ReactNode>(
     <p>
       Bạn có chắc chắn muốn xóa danh mục làm việc{' '}
@@ -36,6 +22,9 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
       không?
     </p>
   );
+
+  const queryClient = useQueryClient();
+
   const showModal = () => {
     setOpen(true);
   };
@@ -44,31 +33,33 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
     setOpen(false);
   };
 
-  const handleOk = async () => {
-    setLoading(true);
-
-    setModalText(
-      <p>
-        Đang xóa danh mục làm việc{' '}
-        <strong>
-          {name} - {id}
-        </strong>
-        ...
-      </p>
-    );
-
-    try {
-      await apiDeleteWorkScheduleCategory(id);
-      dispatch(fetchWorkScheduleCategories({ params: { page, limit } }));
-    } catch (error) {
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['deleteWorkScheduleCategory'],
+    mutationFn: (id: string) => deleteWorkScheduleCategory(id),
+    onSuccess: () => {
+      message.success('Xóa danh mục lịch làm việc thành công!');
+      setOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['workScheduleCategories'] });
+    },
+    onError: (error) => {
       console.error(error);
-      message.error(
-        (error as string) || 'Xóa danh mục lịch làm việc thất bại!'
+      message.error(error.message || String(error));
+    },
+    onMutate: () => {
+      setModalText(
+        <p>
+          Đang xóa danh mục lịch làm việc{' '}
+          <strong>
+            {name} - {id}
+          </strong>{' '}
+          ...
+        </p>
       );
-      dispatch(setError(error as string));
-    } finally {
-      setLoading(false);
     }
+  });
+
+  const handleOk = () => {
+    mutate(id);
   };
 
   return (
@@ -86,7 +77,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
         open={open}
         onOk={handleOk}
         onCancel={handleCancel}
-        confirmLoading={loading}
+        confirmLoading={isPending}
         okButtonProps={{ danger: true }}
         okText="Xóa"
         cancelText="Hủy"

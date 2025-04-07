@@ -1,14 +1,14 @@
-import axiosPrivate from '@/api/axiosInstance';
+import { authCheck } from '@services/AuthService';
 import { clearAuth, setAuth } from '@stores/authStore';
 
 export async function isAuthenticated() {
   try {
-    const response = await axiosPrivate.get('api/auth/check');
-    console.log('isAuthenticated', response);
+    await authCheck();
     setAuth(true);
-  } catch (e) {
-    console.error('isAuthenticated error', e);
+    return true;
+  } catch {
     clearAuth();
+    return false;
   }
 }
 
@@ -19,9 +19,3 @@ export async function loginFnc() {
 export function logoutFnc() {
   clearAuth();
 }
-
-// TODO: remove this function
-export const isTokenExpired = (tokenExpiration: number | null): boolean => {
-  if (!tokenExpiration) return true;
-  return Date.now() > tokenExpiration;
-};

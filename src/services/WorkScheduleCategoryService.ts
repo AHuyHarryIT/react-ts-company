@@ -1,6 +1,5 @@
 import axiosPrivate from '@/api/axiosInstance';
 import { WorkScheduleCategoryType } from '@/types/workScheduleCategoryType';
-import { handleApiError } from '@utils/handleApiError';
 
 type FilterWorkScheduleCategory = {
   name?: string;
@@ -13,77 +12,63 @@ export type FetchWorkScheduleCategoryParams = {
 };
 
 type WorkScheduleCategoryResponse = {
-  id: number;
+  id: string;
   name: string;
   created_at: string;
   updated_at: string;
 };
 
+const API_URL = '/api/schedule-categories';
+
 // Fetch all work schedule categories
-export const apiFetchWorkScheduleCategories = async ({
+export const fetchWorkScheduleCategories = async ({
   page,
   limit,
-  filters,
+  filters
 }: FetchWorkScheduleCategoryParams) => {
-  try {
-    const response = await axiosPrivate.get('/api/calendar-categories', {
-      params: {
-        page: page,
-        limit: limit,
-        ...filters,
-      },
-    });
+  const response: {
+    data: WorkScheduleCategoryResponse[];
+    total: number;
+  } = await axiosPrivate.get(API_URL, {
+    params: {
+      page: page,
+      limit: limit,
+      ...filters
+    }
+  });
 
-    const categoryList: WorkScheduleCategoryType[] = response.data.data.map(
-      (category: WorkScheduleCategoryResponse) => {
-        return {
-          id: category.id,
-          name: category.name,
-          created_at: category.created_at,
-          updated_at: category.updated_at,
-        };
-      }
-    );
+  const categoryList: WorkScheduleCategoryType[] = response.data.map(
+    (category: WorkScheduleCategoryResponse) => {
+      return {
+        id: category.id,
+        name: category.name,
+        created_at: category.created_at,
+        updated_at: category.updated_at
+      };
+    }
+  );
 
-    const total: number = response.data.total;
+  const total = response.total;
 
-    return {
-      workScheduleCategories: categoryList,
-      total: total,
-    };
-  } catch (error) {
-    throw handleApiError(error);
-  }
+  return {
+    workScheduleCategories: categoryList,
+    total: total
+  };
 };
 
 // Add a new work schedule category
-export const apiAddWorkScheduleCategory = async (name: string) => {
-  try {
-    await axiosPrivate.post('/api/calendar-categories', { name });
-  } catch (error) {
-    throw handleApiError(error);
-  }
+export const addWorkScheduleCategory = async (name: string) => {
+  return await axiosPrivate.post(API_URL, { name });
 };
 
 // Update a work schedule category
-export const apiUpdateWorkScheduleCategory = async (
-  id: string,
-  name: string
-) => {
-  try {
-    await axiosPrivate.patch(`/api/calendar-categories/${id}`, {
-      name,
-    });
-  } catch (error) {
-    throw handleApiError(error);
-  }
+export const updateWorkScheduleCategory = async (id: string, name: string) => {
+  return await axiosPrivate.patch(`${API_URL}/${id}`, {
+    name
+  });
 };
 
 // Delete a work schedule category
-export const apiDeleteWorkScheduleCategory = async (id: string) => {
-  try {
-    await axiosPrivate.delete(`/api/calendar-categories/${id}`);
-  } catch (error) {
-    throw handleApiError(error);
-  }
+export const deleteWorkScheduleCategory = async (id: string) => {
+  return await axiosPrivate.delete(`${API_URL}/${id}`);
 };

@@ -29,11 +29,11 @@ export const authLogin = async (
     phone: username,
     password: password,
     remember: remember || false,
-    expiresInMins: expiresInMins,
+    expiresInMins: expiresInMins
   };
 
   try {
-    await axiosPrivate.get('/sanctum/csrf-cookie');
+    // await axiosPrivate.get('/sanctum/csrf-cookie');
     const response: AuthLoginResponse = await axiosPrivate.post(
       '/api/login',
       data
@@ -43,8 +43,8 @@ export const authLogin = async (
       name: response.name,
       role: {
         id: response.role_id.toString(),
-        name: response.role_name,
-      },
+        name: response.role_name
+      }
     };
 
     if (response?.image && response?.role_id == 15) {

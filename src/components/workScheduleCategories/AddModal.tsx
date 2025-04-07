@@ -1,31 +1,22 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useStore } from '@tanstack/react-store';
 import { Button, Form, FormProps, Input, Modal, Tooltip, message } from 'antd';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
-import { apiAddWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
-import { AppDispatch, RootState } from '@stores/index';
-import { fetchWorkScheduleCategories } from '@stores/workScheduleCategorySlice';
+import { addWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
+import { uiStore } from '@stores/uiStore';
 
 import { FaPlus } from 'react-icons/fa';
-
-interface AddWorkScheduleCategoryProps {
-  page: number;
-  limit: number;
-}
 
 type FormField = {
   name: string;
 };
 
-export const AddModal: React.FC<AddWorkScheduleCategoryProps> = ({
-  page,
-  limit,
-}) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { isMobile } = useSelector((state: RootState) => state.sidebar);
+export const AddModal = () => {
+  const { isMobile } = useStore(uiStore);
+  const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const showModal = () => {
     setOpen(true);
@@ -35,23 +26,22 @@ export const AddModal: React.FC<AddWorkScheduleCategoryProps> = ({
     setOpen(false);
   };
 
-  const onFinish: FormProps<FormField>['onFinish'] = async (
-    values: FormField
-  ) => {
-    setLoading(true);
-
-    try {
-      await apiAddWorkScheduleCategory(values.name);
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['addWorkScheduleCategory'],
+    mutationFn: (values: FormField) => addWorkScheduleCategory(values.name),
+    onSuccess: () => {
       message.success('Thêm thành công!');
-      dispatch(fetchWorkScheduleCategories({ params: { page, limit } }));
-
+      queryClient.invalidateQueries({ queryKey: ['workScheduleCategories'] });
       setOpen(false);
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error(error);
-      message.error(error as string);
-    } finally {
-      setLoading(false);
+      message.error(error.message || String(error));
     }
+  });
+
+  const onFinish: FormProps<FormField>['onFinish'] = (values: FormField) => {
+    mutate(values);
   };
 
   return (
@@ -86,8 +76,12 @@ export const AddModal: React.FC<AddWorkScheduleCategoryProps> = ({
             rules={[
               {
                 required: true,
-                message: 'Vui lòng nhập tên danh mục lịch làm việc!',
+                message: 'Vui lòng nhập tên danh mục lịch làm việc!'
               },
+              {
+                max: 255,
+                message: 'Tên danh mục lịch làm việc không được quá 255 ký tự!'
+              }
             ]}
           >
             <Input placeholder="Tên danh mục lịch làm việc" size="large" />
@@ -98,7 +92,7 @@ export const AddModal: React.FC<AddWorkScheduleCategoryProps> = ({
               variant="solid"
               htmlType="submit"
               size="large"
-              loading={loading}
+              loading={isPending}
             >
               Thêm
             </Button>

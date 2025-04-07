@@ -4,7 +4,6 @@ import employeesReducer from '@stores/employeeSlice';
 import sidebarReducer from '@stores/sidebarSlice';
 import themeReducer from '@stores/themeSlice';
 import rolesReducer from '@stores/roleSlice';
-import WorkScheduleCategoriesReducer from '@stores/workScheduleCategorySlice';
 import salaryTableReducer from '@stores/salarySlice';
 import { persistReducer, persistStore } from 'redux-persist';
 import localStorage from 'redux-persist/lib/storage';
@@ -21,7 +20,6 @@ const rootReducer = combineReducers({
   theme: themeReducer,
   employees: employeesReducer,
   roles: rolesReducer,
-  workScheduleCategories: WorkScheduleCategoriesReducer,
   salaryTable: salaryTableReducer
 });
 

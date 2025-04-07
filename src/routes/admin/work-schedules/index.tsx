@@ -110,9 +110,7 @@ function RouteComponent() {
       },
       onChange: (page) => {
         setPage(page);
-      },
-      // TODO: wait for backend pagination
-      pageSizeOptions: []
+      }
     }
   };
 
