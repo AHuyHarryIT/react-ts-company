@@ -4,7 +4,6 @@ import employeesReducer from '@stores/employeeSlice';
 import sidebarReducer from '@stores/sidebarSlice';
 import themeReducer from '@stores/themeSlice';
 import rolesReducer from '@stores/roleSlice';
-import salaryTableReducer from '@stores/salarySlice';
 import { persistReducer, persistStore } from 'redux-persist';
 import localStorage from 'redux-persist/lib/storage';
 
@@ -19,8 +18,7 @@ const rootReducer = combineReducers({
   sidebar: sidebarReducer,
   theme: themeReducer,
   employees: employeesReducer,
-  roles: rolesReducer,
-  salaryTable: salaryTableReducer
+  roles: rolesReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

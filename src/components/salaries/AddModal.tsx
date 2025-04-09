@@ -1,26 +1,22 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useStore } from '@tanstack/react-store';
 import {
   Button,
-  Modal,
-  Form,
-  Input,
-  Tooltip,
-  FormProps,
-  message,
   DatePicker,
+  Form,
+  FormProps,
+  Input,
+  message,
+  Modal,
+  Tooltip
 } from 'antd';
-import { useState } from 'react';
 import type { Dayjs } from 'dayjs';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
 
-import { AppDispatch, RootState } from '@stores/index';
+import { addSalary, AddSalaryParams } from '@services/SalaryService';
+import { uiStore } from '@stores/uiStore';
+
 import { FaPlus } from 'react-icons/fa6';
-import { fetchRoles } from '@stores/roleSlice';
-import { apiAddSalary } from '@services/SalaryService';
-
-interface AddSalaryProps {
-  page: number;
-  limit: number;
-}
 
 type FormField = {
   title: string;
@@ -30,12 +26,13 @@ type FormField = {
   importA7A: File;
 };
 
-export const AddSalary: React.FC<AddSalaryProps> = ({ page, limit }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { isMobile } = useSelector((state: RootState) => state.sidebar);
+export const AddSalary = () => {
+  const { isMobile } = useStore(uiStore);
+  const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [vvpFile, setVvpFile] = useState<File>();
+  const [a7aFile, setA7aFile] = useState<File>();
 
   const showModal = () => {
     setOpen(true);
@@ -45,42 +42,45 @@ export const AddSalary: React.FC<AddSalaryProps> = ({ page, limit }) => {
     setOpen(false);
   };
 
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['addSalary'],
+    mutationFn: (data: AddSalaryParams) => {
+      return addSalary({
+        title: data.title,
+        start_date: data.start_date,
+        end_date: data.end_date,
+        importA7A: data.importA7A,
+        importVVP: data.importVVP
+      });
+    },
+    onSuccess: () => {
+      message.success('Thêm bản lương thành công');
+
+      queryClient.invalidateQueries({ queryKey: ['fetchSalaries'] });
+    },
+    onError: () => {
+      message.error('Lỗi khi thêm bản lương');
+      console.error('Failed to add salary');
+    }
+  });
+
   const onFinish: FormProps<FormField>['onFinish'] = async (
     value: FormField
   ) => {
-    setLoading(true);
-
-    const data = {
+    const data: AddSalaryParams = {
       title: value.title,
-      start_date: value.start_date?.format('YYYY/MM/DD') || '',
-      end_date: value.end_date?.format('YYYY/MM/DD') || '',
-      importVVP: value.importVVP,
-      importA7A: value.importA7A,
+      start_date: value.start_date?.format('YYYY-MM-DD') || '',
+      end_date: value.end_date?.format('YYYY-MM-DD') || '',
+      importVVP: vvpFile as File,
+      importA7A: a7aFile as File
     };
 
-    try {
-      await apiAddSalary(
-        data.title,
-        data.start_date,
-        data.end_date,
-        data.importA7A,
-        data.importVVP
-      );
-
-      dispatch(fetchRoles({ params: { page, limit } }));
-      message.success('Thêm bản lương thành công');
-      setOpen(false);
-    } catch (error) {
-      message.error((error as string) || 'Lỗi khi thêm bản lương');
-      console.error('Failed to add salary');
-    } finally {
-      setLoading(false);
-    }
+    mutate(data);
   };
 
   const formProps: FormProps = {
     layout: 'vertical',
-    onFinish: onFinish,
+    onFinish: onFinish
   };
 
   return (
@@ -141,14 +141,30 @@ export const AddSalary: React.FC<AddSalaryProps> = ({ page, limit }) => {
             label="Chọn file VVP"
             rules={[{ required: true, message: 'Vui lòng chọn file VVP' }]}
           >
-            <Input type="file" />
+            <Input
+              type="file"
+              size="large"
+              accept=".xls*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setVvpFile(file);
+              }}
+            />
           </Form.Item>
           <Form.Item<FormField>
             name="importA7A"
             label="Chọn file A7A"
             rules={[{ required: true, message: 'Vui lòng chọn file A7A' }]}
           >
-            <Input type="file" size="large" />
+            <Input
+              type="file"
+              size="large"
+              accept=".xls*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setA7aFile(file);
+              }}
+            />
           </Form.Item>
 
           <div className="text-end">
@@ -156,7 +172,7 @@ export const AddSalary: React.FC<AddSalaryProps> = ({ page, limit }) => {
               color="green"
               variant="solid"
               htmlType="submit"
-              loading={loading}
+              loading={isPending}
               size="large"
             >
               Import

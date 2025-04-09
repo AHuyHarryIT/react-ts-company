@@ -18,7 +18,7 @@ type WorkScheduleCategoryResponse = {
   updated_at: string;
 };
 
-const API_URL = '/api/schedule-categories';
+const ENDPOINT = '/api/schedule-categories';
 
 // Fetch all work schedule categories
 export const fetchWorkScheduleCategories = async ({
@@ -29,7 +29,7 @@ export const fetchWorkScheduleCategories = async ({
   const response: {
     data: WorkScheduleCategoryResponse[];
     total: number;
-  } = await axiosPrivate.get(API_URL, {
+  } = await axiosPrivate.get(ENDPOINT, {
     params: {
       page: page,
       limit: limit,
@@ -58,17 +58,17 @@ export const fetchWorkScheduleCategories = async ({
 
 // Add a new work schedule category
 export const addWorkScheduleCategory = (name: string) => {
-  return axiosPrivate.post(API_URL, { name });
+  return axiosPrivate.post(ENDPOINT, { name });
 };
 
 // Update a work schedule category
 export const updateWorkScheduleCategory = (id: string, name: string) => {
-  return axiosPrivate.patch(`${API_URL}/${id}`, {
+  return axiosPrivate.patch(`${ENDPOINT}/${id}`, {
     name
   });
 };
 
 // Delete a work schedule category
 export const deleteWorkScheduleCategory = (id: string) => {
-  return axiosPrivate.delete(`${API_URL}/${id}`);
+  return axiosPrivate.delete(`${ENDPOINT}/${id}`);
 };

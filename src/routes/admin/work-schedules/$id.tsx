@@ -1,16 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import {
-  Button,
-  Input,
-  Spin,
-  Table,
-  TableProps,
-  Tabs,
-  TabsProps,
-  Tag
-} from 'antd';
+import { createFileRoute } from '@tanstack/react-router';
+import { Input, Spin, Table, TableProps, Tabs, TabsProps, Tag } from 'antd';
 
+import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { fetchWorkScheduleById } from '@services/workScheduleService';
 import { uiStore } from '@stores/uiStore';
@@ -20,7 +12,6 @@ import {
   EmployeeSchedule,
   EmployeeTrashWCSchedule
 } from '@/types/workScheduleType';
-import { FaArrowLeft } from 'react-icons/fa6';
 
 export const Route = createFileRoute('/admin/work-schedules/$id')({
   component: RouteComponent
@@ -356,11 +347,7 @@ function RouteComponent() {
 
   return (
     <>
-      <Link to="..">
-        <Button className="mb-4" icon={<FaArrowLeft />}>
-          Quay lại
-        </Button>
-      </Link>
+      <BackButton />
       <ComponentCard title={data?.schedule.title || 'Chi tiết lịch làm việc'}>
         <div className="space-y-6">
           <div className="flex flex-wrap gap-2">
@@ -379,13 +366,7 @@ function RouteComponent() {
               <span className="text-red-500">Không tìm thấy lịch làm việc</span>
             </div>
           ) : (
-            <Tabs
-              items={items}
-              tabBarGutter={0}
-              size="middle"
-              type="card"
-              animated
-            />
+            <Tabs items={items} size="middle" type="card" animated />
           )}
         </Spin>
       </ComponentCard>

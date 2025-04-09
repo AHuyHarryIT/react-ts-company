@@ -25,7 +25,7 @@ function RouteComponent() {
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['workSchedules', page, limit],
     queryFn: () =>
       fetchWorkSchedules({
@@ -103,7 +103,6 @@ function RouteComponent() {
     tableLayout: 'auto',
     pagination: {
       size: 'default',
-      hideOnSinglePage: true,
       showSizeChanger: true,
       pageSize: limit,
       total: data?.total,
@@ -128,7 +127,7 @@ function RouteComponent() {
               icon={<IoReload />}
               size="large"
               onClick={() => refetch()}
-              loading={isLoading}
+              loading={isFetching}
             >
               {!isMobile && <>Làm mới</>}
             </Button>

@@ -93,7 +93,7 @@ type WorkScheduleResponse = {
   }[];
 };
 
-const API_URL = '/api/schedules';
+const ENDPOINT = '/api/schedules';
 
 // Fetch all work calendars
 export const fetchWorkSchedules = async ({
@@ -102,7 +102,7 @@ export const fetchWorkSchedules = async ({
   filters
 }: FetchWorkScheduleParams) => {
   const response: { data: WorkSchedulesResponse[]; total: number } =
-    await apiPrivate.get(API_URL, {
+    await apiPrivate.get(ENDPOINT, {
       params: {
         page: page,
         limit: limit,
@@ -131,7 +131,7 @@ export const fetchWorkSchedules = async ({
 // Fetch a work calendar by ID
 export const fetchWorkScheduleById = async (id: string) => {
   const response: WorkScheduleResponse = await apiPrivate.get(
-    `${API_URL}/${id}`
+    `${ENDPOINT}/${id}`
   );
 
   const categories = response.categories;
@@ -238,7 +238,7 @@ export const addWorkSchedule = async (newWorkSchedule: NewWorkScheduleType) => {
   formData.append('date', newWorkSchedule.start_date);
   formData.append('fileImport', newWorkSchedule.fileImport);
 
-  const response = await apiPrivate.post(API_URL, formData, {
+  const response = await apiPrivate.post(ENDPOINT, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -248,6 +248,6 @@ export const addWorkSchedule = async (newWorkSchedule: NewWorkScheduleType) => {
 
 // Delete a work calendar
 export const deleteWorkSchedule = async (id: string) => {
-  const response = await apiPrivate.delete(`${API_URL}/${id}`);
+  const response = await apiPrivate.delete(`${ENDPOINT}/${id}`);
   return response.data;
 };

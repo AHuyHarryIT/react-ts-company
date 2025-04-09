@@ -25,7 +25,7 @@ function RouteComponent() {
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['workScheduleCategories', page, limit],
     queryFn: () => fetchWorkScheduleCategories({ page, limit })
   });
@@ -136,6 +136,7 @@ function RouteComponent() {
               icon={<IoReload />}
               size="large"
               onClick={() => refetch()}
+              loading={isFetching}
             >
               {!isMobile && <>Làm mới</>}
             </Button>
