@@ -1,9 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authReducer from '@stores/authSlice';
-import employeesReducer from '@stores/employeeSlice';
 import sidebarReducer from '@stores/sidebarSlice';
 import themeReducer from '@stores/themeSlice';
-import rolesReducer from '@stores/roleSlice';
 import { persistReducer, persistStore } from 'redux-persist';
 import localStorage from 'redux-persist/lib/storage';
 
@@ -16,9 +14,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   auth: authReducer,
   sidebar: sidebarReducer,
-  theme: themeReducer,
-  employees: employeesReducer,
-  roles: rolesReducer
+  theme: themeReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

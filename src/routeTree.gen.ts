@@ -17,7 +17,6 @@ import { Route as AdminRouteImport } from './routes/admin/route'
 import { Route as authRouteImport } from './routes/(auth)/route'
 import { Route as AdminIndexImport } from './routes/admin/index'
 import { Route as authIndexImport } from './routes/(auth)/index'
-import { Route as AdminRolesImport } from './routes/admin/roles'
 import { Route as AdminProductsImport } from './routes/admin/products'
 import { Route as AdminCheckPoImport } from './routes/admin/check-po'
 import { Route as AdminActivityScheduleImport } from './routes/admin/activity-schedule'
@@ -26,6 +25,7 @@ import { Route as AdminAboutImport } from './routes/admin/about'
 import { Route as AdminWorkSchedulesIndexImport } from './routes/admin/work-schedules/index'
 import { Route as AdminWorkScheduleCategoriesIndexImport } from './routes/admin/work-schedule-categories/index'
 import { Route as AdminSalariesIndexImport } from './routes/admin/salaries/index'
+import { Route as AdminRolesIndexImport } from './routes/admin/roles/index'
 import { Route as AdminEmployeesIndexImport } from './routes/admin/employees/index'
 import { Route as AdminWorkSchedulesIdImport } from './routes/admin/work-schedules/$id'
 import { Route as AdminStampsRequestImport } from './routes/admin/stamps/request'
@@ -37,6 +37,7 @@ import { Route as AdminPlansMaterialImport } from './routes/admin/plans/material
 import { Route as AdminEmployeesAddImport } from './routes/admin/employees/add'
 import { Route as AdminAttendancesSheetImport } from './routes/admin/attendances/sheet'
 import { Route as AdminAttendancesHistoryImport } from './routes/admin/attendances/history'
+import { Route as AdminEmployeesEditIdImport } from './routes/admin/employees/edit.$id'
 
 // Create Virtual Routes
 
@@ -65,12 +66,6 @@ const authIndexRoute = authIndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => authRouteRoute,
-} as any)
-
-const AdminRolesRoute = AdminRolesImport.update({
-  id: '/roles',
-  path: '/roles',
-  getParentRoute: () => AdminRouteRoute,
 } as any)
 
 const AdminProductsRoute = AdminProductsImport.update({
@@ -119,6 +114,12 @@ const AdminWorkScheduleCategoriesIndexRoute =
 const AdminSalariesIndexRoute = AdminSalariesIndexImport.update({
   id: '/salaries/',
   path: '/salaries/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+
+const AdminRolesIndexRoute = AdminRolesIndexImport.update({
+  id: '/roles/',
+  path: '/roles/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 
@@ -196,6 +197,12 @@ const AdminAttendancesHistoryRoute = AdminAttendancesHistoryImport.update({
   getParentRoute: () => AdminRouteRoute,
 } as any)
 
+const AdminEmployeesEditIdRoute = AdminEmployeesEditIdImport.update({
+  id: '/employees/edit/$id',
+  path: '/employees/edit/$id',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -247,13 +254,6 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/admin/products'
       preLoaderRoute: typeof AdminProductsImport
-      parentRoute: typeof AdminRouteImport
-    }
-    '/admin/roles': {
-      id: '/admin/roles'
-      path: '/roles'
-      fullPath: '/admin/roles'
-      preLoaderRoute: typeof AdminRolesImport
       parentRoute: typeof AdminRouteImport
     }
     '/(auth)/': {
@@ -354,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmployeesIndexImport
       parentRoute: typeof AdminRouteImport
     }
+    '/admin/roles/': {
+      id: '/admin/roles/'
+      path: '/roles'
+      fullPath: '/admin/roles'
+      preLoaderRoute: typeof AdminRolesIndexImport
+      parentRoute: typeof AdminRouteImport
+    }
     '/admin/salaries/': {
       id: '/admin/salaries/'
       path: '/salaries'
@@ -373,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/work-schedules'
       fullPath: '/admin/work-schedules'
       preLoaderRoute: typeof AdminWorkSchedulesIndexImport
+      parentRoute: typeof AdminRouteImport
+    }
+    '/admin/employees/edit/$id': {
+      id: '/admin/employees/edit/$id'
+      path: '/employees/edit/$id'
+      fullPath: '/admin/employees/edit/$id'
+      preLoaderRoute: typeof AdminEmployeesEditIdImport
       parentRoute: typeof AdminRouteImport
     }
   }
@@ -398,7 +412,6 @@ interface AdminRouteRouteChildren {
   AdminActivityScheduleRoute: typeof AdminActivityScheduleRoute
   AdminCheckPoRoute: typeof AdminCheckPoRoute
   AdminProductsRoute: typeof AdminProductsRoute
-  AdminRolesRoute: typeof AdminRolesRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAttendancesHistoryRoute: typeof AdminAttendancesHistoryRoute
   AdminAttendancesSheetRoute: typeof AdminAttendancesSheetRoute
@@ -412,9 +425,11 @@ interface AdminRouteRouteChildren {
   AdminWorkSchedulesIdRoute: typeof AdminWorkSchedulesIdRoute
   AdminSalariesIdLazyRoute: typeof AdminSalariesIdLazyRoute
   AdminEmployeesIndexRoute: typeof AdminEmployeesIndexRoute
+  AdminRolesIndexRoute: typeof AdminRolesIndexRoute
   AdminSalariesIndexRoute: typeof AdminSalariesIndexRoute
   AdminWorkScheduleCategoriesIndexRoute: typeof AdminWorkScheduleCategoriesIndexRoute
   AdminWorkSchedulesIndexRoute: typeof AdminWorkSchedulesIndexRoute
+  AdminEmployeesEditIdRoute: typeof AdminEmployeesEditIdRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
@@ -423,7 +438,6 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminActivityScheduleRoute: AdminActivityScheduleRoute,
   AdminCheckPoRoute: AdminCheckPoRoute,
   AdminProductsRoute: AdminProductsRoute,
-  AdminRolesRoute: AdminRolesRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminAttendancesHistoryRoute: AdminAttendancesHistoryRoute,
   AdminAttendancesSheetRoute: AdminAttendancesSheetRoute,
@@ -437,9 +451,11 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminWorkSchedulesIdRoute: AdminWorkSchedulesIdRoute,
   AdminSalariesIdLazyRoute: AdminSalariesIdLazyRoute,
   AdminEmployeesIndexRoute: AdminEmployeesIndexRoute,
+  AdminRolesIndexRoute: AdminRolesIndexRoute,
   AdminSalariesIndexRoute: AdminSalariesIndexRoute,
   AdminWorkScheduleCategoriesIndexRoute: AdminWorkScheduleCategoriesIndexRoute,
   AdminWorkSchedulesIndexRoute: AdminWorkSchedulesIndexRoute,
+  AdminEmployeesEditIdRoute: AdminEmployeesEditIdRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
@@ -454,7 +470,6 @@ export interface FileRoutesByFullPath {
   '/admin/activity-schedule': typeof AdminActivityScheduleRoute
   '/admin/check-po': typeof AdminCheckPoRoute
   '/admin/products': typeof AdminProductsRoute
-  '/admin/roles': typeof AdminRolesRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/attendances/history': typeof AdminAttendancesHistoryRoute
   '/admin/attendances/sheet': typeof AdminAttendancesSheetRoute
@@ -468,9 +483,11 @@ export interface FileRoutesByFullPath {
   '/admin/work-schedules/$id': typeof AdminWorkSchedulesIdRoute
   '/admin/salaries/$id': typeof AdminSalariesIdLazyRoute
   '/admin/employees': typeof AdminEmployeesIndexRoute
+  '/admin/roles': typeof AdminRolesIndexRoute
   '/admin/salaries': typeof AdminSalariesIndexRoute
   '/admin/work-schedule-categories': typeof AdminWorkScheduleCategoriesIndexRoute
   '/admin/work-schedules': typeof AdminWorkSchedulesIndexRoute
+  '/admin/employees/edit/$id': typeof AdminEmployeesEditIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -479,7 +496,6 @@ export interface FileRoutesByTo {
   '/admin/activity-schedule': typeof AdminActivityScheduleRoute
   '/admin/check-po': typeof AdminCheckPoRoute
   '/admin/products': typeof AdminProductsRoute
-  '/admin/roles': typeof AdminRolesRoute
   '/': typeof authIndexRoute
   '/admin': typeof AdminIndexRoute
   '/admin/attendances/history': typeof AdminAttendancesHistoryRoute
@@ -494,9 +510,11 @@ export interface FileRoutesByTo {
   '/admin/work-schedules/$id': typeof AdminWorkSchedulesIdRoute
   '/admin/salaries/$id': typeof AdminSalariesIdLazyRoute
   '/admin/employees': typeof AdminEmployeesIndexRoute
+  '/admin/roles': typeof AdminRolesIndexRoute
   '/admin/salaries': typeof AdminSalariesIndexRoute
   '/admin/work-schedule-categories': typeof AdminWorkScheduleCategoriesIndexRoute
   '/admin/work-schedules': typeof AdminWorkSchedulesIndexRoute
+  '/admin/employees/edit/$id': typeof AdminEmployeesEditIdRoute
 }
 
 export interface FileRoutesById {
@@ -508,7 +526,6 @@ export interface FileRoutesById {
   '/admin/activity-schedule': typeof AdminActivityScheduleRoute
   '/admin/check-po': typeof AdminCheckPoRoute
   '/admin/products': typeof AdminProductsRoute
-  '/admin/roles': typeof AdminRolesRoute
   '/(auth)/': typeof authIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/attendances/history': typeof AdminAttendancesHistoryRoute
@@ -523,9 +540,11 @@ export interface FileRoutesById {
   '/admin/work-schedules/$id': typeof AdminWorkSchedulesIdRoute
   '/admin/salaries/$id': typeof AdminSalariesIdLazyRoute
   '/admin/employees/': typeof AdminEmployeesIndexRoute
+  '/admin/roles/': typeof AdminRolesIndexRoute
   '/admin/salaries/': typeof AdminSalariesIndexRoute
   '/admin/work-schedule-categories/': typeof AdminWorkScheduleCategoriesIndexRoute
   '/admin/work-schedules/': typeof AdminWorkSchedulesIndexRoute
+  '/admin/employees/edit/$id': typeof AdminEmployeesEditIdRoute
 }
 
 export interface FileRouteTypes {
@@ -538,7 +557,6 @@ export interface FileRouteTypes {
     | '/admin/activity-schedule'
     | '/admin/check-po'
     | '/admin/products'
-    | '/admin/roles'
     | '/admin/'
     | '/admin/attendances/history'
     | '/admin/attendances/sheet'
@@ -552,9 +570,11 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/admin/salaries/$id'
     | '/admin/employees'
+    | '/admin/roles'
     | '/admin/salaries'
     | '/admin/work-schedule-categories'
     | '/admin/work-schedules'
+    | '/admin/employees/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/admin/about'
@@ -562,7 +582,6 @@ export interface FileRouteTypes {
     | '/admin/activity-schedule'
     | '/admin/check-po'
     | '/admin/products'
-    | '/admin/roles'
     | '/'
     | '/admin'
     | '/admin/attendances/history'
@@ -577,9 +596,11 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/admin/salaries/$id'
     | '/admin/employees'
+    | '/admin/roles'
     | '/admin/salaries'
     | '/admin/work-schedule-categories'
     | '/admin/work-schedules'
+    | '/admin/employees/edit/$id'
   id:
     | '__root__'
     | '/(auth)'
@@ -589,7 +610,6 @@ export interface FileRouteTypes {
     | '/admin/activity-schedule'
     | '/admin/check-po'
     | '/admin/products'
-    | '/admin/roles'
     | '/(auth)/'
     | '/admin/'
     | '/admin/attendances/history'
@@ -604,9 +624,11 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/admin/salaries/$id'
     | '/admin/employees/'
+    | '/admin/roles/'
     | '/admin/salaries/'
     | '/admin/work-schedule-categories/'
     | '/admin/work-schedules/'
+    | '/admin/employees/edit/$id'
   fileRoutesById: FileRoutesById
 }
 
@@ -648,7 +670,6 @@ export const routeTree = rootRoute
         "/admin/activity-schedule",
         "/admin/check-po",
         "/admin/products",
-        "/admin/roles",
         "/admin/",
         "/admin/attendances/history",
         "/admin/attendances/sheet",
@@ -662,9 +683,11 @@ export const routeTree = rootRoute
         "/admin/work-schedules/$id",
         "/admin/salaries/$id",
         "/admin/employees/",
+        "/admin/roles/",
         "/admin/salaries/",
         "/admin/work-schedule-categories/",
-        "/admin/work-schedules/"
+        "/admin/work-schedules/",
+        "/admin/employees/edit/$id"
       ]
     },
     "/admin/about": {
@@ -685,10 +708,6 @@ export const routeTree = rootRoute
     },
     "/admin/products": {
       "filePath": "admin/products.tsx",
-      "parent": "/admin"
-    },
-    "/admin/roles": {
-      "filePath": "admin/roles.tsx",
       "parent": "/admin"
     },
     "/(auth)/": {
@@ -747,6 +766,10 @@ export const routeTree = rootRoute
       "filePath": "admin/employees/index.tsx",
       "parent": "/admin"
     },
+    "/admin/roles/": {
+      "filePath": "admin/roles/index.tsx",
+      "parent": "/admin"
+    },
     "/admin/salaries/": {
       "filePath": "admin/salaries/index.tsx",
       "parent": "/admin"
@@ -757,6 +780,10 @@ export const routeTree = rootRoute
     },
     "/admin/work-schedules/": {
       "filePath": "admin/work-schedules/index.tsx",
+      "parent": "/admin"
+    },
+    "/admin/employees/edit/$id": {
+      "filePath": "admin/employees/edit.$id.tsx",
       "parent": "/admin"
     }
   }

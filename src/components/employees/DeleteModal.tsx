@@ -1,9 +1,8 @@
-import { Button, Modal } from 'antd';
-import React, { ReactNode, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button, message, Modal } from 'antd';
+import React, { useState } from 'react';
 
-import { AppDispatch, RootState } from '@stores/index';
-import { deleteEmployee } from '@stores/employeeSlice';
+import { deleteEmployee } from '@services/EmployeeService';
 
 import { BiTrash } from 'react-icons/bi';
 
@@ -11,51 +10,41 @@ interface DeleteProps {
   id: string;
   name: string;
   code: string;
-  page: number;
-  limit: number;
 }
 
 export const DeleteModal: React.FC<DeleteProps> = ({
   id,
   name,
-  code,
-  page,
-  limit,
+  code
 }: DeleteProps) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { deletingId } = useSelector((state: RootState) => state.employees);
-
   const [open, setOpen] = useState(false);
-  const [modalText, setModalText] = useState<ReactNode>(
-    <p>
-      Bạn có chắc chắn muốn xóa nhân viên{' '}
-      <strong>
-        {name} - {code}
-      </strong>{' '}
-      không?
-    </p>
-  );
+
+  const queryClient = useQueryClient();
 
   const showModal = () => {
     setOpen(true);
   };
 
   const handleOk = () => {
-    setModalText(
-      <p>
-        Đang xóa nhân viên{' '}
-        <strong>
-          {name} - {code}
-        </strong>
-        ...
-      </p>
-    );
-    dispatch(deleteEmployee({ id, page, limit }));
+    mutate(id);
   };
 
   const handleCancel = () => {
     setOpen(false);
   };
+
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['deleteEmployee'],
+    mutationFn: (id: string) => deleteEmployee(id),
+    onSuccess: () => {
+      handleCancel();
+      queryClient.invalidateQueries({ queryKey: ['fetchEmployees'] });
+    },
+    onError: (error) => {
+      message.error('Xóa nhân viên thất bại');
+      console.error(error);
+    }
+  });
 
   return (
     <>
@@ -72,12 +61,28 @@ export const DeleteModal: React.FC<DeleteProps> = ({
         open={open}
         onOk={handleOk}
         onCancel={handleCancel}
-        confirmLoading={deletingId === id}
+        loading={isPending}
         okButtonProps={{ danger: true }}
         okText="Xóa"
         cancelText="Hủy"
       >
-        {modalText}
+        {isPending ? (
+          <p>
+            Đang xóa nhân viên{' '}
+            <strong>
+              {name} - {code}
+            </strong>{' '}
+            ...
+          </p>
+        ) : (
+          <p>
+            Bạn có chắc chắn muốn xóa nhân viên{' '}
+            <strong>
+              {name} - {code}
+            </strong>{' '}
+            không?
+          </p>
+        )}
       </Modal>
     </>
   );

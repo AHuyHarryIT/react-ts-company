@@ -1,25 +1,13 @@
-export type EmployeeType = {
-  id: string;
-  name: string;
-  phone: string;
-  photo: string;
-  company: string;
-  code: string;
-  email: string;
-  address: string;
-  home_town: string;
-  gender: string;
-  birthday: string;
-  CCCD: string;
-  card_photo: string;
-  marital_status: string;
-  date_joining: string;
-  role: {
-    id: string;
-    name: string;
-  };
-  category_calender: {
-    id: string;
-    name: string;
-  };
-};
+import { z } from 'zod';
+
+import {
+  employeeCreateSchema,
+  employeeSchema,
+  employeeUpdateSchema
+} from '@/schema/employeeSchema.schema';
+
+export type EmployeeType = z.infer<typeof employeeSchema>;
+
+export type EmployeeCreateType = z.infer<typeof employeeCreateSchema>;
+
+export type EmployeeUpdateType = z.infer<typeof employeeUpdateSchema>;

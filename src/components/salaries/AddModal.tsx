@@ -121,7 +121,7 @@ export const AddSalary = () => {
             <DatePicker
               size="large"
               style={{ width: '100%' }}
-              format={'YYYY/MM/DD'}
+              format={'YYYY-MM-DD'}
             />
           </Form.Item>
           <Form.Item<FormField>
@@ -132,7 +132,7 @@ export const AddSalary = () => {
             <DatePicker
               size="large"
               style={{ width: '100%' }}
-              format={'YYYY/MM/DD'}
+              format={'YYYY-MM-DD'}
             />
           </Form.Item>
 

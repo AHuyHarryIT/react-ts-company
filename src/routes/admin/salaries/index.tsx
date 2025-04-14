@@ -1,17 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button, Table, TableColumnsType, TableProps, Tooltip } from 'antd';
 import { useState } from 'react';
-import { IoReload } from 'react-icons/io5';
 
 import { SalaryType } from '@/types/salaryType';
 import ComponentCard from '@components/common/ComponentCard';
+import RefreshButton from '@components/common/RefreshButton';
 import { AddSalary } from '@components/salaries/AddModal';
 import { DeleteModal } from '@components/salaries/DeleteModal';
 import { fetchSalaries } from '@services/SalaryService';
-import { uiStore } from '@stores/uiStore';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
-import { useStore } from '@tanstack/react-store';
+
 import { GoInfo } from 'react-icons/go';
 
 export const Route = createFileRoute('/admin/salaries/')({
@@ -19,8 +17,6 @@ export const Route = createFileRoute('/admin/salaries/')({
 });
 
 function RouteComponent() {
-  const { isMobile } = useStore(uiStore);
-
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
@@ -140,16 +136,7 @@ function RouteComponent() {
       <>
         <div className="flex flex-wrap gap-4">
           <Tooltip title="Làm mới">
-            <Button
-              color="primary"
-              variant="solid"
-              icon={<IoReload />}
-              size="large"
-              onClick={() => refetch()}
-              loading={isFetching}
-            >
-              {!isMobile && <>Làm mới</>}
-            </Button>
+            <RefreshButton refresh={refetch} isLoading={isFetching} />
           </Tooltip>
           <AddSalary />
         </div>
