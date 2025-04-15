@@ -3,8 +3,7 @@ import { z } from 'zod';
 import {
   dayjsSchema,
   defaultModelSchema,
-  makeCreateSchema,
-  makeUpdateSchema
+  overrideSchema
 } from './defaultModel.schema';
 import { genderEnum } from './genderEnum.schema';
 import { maritalStatusEnum } from './maritalStatusEnum.schema';
@@ -13,8 +12,8 @@ export const employeeSchema = defaultModelSchema.extend({
   name: z.string(),
   code: z.string(),
   phone: z.string(),
-  email: z.string().email().optional(),
-  cccd: z.string(),
+  email: z.string().email().nullable().optional(),
+  CCCD: z.string(),
   address: z.string(),
   home_town: z.string(),
   birthday: z.string(),
@@ -28,11 +27,16 @@ export const employeeSchema = defaultModelSchema.extend({
   card_photo: z.string()
 });
 
-export const employeeCreateSchema = makeCreateSchema(employeeSchema, {
+export const employeeCreateSchema = overrideSchema(employeeSchema, {
   photo: z.instanceof(File),
   card_photo: z.instanceof(File),
   birthday: dayjsSchema,
   date_joining: dayjsSchema
 });
 
-export const employeeUpdateSchema = makeUpdateSchema(employeeCreateSchema);
+export const employeeUpdateSchema = overrideSchema(employeeSchema, {
+  photo: z.instanceof(Image).optional(),
+  card_photo: z.instanceof(File).optional(),
+  birthday: dayjsSchema,
+  date_joining: dayjsSchema
+});

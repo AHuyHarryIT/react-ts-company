@@ -1,4 +1,5 @@
 import { ZodObject, ZodRawShape } from 'zod';
+import { AxiosRequestConfig } from 'axios';
 
 import { useDynamicCrudForm } from '@/hooks/useDynamicCrudForm';
 import { FieldConfig } from '@/types/form';
@@ -15,6 +16,7 @@ interface CreateRoleFormProps<
   schema: ZodObject<ZodRawShape>;
   fields: FieldConfig[];
   isGrid?: boolean;
+  config?: AxiosRequestConfig;
 }
 
 export function CreateForm<
@@ -25,14 +27,16 @@ export function CreateForm<
   service,
   schema,
   fields = [],
-  isGrid = true
+  isGrid = true,
+  config = {}
 }: CreateRoleFormProps<TData, TCreateDto, TUpdateDto>) {
   const ruleMap = zodToAntdRules({ schema, fields });
 
   const { form, handleFinish, isLoading, resetForm } = useDynamicCrudForm({
     service: service,
     onSuccess: (): void => resetForm(),
-    schema: schema
+    schema: schema,
+    config: config
   });
 
   return (
@@ -44,7 +48,6 @@ export function CreateForm<
       submitButtonText="Thêm"
       size="large"
       resetForm={resetForm}
-      isReset={true}
       zodRules={ruleMap}
       isGrid={isGrid}
     />

@@ -15,7 +15,7 @@ export const defaultModelSchema = z.object({
   deleted_at: z.string().nullable().optional()
 });
 
-export const makeCreateSchema = <T extends ZodObject<ZodRawShape>>(
+export const overrideSchema = <T extends ZodObject<ZodRawShape>>(
   schema: T,
   overrides: Partial<ZodRawShape> = {}
 ) => schema.omit(systemFields).extend(overrides as ZodRawShape);
@@ -23,14 +23,23 @@ export const makeCreateSchema = <T extends ZodObject<ZodRawShape>>(
 export const makeUpdateSchema = <T extends ZodObject<ZodRawShape>>(
   schema: T,
   overrides: Partial<ZodRawShape> = {}
-) =>
-  schema
+) => {
+  const shape = schema
     .omit(systemFields)
-    .extend(overrides as ZodRawShape)
-    .partial()
-    .extend({
-      id: schema.shape.id
-    });
+    .extend(overrides as ZodRawShape).shape;
+
+  const updateShape: ZodRawShape = Object.entries(shape).reduce(
+    (acc, [key, value]) => {
+      acc[key] = value.optional().nullable();
+      return acc;
+    },
+    {} as ZodRawShape
+  );
+
+  return z.object(updateShape).extend({
+    id: schema.shape.id
+  });
+};
 
 // A custom Zod schema to transform into a dayjs object
 export const dayjsSchema = z.preprocess(

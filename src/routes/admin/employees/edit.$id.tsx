@@ -1,5 +1,5 @@
 import { useEmployeeFields } from '@/configs/employeeForm.config';
-import { employeeCreateSchema } from '@/schema/employeeSchema.schema';
+import { employeeUpdateSchema } from '@/schema/employeeSchema.schema';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { UpdateForm } from '@components/ui/CRUD/UpdateForm';
@@ -15,13 +15,18 @@ function RouteComponent() {
   const { id } = Route.useParams();
   return (
     <>
-      <BackButton />
+      <BackButton to="/admin/employees" />
       <ComponentCard title="Cập nhật nhân sự">
         <UpdateForm
           id={id}
           fields={useEmployeeFields()}
-          schema={employeeCreateSchema}
+          schema={employeeUpdateSchema}
           service={employeeService}
+          config={{
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }}
         />
       </ComponentCard>
     </>

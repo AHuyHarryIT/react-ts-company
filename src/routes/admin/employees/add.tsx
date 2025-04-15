@@ -20,6 +20,11 @@ function RouteComponent() {
           fields={useEmployeeFields()}
           schema={employeeCreateSchema}
           service={employeeService}
+          config={{
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }}
         />
       </ComponentCard>
     </>

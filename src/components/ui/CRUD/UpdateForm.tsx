@@ -1,4 +1,5 @@
 import { ZodObject, ZodRawShape } from 'zod';
+import { AxiosRequestConfig } from 'axios';
 
 import { useDynamicCrudForm } from '@/hooks/useDynamicCrudForm';
 import { FieldConfig } from '@/types/form';
@@ -17,6 +18,7 @@ interface UpdateFormProps<
   fields: FieldConfig[];
   onClose?: () => void;
   isGrid?: boolean;
+  config?: AxiosRequestConfig;
 }
 
 export function UpdateForm<
@@ -29,7 +31,8 @@ export function UpdateForm<
   schema,
   fields = [],
   onClose,
-  isGrid = true
+  isGrid = true,
+  config = {}
 }: UpdateFormProps<TData, TCreateDto, TUpdateDto>) {
   const ruleMap = zodToAntdRules({ schema, fields });
 
@@ -43,7 +46,9 @@ export function UpdateForm<
     onSuccess: (): void => {
       onClose?.();
     },
-    schema: schema
+    schema: schema,
+    config: config,
+    fields: fields
   });
 
   return (

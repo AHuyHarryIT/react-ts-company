@@ -5,7 +5,9 @@ import { useEffect } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
 
 import { ApiErrorResponse } from '@/types/apiType';
+import { FieldConfig } from '@/types/form';
 import { convertToFormData } from '@/utils/convertToFormData';
+import { convertDateStringsToDayjs } from '@utils/convertDateStringsToDayjs';
 import { CrudServiceType } from '@utils/crudService';
 import { handleValidationErrors } from '@utils/handleValidationError';
 
@@ -14,9 +16,10 @@ interface UseDynamicCrudFormProps<TData, TCreateDto, TUpdateDto> {
   service: CrudServiceType<TData, TCreateDto, TUpdateDto>;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
-  convert?: boolean;
   schema?: ZodObject<ZodRawShape>; // optional zod schema
   form?: ReturnType<typeof Form.useForm>[0];
+  config?: AxiosRequestConfig; // optional axios config
+  fields?: FieldConfig[]; // optional fields for the form
 }
 
 export function useDynamicCrudForm<
@@ -28,9 +31,10 @@ export function useDynamicCrudForm<
   service,
   onSuccess,
   onError,
-  convert = true,
   schema,
-  form
+  form,
+  config,
+  fields // added fields parameter
 }: UseDynamicCrudFormProps<TData, TCreateDto, TUpdateDto>) {
   const [internalForm] = Form.useForm();
   const queryClient = useQueryClient();
@@ -49,38 +53,23 @@ export function useDynamicCrudForm<
   });
   useEffect(() => {
     if (defaultValues) {
-      activeForm.setFieldsValue(defaultValues);
+      const parsedValues = convertDateStringsToDayjs(defaultValues);
+
+      activeForm.setFieldsValue(parsedValues);
     }
   }, [defaultValues]);
 
   const mutation = useMutation({
     mutationFn: async (values: TFormData) => {
-      // ✅ Zod validation
-      if (schema) {
-        const result = schema.safeParse(values);
-        if (!result.success) throw result.error;
-        values = result.data as TFormData;
-      }
+      const payload = convertToFormData({
+        values,
+        action: id ? 'update' : 'create',
+        fields
+      });
 
-      const payload = convert ? convertToFormData(values) : values;
       return id
-        ? service.update(
-            id,
-            payload as TUpdateDto,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data'
-              }
-            } as AxiosRequestConfig
-          )
-        : service.create(
-            payload as TCreateDto,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data'
-              }
-            } as AxiosRequestConfig
-          );
+        ? service.update(id, payload as TUpdateDto, config)
+        : service.create(payload as TCreateDto, config);
     },
     onSuccess: () => {
       message.success(id ? 'Cập nhật thành công' : 'Tạo mới thành công');
@@ -93,6 +82,7 @@ export function useDynamicCrudForm<
     onError: (err) => {
       message.error(id ? 'Cập nhật thất bại' : 'Tạo mới thất bại');
       onError?.(err);
+      activeForm.setFields([]);
       if (schema) {
         const formatted = handleValidationErrors<TFormData>(
           err as AxiosError<ApiErrorResponse>

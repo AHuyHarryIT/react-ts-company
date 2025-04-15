@@ -28,7 +28,6 @@ interface DynamicFormProps {
   submitButtonText?: string; // Text for the submit button
   size?: SizeType;
   resetForm?: () => void; // Function to reset the form
-  isReset?: boolean; // Flag to indicate if the form should be reset
   zodRules?: Record<string, Rule[]>; // Zod validation rules for the form fields
   isGrid?: boolean; // Flag to indicate if the form should be displayed in a grid layout
 }
@@ -42,7 +41,6 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
   submitButtonText = 'Submit',
   size,
   resetForm,
-  isReset = false,
   zodRules = {},
   isGrid = false
 }) => {
@@ -54,6 +52,8 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
     };
 
     switch (field.type) {
+      case 'email':
+        return <Input {...commonProps} />;
       case 'text':
         return <Input {...commonProps} />;
       case 'textarea':
@@ -62,8 +62,6 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         return <InputNumber {...commonProps} style={{ width: '100%' }} />;
       case 'password':
         return <Input.Password {...commonProps} />;
-      case 'email':
-        return <Input {...commonProps} />;
       case 'select':
         return (
           <Select
@@ -73,7 +71,6 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         );
       case 'date':
         return (
-          // <Input.TextArea />
           <DatePicker
             style={{ width: '100%' }}
             format="YYYY-MM-DD"
@@ -90,7 +87,8 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
             />
           </Upload>
         );
-      case 'image':
+      case 'image': {
+        const image = form.getFieldValue(`${field.name}`);
         return (
           <UploadImage
             maxCount={1}
@@ -107,8 +105,24 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
                 });
               }
             }}
+            imageList={() => {
+              if (image && image.length > 0) {
+                form.setFieldsValue({
+                  [field.name]: undefined
+                });
+                return [
+                  {
+                    uid: '-1',
+                    name: 'photo.jpg',
+                    status: 'done',
+                    url: ['/storage', 'employee', image].join('/')
+                  }
+                ];
+              } else return [];
+            }}
           />
         );
+      }
 
       default:
         return null;
@@ -122,9 +136,10 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         name={field.name}
         label={field.label}
         hidden={field.hidden}
+        required={field.required}
         rules={
-          zodRules[field.name] ||
           field.rules ||
+          zodRules[field.name] ||
           (field.required
             ? [{ required: true, message: `Vui lòng nhập ${field.label}` }]
             : [])
@@ -154,7 +169,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         <div className="flex flex-col gap-4">{formItemLayout()}</div>
       )}
       <Flex gap={'small'} wrap justify="end">
-        {isReset && (
+        {resetForm && (
           <Button
             onClick={resetForm}
             variant="solid"

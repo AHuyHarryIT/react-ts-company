@@ -32,18 +32,13 @@ export const useEmployeeFields = () => {
     code: {
       label: 'Mã nhân viên'
     },
-    cccd: {
-      label: 'CCCD'
-    },
     email: {
       label: 'Email',
-      type: 'email',
-      rules: [
-        {
-          type: 'email',
-          message: 'Email không hợp lệ'
-        }
-      ]
+      type: 'email'
+    },
+    CCCD: {
+      label: 'CCCD',
+      type: 'text'
     },
     address: {
       label: 'Địa chỉ'
@@ -105,11 +100,13 @@ export const useEmployeeFields = () => {
     },
     photo: {
       label: 'Ảnh đại diện',
-      type: 'image'
+      type: 'image',
+      required: true
     },
     card_photo: {
       label: 'Ảnh thẻ',
-      type: 'image'
+      type: 'image',
+      required: true
     }
   });
 };

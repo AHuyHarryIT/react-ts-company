@@ -2,6 +2,7 @@ import { useStore } from '@tanstack/react-store';
 import { Button, Modal, Tooltip } from 'antd';
 import { useState } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
+import { AxiosRequestConfig } from 'axios';
 
 import { FieldConfig } from '@/types/form';
 import { uiStore } from '@stores/uiStore';
@@ -18,6 +19,7 @@ interface CreateRoleProps<
   service: CrudServiceType<TData, TCreateDto, TUpdateDto>;
   schema: ZodObject<ZodRawShape>;
   fields: FieldConfig[];
+  config?: AxiosRequestConfig;
 }
 
 export function CreateModal<
@@ -27,7 +29,8 @@ export function CreateModal<
 >({
   service,
   schema,
-  fields = []
+  fields = [],
+  config = {}
 }: CreateRoleProps<TData, TCreateDto, TUpdateDto>) {
   const { isMobile } = useStore(uiStore);
 
@@ -67,6 +70,7 @@ export function CreateModal<
           service={service}
           fields={fields}
           isGrid={false}
+          config={config}
         />
       </Modal>
     </>

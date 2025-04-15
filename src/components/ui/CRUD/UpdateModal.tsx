@@ -1,11 +1,12 @@
 import { Button, Modal, Tooltip } from 'antd';
 import { useState } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
+import { AxiosRequestConfig } from 'axios';
 
 import { UpdateForm } from '@components/ui/CRUD/UpdateForm';
 import { CrudServiceType } from '@utils/crudService';
-
 import { FieldConfig } from '@/types/form';
+
 import { FaPen } from 'react-icons/fa6';
 
 interface UpdateFormProps<TData, TCreateDto, TUpdateDto> {
@@ -13,6 +14,7 @@ interface UpdateFormProps<TData, TCreateDto, TUpdateDto> {
   service: CrudServiceType<TData, TCreateDto, TUpdateDto>;
   schema: ZodObject<ZodRawShape>;
   fields: FieldConfig[];
+  config?: AxiosRequestConfig;
 }
 
 export function UpdateModal<
@@ -23,7 +25,8 @@ export function UpdateModal<
   id,
   service,
   schema,
-  fields = []
+  fields = [],
+  config = {}
 }: UpdateFormProps<TData, TCreateDto, TUpdateDto>) {
   const [open, setOpen] = useState(false);
 
@@ -63,6 +66,7 @@ export function UpdateModal<
             fields={fields}
             onClose={onCancel}
             isGrid={false}
+            config={config}
           />
         )}
       </Modal>

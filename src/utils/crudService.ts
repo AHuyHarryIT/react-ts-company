@@ -24,7 +24,7 @@ export class CrudService<
   }
 
   get(id: number | string, config?: AxiosRequestConfig) {
-    return axiosPrivate.get<TData>(`${this.endpoint}/${id}`, config);
+    return axiosPrivate.get<TData, TData>(`${this.endpoint}/${id}`, config);
   }
 
   create(data: TCreateDto, config?: AxiosRequestConfig) {
@@ -32,7 +32,7 @@ export class CrudService<
   }
 
   update(id: number | string, data: TUpdateDto, config?: AxiosRequestConfig) {
-    return axiosPrivate.patch<TData, TData>(
+    return axiosPrivate.post<TData, TData>(
       `${this.endpoint}/${id}`,
       data,
       config
