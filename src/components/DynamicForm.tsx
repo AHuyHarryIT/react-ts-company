@@ -108,9 +108,6 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
             }}
             imageList={() => {
               if (image && image.length > 0) {
-                form.setFieldsValue({
-                  [field.name]: undefined
-                });
                 return [
                   {
                     uid: '-1',
