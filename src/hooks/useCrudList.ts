@@ -8,17 +8,22 @@ interface UseCrudListProps<TData, TCreateDto, TUpdateDto> {
   queryKey: string;
   initialFilters?: QueryParams;
   enabled?: boolean;
+  isTrash?: boolean;
 }
 
 export function useCrudList<TData, TCreateDto, TUpdateDto>({
   service,
   queryKey,
   initialFilters = {},
-  enabled = true
+  enabled = true,
+  isTrash = false
 }: UseCrudListProps<TData, TCreateDto, TUpdateDto>) {
   const queryResult = useQuery({
-    queryKey: [queryKey, initialFilters],
-    queryFn: () => service.list(initialFilters),
+    queryKey: [queryKey, initialFilters, isTrash],
+    queryFn: () =>
+      isTrash
+        ? service.listTrash(initialFilters)
+        : service.list(initialFilters),
     enabled
   });
 

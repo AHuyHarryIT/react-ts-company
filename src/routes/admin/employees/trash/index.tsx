@@ -1,42 +1,29 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useStore } from '@tanstack/react-store';
-import {
-  Avatar,
-  Button,
-  Table,
-  TableColumnsType,
-  TableProps,
-  Tooltip
-} from 'antd';
+import { createFileRoute } from '@tanstack/react-router';
+import { Avatar, Table, TableColumnsType, TableProps } from 'antd';
 import { useState } from 'react';
 
 import { useCrudList } from '@/hooks/useCrudList';
 import { EmployeeType } from '@/types/employeeType';
 import { QueryParams } from '@/types/queryParams';
+import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
-import RefreshButton from '@components/common/RefreshButton';
 import { DeleteButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
-import { uiStore } from '@stores/uiStore';
 import { convertImageName2Url } from '@utils/convertImageName2Url';
 
-import { BiTrash } from 'react-icons/bi';
+import RefreshButton from '@components/common/RefreshButton';
 import { FaUser } from 'react-icons/fa';
-import { FaFingerprint, FaPen } from 'react-icons/fa6';
-import { LuUserRoundPlus } from 'react-icons/lu';
 
 interface EmployeeTable extends EmployeeType {
   role?: { id: string; role_name: string };
   category_celender?: { id: string; name: string };
 }
 
-export const Route = createFileRoute('/admin/employees/')({
+export const Route = createFileRoute('/admin/employees/trash/')({
   component: RouteComponent
 });
 
 function RouteComponent() {
-  const { isMobile } = useStore(uiStore);
-
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 10,
@@ -50,7 +37,8 @@ function RouteComponent() {
   } = useCrudList({
     service: employeeService,
     queryKey: 'employees',
-    initialFilters: params
+    initialFilters: params,
+    isTrash: true
   });
 
   const handleChange: TableProps<EmployeeTable>['onChange'] = (
@@ -161,17 +149,13 @@ function RouteComponent() {
       render: (_value, _record) => {
         return (
           <div className="flex gap-2">
-            <Link to={`/admin/employees/edit/$id`} params={{ id: _record.id }}>
-              <Button color="primary" variant="solid" icon={<FaPen />}>
-                Sửa
-              </Button>
-            </Link>
             <DeleteButton
+              isRestore={true}
               id={_record.id}
               service={employeeService}
               content={
                 <p>
-                  Bạn có chắc chắn muốn xóa nhân viên{' '}
+                  Bạn có chắc chắn muốn khôi phục nhân viên{' '}
                   <strong>
                     {_record.name} - {_record.code}
                   </strong>{' '}
@@ -217,51 +201,14 @@ function RouteComponent() {
     onChange: handleChange
   };
 
-  const Actions = () => {
-    return (
-      <>
-        <div className="flex flex-wrap gap-4">
-          <RefreshButton refresh={refetch} isLoading={isFetching} />
-          <Tooltip title="Thêm nhân viên">
-            <Link to="/admin/employees/add">
-              <Button
-                color="green"
-                variant="solid"
-                icon={<LuUserRoundPlus />}
-                size="large"
-              >
-                {!isMobile && <>Thêm</>}
-              </Button>
-            </Link>
-          </Tooltip>
-          <Tooltip title="Đã xóa">
-            <Link to="/admin/employees/trash">
-              <Button
-                color="gold"
-                variant="solid"
-                icon={<BiTrash />}
-                size="large"
-              >
-                {!isMobile && <>Đã xóa</>}
-              </Button>
-            </Link>
-          </Tooltip>
-          <Tooltip title="Thêm chấm công">
-            <Button variant="solid" icon={<FaFingerprint />} size="large">
-              {!isMobile && <>Thêm chấm công</>}
-            </Button>
-          </Tooltip>
-        </div>
-      </>
-    );
-  };
-
   return (
-    <>
-      <ComponentCard title="Danh sách nhân viên">
-        <Actions />
+    <div>
+      <BackButton />
+      <ComponentCard title="Danh sách nhân viên dã nghỉ việc">
+        <RefreshButton refresh={refetch} isLoading={isFetching} />
+
         <Table<EmployeeType> {...tableProps} />
       </ComponentCard>
-    </>
+    </div>
   );
 }

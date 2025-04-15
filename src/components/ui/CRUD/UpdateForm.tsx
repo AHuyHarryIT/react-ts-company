@@ -48,7 +48,8 @@ export function UpdateForm<
     },
     schema: schema,
     config: config,
-    fields: fields
+    fields: fields,
+    isFetchData: true
   });
 
   return (

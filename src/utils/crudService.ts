@@ -42,4 +42,17 @@ export class CrudService<
   delete(id: number | string) {
     return axiosPrivate.delete(`${this.endpoint}/${id}`);
   }
+
+  listTrash(params?: QueryParams) {
+    return axiosPrivate.get<TData, PaginatedResponse<TData>>(
+      `${this.endpoint}/trash`,
+      {
+        params
+      }
+    );
+  }
+
+  restore(id: number | string) {
+    return axiosPrivate.post(`${this.endpoint}/restore/${id}`);
+  }
 }

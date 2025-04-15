@@ -20,6 +20,7 @@ interface UseDynamicCrudFormProps<TData, TCreateDto, TUpdateDto> {
   form?: ReturnType<typeof Form.useForm>[0];
   config?: AxiosRequestConfig; // optional axios config
   fields?: FieldConfig[]; // optional fields for the form
+  isFetchData?: boolean; // optional flag to fetch data
 }
 
 export function useDynamicCrudForm<
@@ -34,7 +35,8 @@ export function useDynamicCrudForm<
   schema,
   form,
   config,
-  fields // added fields parameter
+  fields,
+  isFetchData = false
 }: UseDynamicCrudFormProps<TData, TCreateDto, TUpdateDto>) {
   const [internalForm] = Form.useForm();
   const queryClient = useQueryClient();
@@ -49,7 +51,7 @@ export function useDynamicCrudForm<
   } = useQuery({
     queryKey: ['form-data', id],
     queryFn: () => service.get(id!),
-    enabled: !!id
+    enabled: !!id && isFetchData
   });
   useEffect(() => {
     if (defaultValues) {
@@ -112,12 +114,32 @@ export function useDynamicCrudForm<
     }
   });
 
+  const restoreMutation = useMutation({
+    mutationFn: () => {
+      if (!service.restore) {
+        return Promise.reject(new Error('Restore service is not defined'));
+      }
+      return service.restore(id!);
+    },
+    onSuccess: () => {
+      message.success('Khôi phục thành công');
+      onSuccess?.();
+      queryClient.invalidateQueries();
+    },
+    onError: (err) => {
+      message.error('Khôi phục thất bại');
+      onError?.(err);
+    }
+  });
+
   return {
     form: activeForm,
     handleFinish: mutation.mutate,
     isLoading: isFetching || mutation.isPending,
     isDeleting: deleteMutation.isPending,
     deleteItem: deleteMutation.mutate,
+    isRestoring: restoreMutation.isPending,
+    restoreItem: restoreMutation.mutate,
     refetch,
     resetForm: () => activeForm.resetFields()
   };
