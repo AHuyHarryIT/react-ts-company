@@ -10,19 +10,20 @@ import {
 } from 'antd';
 import { useState } from 'react';
 
+import { useCrudList } from '@/hooks/useCrudList';
 import { EmployeeType } from '@/types/employeeType';
+import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
-import { DeleteModal } from '@components/employees/DeleteModal';
+import { DeleteButton } from '@components/ui/CRUD/DeleteButton';
 import { employeeService } from '@services/EmployeeService';
 import { uiStore } from '@stores/uiStore';
-import { useCrudList } from '@/hooks/useCrudList';
+import { convertImageName2Url } from '@utils/convertImageName2Url';
 
 import { BiTrash } from 'react-icons/bi';
 import { FaUser } from 'react-icons/fa';
 import { FaFingerprint, FaPen } from 'react-icons/fa6';
 import { LuUserRoundPlus } from 'react-icons/lu';
-import { QueryParams } from '@/types/queryParams';
 
 interface EmployeeTable extends EmployeeType {
   role?: { id: string; role_name: string };
@@ -100,7 +101,7 @@ function RouteComponent() {
       render: (value, record) => (
         <div className="flex items-center gap-2">
           <Avatar
-            src={['/storage', 'employee', record.photo].join('/')}
+            src={convertImageName2Url(record.photo)}
             alt="avatar"
             icon={<FaUser />}
             shape="square"
@@ -165,10 +166,18 @@ function RouteComponent() {
                 Sửa
               </Button>
             </Link>
-            <DeleteModal
-              name={_record.name}
-              code={_record.code}
+            <DeleteButton
               id={_record.id}
+              service={employeeService}
+              content={
+                <p>
+                  Bạn có chắc chắn muốn xóa nhân viên{' '}
+                  <strong>
+                    {_record.name} - {_record.code}
+                  </strong>{' '}
+                  không?
+                </p>
+              }
             />
           </div>
         );

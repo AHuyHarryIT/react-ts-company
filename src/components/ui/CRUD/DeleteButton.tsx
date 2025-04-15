@@ -9,13 +9,14 @@ import { BiTrash } from 'react-icons/bi';
 interface DeleteProps<TData, TCreateDto, TUpdateDto> {
   id: string;
   service: CrudServiceType<TData, TCreateDto, TUpdateDto>;
+  content?: React.ReactNode;
 }
 
 export function DeleteButton<
   TData extends object,
   TCreateDto extends object,
   TUpdateDto extends object
->({ id, service }: DeleteProps<TData, TCreateDto, TUpdateDto>) {
+>({ id, service, content }: DeleteProps<TData, TCreateDto, TUpdateDto>) {
   const [open, setOpen] = useState(false);
 
   const showModal = () => {
@@ -42,6 +43,7 @@ export function DeleteButton<
           id={id}
           onClose={handleClose}
           service={service}
+          content={content}
         />
       )}
     </>

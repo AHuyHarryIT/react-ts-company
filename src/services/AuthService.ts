@@ -1,6 +1,7 @@
 import axiosPrivate from '@/api/axiosInstance';
 import { User } from '@/types/authType';
 import { clearAuth, setUser } from '@stores/authStore';
+import { convertImageName2Url } from '@utils/convertImageName2Url';
 
 const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 0;
 
@@ -39,9 +40,9 @@ export const authLogin = async (
   };
 
   if (response?.image && response?.role_id == 15) {
-    userData.image_url = ['storage', 'admin', response.image].join('/');
+    userData.image_url = convertImageName2Url(response.image, 'admin');
   } else if (response?.image) {
-    userData.image_url = ['storage', 'employee', response.image].join('/');
+    userData.image_url = convertImageName2Url(response.image);
   }
   setUser(userData);
   return response;
@@ -65,9 +66,9 @@ export const authCheck = async () => {
     };
 
     if (response?.image && response?.role_id == 15) {
-      userData.image_url = ['storage', 'admin', response.image].join('/');
+      userData.image_url = convertImageName2Url(response.image, 'admin');
     } else if (response?.image) {
-      userData.image_url = ['storage', 'employee', response.image].join('/');
+      userData.image_url = convertImageName2Url(response.image);
     }
     setUser(userData);
 
