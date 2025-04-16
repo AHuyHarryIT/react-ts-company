@@ -1,1 +1,4 @@
+# check build 
+npx tsc -b
+# lint staged files before commit
 npx lint-staged

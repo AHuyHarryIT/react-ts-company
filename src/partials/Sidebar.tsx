@@ -1,11 +1,10 @@
+import { Link } from '@tanstack/react-router';
+import { useStore } from '@tanstack/react-store';
 import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
 import { CSSProperties, Key, ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 
-import { AppDispatch, RootState } from '@stores/index';
-import { toggleSidebar } from '@stores/sidebarSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { toggleSidebar, uiStore } from '@stores/uiStore';
 
 import { IconContext } from 'react-icons';
 import { AiOutlineHome } from 'react-icons/ai';
@@ -17,7 +16,7 @@ import { FiUsers } from 'react-icons/fi';
 import {
   IoCalendarNumberOutline,
   IoCheckboxOutline,
-  IoHomeOutline,
+  IoHomeOutline
 } from 'react-icons/io5';
 
 import logo from '@assets/images/logo/logoAsset.svg';
@@ -38,20 +37,20 @@ function getItem(
     icon,
     children,
     label,
-    type,
+    type
   } as MenuItem;
 }
 
 const items: MenuItem[] = [
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin'}>
       <span className="capitalize">Trang chủ</span>
     </Link>,
     'dashboard',
     <IoHomeOutline />
   ),
   getItem(
-    <Link to="/about">
+    <Link to={'/admin/about'}>
       <span className="capitalize">about</span>
     </Link>,
     'about',
@@ -69,10 +68,10 @@ const items: MenuItem[] = [
         <span className="capitalize">Chức vụ</span>
       </Link>,
       'role'
-    ),
+    )
   ]),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/products'}>
       <span className="capitalize">Sản Phẩm</span>
     </Link>,
     'product',
@@ -84,51 +83,45 @@ const items: MenuItem[] = [
     <BsCalendar2Week />,
     [
       getItem(
-        <Link to={'/'}>
+        <Link to={'/admin/plans/production'}>
           <span className="capitalize">Kế hoạch sản xuất</span>
         </Link>,
         'plan-production'
       ),
       getItem(
-        <Link to={'/'}>
+        <Link to={'/admin/plans/material'}>
           <span className="capitalize">Kế hoạch nguyên liệu</span>
         </Link>,
         'plan-material'
-      ),
+      )
     ]
   ),
-  getItem(
-    <Link to={'/'}>
-      <span className="capitalize">Lịch hoạt động / ngày</span>
-    </Link>,
-    ' activity-schedule',
-    <IoCalendarNumberOutline />
-  ),
+
   getItem(<span className="capitalize">Tạo Tem</span>, 'stamp', <FaPrint />, [
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/stamps/box'}>
         <span className="capitalize">Tem Thùng</span>
       </Link>,
       'box-stamp'
     ),
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/stamps/bag'}>
         <span className="capitalize">Tem Bịch</span>
       </Link>,
       'bag-stamp'
     ),
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/stamps/history'}>
         <span className="capitalize">Lịch Sử In Tem</span>
       </Link>,
-      'history-stamp'
+      'stamp-history'
     ),
     getItem(
-      <Link to={'/'}>
+      <Link to={'/admin/stamps/request'}>
         <span className="capitalize">Yêu Cầu In Tem</span>
       </Link>,
       'request-stamp'
-    ),
+    )
   ]),
   getItem(
     <span className="capitalize">Chấm Công</span>,
@@ -136,71 +129,75 @@ const items: MenuItem[] = [
     <BsCalendar2Check />,
     [
       getItem(
-        <Link to={'/'}>
+        <Link to={'/admin/attendances/history'}>
           <span className="capitalize">Lịch Sử Chấm Công</span>
         </Link>,
-        'history-attendance'
+        'attendance-history'
       ),
       getItem(
-        <Link to={'/'}>
+        <Link to={'/admin/attendances/sheet'}>
           <span className="capitalize">Bảng Tính Công</span>
         </Link>,
         'attendance-sheet'
-      ),
+      )
     ]
   ),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/check-po'}>
       <span className="capitalize">Kiểm tra PO</span>
     </Link>,
     'check-po',
     <IoCheckboxOutline />
   ),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/work-schedules'}>
       <span className="capitalize">Lịch làm việc</span>
     </Link>,
-    'schedule',
+    'work-schedule',
     <FaRegCalendarAlt />
   ),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/work-schedule-categories'}>
       <span className="capitalize">Danh mục lịch làm việc</span>
     </Link>,
-    ' schedule-category',
+    'schedule-categories',
     <FaBriefcase />
   ),
   getItem(
-    <Link to={'/'}>
+    <Link to={'/admin/salaries'}>
       <span className="capitalize">Bảng lương</span>
     </Link>,
-    ' salary',
+    'salary',
     <FaMoneyCheckAlt />
   ),
+  getItem(
+    <Link to={'/admin/activity-schedule'}>
+      <span className="capitalize">Lịch hoạt động / ngày</span>
+    </Link>,
+    'activity-schedule',
+    <IoCalendarNumberOutline />
+  ),
   {
-    type: 'divider',
+    type: 'divider'
   },
   getItem(
-    <Link to={'/'}>
-      <span className="capitalize">Lịch sử</span>
+    <Link to={'/admin/activity-history'}>
+      <span className="capitalize">Lịch sử hoạt động</span>
     </Link>,
-    'history',
+    'activity-history',
     <FaHistory />
-  ),
+  )
 ];
 
 function Sidebar() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { isExpanded, isMobile } = useSelector(
-    (state: RootState) => state.sidebar
-  );
-  const { themeMode: theme } = useSelector((state: RootState) => state.theme);
+  const { isSidebarClose, theme, isMobile } = useStore(uiStore);
 
   const sideStyle: CSSProperties = {};
   if (isMobile) {
     sideStyle.position = 'absolute';
     sideStyle.zIndex = 1;
     sideStyle.height = '100%';
+    sideStyle.zIndex = 99999;
   }
   return (
     <>
@@ -210,11 +207,11 @@ function Sidebar() {
         theme={theme}
         breakpoint="md"
         collapsedWidth="0"
-        collapsed={!isExpanded}
-        onCollapse={() => dispatch(toggleSidebar())}
+        collapsed={isSidebarClose}
+        onCollapse={toggleSidebar}
       >
         <div className="flex items-center justify-center p-4">
-          <Link to="/">
+          <Link to="/admin">
             <img className="w-full" src={logo} alt="Logo" />
           </Link>
         </div>

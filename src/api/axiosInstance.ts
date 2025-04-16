@@ -1,66 +1,85 @@
-import axios from 'axios';
-import { store } from '@stores/index'; // Adjust the import path as necessary
-import { logout } from '@stores/authSlice';
+import axios, { AxiosError } from 'axios';
+
+import { clearAuth } from '@stores/authStore';
+import { ApiErrorResponse, ValidationErrors } from '@/types/apiType';
+import { mapErrorCodesToMessages } from '@utils/validationMapper';
 
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
 export const axiosPublic = axios.create({
   baseURL: BASE_API_URL,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
 const axiosPrivate = axios.create({
   baseURL: BASE_API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   },
-  withCredentials: true,
+  withCredentials: true
 });
 
-// Attach Authorization Header
-axiosPrivate.interceptors.request.use(
-  (config) => {
-    const token = store.getState().auth.accessToken;
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+axiosPrivate.interceptors.response.use(
+  (response) => {
+    return response;
   },
-  (error) => {
+  (error: AxiosError<ApiErrorResponse>) => {
+    if (error.response?.status === 422 && error.response.data?.error?.errors) {
+      const errorData: ValidationErrors = error.response.data.error.errors;
+
+      // Example: setting language manually
+      const mappedErrors = mapErrorCodesToMessages(errorData, 'vi');
+
+      error.response.data.error.errors = mappedErrors;
+    }
+
     return Promise.reject(error);
   }
 );
 
-// Check Token Expiry Before Sending Request
-axiosPrivate.interceptors.request.use(
-  (config) => {
-    const tokenExpiresAt = store.getState().auth.tokenExpiresAt;
-    if (tokenExpiresAt && tokenExpiresAt < Date.now()) {
-      store.dispatch(logout());
-      return Promise.reject(new Error('Token expired'));
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Handle 401 Unauthorized (Token Expired)
 axiosPrivate.interceptors.response.use(
   (response) => {
     return response.data;
   },
-  async (error) => {
-    if (
-      window.location.pathname != '/login' &&
-      error?.response?.status === 401
-    ) {
-      store.dispatch(logout()); // Logout user
-      window.location.href = '/login'; // Redirect to login
+  async (error: AxiosError<ApiErrorResponse>) => {
+    if (!error.response) {
+      console.error('Network/server error');
+      return Promise.reject(error);
     }
+
+    const { status, data } = error.response;
+
+    // Central handling logic
+    switch (status) {
+      case 401:
+        // Unauthenticated — maybe redirect to login
+        console.warn('Unauthorized');
+        clearAuth();
+        break;
+
+      case 403:
+        console.warn('Forbidden');
+        break;
+
+      case 404:
+        console.warn('Not found');
+        break;
+
+      case 422:
+        console.warn('Validation error', data.error);
+        break;
+
+      case 500:
+        console.error('Server error:', data.error.message);
+        break;
+
+      default:
+        console.error(`Unhandled error [${status}]`);
+    }
+
+    // Always return the rejected error so component can catch if needed
     return Promise.reject(error);
   }
 );

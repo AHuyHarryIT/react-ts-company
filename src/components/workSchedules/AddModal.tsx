@@ -1,0 +1,139 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useStore } from '@tanstack/react-store';
+import {
+  Button,
+  DatePicker,
+  Form,
+  FormProps,
+  Input,
+  message,
+  Modal,
+  Tooltip
+} from 'antd';
+import type { Dayjs } from 'dayjs';
+import { useState } from 'react';
+
+import { addWorkSchedule } from '@services/workScheduleService';
+import { uiStore } from '@stores/uiStore';
+
+import { FaPlus } from 'react-icons/fa';
+
+type FormField = {
+  title: string;
+  start_date: Dayjs | null;
+  fileImport: File;
+};
+
+export const AddWorkSchedule = () => {
+  const { isMobile } = useStore(uiStore);
+
+  const queryClient = useQueryClient();
+
+  const [open, setOpen] = useState(false);
+
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  const onCancel = () => {
+    setOpen(false);
+  };
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: addWorkSchedule,
+    mutationKey: ['addWorkSchedule'],
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['workSchedules'] });
+      message.success('Thêm lịch làm việc thành công');
+    },
+    onError: (error) => {
+      message.error(error.message);
+    }
+  });
+
+  const onFinish: FormProps<FormField>['onFinish'] = async (
+    value: FormField
+  ) => {
+    const data = {
+      title: value.title,
+      start_date: value.start_date?.format('YYYY/MM/01') || '',
+      fileImport: value.fileImport
+    };
+    mutate(data);
+  };
+
+  const formProps: FormProps = {
+    layout: 'vertical',
+    onFinish: onFinish
+  };
+
+  return (
+    <>
+      <Tooltip title="Thêm">
+        <Button
+          color="green"
+          variant="solid"
+          icon={<FaPlus />}
+          size="large"
+          onClick={showModal}
+        >
+          {!isMobile && <>Thêm lịch làm việc</>}
+        </Button>
+      </Tooltip>
+      <Modal
+        title="Thêm lịch làm việc"
+        open={open}
+        onCancel={onCancel}
+        destroyOnClose
+        centered
+        footer={null}
+      >
+        <Form {...formProps}>
+          <Form.Item<FormField>
+            name="title"
+            label="Tiêu đề"
+            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
+          >
+            <Input size="large" />
+          </Form.Item>
+          <Form.Item<FormField>
+            name="start_date"
+            label="Chọn tháng"
+            rules={[{ required: true, message: 'Vui lòng chọn chọn tháng' }]}
+          >
+            <DatePicker
+              size="large"
+              style={{ width: '100%' }}
+              format={'MM/YYYY'}
+              picker="month"
+            />
+          </Form.Item>
+
+          <Form.Item<FormField>
+            name="fileImport"
+            label="Chọn file"
+            rules={[{ required: true, message: 'Vui lòng chọn file' }]}
+          >
+            <Input
+              type="file"
+              size="large"
+              accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            />
+          </Form.Item>
+          <div className="text-end">
+            <Button
+              color="green"
+              variant="solid"
+              htmlType="submit"
+              loading={isPending}
+              size="large"
+            >
+              Import
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+    </>
+  );
+};

@@ -40,9 +40,9 @@ const sidebarSlice = createSlice({
     },
     updateScreenSize: (state) => {
       state.isMobile = window.innerWidth < 768;
-      if (!state.isMobile) {
-        state.isMobileOpen = false;
-      }
+      // if (!state.isMobile) {
+      //   state.isMobileOpen = false;
+      // }
     },
   },
 });

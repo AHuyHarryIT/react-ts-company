@@ -3,15 +3,15 @@ import React from 'react';
 interface ComponentCardProps {
   title: string;
   children: React.ReactNode;
-  className?: string; // Additional custom classes for styling
-  desc?: string; // Description text
+  className?: string;
+  desc?: string;
 }
 
 const ComponentCard: React.FC<ComponentCardProps> = ({
   title,
   children,
   className = '',
-  desc = '',
+  desc = ''
 }) => {
   return (
     <div
@@ -19,7 +19,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
     >
       {/* Card Header */}
       <div className="p-6">
-        <h3 className="text-base font-medium text-gray-800 dark:text-white/90">
+        <h3 className="text-2xl font-medium text-gray-800 dark:text-white/90">
           {title}
         </h3>
         {desc && (

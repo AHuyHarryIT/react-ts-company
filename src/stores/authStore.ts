@@ -1,0 +1,45 @@
+import { User } from '@/types/authType';
+import { Store } from '@tanstack/react-store';
+
+type AuthState = {
+  user: User | null;
+  isAuthenticated: boolean;
+};
+
+// Load state from localStorage or set default values
+const initialState: AuthState = {
+  user: JSON.parse(localStorage.getItem('user') || 'null'),
+  isAuthenticated: localStorage.getItem('isAuthenticated') === 'true'
+};
+
+// Create the store instance
+export const authStore = new Store(initialState);
+
+// Subscribe to state changes to update localStorage
+authStore.subscribe((state) => {
+  localStorage.setItem('user', JSON.stringify(state.currentVal.user));
+
+  localStorage.setItem(
+    'isAuthenticated',
+    state.currentVal.isAuthenticated ? 'true' : 'false'
+  );
+});
+
+// Utility functions to update the store state
+export const setUser = (user: User) => {
+  authStore.setState((prevState) => {
+    return { ...prevState, user, isAuthenticated: true };
+  });
+};
+
+export const setAuth = (isAuthenticated: boolean) => {
+  authStore.setState((prevState) => {
+    return { ...prevState, isAuthenticated };
+  });
+};
+
+export const clearAuth = () => {
+  authStore.setState((prevState) => {
+    return { ...prevState, isAuthenticated: false, user: null };
+  });
+};
