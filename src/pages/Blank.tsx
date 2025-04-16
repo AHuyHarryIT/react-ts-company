@@ -1,4 +1,7 @@
+import { headTitle } from '@utils/headMeta';
+
 export default function Blank() {
+  headTitle('Blank Page');
   return (
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">

@@ -1,14 +1,15 @@
 import axiosPrivate from '@/api/axiosInstance';
-import { User } from '@/types/authType';
-import { clearAuth, setUser } from '@stores/authStore';
-import { convertImageName2Url } from '@utils/convertImageName2Url';
+import { handleApiError } from '@utils/handleApiError';
+import { message } from 'antd';
 
 const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 0;
 
-type AuthResponse = {
+type AuthLoginResponse = {
+  token: string;
   name: string;
   role_id: number;
   role_name: string;
+  expires_at: string;
   image: string;
 };
 
@@ -25,56 +26,29 @@ export const authLogin = async (
     phone: username,
     password: password,
     remember: remember || false,
-    expiresInMins: expiresInMins
+    expiresInMins: expiresInMins,
   };
 
-  // await axiosPrivate.get('/sanctum/csrf-cookie');
-  const response: AuthResponse = await axiosPrivate.post('/api/login', data);
-
-  const userData: User = {
-    name: response.name,
-    role: {
-      id: response.role_id.toString(),
-      name: response.role_name
-    }
-  };
-
-  if (response?.image && response?.role_id == 15) {
-    userData.image_url = convertImageName2Url(response.image, 'admin');
-  } else if (response?.image) {
-    userData.image_url = convertImageName2Url(response.image);
-  }
-  setUser(userData);
-  return response;
-};
-
-export const authLogout = async () => {
-  const response: AuthLogoutResponse = await axiosPrivate.post('/api/logout');
-  clearAuth();
-  return response;
-};
-
-export const authCheck = async () => {
   try {
-    const response: AuthResponse = await axiosPrivate.get('/api/auth/check');
-    const userData: User = {
-      name: response.name,
-      role: {
-        id: response.role_id.toString(),
-        name: response.role_name
-      }
-    };
-
-    if (response?.image && response?.role_id == 15) {
-      userData.image_url = convertImageName2Url(response.image, 'admin');
-    } else if (response?.image) {
-      userData.image_url = convertImageName2Url(response.image);
-    }
-    setUser(userData);
+    await axiosPrivate.get('/sanctum/csrf-cookie');
+    const response: AuthLoginResponse = await axiosPrivate.post(
+      '/api/login',
+      data
+    );
 
     return response;
   } catch (error) {
-    clearAuth();
-    throw error;
+    throw new Error(handleApiError(error));
+  }
+};
+
+export const authLogout = async () => {
+  try {
+    const response: AuthLogoutResponse =
+      await axiosPrivate.post('/api/admin/logout');
+    const notification = response.message || 'Logout successfully';
+    message.success(notification);
+  } catch (error) {
+    throw new Error(handleApiError(error));
   }
 };

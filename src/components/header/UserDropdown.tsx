@@ -1,10 +1,11 @@
-import { Link, useNavigate } from '@tanstack/react-router';
 import { Avatar, Dropdown, MenuProps } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import { authLogout } from '@services/AuthService';
-import { authStore } from '@stores/authStore';
+import { logout } from '@stores/authSlice';
+import { AppDispatch, RootState } from '@stores/index';
 
-import { useStore } from '@tanstack/react-store';
 import { FaUser, FaUserCircle } from 'react-icons/fa';
 import { GoGear } from 'react-icons/go';
 import { IoIosLogOut } from 'react-icons/io';
@@ -13,12 +14,11 @@ import { IoInformationCircleOutline } from 'react-icons/io5';
 type MenuItem = Required<MenuProps>['items'][number];
 
 export default function UserDropdown() {
-  const navigate = useNavigate();
-  const { user } = useStore(authStore);
-
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
   const handleLogout = async () => {
     await authLogout();
-    navigate({ to: '/' });
+    dispatch(logout());
   };
 
   const items: MenuItem[] = [

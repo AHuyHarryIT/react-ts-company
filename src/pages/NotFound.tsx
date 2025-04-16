@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { Link } from 'react-router-dom';
 
 export default function NotFound() {
   return (
@@ -27,6 +27,10 @@ export default function NotFound() {
             Back to Home Page
           </Link>
         </div>
+        {/* <!-- Footer --> */}
+        <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
+          &copy; {new Date().getFullYear()} - VVP
+        </p>
       </div>
     </>
   );

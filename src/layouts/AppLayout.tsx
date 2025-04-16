@@ -1,21 +1,34 @@
-import { Outlet } from '@tanstack/react-router';
 import { ConfigProvider, Layout, theme as antTheme } from 'antd';
+import { Outlet } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import AppFooter from '@partials/Footer';
 import Header from '@partials/Header';
 import Sidebar from '@partials/Sidebar';
-import { updateScreenSize } from '@stores/uiStore';
+import { AppDispatch, RootState } from '@stores/index';
+import { updateScreenSize } from '@stores/sidebarSlice';
+import AppFooter from '@partials/Footer';
 
 const { Content } = Layout;
 
 function AppLayout() {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { isMobile } = useSelector((state: RootState) => state.sidebar);
+
   useEffect(() => {
-    window.addEventListener('resize', updateScreenSize);
-    return () => {
-      window.removeEventListener('resize', updateScreenSize);
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      if (mobile !== isMobile) {
+        dispatch(updateScreenSize());
+      }
     };
-  }, []);
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [dispatch, isMobile]);
 
   const {
     token: { colorBgContainer, borderRadiusLG },
