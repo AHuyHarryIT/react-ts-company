@@ -13,7 +13,7 @@ interface DeleteProps<TData, TCreateDto, TUpdateDto> {
   isRestore?: boolean;
 }
 
-export function DeleteButton<
+export function ConfirmButton<
   TData extends object,
   TCreateDto extends object,
   TUpdateDto extends object

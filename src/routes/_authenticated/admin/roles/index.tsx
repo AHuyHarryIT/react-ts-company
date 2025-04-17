@@ -10,7 +10,7 @@ import { RoleType } from '@/types/roleType';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { CreateModal } from '@components/ui/CRUD/CreateModal';
-import { DeleteButton } from '@components/ui/CRUD/ConfirmButton';
+import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
 
 export const Route = createFileRoute('/_authenticated/admin/roles/')({
@@ -95,7 +95,7 @@ function RouteComponent() {
               schema={roleCreateSchema}
               fields={roleFields}
             />
-            <DeleteButton id={record.id} service={roleService} />
+            <ConfirmButton id={record.id} service={roleService} />
           </div>
         );
       }

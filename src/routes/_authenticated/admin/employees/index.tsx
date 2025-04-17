@@ -15,7 +15,7 @@ import { EmployeeType } from '@/types/employeeType';
 import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
-import { DeleteButton } from '@components/ui/CRUD/ConfirmButton';
+import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
 import { uiStore } from '@stores/uiStore';
 import { convertImageName2Url } from '@utils/convertImageName2Url';
@@ -166,7 +166,7 @@ function RouteComponent() {
                 Sửa
               </Button>
             </Link>
-            <DeleteButton
+            <ConfirmButton
               id={_record.id}
               service={employeeService}
               content={

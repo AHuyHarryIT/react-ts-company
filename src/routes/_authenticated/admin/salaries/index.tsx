@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Button, Table, TableColumnsType, TableProps, Tooltip } from 'antd';
+import { Button, Table, TableColumnsType, TableProps } from 'antd';
 import { useState } from 'react';
 
 import { useCrudList } from '@/hooks/useCrudList';
@@ -7,9 +7,9 @@ import { SalaryType } from '@/types/salaryType';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { AddSalary } from '@components/salaries/AddModal';
-import { DeleteModal } from '@components/salaries/DeleteModal';
 import { salariesService } from '@services/SalaryService';
 
+import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { GoInfo } from 'react-icons/go';
 
 export const Route = createFileRoute('/_authenticated/admin/salaries/')({
@@ -93,11 +93,28 @@ function RouteComponent() {
         return (
           <div className="flex items-center justify-center gap-2">
             <Link to={`/admin/salaries/$id`} params={{ id: _record.id }}>
-              <Button color="primary" variant="solid" icon={<GoInfo />}>
+              <Button
+                color="primary"
+                variant="solid"
+                size="large"
+                icon={<GoInfo />}
+              >
                 Chi tiết
               </Button>
             </Link>
-            <DeleteModal id={_record.id} title={_record.title} />
+            <ConfirmButton
+              id={_record.id}
+              service={salariesService}
+              content={
+                <p>
+                  Bạn có chắc chắn muốn xóa bản lương{' '}
+                  <strong>
+                    {_record.title} - {_record.id}
+                  </strong>{' '}
+                  không?
+                </p>
+              }
+            />
           </div>
         );
       }
@@ -132,9 +149,7 @@ function RouteComponent() {
     return (
       <>
         <div className="flex flex-wrap gap-4">
-          <Tooltip title="Làm mới">
-            <RefreshButton refresh={refetch} isLoading={isFetching} />
-          </Tooltip>
+          <RefreshButton refresh={refetch} isLoading={isFetching} />
           <AddSalary />
         </div>
       </>

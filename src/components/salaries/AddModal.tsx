@@ -56,7 +56,7 @@ export const AddSalary = () => {
     onSuccess: () => {
       message.success('Thêm bản lương thành công');
 
-      queryClient.invalidateQueries({ queryKey: ['fetchSalaries'] });
+      queryClient.invalidateQueries();
     },
     onError: () => {
       message.error('Lỗi khi thêm bản lương');

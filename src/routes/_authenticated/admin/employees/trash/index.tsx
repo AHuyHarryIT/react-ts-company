@@ -7,7 +7,7 @@ import { EmployeeType } from '@/types/employeeType';
 import { QueryParams } from '@/types/queryParams';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
-import { DeleteButton } from '@components/ui/CRUD/ConfirmButton';
+import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
 import { convertImageName2Url } from '@utils/convertImageName2Url';
 
@@ -149,7 +149,7 @@ function RouteComponent() {
       render: (_value, _record) => {
         return (
           <div className="flex gap-2">
-            <DeleteButton
+            <ConfirmButton
               isRestore={true}
               id={_record.id}
               service={employeeService}
