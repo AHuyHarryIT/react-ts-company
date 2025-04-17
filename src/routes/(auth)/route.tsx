@@ -6,7 +6,6 @@ export const Route = createFileRoute('/(auth)')({
   beforeLoad: async ({ context }) => {
     const { isLogged, user } = context.authenticated;
     const role = user?.role.id;
-    console.log('Auth route', role);
     if (await isLogged()) {
       // Redirect to admin if already authenticated
       switch (role) {

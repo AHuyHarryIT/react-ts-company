@@ -37,8 +37,8 @@ function RouteComponent() {
 
     onSuccess: (data) => {
       message.success('Login success!');
-      switch (data.role_id) {
-        case 15:
+      switch (data.role_id.toString()) {
+        case '15':
           navigate({ to: '/admin' });
           break;
         default:

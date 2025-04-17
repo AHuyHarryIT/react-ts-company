@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import type { MenuProps } from 'antd';
-import { Layout, Menu } from 'antd';
+import { Image, Layout, Menu } from 'antd';
 import { CSSProperties, Key, ReactNode } from 'react';
 
 import { toggleSidebar, uiStore } from '@stores/uiStore';
@@ -212,7 +212,7 @@ function Sidebar() {
       >
         <div className="flex items-center justify-center p-4">
           <Link to="/admin">
-            <img className="w-full" src={logo} alt="Logo" />
+            <Image className="w-full" src={logo} alt="Logo" preview={false} />
           </Link>
         </div>
         <IconContext.Provider value={{ size: '1rem' }}>

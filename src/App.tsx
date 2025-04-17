@@ -26,11 +26,10 @@ declare module '@tanstack/react-router' {
 
 function App() {
   const authenticated = useAuth();
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   return (
     <>
-      <RouterProvider router={router} context={{ user, authenticated }} />
+      <RouterProvider router={router} context={{ authenticated }} />
     </>
   );
 }

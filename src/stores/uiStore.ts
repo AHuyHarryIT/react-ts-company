@@ -8,9 +8,9 @@ type UIState = {
 
 // Load state from localStorage or set default values
 const initialState: UIState = {
-  isSidebarClose: JSON.parse(localStorage.getItem('isSidebarClose') || 'true'),
+  isSidebarClose: window.innerWidth < 768,
   theme: localStorage.getItem('theme') === 'dark' ? 'dark' : 'light',
-  isMobile: window.innerWidth < 768,
+  isMobile: window.innerWidth < 768
 };
 
 // Create the store instance
