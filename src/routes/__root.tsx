@@ -1,3 +1,4 @@
+import { AuthContext } from '@/hooks/useAuth';
 import { User } from '@/types/authType';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -6,7 +7,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
 type RouterContext = {
   user: User | null;
-  authenticated: boolean;
+  authenticated: AuthContext;
 };
 
 const queryClient = new QueryClient();

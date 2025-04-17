@@ -4,12 +4,14 @@ import { Store } from '@tanstack/react-store';
 type AuthState = {
   user: User | null;
   isAuthenticated: boolean;
+  token: string | null;
 };
 
 // Load state from localStorage or set default values
 const initialState: AuthState = {
   user: JSON.parse(localStorage.getItem('user') || 'null'),
-  isAuthenticated: localStorage.getItem('isAuthenticated') === 'true'
+  isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
+  token: localStorage.getItem('token') || null
 };
 
 // Create the store instance
@@ -23,6 +25,7 @@ authStore.subscribe((state) => {
     'isAuthenticated',
     state.currentVal.isAuthenticated ? 'true' : 'false'
   );
+  localStorage.setItem('token', state.currentVal.token || '');
 });
 
 // Utility functions to update the store state
@@ -38,8 +41,14 @@ export const setAuth = (isAuthenticated: boolean) => {
   });
 };
 
+export const setToken = (token: string) => {
+  authStore.setState((prevState) => {
+    return { ...prevState, token };
+  });
+};
+
 export const clearAuth = () => {
   authStore.setState((prevState) => {
-    return { ...prevState, isAuthenticated: false, user: null };
+    return { ...prevState, isAuthenticated: false, user: null, token: null };
   });
 };

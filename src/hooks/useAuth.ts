@@ -1,21 +1,9 @@
-import { authCheck, authLogout } from '@services/AuthService';
-import { clearAuth, setAuth } from '@stores/authStore';
+import { authLogout } from '@services/AuthService';
+import { authStore, clearAuth, setAuth } from '@stores/authStore';
 import { redirect } from '@tanstack/react-router';
 
 export const useAuth = () => {
-  const checkAuth = async () => {
-    try {
-      await authCheck();
-      setAuth(true);
-      return true;
-    } catch {
-      clearAuth();
-      return false;
-    }
-  };
-
   const signIn = async () => {
-    await checkAuth();
     setAuth(true);
     redirect({ to: '/admin' });
   };
@@ -25,11 +13,13 @@ export const useAuth = () => {
     clearAuth();
   };
 
+  const user = authStore.state.user;
+
   const isLogged = async () => {
-    return await checkAuth();
+    return authStore.state.isAuthenticated;
   };
 
-  return { signIn, signOut, isLogged };
+  return { signIn, signOut, isLogged, user };
 };
 
 export type AuthContext = ReturnType<typeof useAuth>;

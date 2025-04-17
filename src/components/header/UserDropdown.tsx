@@ -18,7 +18,7 @@ export default function UserDropdown() {
 
   const handleLogout = async () => {
     await authLogout();
-    navigate({ to: '/' });
+    navigate({ to: '/login' });
   };
 
   const items: MenuItem[] = [
@@ -36,30 +36,30 @@ export default function UserDropdown() {
         </div>
       ),
       disabled: true,
-      style: { cursor: 'default' },
+      style: { cursor: 'default' }
     },
     {
       key: 'profile',
       label: <Link to={'/'}>Profile</Link>,
-      icon: <FaUserCircle />,
+      icon: <FaUserCircle />
     },
     {
       key: 'setting',
       label: <Link to={'/'}>Setting</Link>,
-      icon: <GoGear />,
+      icon: <GoGear />
     },
     {
       key: 'support',
       label: <Link to={'/'}>Support</Link>,
-      icon: <IoInformationCircleOutline />,
+      icon: <IoInformationCircleOutline />
     },
     { type: 'divider' },
     {
       key: 'log-out',
       label: 'Log out',
       icon: <IoIosLogOut />,
-      onClick: handleLogout,
-    },
+      onClick: handleLogout
+    }
   ];
 
   return (

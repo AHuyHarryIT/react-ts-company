@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 
-import { clearAuth } from '@stores/authStore';
 import { ApiErrorResponse, ValidationErrors } from '@/types/apiType';
+import { clearAuth } from '@stores/authStore';
 import { mapErrorCodesToMessages } from '@utils/validationMapper';
 
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
@@ -19,6 +19,14 @@ const axiosPrivate = axios.create({
     'Content-Type': 'application/json'
   },
   withCredentials: true
+});
+
+axiosPrivate.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 axiosPrivate.interceptors.response.use(
@@ -57,6 +65,9 @@ axiosPrivate.interceptors.response.use(
         // Unauthenticated — maybe redirect to login
         console.warn('Unauthorized');
         clearAuth();
+        // TODO: Redirect to login page
+        window.location.href =
+          '/login/' + `?redirect=${window.location.pathname}`;
         break;
 
       case 403:

@@ -13,42 +13,46 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AdminRouteImport } from './routes/admin/route'
+import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as authRouteImport } from './routes/(auth)/route'
-import { Route as AdminIndexImport } from './routes/admin/index'
-import { Route as authIndexImport } from './routes/(auth)/index'
-import { Route as AdminProductsImport } from './routes/admin/products'
-import { Route as AdminCheckPoImport } from './routes/admin/check-po'
-import { Route as AdminActivityScheduleImport } from './routes/admin/activity-schedule'
-import { Route as AdminActivityHistoryImport } from './routes/admin/activity-history'
-import { Route as AdminAboutImport } from './routes/admin/about'
-import { Route as AdminWorkSchedulesIndexImport } from './routes/admin/work-schedules/index'
-import { Route as AdminWorkScheduleCategoriesIndexImport } from './routes/admin/work-schedule-categories/index'
-import { Route as AdminSalariesIndexImport } from './routes/admin/salaries/index'
-import { Route as AdminRolesIndexImport } from './routes/admin/roles/index'
-import { Route as AdminEmployeesIndexImport } from './routes/admin/employees/index'
-import { Route as AdminWorkSchedulesIdImport } from './routes/admin/work-schedules/$id'
-import { Route as AdminStampsRequestImport } from './routes/admin/stamps/request'
-import { Route as AdminStampsHistoryImport } from './routes/admin/stamps/history'
-import { Route as AdminStampsBoxImport } from './routes/admin/stamps/box'
-import { Route as AdminStampsBagImport } from './routes/admin/stamps/bag'
-import { Route as AdminPlansProductionImport } from './routes/admin/plans/production'
-import { Route as AdminPlansMaterialImport } from './routes/admin/plans/material'
-import { Route as AdminEmployeesAddImport } from './routes/admin/employees/add'
-import { Route as AdminAttendancesSheetImport } from './routes/admin/attendances/sheet'
-import { Route as AdminAttendancesHistoryImport } from './routes/admin/attendances/history'
-import { Route as AdminEmployeesTrashIndexImport } from './routes/admin/employees/trash/index'
-import { Route as AdminEmployeesEditIdImport } from './routes/admin/employees/edit.$id'
+import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index'
+import { Route as authLoginImport } from './routes/(auth)/login'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedEmployeeIndexImport } from './routes/_authenticated/employee/index'
+import { Route as AuthenticatedAdminIndexImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminProductsImport } from './routes/_authenticated/admin/products'
+import { Route as AuthenticatedAdminCheckPoImport } from './routes/_authenticated/admin/check-po'
+import { Route as AuthenticatedAdminActivityScheduleImport } from './routes/_authenticated/admin/activity-schedule'
+import { Route as AuthenticatedAdminActivityHistoryImport } from './routes/_authenticated/admin/activity-history'
+import { Route as AuthenticatedAdminAboutImport } from './routes/_authenticated/admin/about'
+import { Route as AuthenticatedAdminWorkSchedulesIndexImport } from './routes/_authenticated/admin/work-schedules/index'
+import { Route as AuthenticatedAdminWorkScheduleCategoriesIndexImport } from './routes/_authenticated/admin/work-schedule-categories/index'
+import { Route as AuthenticatedAdminSalariesIndexImport } from './routes/_authenticated/admin/salaries/index'
+import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authenticated/admin/roles/index'
+import { Route as AuthenticatedAdminEmployeesIndexImport } from './routes/_authenticated/admin/employees/index'
+import { Route as AuthenticatedAdminWorkSchedulesIdImport } from './routes/_authenticated/admin/work-schedules/$id'
+import { Route as AuthenticatedAdminStampsRequestImport } from './routes/_authenticated/admin/stamps/request'
+import { Route as AuthenticatedAdminStampsHistoryImport } from './routes/_authenticated/admin/stamps/history'
+import { Route as AuthenticatedAdminStampsBoxImport } from './routes/_authenticated/admin/stamps/box'
+import { Route as AuthenticatedAdminStampsBagImport } from './routes/_authenticated/admin/stamps/bag'
+import { Route as AuthenticatedAdminPlansProductionImport } from './routes/_authenticated/admin/plans/production'
+import { Route as AuthenticatedAdminPlansMaterialImport } from './routes/_authenticated/admin/plans/material'
+import { Route as AuthenticatedAdminEmployeesAddImport } from './routes/_authenticated/admin/employees/add'
+import { Route as AuthenticatedAdminAttendancesSheetImport } from './routes/_authenticated/admin/attendances/sheet'
+import { Route as AuthenticatedAdminAttendancesHistoryImport } from './routes/_authenticated/admin/attendances/history'
+import { Route as AuthenticatedAdminEmployeesTrashIndexImport } from './routes/_authenticated/admin/employees/trash/index'
+import { Route as AuthenticatedAdminEmployeesEditIdImport } from './routes/_authenticated/admin/employees/edit.$id'
 
 // Create Virtual Routes
 
-const AdminSalariesIdLazyImport = createFileRoute('/admin/salaries/$id')()
+const AuthenticatedAdminSalariesIdLazyImport = createFileRoute(
+  '/_authenticated/admin/salaries/$id',
+)()
 
 // Create/Update Routes
 
-const AdminRouteRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AuthenticatedRoute = AuthenticatedImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -57,158 +61,201 @@ const authRouteRoute = authRouteImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AdminIndexRoute = AdminIndexImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AdminRouteRoute,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 
-const authIndexRoute = authIndexImport.update({
-  id: '/',
-  path: '/',
+const authLoginRoute = authLoginImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => authRouteRoute,
 } as any)
 
-const AdminProductsRoute = AdminProductsImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => AdminRouteRoute,
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 
-const AdminCheckPoRoute = AdminCheckPoImport.update({
-  id: '/check-po',
-  path: '/check-po',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-
-const AdminActivityScheduleRoute = AdminActivityScheduleImport.update({
-  id: '/activity-schedule',
-  path: '/activity-schedule',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-
-const AdminActivityHistoryRoute = AdminActivityHistoryImport.update({
-  id: '/activity-history',
-  path: '/activity-history',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-
-const AdminAboutRoute = AdminAboutImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-
-const AdminWorkSchedulesIndexRoute = AdminWorkSchedulesIndexImport.update({
-  id: '/work-schedules/',
-  path: '/work-schedules/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-
-const AdminWorkScheduleCategoriesIndexRoute =
-  AdminWorkScheduleCategoriesIndexImport.update({
-    id: '/work-schedule-categories/',
-    path: '/work-schedule-categories/',
-    getParentRoute: () => AdminRouteRoute,
-  } as any)
-
-const AdminSalariesIndexRoute = AdminSalariesIndexImport.update({
-  id: '/salaries/',
-  path: '/salaries/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-
-const AdminRolesIndexRoute = AdminRolesIndexImport.update({
-  id: '/roles/',
-  path: '/roles/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-
-const AdminEmployeesIndexRoute = AdminEmployeesIndexImport.update({
-  id: '/employees/',
-  path: '/employees/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-
-const AdminSalariesIdLazyRoute = AdminSalariesIdLazyImport.update({
-  id: '/salaries/$id',
-  path: '/salaries/$id',
-  getParentRoute: () => AdminRouteRoute,
-} as any).lazy(() =>
-  import('./routes/admin/salaries/$id.lazy').then((d) => d.Route),
+const AuthenticatedEmployeeIndexRoute = AuthenticatedEmployeeIndexImport.update(
+  {
+    id: '/employee/',
+    path: '/employee/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any,
 )
 
-const AdminWorkSchedulesIdRoute = AdminWorkSchedulesIdImport.update({
-  id: '/work-schedules/$id',
-  path: '/work-schedules/$id',
-  getParentRoute: () => AdminRouteRoute,
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 
-const AdminStampsRequestRoute = AdminStampsRequestImport.update({
-  id: '/stamps/request',
-  path: '/stamps/request',
-  getParentRoute: () => AdminRouteRoute,
+const AuthenticatedAdminProductsRoute = AuthenticatedAdminProductsImport.update(
+  {
+    id: '/products',
+    path: '/products',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any,
+)
+
+const AuthenticatedAdminCheckPoRoute = AuthenticatedAdminCheckPoImport.update({
+  id: '/check-po',
+  path: '/check-po',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 
-const AdminStampsHistoryRoute = AdminStampsHistoryImport.update({
-  id: '/stamps/history',
-  path: '/stamps/history',
-  getParentRoute: () => AdminRouteRoute,
+const AuthenticatedAdminActivityScheduleRoute =
+  AuthenticatedAdminActivityScheduleImport.update({
+    id: '/activity-schedule',
+    path: '/activity-schedule',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminActivityHistoryRoute =
+  AuthenticatedAdminActivityHistoryImport.update({
+    id: '/activity-history',
+    path: '/activity-history',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminAboutRoute = AuthenticatedAdminAboutImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 
-const AdminStampsBoxRoute = AdminStampsBoxImport.update({
-  id: '/stamps/box',
-  path: '/stamps/box',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminWorkSchedulesIndexRoute =
+  AuthenticatedAdminWorkSchedulesIndexImport.update({
+    id: '/work-schedules/',
+    path: '/work-schedules/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
-const AdminStampsBagRoute = AdminStampsBagImport.update({
-  id: '/stamps/bag',
-  path: '/stamps/bag',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminWorkScheduleCategoriesIndexRoute =
+  AuthenticatedAdminWorkScheduleCategoriesIndexImport.update({
+    id: '/work-schedule-categories/',
+    path: '/work-schedule-categories/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
-const AdminPlansProductionRoute = AdminPlansProductionImport.update({
-  id: '/plans/production',
-  path: '/plans/production',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminSalariesIndexRoute =
+  AuthenticatedAdminSalariesIndexImport.update({
+    id: '/salaries/',
+    path: '/salaries/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
-const AdminPlansMaterialRoute = AdminPlansMaterialImport.update({
-  id: '/plans/material',
-  path: '/plans/material',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminRolesIndexRoute =
+  AuthenticatedAdminRolesIndexImport.update({
+    id: '/roles/',
+    path: '/roles/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
-const AdminEmployeesAddRoute = AdminEmployeesAddImport.update({
-  id: '/employees/add',
-  path: '/employees/add',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminEmployeesIndexRoute =
+  AuthenticatedAdminEmployeesIndexImport.update({
+    id: '/employees/',
+    path: '/employees/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
-const AdminAttendancesSheetRoute = AdminAttendancesSheetImport.update({
-  id: '/attendances/sheet',
-  path: '/attendances/sheet',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminSalariesIdLazyRoute =
+  AuthenticatedAdminSalariesIdLazyImport.update({
+    id: '/salaries/$id',
+    path: '/salaries/$id',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/salaries/$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
-const AdminAttendancesHistoryRoute = AdminAttendancesHistoryImport.update({
-  id: '/attendances/history',
-  path: '/attendances/history',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminWorkSchedulesIdRoute =
+  AuthenticatedAdminWorkSchedulesIdImport.update({
+    id: '/work-schedules/$id',
+    path: '/work-schedules/$id',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
-const AdminEmployeesTrashIndexRoute = AdminEmployeesTrashIndexImport.update({
-  id: '/employees/trash/',
-  path: '/employees/trash/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminStampsRequestRoute =
+  AuthenticatedAdminStampsRequestImport.update({
+    id: '/stamps/request',
+    path: '/stamps/request',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
-const AdminEmployeesEditIdRoute = AdminEmployeesEditIdImport.update({
-  id: '/employees/edit/$id',
-  path: '/employees/edit/$id',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+const AuthenticatedAdminStampsHistoryRoute =
+  AuthenticatedAdminStampsHistoryImport.update({
+    id: '/stamps/history',
+    path: '/stamps/history',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminStampsBoxRoute =
+  AuthenticatedAdminStampsBoxImport.update({
+    id: '/stamps/box',
+    path: '/stamps/box',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminStampsBagRoute =
+  AuthenticatedAdminStampsBagImport.update({
+    id: '/stamps/bag',
+    path: '/stamps/bag',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminPlansProductionRoute =
+  AuthenticatedAdminPlansProductionImport.update({
+    id: '/plans/production',
+    path: '/plans/production',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminPlansMaterialRoute =
+  AuthenticatedAdminPlansMaterialImport.update({
+    id: '/plans/material',
+    path: '/plans/material',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminEmployeesAddRoute =
+  AuthenticatedAdminEmployeesAddImport.update({
+    id: '/employees/add',
+    path: '/employees/add',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminAttendancesSheetRoute =
+  AuthenticatedAdminAttendancesSheetImport.update({
+    id: '/attendances/sheet',
+    path: '/attendances/sheet',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminAttendancesHistoryRoute =
+  AuthenticatedAdminAttendancesHistoryImport.update({
+    id: '/attendances/history',
+    path: '/attendances/history',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminEmployeesTrashIndexRoute =
+  AuthenticatedAdminEmployeesTrashIndexImport.update({
+    id: '/employees/trash/',
+    path: '/employees/trash/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminEmployeesEditIdRoute =
+  AuthenticatedAdminEmployeesEditIdImport.update({
+    id: '/employees/edit/$id',
+    path: '/employees/edit/$id',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -221,187 +268,208 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authRouteImport
       parentRoute: typeof rootRoute
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedImport
       parentRoute: typeof rootRoute
     }
-    '/admin/about': {
-      id: '/admin/about'
-      path: '/about'
-      fullPath: '/admin/about'
-      preLoaderRoute: typeof AdminAboutImport
-      parentRoute: typeof AdminRouteImport
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedImport
     }
-    '/admin/activity-history': {
-      id: '/admin/activity-history'
-      path: '/activity-history'
-      fullPath: '/admin/activity-history'
-      preLoaderRoute: typeof AdminActivityHistoryImport
-      parentRoute: typeof AdminRouteImport
-    }
-    '/admin/activity-schedule': {
-      id: '/admin/activity-schedule'
-      path: '/activity-schedule'
-      fullPath: '/admin/activity-schedule'
-      preLoaderRoute: typeof AdminActivityScheduleImport
-      parentRoute: typeof AdminRouteImport
-    }
-    '/admin/check-po': {
-      id: '/admin/check-po'
-      path: '/check-po'
-      fullPath: '/admin/check-po'
-      preLoaderRoute: typeof AdminCheckPoImport
-      parentRoute: typeof AdminRouteImport
-    }
-    '/admin/products': {
-      id: '/admin/products'
-      path: '/products'
-      fullPath: '/admin/products'
-      preLoaderRoute: typeof AdminProductsImport
-      parentRoute: typeof AdminRouteImport
-    }
-    '/(auth)/': {
-      id: '/(auth)/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof authIndexImport
+    '/(auth)/login': {
+      id: '/(auth)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof authLoginImport
       parentRoute: typeof authRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexImport
+      parentRoute: typeof AuthenticatedImport
+    }
+    '/_authenticated/admin/about': {
+      id: '/_authenticated/admin/about'
+      path: '/about'
+      fullPath: '/admin/about'
+      preLoaderRoute: typeof AuthenticatedAdminAboutImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/admin/activity-history': {
+      id: '/_authenticated/admin/activity-history'
+      path: '/activity-history'
+      fullPath: '/admin/activity-history'
+      preLoaderRoute: typeof AuthenticatedAdminActivityHistoryImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/admin/activity-schedule': {
+      id: '/_authenticated/admin/activity-schedule'
+      path: '/activity-schedule'
+      fullPath: '/admin/activity-schedule'
+      preLoaderRoute: typeof AuthenticatedAdminActivityScheduleImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/admin/check-po': {
+      id: '/_authenticated/admin/check-po'
+      path: '/check-po'
+      fullPath: '/admin/check-po'
+      preLoaderRoute: typeof AuthenticatedAdminCheckPoImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/admin/products': {
+      id: '/_authenticated/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AuthenticatedAdminProductsImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
       path: '/'
       fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/attendances/history': {
-      id: '/admin/attendances/history'
+    '/_authenticated/employee/': {
+      id: '/_authenticated/employee/'
+      path: '/employee'
+      fullPath: '/employee'
+      preLoaderRoute: typeof AuthenticatedEmployeeIndexImport
+      parentRoute: typeof AuthenticatedImport
+    }
+    '/_authenticated/admin/attendances/history': {
+      id: '/_authenticated/admin/attendances/history'
       path: '/attendances/history'
       fullPath: '/admin/attendances/history'
-      preLoaderRoute: typeof AdminAttendancesHistoryImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminAttendancesHistoryImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/attendances/sheet': {
-      id: '/admin/attendances/sheet'
+    '/_authenticated/admin/attendances/sheet': {
+      id: '/_authenticated/admin/attendances/sheet'
       path: '/attendances/sheet'
       fullPath: '/admin/attendances/sheet'
-      preLoaderRoute: typeof AdminAttendancesSheetImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminAttendancesSheetImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/employees/add': {
-      id: '/admin/employees/add'
+    '/_authenticated/admin/employees/add': {
+      id: '/_authenticated/admin/employees/add'
       path: '/employees/add'
       fullPath: '/admin/employees/add'
-      preLoaderRoute: typeof AdminEmployeesAddImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminEmployeesAddImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/plans/material': {
-      id: '/admin/plans/material'
+    '/_authenticated/admin/plans/material': {
+      id: '/_authenticated/admin/plans/material'
       path: '/plans/material'
       fullPath: '/admin/plans/material'
-      preLoaderRoute: typeof AdminPlansMaterialImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminPlansMaterialImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/plans/production': {
-      id: '/admin/plans/production'
+    '/_authenticated/admin/plans/production': {
+      id: '/_authenticated/admin/plans/production'
       path: '/plans/production'
       fullPath: '/admin/plans/production'
-      preLoaderRoute: typeof AdminPlansProductionImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminPlansProductionImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/stamps/bag': {
-      id: '/admin/stamps/bag'
+    '/_authenticated/admin/stamps/bag': {
+      id: '/_authenticated/admin/stamps/bag'
       path: '/stamps/bag'
       fullPath: '/admin/stamps/bag'
-      preLoaderRoute: typeof AdminStampsBagImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminStampsBagImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/stamps/box': {
-      id: '/admin/stamps/box'
+    '/_authenticated/admin/stamps/box': {
+      id: '/_authenticated/admin/stamps/box'
       path: '/stamps/box'
       fullPath: '/admin/stamps/box'
-      preLoaderRoute: typeof AdminStampsBoxImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminStampsBoxImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/stamps/history': {
-      id: '/admin/stamps/history'
+    '/_authenticated/admin/stamps/history': {
+      id: '/_authenticated/admin/stamps/history'
       path: '/stamps/history'
       fullPath: '/admin/stamps/history'
-      preLoaderRoute: typeof AdminStampsHistoryImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminStampsHistoryImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/stamps/request': {
-      id: '/admin/stamps/request'
+    '/_authenticated/admin/stamps/request': {
+      id: '/_authenticated/admin/stamps/request'
       path: '/stamps/request'
       fullPath: '/admin/stamps/request'
-      preLoaderRoute: typeof AdminStampsRequestImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminStampsRequestImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/work-schedules/$id': {
-      id: '/admin/work-schedules/$id'
+    '/_authenticated/admin/work-schedules/$id': {
+      id: '/_authenticated/admin/work-schedules/$id'
       path: '/work-schedules/$id'
       fullPath: '/admin/work-schedules/$id'
-      preLoaderRoute: typeof AdminWorkSchedulesIdImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminWorkSchedulesIdImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/salaries/$id': {
-      id: '/admin/salaries/$id'
+    '/_authenticated/admin/salaries/$id': {
+      id: '/_authenticated/admin/salaries/$id'
       path: '/salaries/$id'
       fullPath: '/admin/salaries/$id'
-      preLoaderRoute: typeof AdminSalariesIdLazyImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminSalariesIdLazyImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/employees/': {
-      id: '/admin/employees/'
+    '/_authenticated/admin/employees/': {
+      id: '/_authenticated/admin/employees/'
       path: '/employees'
       fullPath: '/admin/employees'
-      preLoaderRoute: typeof AdminEmployeesIndexImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminEmployeesIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/roles/': {
-      id: '/admin/roles/'
+    '/_authenticated/admin/roles/': {
+      id: '/_authenticated/admin/roles/'
       path: '/roles'
       fullPath: '/admin/roles'
-      preLoaderRoute: typeof AdminRolesIndexImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminRolesIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/salaries/': {
-      id: '/admin/salaries/'
+    '/_authenticated/admin/salaries/': {
+      id: '/_authenticated/admin/salaries/'
       path: '/salaries'
       fullPath: '/admin/salaries'
-      preLoaderRoute: typeof AdminSalariesIndexImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminSalariesIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/work-schedule-categories/': {
-      id: '/admin/work-schedule-categories/'
+    '/_authenticated/admin/work-schedule-categories/': {
+      id: '/_authenticated/admin/work-schedule-categories/'
       path: '/work-schedule-categories'
       fullPath: '/admin/work-schedule-categories'
-      preLoaderRoute: typeof AdminWorkScheduleCategoriesIndexImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminWorkScheduleCategoriesIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/work-schedules/': {
-      id: '/admin/work-schedules/'
+    '/_authenticated/admin/work-schedules/': {
+      id: '/_authenticated/admin/work-schedules/'
       path: '/work-schedules'
       fullPath: '/admin/work-schedules'
-      preLoaderRoute: typeof AdminWorkSchedulesIndexImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminWorkSchedulesIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/employees/edit/$id': {
-      id: '/admin/employees/edit/$id'
+    '/_authenticated/admin/employees/edit/$id': {
+      id: '/_authenticated/admin/employees/edit/$id'
       path: '/employees/edit/$id'
       fullPath: '/admin/employees/edit/$id'
-      preLoaderRoute: typeof AdminEmployeesEditIdImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminEmployeesEditIdImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/admin/employees/trash/': {
-      id: '/admin/employees/trash/'
+    '/_authenticated/admin/employees/trash/': {
+      id: '/_authenticated/admin/employees/trash/'
       path: '/employees/trash'
       fullPath: '/admin/employees/trash'
-      preLoaderRoute: typeof AdminEmployeesTrashIndexImport
-      parentRoute: typeof AdminRouteImport
+      preLoaderRoute: typeof AuthenticatedAdminEmployeesTrashIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
     }
   }
 }
@@ -409,174 +477,215 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface authRouteRouteChildren {
-  authIndexRoute: typeof authIndexRoute
+  authLoginRoute: typeof authLoginRoute
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
-  authIndexRoute: authIndexRoute,
+  authLoginRoute: authLoginRoute,
 }
 
 const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
   authRouteRouteChildren,
 )
 
-interface AdminRouteRouteChildren {
-  AdminAboutRoute: typeof AdminAboutRoute
-  AdminActivityHistoryRoute: typeof AdminActivityHistoryRoute
-  AdminActivityScheduleRoute: typeof AdminActivityScheduleRoute
-  AdminCheckPoRoute: typeof AdminCheckPoRoute
-  AdminProductsRoute: typeof AdminProductsRoute
-  AdminIndexRoute: typeof AdminIndexRoute
-  AdminAttendancesHistoryRoute: typeof AdminAttendancesHistoryRoute
-  AdminAttendancesSheetRoute: typeof AdminAttendancesSheetRoute
-  AdminEmployeesAddRoute: typeof AdminEmployeesAddRoute
-  AdminPlansMaterialRoute: typeof AdminPlansMaterialRoute
-  AdminPlansProductionRoute: typeof AdminPlansProductionRoute
-  AdminStampsBagRoute: typeof AdminStampsBagRoute
-  AdminStampsBoxRoute: typeof AdminStampsBoxRoute
-  AdminStampsHistoryRoute: typeof AdminStampsHistoryRoute
-  AdminStampsRequestRoute: typeof AdminStampsRequestRoute
-  AdminWorkSchedulesIdRoute: typeof AdminWorkSchedulesIdRoute
-  AdminSalariesIdLazyRoute: typeof AdminSalariesIdLazyRoute
-  AdminEmployeesIndexRoute: typeof AdminEmployeesIndexRoute
-  AdminRolesIndexRoute: typeof AdminRolesIndexRoute
-  AdminSalariesIndexRoute: typeof AdminSalariesIndexRoute
-  AdminWorkScheduleCategoriesIndexRoute: typeof AdminWorkScheduleCategoriesIndexRoute
-  AdminWorkSchedulesIndexRoute: typeof AdminWorkSchedulesIndexRoute
-  AdminEmployeesEditIdRoute: typeof AdminEmployeesEditIdRoute
-  AdminEmployeesTrashIndexRoute: typeof AdminEmployeesTrashIndexRoute
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAboutRoute: typeof AuthenticatedAdminAboutRoute
+  AuthenticatedAdminActivityHistoryRoute: typeof AuthenticatedAdminActivityHistoryRoute
+  AuthenticatedAdminActivityScheduleRoute: typeof AuthenticatedAdminActivityScheduleRoute
+  AuthenticatedAdminCheckPoRoute: typeof AuthenticatedAdminCheckPoRoute
+  AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminAttendancesHistoryRoute: typeof AuthenticatedAdminAttendancesHistoryRoute
+  AuthenticatedAdminAttendancesSheetRoute: typeof AuthenticatedAdminAttendancesSheetRoute
+  AuthenticatedAdminEmployeesAddRoute: typeof AuthenticatedAdminEmployeesAddRoute
+  AuthenticatedAdminPlansMaterialRoute: typeof AuthenticatedAdminPlansMaterialRoute
+  AuthenticatedAdminPlansProductionRoute: typeof AuthenticatedAdminPlansProductionRoute
+  AuthenticatedAdminStampsBagRoute: typeof AuthenticatedAdminStampsBagRoute
+  AuthenticatedAdminStampsBoxRoute: typeof AuthenticatedAdminStampsBoxRoute
+  AuthenticatedAdminStampsHistoryRoute: typeof AuthenticatedAdminStampsHistoryRoute
+  AuthenticatedAdminStampsRequestRoute: typeof AuthenticatedAdminStampsRequestRoute
+  AuthenticatedAdminWorkSchedulesIdRoute: typeof AuthenticatedAdminWorkSchedulesIdRoute
+  AuthenticatedAdminSalariesIdLazyRoute: typeof AuthenticatedAdminSalariesIdLazyRoute
+  AuthenticatedAdminEmployeesIndexRoute: typeof AuthenticatedAdminEmployeesIndexRoute
+  AuthenticatedAdminRolesIndexRoute: typeof AuthenticatedAdminRolesIndexRoute
+  AuthenticatedAdminSalariesIndexRoute: typeof AuthenticatedAdminSalariesIndexRoute
+  AuthenticatedAdminWorkScheduleCategoriesIndexRoute: typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
+  AuthenticatedAdminWorkSchedulesIndexRoute: typeof AuthenticatedAdminWorkSchedulesIndexRoute
+  AuthenticatedAdminEmployeesEditIdRoute: typeof AuthenticatedAdminEmployeesEditIdRoute
+  AuthenticatedAdminEmployeesTrashIndexRoute: typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
 
-const AdminRouteRouteChildren: AdminRouteRouteChildren = {
-  AdminAboutRoute: AdminAboutRoute,
-  AdminActivityHistoryRoute: AdminActivityHistoryRoute,
-  AdminActivityScheduleRoute: AdminActivityScheduleRoute,
-  AdminCheckPoRoute: AdminCheckPoRoute,
-  AdminProductsRoute: AdminProductsRoute,
-  AdminIndexRoute: AdminIndexRoute,
-  AdminAttendancesHistoryRoute: AdminAttendancesHistoryRoute,
-  AdminAttendancesSheetRoute: AdminAttendancesSheetRoute,
-  AdminEmployeesAddRoute: AdminEmployeesAddRoute,
-  AdminPlansMaterialRoute: AdminPlansMaterialRoute,
-  AdminPlansProductionRoute: AdminPlansProductionRoute,
-  AdminStampsBagRoute: AdminStampsBagRoute,
-  AdminStampsBoxRoute: AdminStampsBoxRoute,
-  AdminStampsHistoryRoute: AdminStampsHistoryRoute,
-  AdminStampsRequestRoute: AdminStampsRequestRoute,
-  AdminWorkSchedulesIdRoute: AdminWorkSchedulesIdRoute,
-  AdminSalariesIdLazyRoute: AdminSalariesIdLazyRoute,
-  AdminEmployeesIndexRoute: AdminEmployeesIndexRoute,
-  AdminRolesIndexRoute: AdminRolesIndexRoute,
-  AdminSalariesIndexRoute: AdminSalariesIndexRoute,
-  AdminWorkScheduleCategoriesIndexRoute: AdminWorkScheduleCategoriesIndexRoute,
-  AdminWorkSchedulesIndexRoute: AdminWorkSchedulesIndexRoute,
-  AdminEmployeesEditIdRoute: AdminEmployeesEditIdRoute,
-  AdminEmployeesTrashIndexRoute: AdminEmployeesTrashIndexRoute,
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminAboutRoute: AuthenticatedAdminAboutRoute,
+    AuthenticatedAdminActivityHistoryRoute:
+      AuthenticatedAdminActivityHistoryRoute,
+    AuthenticatedAdminActivityScheduleRoute:
+      AuthenticatedAdminActivityScheduleRoute,
+    AuthenticatedAdminCheckPoRoute: AuthenticatedAdminCheckPoRoute,
+    AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+    AuthenticatedAdminAttendancesHistoryRoute:
+      AuthenticatedAdminAttendancesHistoryRoute,
+    AuthenticatedAdminAttendancesSheetRoute:
+      AuthenticatedAdminAttendancesSheetRoute,
+    AuthenticatedAdminEmployeesAddRoute: AuthenticatedAdminEmployeesAddRoute,
+    AuthenticatedAdminPlansMaterialRoute: AuthenticatedAdminPlansMaterialRoute,
+    AuthenticatedAdminPlansProductionRoute:
+      AuthenticatedAdminPlansProductionRoute,
+    AuthenticatedAdminStampsBagRoute: AuthenticatedAdminStampsBagRoute,
+    AuthenticatedAdminStampsBoxRoute: AuthenticatedAdminStampsBoxRoute,
+    AuthenticatedAdminStampsHistoryRoute: AuthenticatedAdminStampsHistoryRoute,
+    AuthenticatedAdminStampsRequestRoute: AuthenticatedAdminStampsRequestRoute,
+    AuthenticatedAdminWorkSchedulesIdRoute:
+      AuthenticatedAdminWorkSchedulesIdRoute,
+    AuthenticatedAdminSalariesIdLazyRoute:
+      AuthenticatedAdminSalariesIdLazyRoute,
+    AuthenticatedAdminEmployeesIndexRoute:
+      AuthenticatedAdminEmployeesIndexRoute,
+    AuthenticatedAdminRolesIndexRoute: AuthenticatedAdminRolesIndexRoute,
+    AuthenticatedAdminSalariesIndexRoute: AuthenticatedAdminSalariesIndexRoute,
+    AuthenticatedAdminWorkScheduleCategoriesIndexRoute:
+      AuthenticatedAdminWorkScheduleCategoriesIndexRoute,
+    AuthenticatedAdminWorkSchedulesIndexRoute:
+      AuthenticatedAdminWorkSchedulesIndexRoute,
+    AuthenticatedAdminEmployeesEditIdRoute:
+      AuthenticatedAdminEmployeesEditIdRoute,
+    AuthenticatedAdminEmployeesTrashIndexRoute:
+      AuthenticatedAdminEmployeesTrashIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedEmployeeIndexRoute: typeof AuthenticatedEmployeeIndexRoute
 }
 
-const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
-  AdminRouteRouteChildren,
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedEmployeeIndexRoute: AuthenticatedEmployeeIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
 )
 
 export interface FileRoutesByFullPath {
-  '/': typeof authIndexRoute
-  '/admin': typeof AdminRouteRouteWithChildren
-  '/admin/about': typeof AdminAboutRoute
-  '/admin/activity-history': typeof AdminActivityHistoryRoute
-  '/admin/activity-schedule': typeof AdminActivityScheduleRoute
-  '/admin/check-po': typeof AdminCheckPoRoute
-  '/admin/products': typeof AdminProductsRoute
-  '/admin/': typeof AdminIndexRoute
-  '/admin/attendances/history': typeof AdminAttendancesHistoryRoute
-  '/admin/attendances/sheet': typeof AdminAttendancesSheetRoute
-  '/admin/employees/add': typeof AdminEmployeesAddRoute
-  '/admin/plans/material': typeof AdminPlansMaterialRoute
-  '/admin/plans/production': typeof AdminPlansProductionRoute
-  '/admin/stamps/bag': typeof AdminStampsBagRoute
-  '/admin/stamps/box': typeof AdminStampsBoxRoute
-  '/admin/stamps/history': typeof AdminStampsHistoryRoute
-  '/admin/stamps/request': typeof AdminStampsRequestRoute
-  '/admin/work-schedules/$id': typeof AdminWorkSchedulesIdRoute
-  '/admin/salaries/$id': typeof AdminSalariesIdLazyRoute
-  '/admin/employees': typeof AdminEmployeesIndexRoute
-  '/admin/roles': typeof AdminRolesIndexRoute
-  '/admin/salaries': typeof AdminSalariesIndexRoute
-  '/admin/work-schedule-categories': typeof AdminWorkScheduleCategoriesIndexRoute
-  '/admin/work-schedules': typeof AdminWorkSchedulesIndexRoute
-  '/admin/employees/edit/$id': typeof AdminEmployeesEditIdRoute
-  '/admin/employees/trash': typeof AdminEmployeesTrashIndexRoute
+  '/': typeof AuthenticatedIndexRoute
+  '': typeof AuthenticatedRouteWithChildren
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/login': typeof authLoginRoute
+  '/admin/about': typeof AuthenticatedAdminAboutRoute
+  '/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
+  '/admin/activity-schedule': typeof AuthenticatedAdminActivityScheduleRoute
+  '/admin/check-po': typeof AuthenticatedAdminCheckPoRoute
+  '/admin/products': typeof AuthenticatedAdminProductsRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/employee': typeof AuthenticatedEmployeeIndexRoute
+  '/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
+  '/admin/attendances/sheet': typeof AuthenticatedAdminAttendancesSheetRoute
+  '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
+  '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
+  '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
+  '/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
+  '/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
+  '/admin/stamps/request': typeof AuthenticatedAdminStampsRequestRoute
+  '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
+  '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
+  '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
+  '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
+  '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
+  '/admin/work-schedules': typeof AuthenticatedAdminWorkSchedulesIndexRoute
+  '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
+  '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '/admin/about': typeof AdminAboutRoute
-  '/admin/activity-history': typeof AdminActivityHistoryRoute
-  '/admin/activity-schedule': typeof AdminActivityScheduleRoute
-  '/admin/check-po': typeof AdminCheckPoRoute
-  '/admin/products': typeof AdminProductsRoute
-  '/': typeof authIndexRoute
-  '/admin': typeof AdminIndexRoute
-  '/admin/attendances/history': typeof AdminAttendancesHistoryRoute
-  '/admin/attendances/sheet': typeof AdminAttendancesSheetRoute
-  '/admin/employees/add': typeof AdminEmployeesAddRoute
-  '/admin/plans/material': typeof AdminPlansMaterialRoute
-  '/admin/plans/production': typeof AdminPlansProductionRoute
-  '/admin/stamps/bag': typeof AdminStampsBagRoute
-  '/admin/stamps/box': typeof AdminStampsBoxRoute
-  '/admin/stamps/history': typeof AdminStampsHistoryRoute
-  '/admin/stamps/request': typeof AdminStampsRequestRoute
-  '/admin/work-schedules/$id': typeof AdminWorkSchedulesIdRoute
-  '/admin/salaries/$id': typeof AdminSalariesIdLazyRoute
-  '/admin/employees': typeof AdminEmployeesIndexRoute
-  '/admin/roles': typeof AdminRolesIndexRoute
-  '/admin/salaries': typeof AdminSalariesIndexRoute
-  '/admin/work-schedule-categories': typeof AdminWorkScheduleCategoriesIndexRoute
-  '/admin/work-schedules': typeof AdminWorkSchedulesIndexRoute
-  '/admin/employees/edit/$id': typeof AdminEmployeesEditIdRoute
-  '/admin/employees/trash': typeof AdminEmployeesTrashIndexRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/login': typeof authLoginRoute
+  '/admin/about': typeof AuthenticatedAdminAboutRoute
+  '/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
+  '/admin/activity-schedule': typeof AuthenticatedAdminActivityScheduleRoute
+  '/admin/check-po': typeof AuthenticatedAdminCheckPoRoute
+  '/admin/products': typeof AuthenticatedAdminProductsRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/employee': typeof AuthenticatedEmployeeIndexRoute
+  '/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
+  '/admin/attendances/sheet': typeof AuthenticatedAdminAttendancesSheetRoute
+  '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
+  '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
+  '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
+  '/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
+  '/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
+  '/admin/stamps/request': typeof AuthenticatedAdminStampsRequestRoute
+  '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
+  '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
+  '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
+  '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
+  '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
+  '/admin/work-schedules': typeof AuthenticatedAdminWorkSchedulesIndexRoute
+  '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
+  '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/(auth)': typeof authRouteRouteWithChildren
-  '/admin': typeof AdminRouteRouteWithChildren
-  '/admin/about': typeof AdminAboutRoute
-  '/admin/activity-history': typeof AdminActivityHistoryRoute
-  '/admin/activity-schedule': typeof AdminActivityScheduleRoute
-  '/admin/check-po': typeof AdminCheckPoRoute
-  '/admin/products': typeof AdminProductsRoute
-  '/(auth)/': typeof authIndexRoute
-  '/admin/': typeof AdminIndexRoute
-  '/admin/attendances/history': typeof AdminAttendancesHistoryRoute
-  '/admin/attendances/sheet': typeof AdminAttendancesSheetRoute
-  '/admin/employees/add': typeof AdminEmployeesAddRoute
-  '/admin/plans/material': typeof AdminPlansMaterialRoute
-  '/admin/plans/production': typeof AdminPlansProductionRoute
-  '/admin/stamps/bag': typeof AdminStampsBagRoute
-  '/admin/stamps/box': typeof AdminStampsBoxRoute
-  '/admin/stamps/history': typeof AdminStampsHistoryRoute
-  '/admin/stamps/request': typeof AdminStampsRequestRoute
-  '/admin/work-schedules/$id': typeof AdminWorkSchedulesIdRoute
-  '/admin/salaries/$id': typeof AdminSalariesIdLazyRoute
-  '/admin/employees/': typeof AdminEmployeesIndexRoute
-  '/admin/roles/': typeof AdminRolesIndexRoute
-  '/admin/salaries/': typeof AdminSalariesIndexRoute
-  '/admin/work-schedule-categories/': typeof AdminWorkScheduleCategoriesIndexRoute
-  '/admin/work-schedules/': typeof AdminWorkSchedulesIndexRoute
-  '/admin/employees/edit/$id': typeof AdminEmployeesEditIdRoute
-  '/admin/employees/trash/': typeof AdminEmployeesTrashIndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/(auth)/login': typeof authLoginRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/admin/about': typeof AuthenticatedAdminAboutRoute
+  '/_authenticated/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
+  '/_authenticated/admin/activity-schedule': typeof AuthenticatedAdminActivityScheduleRoute
+  '/_authenticated/admin/check-po': typeof AuthenticatedAdminCheckPoRoute
+  '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/employee/': typeof AuthenticatedEmployeeIndexRoute
+  '/_authenticated/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
+  '/_authenticated/admin/attendances/sheet': typeof AuthenticatedAdminAttendancesSheetRoute
+  '/_authenticated/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
+  '/_authenticated/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
+  '/_authenticated/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/_authenticated/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
+  '/_authenticated/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
+  '/_authenticated/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
+  '/_authenticated/admin/stamps/request': typeof AuthenticatedAdminStampsRequestRoute
+  '/_authenticated/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
+  '/_authenticated/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
+  '/_authenticated/admin/employees/': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/_authenticated/admin/roles/': typeof AuthenticatedAdminRolesIndexRoute
+  '/_authenticated/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
+  '/_authenticated/admin/work-schedule-categories/': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
+  '/_authenticated/admin/work-schedules/': typeof AuthenticatedAdminWorkSchedulesIndexRoute
+  '/_authenticated/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
+  '/_authenticated/admin/employees/trash/': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | ''
     | '/admin'
+    | '/login'
     | '/admin/about'
     | '/admin/activity-history'
     | '/admin/activity-schedule'
     | '/admin/check-po'
     | '/admin/products'
     | '/admin/'
+    | '/employee'
     | '/admin/attendances/history'
     | '/admin/attendances/sheet'
     | '/admin/employees/add'
@@ -597,13 +706,15 @@ export interface FileRouteTypes {
     | '/admin/employees/trash'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | '/login'
     | '/admin/about'
     | '/admin/activity-history'
     | '/admin/activity-schedule'
     | '/admin/check-po'
     | '/admin/products'
-    | '/'
     | '/admin'
+    | '/employee'
     | '/admin/attendances/history'
     | '/admin/attendances/sheet'
     | '/admin/employees/add'
@@ -625,43 +736,46 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/(auth)'
-    | '/admin'
-    | '/admin/about'
-    | '/admin/activity-history'
-    | '/admin/activity-schedule'
-    | '/admin/check-po'
-    | '/admin/products'
-    | '/(auth)/'
-    | '/admin/'
-    | '/admin/attendances/history'
-    | '/admin/attendances/sheet'
-    | '/admin/employees/add'
-    | '/admin/plans/material'
-    | '/admin/plans/production'
-    | '/admin/stamps/bag'
-    | '/admin/stamps/box'
-    | '/admin/stamps/history'
-    | '/admin/stamps/request'
-    | '/admin/work-schedules/$id'
-    | '/admin/salaries/$id'
-    | '/admin/employees/'
-    | '/admin/roles/'
-    | '/admin/salaries/'
-    | '/admin/work-schedule-categories/'
-    | '/admin/work-schedules/'
-    | '/admin/employees/edit/$id'
-    | '/admin/employees/trash/'
+    | '/_authenticated'
+    | '/_authenticated/admin'
+    | '/(auth)/login'
+    | '/_authenticated/'
+    | '/_authenticated/admin/about'
+    | '/_authenticated/admin/activity-history'
+    | '/_authenticated/admin/activity-schedule'
+    | '/_authenticated/admin/check-po'
+    | '/_authenticated/admin/products'
+    | '/_authenticated/admin/'
+    | '/_authenticated/employee/'
+    | '/_authenticated/admin/attendances/history'
+    | '/_authenticated/admin/attendances/sheet'
+    | '/_authenticated/admin/employees/add'
+    | '/_authenticated/admin/plans/material'
+    | '/_authenticated/admin/plans/production'
+    | '/_authenticated/admin/stamps/bag'
+    | '/_authenticated/admin/stamps/box'
+    | '/_authenticated/admin/stamps/history'
+    | '/_authenticated/admin/stamps/request'
+    | '/_authenticated/admin/work-schedules/$id'
+    | '/_authenticated/admin/salaries/$id'
+    | '/_authenticated/admin/employees/'
+    | '/_authenticated/admin/roles/'
+    | '/_authenticated/admin/salaries/'
+    | '/_authenticated/admin/work-schedule-categories/'
+    | '/_authenticated/admin/work-schedules/'
+    | '/_authenticated/admin/employees/edit/$id'
+    | '/_authenticated/admin/employees/trash/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   authRouteRoute: typeof authRouteRouteWithChildren
-  AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   authRouteRoute: authRouteRouteWithChildren,
-  AdminRouteRoute: AdminRouteRouteWithChildren,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -675,143 +789,160 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/(auth)",
-        "/admin"
+        "/_authenticated"
       ]
     },
     "/(auth)": {
       "filePath": "(auth)/route.tsx",
       "children": [
-        "/(auth)/"
+        "/(auth)/login"
       ]
     },
-    "/admin": {
-      "filePath": "admin/route.tsx",
+    "/_authenticated": {
+      "filePath": "_authenticated.tsx",
       "children": [
-        "/admin/about",
-        "/admin/activity-history",
-        "/admin/activity-schedule",
-        "/admin/check-po",
-        "/admin/products",
-        "/admin/",
-        "/admin/attendances/history",
-        "/admin/attendances/sheet",
-        "/admin/employees/add",
-        "/admin/plans/material",
-        "/admin/plans/production",
-        "/admin/stamps/bag",
-        "/admin/stamps/box",
-        "/admin/stamps/history",
-        "/admin/stamps/request",
-        "/admin/work-schedules/$id",
-        "/admin/salaries/$id",
-        "/admin/employees/",
-        "/admin/roles/",
-        "/admin/salaries/",
-        "/admin/work-schedule-categories/",
-        "/admin/work-schedules/",
-        "/admin/employees/edit/$id",
-        "/admin/employees/trash/"
+        "/_authenticated/admin",
+        "/_authenticated/",
+        "/_authenticated/employee/"
       ]
     },
-    "/admin/about": {
-      "filePath": "admin/about.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin": {
+      "filePath": "_authenticated/admin/route.tsx",
+      "parent": "/_authenticated",
+      "children": [
+        "/_authenticated/admin/about",
+        "/_authenticated/admin/activity-history",
+        "/_authenticated/admin/activity-schedule",
+        "/_authenticated/admin/check-po",
+        "/_authenticated/admin/products",
+        "/_authenticated/admin/",
+        "/_authenticated/admin/attendances/history",
+        "/_authenticated/admin/attendances/sheet",
+        "/_authenticated/admin/employees/add",
+        "/_authenticated/admin/plans/material",
+        "/_authenticated/admin/plans/production",
+        "/_authenticated/admin/stamps/bag",
+        "/_authenticated/admin/stamps/box",
+        "/_authenticated/admin/stamps/history",
+        "/_authenticated/admin/stamps/request",
+        "/_authenticated/admin/work-schedules/$id",
+        "/_authenticated/admin/salaries/$id",
+        "/_authenticated/admin/employees/",
+        "/_authenticated/admin/roles/",
+        "/_authenticated/admin/salaries/",
+        "/_authenticated/admin/work-schedule-categories/",
+        "/_authenticated/admin/work-schedules/",
+        "/_authenticated/admin/employees/edit/$id",
+        "/_authenticated/admin/employees/trash/"
+      ]
     },
-    "/admin/activity-history": {
-      "filePath": "admin/activity-history.tsx",
-      "parent": "/admin"
-    },
-    "/admin/activity-schedule": {
-      "filePath": "admin/activity-schedule.tsx",
-      "parent": "/admin"
-    },
-    "/admin/check-po": {
-      "filePath": "admin/check-po.tsx",
-      "parent": "/admin"
-    },
-    "/admin/products": {
-      "filePath": "admin/products.tsx",
-      "parent": "/admin"
-    },
-    "/(auth)/": {
-      "filePath": "(auth)/index.tsx",
+    "/(auth)/login": {
+      "filePath": "(auth)/login.tsx",
       "parent": "/(auth)"
     },
-    "/admin/": {
-      "filePath": "admin/index.tsx",
-      "parent": "/admin"
+    "/_authenticated/": {
+      "filePath": "_authenticated/index.tsx",
+      "parent": "/_authenticated"
     },
-    "/admin/attendances/history": {
-      "filePath": "admin/attendances/history.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/about": {
+      "filePath": "_authenticated/admin/about.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/attendances/sheet": {
-      "filePath": "admin/attendances/sheet.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/activity-history": {
+      "filePath": "_authenticated/admin/activity-history.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/employees/add": {
-      "filePath": "admin/employees/add.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/activity-schedule": {
+      "filePath": "_authenticated/admin/activity-schedule.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/plans/material": {
-      "filePath": "admin/plans/material.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/check-po": {
+      "filePath": "_authenticated/admin/check-po.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/plans/production": {
-      "filePath": "admin/plans/production.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/products": {
+      "filePath": "_authenticated/admin/products.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/stamps/bag": {
-      "filePath": "admin/stamps/bag.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/": {
+      "filePath": "_authenticated/admin/index.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/stamps/box": {
-      "filePath": "admin/stamps/box.tsx",
-      "parent": "/admin"
+    "/_authenticated/employee/": {
+      "filePath": "_authenticated/employee/index.tsx",
+      "parent": "/_authenticated"
     },
-    "/admin/stamps/history": {
-      "filePath": "admin/stamps/history.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/attendances/history": {
+      "filePath": "_authenticated/admin/attendances/history.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/stamps/request": {
-      "filePath": "admin/stamps/request.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/attendances/sheet": {
+      "filePath": "_authenticated/admin/attendances/sheet.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/work-schedules/$id": {
-      "filePath": "admin/work-schedules/$id.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/employees/add": {
+      "filePath": "_authenticated/admin/employees/add.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/salaries/$id": {
-      "filePath": "admin/salaries/$id.lazy.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/plans/material": {
+      "filePath": "_authenticated/admin/plans/material.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/employees/": {
-      "filePath": "admin/employees/index.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/plans/production": {
+      "filePath": "_authenticated/admin/plans/production.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/roles/": {
-      "filePath": "admin/roles/index.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/stamps/bag": {
+      "filePath": "_authenticated/admin/stamps/bag.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/salaries/": {
-      "filePath": "admin/salaries/index.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/stamps/box": {
+      "filePath": "_authenticated/admin/stamps/box.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/work-schedule-categories/": {
-      "filePath": "admin/work-schedule-categories/index.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/stamps/history": {
+      "filePath": "_authenticated/admin/stamps/history.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/work-schedules/": {
-      "filePath": "admin/work-schedules/index.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/stamps/request": {
+      "filePath": "_authenticated/admin/stamps/request.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/employees/edit/$id": {
-      "filePath": "admin/employees/edit.$id.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/work-schedules/$id": {
+      "filePath": "_authenticated/admin/work-schedules/$id.tsx",
+      "parent": "/_authenticated/admin"
     },
-    "/admin/employees/trash/": {
-      "filePath": "admin/employees/trash/index.tsx",
-      "parent": "/admin"
+    "/_authenticated/admin/salaries/$id": {
+      "filePath": "_authenticated/admin/salaries/$id.lazy.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/employees/": {
+      "filePath": "_authenticated/admin/employees/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/roles/": {
+      "filePath": "_authenticated/admin/roles/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/salaries/": {
+      "filePath": "_authenticated/admin/salaries/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/work-schedule-categories/": {
+      "filePath": "_authenticated/admin/work-schedule-categories/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/work-schedules/": {
+      "filePath": "_authenticated/admin/work-schedules/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/employees/edit/$id": {
+      "filePath": "_authenticated/admin/employees/edit.$id.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/employees/trash/": {
+      "filePath": "_authenticated/admin/employees/trash/index.tsx",
+      "parent": "/_authenticated/admin"
     }
   }
 }

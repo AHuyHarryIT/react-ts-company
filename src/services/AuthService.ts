@@ -1,6 +1,6 @@
 import axiosPrivate from '@/api/axiosInstance';
 import { User } from '@/types/authType';
-import { clearAuth, setUser } from '@stores/authStore';
+import { clearAuth, setToken, setUser } from '@stores/authStore';
 import { convertImageName2Url } from '@utils/convertImageName2Url';
 
 const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 0;
@@ -10,6 +10,7 @@ type AuthResponse = {
   role_id: number;
   role_name: string;
   image: string;
+  token: string;
 };
 
 type AuthLogoutResponse = {
@@ -45,6 +46,8 @@ export const authLogin = async (
     userData.image_url = convertImageName2Url(response.image);
   }
   setUser(userData);
+  setToken(response.token);
+
   return response;
 };
 
@@ -56,7 +59,7 @@ export const authLogout = async () => {
 
 export const authCheck = async () => {
   try {
-    const response: AuthResponse = await axiosPrivate.get('/api/auth/check');
+    const response: AuthResponse = await axiosPrivate.post('/api/auth/check');
     const userData: User = {
       name: response.name,
       role: {
