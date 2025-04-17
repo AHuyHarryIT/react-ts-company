@@ -1,10 +1,8 @@
-export interface SalaryType {
-  id: string;
-  title: string;
-  total: number;
-  start_date: string;
-  end_date: string;
-}
+import { z } from 'zod';
+
+import { salarySchema } from '@/schema/salarySchma.schema';
+
+export type SalaryType = z.infer<typeof salarySchema>;
 
 export interface CategoryTableType {
   id: number;

@@ -6,9 +6,8 @@ import {
   SalaryTableType,
   SalaryType
 } from '@/types/salaryType';
+import { CrudService } from '@utils/crudService';
 import { handleApiError } from '@utils/handleApiError';
-
-const ENDPOINT = '/api/salaries';
 
 type FilterSalary = {
   title?: string;
@@ -22,14 +21,6 @@ export type FetchSalariesParams = {
   page?: number;
   limit?: number;
   filters?: FilterSalary;
-};
-
-type SalaryResponse = {
-  id: string;
-  title: string;
-  total: number;
-  start_date: string;
-  end_date: string;
 };
 
 export type FetchSalaryParams = {
@@ -52,37 +43,11 @@ export type AddSalaryParams = {
   importVVP: File;
 };
 
-// Fetch all salaries
-export const fetchSalaries = async ({
-  page,
-  limit,
-  filters
-}: FetchSalariesParams) => {
-  const response: {
-    data: SalaryResponse[];
-    total: number;
-  } = await axiosPrivate.get(ENDPOINT, {
-    params: {
-      page: page,
-      limit: limit,
-      ...filters
-    }
-  });
+const ENDPOINT = '/api/salaries';
 
-  const salaries: SalaryType[] = response.data.map((salary: SalaryResponse) => {
-    return {
-      id: salary.id,
-      title: salary.title,
-      total: salary.total,
-      start_date: salary.start_date,
-      end_date: salary.end_date
-    };
-  });
-
-  const total = response.total;
-
-  return { salaries, total };
-};
+export const salariesService = new CrudService<SalaryType, SalaryType>(
+  ENDPOINT
+);
 
 // TODO: optimization for this function
 // Fetch a salary by id

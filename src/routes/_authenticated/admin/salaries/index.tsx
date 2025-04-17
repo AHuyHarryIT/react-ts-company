@@ -1,14 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button, Table, TableColumnsType, TableProps, Tooltip } from 'antd';
 import { useState } from 'react';
 
+import { useCrudList } from '@/hooks/useCrudList';
 import { SalaryType } from '@/types/salaryType';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { AddSalary } from '@components/salaries/AddModal';
 import { DeleteModal } from '@components/salaries/DeleteModal';
-import { fetchSalaries } from '@services/SalaryService';
+import { salariesService } from '@services/SalaryService';
 
 import { GoInfo } from 'react-icons/go';
 
@@ -20,22 +20,19 @@ function RouteComponent() {
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['fetchSalaries', page, limit],
-    queryFn: () =>
-      fetchSalaries({
-        page: page,
-        limit: limit,
-        filters: {
-          sort: 'start_date:desc'
-        }
-      })
+  const { data, pagination, queryResult } = useCrudList({
+    service: salariesService,
+    queryKey: 'salaries',
+    initialFilters: {
+      page,
+      limit
+    }
   });
 
-  const { salaries, total } = data || {
-    salaries: [],
-    total: 0
-  };
+  const { isLoading, isFetching, refetch } = queryResult;
+
+  const salaries = data || [];
+  const total = pagination.total || 0;
 
   const columns: TableColumnsType<SalaryType> = [
     {

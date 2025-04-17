@@ -23,7 +23,7 @@ export class CrudService<
     });
   }
 
-  get(id: number | string, config?: AxiosRequestConfig) {
+  get<TData>(id: number | string, config?: AxiosRequestConfig) {
     return axiosPrivate.get<TData, TData>(`${this.endpoint}/${id}`, config);
   }
 
