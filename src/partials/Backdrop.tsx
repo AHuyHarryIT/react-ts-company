@@ -1,22 +1,15 @@
-import { AppDispatch, RootState } from '@stores/index';
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
-import { toggleMobileSidebar } from '@stores/sidebarSlice';
+import { uiStore } from '@stores/uiStore';
+import { useStore } from '@tanstack/react-store';
 
 const Backdrop: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const isMobileOpen = useSelector(
-    (state: RootState) => state.sidebar.isMobileOpen
-  );
+  const { isMobile } = useStore(uiStore);
 
-  if (!isMobileOpen) return null;
+  if (!isMobile) return null;
 
   return (
-    <div
-      className="bg-opacity-50 fixed inset-0 z-40 bg-gray-900 lg:hidden"
-      onClick={() => dispatch(toggleMobileSidebar())}
-    />
+    <div className="bg-opacity-50 fixed inset-0 z-40 bg-gray-900 lg:hidden" />
   );
 };
 
