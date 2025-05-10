@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useLocation } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import type { MenuProps } from 'antd';
 import { Image, Layout, Menu } from 'antd';
@@ -46,14 +46,14 @@ const items: MenuItem[] = [
     <Link to={'/admin'}>
       <span className="capitalize">Trang chủ</span>
     </Link>,
-    'dashboard',
+    '/admin',
     <IoHomeOutline />
   ),
   getItem(
     <Link to={'/admin/about'}>
       <span className="capitalize">about</span>
     </Link>,
-    'about',
+    '/admin/about',
     <AiOutlineHome />
   ),
   getItem(<span className="capitalize">Nhân sự</span>, 'HR', <FiUsers />, [
@@ -61,38 +61,38 @@ const items: MenuItem[] = [
       <Link to={'/admin/employees'}>
         <span className="capitalize">Nhân viên</span>
       </Link>,
-      'employees'
+      '/admin/employees'
     ),
     getItem(
       <Link to={'/admin/roles'}>
         <span className="capitalize">Chức vụ</span>
       </Link>,
-      'role'
+      '/admin/roles'
     )
   ]),
   getItem(
     <Link to={'/admin/products'}>
       <span className="capitalize">Sản Phẩm</span>
     </Link>,
-    'product',
+    '/admin/products',
     <CiBoxes />
   ),
   getItem(
     <span className="capitalize">Kế hoạch</span>,
-    'plan',
+    '/admin/plans',
     <BsCalendar2Week />,
     [
       getItem(
         <Link to={'/admin/plans/production'}>
           <span className="capitalize">Kế hoạch sản xuất</span>
         </Link>,
-        'plan-production'
+        '/admin/plans/production'
       ),
       getItem(
         <Link to={'/admin/plans/material'}>
           <span className="capitalize">Kế hoạch nguyên liệu</span>
         </Link>,
-        'plan-material'
+        '/admin/plans/material'
       )
     ]
   ),
@@ -102,25 +102,25 @@ const items: MenuItem[] = [
       <Link to={'/admin/stamps/box'}>
         <span className="capitalize">Tem Thùng</span>
       </Link>,
-      'box-stamp'
+      '/admin/stamps/box'
     ),
     getItem(
       <Link to={'/admin/stamps/bag'}>
         <span className="capitalize">Tem Bịch</span>
       </Link>,
-      'bag-stamp'
+      '/admin/stamps/bag'
     ),
     getItem(
       <Link to={'/admin/stamps/history'}>
         <span className="capitalize">Lịch Sử In Tem</span>
       </Link>,
-      'stamp-history'
+      '/admin/stamps/history'
     ),
     getItem(
       <Link to={'/admin/stamps/request'}>
         <span className="capitalize">Yêu Cầu In Tem</span>
       </Link>,
-      'request-stamp'
+      '/admin/stamps/request'
     )
   ]),
   getItem(
@@ -132,13 +132,13 @@ const items: MenuItem[] = [
         <Link to={'/admin/attendances/history'}>
           <span className="capitalize">Lịch Sử Chấm Công</span>
         </Link>,
-        'attendance-history'
+        '/admin/attendances/history'
       ),
       getItem(
         <Link to={'/admin/attendances/sheet'}>
           <span className="capitalize">Bảng Tính Công</span>
         </Link>,
-        'attendance-sheet'
+        '/admin/attendances/sheet'
       )
     ]
   ),
@@ -146,35 +146,35 @@ const items: MenuItem[] = [
     <Link to={'/admin/check-po'}>
       <span className="capitalize">Kiểm tra PO</span>
     </Link>,
-    'check-po',
+    '/admin/check-po',
     <IoCheckboxOutline />
   ),
   getItem(
     <Link to={'/admin/work-schedules'}>
       <span className="capitalize">Lịch làm việc</span>
     </Link>,
-    'work-schedule',
+    '/admin/work-schedule',
     <FaRegCalendarAlt />
   ),
   getItem(
     <Link to={'/admin/work-schedule-categories'}>
       <span className="capitalize">Danh mục lịch làm việc</span>
     </Link>,
-    'schedule-categories',
+    '/admin/work-schedule-categories',
     <FaBriefcase />
   ),
   getItem(
     <Link to={'/admin/salaries'}>
       <span className="capitalize">Bảng lương</span>
     </Link>,
-    'salary',
+    '/admin/salaries',
     <FaMoneyCheckAlt />
   ),
   getItem(
     <Link to={'/admin/activity-schedule'}>
       <span className="capitalize">Lịch hoạt động / ngày</span>
     </Link>,
-    'activity-schedule',
+    '/admin/activity-schedule',
     <IoCalendarNumberOutline />
   ),
   {
@@ -184,21 +184,22 @@ const items: MenuItem[] = [
     <Link to={'/admin/activity-history'}>
       <span className="capitalize">Lịch sử hoạt động</span>
     </Link>,
-    'activity-history',
+    '/admin/activity-history',
     <FaHistory />
   )
 ];
 
 function Sidebar() {
+  const location = useLocation();
   const { isSidebarClose, theme, isMobile } = useStore(uiStore);
 
   const sideStyle: CSSProperties = {};
   if (isMobile) {
     sideStyle.position = 'absolute';
-    sideStyle.zIndex = 1;
     sideStyle.height = '100%';
     sideStyle.zIndex = 99999;
   }
+
   return (
     <>
       <Side
@@ -215,12 +216,13 @@ function Sidebar() {
             <Image className="w-full" src={logo} alt="Logo" preview={false} />
           </Link>
         </div>
-        <IconContext.Provider value={{ size: '1rem' }}>
+        <IconContext.Provider value={{ size: '1.25rem' }}>
           <Menu
             theme={theme}
-            defaultSelectedKeys={['dashboard']}
             mode="inline"
             items={items}
+            defaultSelectedKeys={['/admin']}
+            selectedKeys={[location.pathname]}
           />
         </IconContext.Provider>
       </Side>
