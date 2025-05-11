@@ -20,7 +20,6 @@ import { Route as authLoginImport } from './routes/(auth)/login'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedEmployeeIndexImport } from './routes/_authenticated/employee/index'
 import { Route as AuthenticatedAdminIndexImport } from './routes/_authenticated/admin/index'
-import { Route as AuthenticatedAdminProductsImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminCheckPoImport } from './routes/_authenticated/admin/check-po'
 import { Route as AuthenticatedAdminActivityScheduleImport } from './routes/_authenticated/admin/activity-schedule'
 import { Route as AuthenticatedAdminActivityHistoryImport } from './routes/_authenticated/admin/activity-history'
@@ -29,6 +28,7 @@ import { Route as AuthenticatedAdminWorkSchedulesIndexImport } from './routes/_a
 import { Route as AuthenticatedAdminWorkScheduleCategoriesIndexImport } from './routes/_authenticated/admin/work-schedule-categories/index'
 import { Route as AuthenticatedAdminSalariesIndexImport } from './routes/_authenticated/admin/salaries/index'
 import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authenticated/admin/roles/index'
+import { Route as AuthenticatedAdminProductsIndexImport } from './routes/_authenticated/admin/products/index'
 import { Route as AuthenticatedAdminEmployeesIndexImport } from './routes/_authenticated/admin/employees/index'
 import { Route as AuthenticatedAdminWorkSchedulesIdImport } from './routes/_authenticated/admin/work-schedules/$id'
 import { Route as AuthenticatedAdminStampsRequestImport } from './routes/_authenticated/admin/stamps/request'
@@ -93,14 +93,6 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexImport.update({
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 
-const AuthenticatedAdminProductsRoute = AuthenticatedAdminProductsImport.update(
-  {
-    id: '/products',
-    path: '/products',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any,
-)
-
 const AuthenticatedAdminCheckPoRoute = AuthenticatedAdminCheckPoImport.update({
   id: '/check-po',
   path: '/check-po',
@@ -152,6 +144,13 @@ const AuthenticatedAdminRolesIndexRoute =
   AuthenticatedAdminRolesIndexImport.update({
     id: '/roles/',
     path: '/roles/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminProductsIndexRoute =
+  AuthenticatedAdminProductsIndexImport.update({
+    id: '/products/',
+    path: '/products/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
@@ -324,13 +323,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCheckPoImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/_authenticated/admin/products': {
-      id: '/_authenticated/admin/products'
-      path: '/products'
-      fullPath: '/admin/products'
-      preLoaderRoute: typeof AuthenticatedAdminProductsImport
-      parentRoute: typeof AuthenticatedAdminRouteImport
-    }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/'
@@ -429,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmployeesIndexImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/admin/products/': {
+      id: '/_authenticated/admin/products/'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AuthenticatedAdminProductsIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
     '/_authenticated/admin/roles/': {
       id: '/_authenticated/admin/roles/'
       path: '/roles'
@@ -493,7 +492,6 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminActivityHistoryRoute: typeof AuthenticatedAdminActivityHistoryRoute
   AuthenticatedAdminActivityScheduleRoute: typeof AuthenticatedAdminActivityScheduleRoute
   AuthenticatedAdminCheckPoRoute: typeof AuthenticatedAdminCheckPoRoute
-  AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminAttendancesHistoryRoute: typeof AuthenticatedAdminAttendancesHistoryRoute
   AuthenticatedAdminAttendancesSheetRoute: typeof AuthenticatedAdminAttendancesSheetRoute
@@ -507,6 +505,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminWorkSchedulesIdRoute: typeof AuthenticatedAdminWorkSchedulesIdRoute
   AuthenticatedAdminSalariesIdLazyRoute: typeof AuthenticatedAdminSalariesIdLazyRoute
   AuthenticatedAdminEmployeesIndexRoute: typeof AuthenticatedAdminEmployeesIndexRoute
+  AuthenticatedAdminProductsIndexRoute: typeof AuthenticatedAdminProductsIndexRoute
   AuthenticatedAdminRolesIndexRoute: typeof AuthenticatedAdminRolesIndexRoute
   AuthenticatedAdminSalariesIndexRoute: typeof AuthenticatedAdminSalariesIndexRoute
   AuthenticatedAdminWorkScheduleCategoriesIndexRoute: typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
@@ -523,7 +522,6 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminActivityScheduleRoute:
       AuthenticatedAdminActivityScheduleRoute,
     AuthenticatedAdminCheckPoRoute: AuthenticatedAdminCheckPoRoute,
-    AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
     AuthenticatedAdminAttendancesHistoryRoute:
       AuthenticatedAdminAttendancesHistoryRoute,
@@ -543,6 +541,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
       AuthenticatedAdminSalariesIdLazyRoute,
     AuthenticatedAdminEmployeesIndexRoute:
       AuthenticatedAdminEmployeesIndexRoute,
+    AuthenticatedAdminProductsIndexRoute: AuthenticatedAdminProductsIndexRoute,
     AuthenticatedAdminRolesIndexRoute: AuthenticatedAdminRolesIndexRoute,
     AuthenticatedAdminSalariesIndexRoute: AuthenticatedAdminSalariesIndexRoute,
     AuthenticatedAdminWorkScheduleCategoriesIndexRoute:
@@ -585,7 +584,6 @@ export interface FileRoutesByFullPath {
   '/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
   '/admin/activity-schedule': typeof AuthenticatedAdminActivityScheduleRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoRoute
-  '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/employee': typeof AuthenticatedEmployeeIndexRoute
   '/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
@@ -600,6 +598,7 @@ export interface FileRoutesByFullPath {
   '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/admin/products': typeof AuthenticatedAdminProductsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
@@ -615,7 +614,6 @@ export interface FileRoutesByTo {
   '/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
   '/admin/activity-schedule': typeof AuthenticatedAdminActivityScheduleRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoRoute
-  '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/employee': typeof AuthenticatedEmployeeIndexRoute
   '/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
@@ -630,6 +628,7 @@ export interface FileRoutesByTo {
   '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/admin/products': typeof AuthenticatedAdminProductsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
@@ -649,7 +648,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
   '/_authenticated/admin/activity-schedule': typeof AuthenticatedAdminActivityScheduleRoute
   '/_authenticated/admin/check-po': typeof AuthenticatedAdminCheckPoRoute
-  '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/employee/': typeof AuthenticatedEmployeeIndexRoute
   '/_authenticated/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
@@ -664,6 +662,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/_authenticated/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/_authenticated/admin/employees/': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/_authenticated/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
   '/_authenticated/admin/roles/': typeof AuthenticatedAdminRolesIndexRoute
   '/_authenticated/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
   '/_authenticated/admin/work-schedule-categories/': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
@@ -683,7 +682,6 @@ export interface FileRouteTypes {
     | '/admin/activity-history'
     | '/admin/activity-schedule'
     | '/admin/check-po'
-    | '/admin/products'
     | '/admin/'
     | '/employee'
     | '/admin/attendances/history'
@@ -698,6 +696,7 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/admin/salaries/$id'
     | '/admin/employees'
+    | '/admin/products'
     | '/admin/roles'
     | '/admin/salaries'
     | '/admin/work-schedule-categories'
@@ -712,7 +711,6 @@ export interface FileRouteTypes {
     | '/admin/activity-history'
     | '/admin/activity-schedule'
     | '/admin/check-po'
-    | '/admin/products'
     | '/admin'
     | '/employee'
     | '/admin/attendances/history'
@@ -727,6 +725,7 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/admin/salaries/$id'
     | '/admin/employees'
+    | '/admin/products'
     | '/admin/roles'
     | '/admin/salaries'
     | '/admin/work-schedule-categories'
@@ -744,7 +743,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/activity-history'
     | '/_authenticated/admin/activity-schedule'
     | '/_authenticated/admin/check-po'
-    | '/_authenticated/admin/products'
     | '/_authenticated/admin/'
     | '/_authenticated/employee/'
     | '/_authenticated/admin/attendances/history'
@@ -759,6 +757,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/work-schedules/$id'
     | '/_authenticated/admin/salaries/$id'
     | '/_authenticated/admin/employees/'
+    | '/_authenticated/admin/products/'
     | '/_authenticated/admin/roles/'
     | '/_authenticated/admin/salaries/'
     | '/_authenticated/admin/work-schedule-categories/'
@@ -814,7 +813,6 @@ export const routeTree = rootRoute
         "/_authenticated/admin/activity-history",
         "/_authenticated/admin/activity-schedule",
         "/_authenticated/admin/check-po",
-        "/_authenticated/admin/products",
         "/_authenticated/admin/",
         "/_authenticated/admin/attendances/history",
         "/_authenticated/admin/attendances/sheet",
@@ -828,6 +826,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/work-schedules/$id",
         "/_authenticated/admin/salaries/$id",
         "/_authenticated/admin/employees/",
+        "/_authenticated/admin/products/",
         "/_authenticated/admin/roles/",
         "/_authenticated/admin/salaries/",
         "/_authenticated/admin/work-schedule-categories/",
@@ -858,10 +857,6 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/check-po": {
       "filePath": "_authenticated/admin/check-po.tsx",
-      "parent": "/_authenticated/admin"
-    },
-    "/_authenticated/admin/products": {
-      "filePath": "_authenticated/admin/products.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/": {
@@ -918,6 +913,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/employees/": {
       "filePath": "_authenticated/admin/employees/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/products/": {
+      "filePath": "_authenticated/admin/products/index.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/roles/": {

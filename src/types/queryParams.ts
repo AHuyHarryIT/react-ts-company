@@ -4,4 +4,5 @@ export interface QueryParams {
   sort?: string;
   include?: string[];
   [key: `filter[${string}]`]: string | number | undefined;
+  [key: string]: string | number | string[] | undefined;
 }
