@@ -11,6 +11,7 @@ import { TotalTable } from '@components/products/TotalTable';
 import { IconAdd, IconDelete, IconExport, IconFilter } from '@components/icons';
 import { FaBox, FaIndustry } from 'react-icons/fa6';
 import { Check200Table } from '@components/products/Check200Table';
+import { Error200Table } from '@components/products/Error200Table';
 
 export const Route = createFileRoute('/_authenticated/admin/products/')({
   component: RouteComponent
@@ -56,7 +57,7 @@ function RouteComponent() {
     {
       key: 'error-200',
       label: 'Hàng lỗi 200%',
-      children: <div>Tab hàng lỗi 200%</div>
+      children: <Error200Table month={month} />
     },
     {
       key: 'export',
@@ -154,7 +155,7 @@ function RouteComponent() {
           </Flex>
         </div>
         {/* Tabs */}
-        <Tabs items={productTabs} type="card" defaultActiveKey="check-200" />
+        <Tabs items={productTabs} type="card" defaultActiveKey="error-200" />
       </ComponentCard>
     </>
   );
