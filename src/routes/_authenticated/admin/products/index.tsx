@@ -1,20 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Button, Flex, Select, Tabs, TabsProps, Tooltip } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 
 import axiosPrivate from '@/api/axiosInstance';
 import ComponentCard from '@components/common/ComponentCard';
+import { ProduceTable } from '@components/products/ProduceTable';
 import { TotalTable } from '@components/products/TotalTable';
 
-import { useState } from 'react';
-import {
-  FaBox,
-  FaFileExport,
-  FaFilter,
-  FaIndustry,
-  FaPlus,
-  FaTrash
-} from 'react-icons/fa6';
+import { IconAdd, IconDelete, IconExport, IconFilter } from '@components/icons';
+import { FaBox, FaIndustry } from 'react-icons/fa6';
 
 export const Route = createFileRoute('/_authenticated/admin/products/')({
   component: RouteComponent
@@ -30,12 +25,16 @@ function RouteComponent() {
     }
   });
 
-  const months = monthList?.months || [];
+  const months = useMemo(() => monthList?.months || [], [monthList]);
   const monthOptions =
     months.map((month) => ({
       value: month,
       label: month
     })) || [];
+
+  useEffect(() => {
+    setMonth(months[0]);
+  }, [months]);
 
   const productTabs: TabsProps['items'] = [
     {
@@ -46,7 +45,7 @@ function RouteComponent() {
     {
       key: 'check-100',
       label: 'Hàng sản xuất',
-      children: <div>Tab hàng sản xuất</div>
+      children: <ProduceTable month={month} />
     },
     {
       key: 'check-200',
@@ -68,6 +67,8 @@ function RouteComponent() {
   return (
     <>
       <ComponentCard title="Danh sách sản phẩm">
+        {/* Actions */}
+        {/* TODO: implement actions */}
         <div className="flex flex-wrap justify-between gap-2">
           <Flex gap="small" wrap>
             <Tooltip title="Thêm sản phẩm">
@@ -75,7 +76,7 @@ function RouteComponent() {
                 size="large"
                 variant="solid"
                 color="green"
-                icon={<FaPlus />}
+                icon={<IconAdd />}
                 onClick={() => {
                   console.log('Thêm sản phẩm');
                 }}
@@ -108,7 +109,7 @@ function RouteComponent() {
                 size="large"
                 variant="solid"
                 color="gold"
-                icon={<FaTrash />}
+                icon={<IconDelete />}
                 onClick={() => {
                   console.log('Sản phẩm đã xóa');
                 }}
@@ -119,7 +120,7 @@ function RouteComponent() {
                 size="large"
                 variant="solid"
                 color="green"
-                icon={<FaFileExport />}
+                icon={<IconExport />}
                 onClick={() => {
                   console.log('Xuất excel');
                 }}
@@ -143,7 +144,7 @@ function RouteComponent() {
                 size="large"
                 variant="solid"
                 color="blue"
-                icon={<FaFilter />}
+                icon={<IconFilter />}
                 onClick={() => {
                   console.log('Tìm kiếm nâng cao');
                 }}
@@ -151,7 +152,8 @@ function RouteComponent() {
             </Tooltip>
           </Flex>
         </div>
-        <Tabs items={productTabs} type="card" />
+        {/* Tabs */}
+        <Tabs items={productTabs} type="card" defaultActiveKey="check-100" />
       </ComponentCard>
     </>
   );
