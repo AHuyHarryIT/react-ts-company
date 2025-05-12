@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import type { FormProps } from 'antd';
 import { Button, Checkbox, Form, Input, message } from 'antd';
 
@@ -28,22 +28,14 @@ export const Route = createFileRoute('/(auth)/login')({
 });
 
 function RouteComponent() {
-  const navigate = useNavigate();
-
   const { mutate, isPending } = useMutation({
     mutationKey: ['authLogin'],
     mutationFn: ({ username, password, remember }: FieldType) =>
       authLogin(username, password, remember),
 
-    onSuccess: (data) => {
+    onSuccess: () => {
       message.success('Login success!');
-      switch (data.role_id.toString()) {
-        case '15':
-          navigate({ to: '/admin' });
-          break;
-        default:
-          navigate({ to: '/' });
-      }
+      window.location.reload();
     },
     onError: (error) => {
       message.error(String(error));
