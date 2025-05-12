@@ -19,15 +19,25 @@ export const zodToFieldsWithOverride = <T extends ZodObject<ZodRawShape>>(
   if (import.meta.env.DEV) {
     for (const key of Object.keys(overrideMap)) {
       if (!schemaKeys.includes(key)) {
-        console.warn(
+        console.error(
           `[zodToFieldsWithOverride] Invalid override key: "${key}" is not in schema`
         );
       }
     }
   }
 
-  return baseFields.map((field) => {
-    const override = overrideMap[field.name as keyof typeof overrideMap];
-    return override ? { ...field, ...override } : field;
-  });
+  return baseFields
+    .map((field) => {
+      const override = overrideMap[field.name as keyof typeof overrideMap];
+      return override ? { ...field, ...override } : field;
+    })
+    .sort((a, b) => {
+      const aHasIndex = a.index !== undefined;
+      const bHasIndex = b.index !== undefined;
+
+      if (aHasIndex && !bHasIndex) return -1;
+      if (!aHasIndex && bHasIndex) return 1;
+
+      return (a.index ?? 0) - (b.index ?? 0);
+    });
 };

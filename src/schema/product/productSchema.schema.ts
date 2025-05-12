@@ -23,6 +23,21 @@ export const productSchema = defaultModelSchema.extend({
   totaldailyquantities: totalDayQuantitySchema.array().optional()
 });
 
-export const productCreateSchema = overrideSchema(productSchema);
+export const productCreateSchema = overrideSchema(productSchema, {
+  stockQuanMOQ: z.number(),
+  stockQuan: z.number(),
+  stockQuan200: z.number(),
+  companies: z.string().array()
+}).omit({
+  totalmonthquantities: true,
+  totaldailyquantities: true,
+  quantity: true,
+  FAPV: true,
+  FASV: true,
+  FAVV: true
+});
 
-export const productUpdateSchema = overrideSchema(productSchema);
+export const productUpdateSchema = overrideSchema(productSchema).omit({
+  totalmonthquantities: true,
+  totaldailyquantities: true
+});

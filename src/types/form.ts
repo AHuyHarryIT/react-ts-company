@@ -6,6 +6,9 @@ export type FieldType =
   | 'number'
   | 'email'
   | 'select'
+  | 'select-multiple'
+  | 'checkbox'
+  | 'checkbox-group'
   | 'textarea'
   | 'date'
   | 'file'
@@ -20,4 +23,5 @@ export interface FieldConfig {
   placeholder?: string;
   options?: { label: string; value: string | number }[]; // for select
   rules?: Rule[]; // Antd Form rules
+  index?: number; // for sorting
 }

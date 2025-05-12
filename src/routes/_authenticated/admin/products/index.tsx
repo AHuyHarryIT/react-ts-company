@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button, Flex, Select, Tabs, TabsProps, Tooltip } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -75,15 +75,14 @@ function RouteComponent() {
         <div className="flex flex-wrap justify-between gap-2">
           <Flex gap="small" wrap>
             <Tooltip title="Thêm sản phẩm">
-              <Button
-                size="large"
-                variant="solid"
-                color="green"
-                icon={<IconAdd />}
-                onClick={() => {
-                  console.log('Thêm sản phẩm');
-                }}
-              />
+              <Link to="/admin/products/add">
+                <Button
+                  size="large"
+                  variant="solid"
+                  color="green"
+                  icon={<IconAdd />}
+                />
+              </Link>
             </Tooltip>
             <Tooltip title="Thêm sản lượng MOQ, tồn đầu kỳ, tồn 200%">
               <Button

@@ -35,6 +35,7 @@ import { Route as AuthenticatedAdminStampsRequestImport } from './routes/_authen
 import { Route as AuthenticatedAdminStampsHistoryImport } from './routes/_authenticated/admin/stamps/history'
 import { Route as AuthenticatedAdminStampsBoxImport } from './routes/_authenticated/admin/stamps/box'
 import { Route as AuthenticatedAdminStampsBagImport } from './routes/_authenticated/admin/stamps/bag'
+import { Route as AuthenticatedAdminProductsAddImport } from './routes/_authenticated/admin/products/add'
 import { Route as AuthenticatedAdminPlansProductionImport } from './routes/_authenticated/admin/plans/production'
 import { Route as AuthenticatedAdminPlansMaterialImport } from './routes/_authenticated/admin/plans/material'
 import { Route as AuthenticatedAdminEmployeesAddImport } from './routes/_authenticated/admin/employees/add'
@@ -207,6 +208,13 @@ const AuthenticatedAdminStampsBagRoute =
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
+const AuthenticatedAdminProductsAddRoute =
+  AuthenticatedAdminProductsAddImport.update({
+    id: '/products/add',
+    path: '/products/add',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
 const AuthenticatedAdminPlansProductionRoute =
   AuthenticatedAdminPlansProductionImport.update({
     id: '/plans/production',
@@ -372,6 +380,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPlansProductionImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/admin/products/add': {
+      id: '/_authenticated/admin/products/add'
+      path: '/products/add'
+      fullPath: '/admin/products/add'
+      preLoaderRoute: typeof AuthenticatedAdminProductsAddImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
     '/_authenticated/admin/stamps/bag': {
       id: '/_authenticated/admin/stamps/bag'
       path: '/stamps/bag'
@@ -498,6 +513,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminEmployeesAddRoute: typeof AuthenticatedAdminEmployeesAddRoute
   AuthenticatedAdminPlansMaterialRoute: typeof AuthenticatedAdminPlansMaterialRoute
   AuthenticatedAdminPlansProductionRoute: typeof AuthenticatedAdminPlansProductionRoute
+  AuthenticatedAdminProductsAddRoute: typeof AuthenticatedAdminProductsAddRoute
   AuthenticatedAdminStampsBagRoute: typeof AuthenticatedAdminStampsBagRoute
   AuthenticatedAdminStampsBoxRoute: typeof AuthenticatedAdminStampsBoxRoute
   AuthenticatedAdminStampsHistoryRoute: typeof AuthenticatedAdminStampsHistoryRoute
@@ -531,6 +547,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminPlansMaterialRoute: AuthenticatedAdminPlansMaterialRoute,
     AuthenticatedAdminPlansProductionRoute:
       AuthenticatedAdminPlansProductionRoute,
+    AuthenticatedAdminProductsAddRoute: AuthenticatedAdminProductsAddRoute,
     AuthenticatedAdminStampsBagRoute: AuthenticatedAdminStampsBagRoute,
     AuthenticatedAdminStampsBoxRoute: AuthenticatedAdminStampsBoxRoute,
     AuthenticatedAdminStampsHistoryRoute: AuthenticatedAdminStampsHistoryRoute,
@@ -591,6 +608,7 @@ export interface FileRoutesByFullPath {
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
   '/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
   '/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
   '/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
@@ -621,6 +639,7 @@ export interface FileRoutesByTo {
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
   '/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
   '/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
   '/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
@@ -655,6 +674,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/_authenticated/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/_authenticated/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/_authenticated/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
   '/_authenticated/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
   '/_authenticated/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
   '/_authenticated/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
@@ -689,6 +709,7 @@ export interface FileRouteTypes {
     | '/admin/employees/add'
     | '/admin/plans/material'
     | '/admin/plans/production'
+    | '/admin/products/add'
     | '/admin/stamps/bag'
     | '/admin/stamps/box'
     | '/admin/stamps/history'
@@ -718,6 +739,7 @@ export interface FileRouteTypes {
     | '/admin/employees/add'
     | '/admin/plans/material'
     | '/admin/plans/production'
+    | '/admin/products/add'
     | '/admin/stamps/bag'
     | '/admin/stamps/box'
     | '/admin/stamps/history'
@@ -750,6 +772,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/employees/add'
     | '/_authenticated/admin/plans/material'
     | '/_authenticated/admin/plans/production'
+    | '/_authenticated/admin/products/add'
     | '/_authenticated/admin/stamps/bag'
     | '/_authenticated/admin/stamps/box'
     | '/_authenticated/admin/stamps/history'
@@ -819,6 +842,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/employees/add",
         "/_authenticated/admin/plans/material",
         "/_authenticated/admin/plans/production",
+        "/_authenticated/admin/products/add",
         "/_authenticated/admin/stamps/bag",
         "/_authenticated/admin/stamps/box",
         "/_authenticated/admin/stamps/history",
@@ -885,6 +909,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/plans/production": {
       "filePath": "_authenticated/admin/plans/production.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/products/add": {
+      "filePath": "_authenticated/admin/products/add.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/stamps/bag": {

@@ -63,11 +63,15 @@ export function useDynamicCrudForm<
 
   const mutation = useMutation({
     mutationFn: async (values: TFormData) => {
-      const payload = convertToFormData({
-        values,
-        action: id ? 'update' : 'create',
-        fields
-      });
+      const isFormData =
+        config?.headers?.['Content-Type'] === 'multipart/form-data';
+      const payload = isFormData
+        ? convertToFormData({
+            values,
+            action: id ? 'update' : 'create',
+            fields
+          })
+        : values;
 
       return id
         ? service.update(id, payload as TUpdateDto, config)

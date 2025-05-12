@@ -33,8 +33,12 @@ export function convertToFormData({
       formData.append(key, value.fileList[0].originFileObj);
     } else if (dayjs.isDayjs(value)) {
       formData.append(key, value.format('YYYY-MM-DD'));
+    } else if (Array.isArray(value)) {
+      value.forEach((item) => {
+        formData.append(`${key}[]`, item);
+      });
     } else {
-      formData.append(key, String(value));
+      formData.append(key, value);
     }
   });
 

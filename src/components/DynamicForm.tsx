@@ -7,6 +7,7 @@ import { convertImageName2Url } from '@utils/convertImageName2Url';
 import { FileType } from '@utils/fileType';
 import {
   Button,
+  Checkbox,
   DatePicker,
   Flex,
   Form,
@@ -63,9 +64,26 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         return <InputNumber {...commonProps} style={{ width: '100%' }} />;
       case 'password':
         return <Input.Password {...commonProps} />;
+      case 'checkbox':
+        return <Checkbox>{field.label}</Checkbox>;
+      case 'checkbox-group':
+        return (
+          <Checkbox.Group options={field.options}>{field.label}</Checkbox.Group>
+        );
       case 'select':
         return (
           <Select
+            showSearch
+            allowClear
+            options={field.options}
+            placeholder={`Chọn ${field.label.toLowerCase()}`}
+          />
+        );
+      case 'select-multiple':
+        return (
+          <Select
+            allowClear
+            mode="multiple"
             options={field.options}
             placeholder={`Chọn ${field.label.toLowerCase()}`}
           />
