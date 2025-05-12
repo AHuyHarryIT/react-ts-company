@@ -10,6 +10,7 @@ import { TotalTable } from '@components/products/TotalTable';
 
 import { IconAdd, IconDelete, IconExport, IconFilter } from '@components/icons';
 import { FaBox, FaIndustry } from 'react-icons/fa6';
+import { Check200Table } from '@components/products/Check200Table';
 
 export const Route = createFileRoute('/_authenticated/admin/products/')({
   component: RouteComponent
@@ -43,14 +44,14 @@ function RouteComponent() {
       children: <TotalTable month={month} />
     },
     {
-      key: 'check-100',
+      key: 'produce',
       label: 'Hàng sản xuất',
       children: <ProduceTable month={month} />
     },
     {
       key: 'check-200',
       label: 'Hàng kiểm 200%',
-      children: <div>Tab hàng kiểm 200%</div>
+      children: <Check200Table month={month} />
     },
     {
       key: 'error-200',
@@ -153,7 +154,7 @@ function RouteComponent() {
           </Flex>
         </div>
         {/* Tabs */}
-        <Tabs items={productTabs} type="card" defaultActiveKey="check-100" />
+        <Tabs items={productTabs} type="card" defaultActiveKey="check-200" />
       </ComponentCard>
     </>
   );
