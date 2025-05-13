@@ -35,7 +35,6 @@
       "@partials/*": ["src/partials/*"],
       "@schemas/*": ["src/schema/*"],
       "@hooks/*": ["src/hooks/*"],
-      "@types/*": ["src/types/*"],
       "@routes/*": ["src/routes/*"],
       "@styles/*": ["src/styles/*"],
       "@constants/*": ["src/constants/*"],
