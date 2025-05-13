@@ -1,13 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { Button, Flex, Table, TableColumnsType, TableProps } from 'antd';
+import { Table, TableColumnsType, TableProps } from 'antd';
 import React, { useState } from 'react';
 
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
-
-import { IconDelete, IconEdit } from '@components/icons';
+import { RowTableActions } from './RowTableActions';
 
 export type TotalTableType = {
   id: string;
@@ -413,30 +412,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       title: <div>Thao tác</div>,
       align: 'center',
       render: (_, record) => {
-        return (
-          <Flex gap="small" justify="center">
-            <Button
-              variant="solid"
-              color="blue"
-              icon={<IconEdit />}
-              onClick={() => {
-                console.log('Cập nhật sản phẩm', record.id);
-              }}
-            >
-              Cập nhật
-            </Button>
-            <Button
-              variant="solid"
-              color="red"
-              icon={<IconDelete />}
-              onClick={() => {
-                console.log('Xóa sản phẩm', record.id);
-              }}
-            >
-              Xóa
-            </Button>
-          </Flex>
-        );
+        return <RowTableActions productId={record.id} />;
       }
     }
   ];

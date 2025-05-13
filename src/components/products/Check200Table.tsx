@@ -1,10 +1,10 @@
-import { Button, Flex, Table, TableColumnsType, TableProps } from 'antd';
+import { Table, TableColumnsType, TableProps } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
-import { IconDelete, IconEdit } from '@components/icons';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
+import { RowTableActions } from './RowTableActions';
 
 export type Check200TableType = {
   id: string;
@@ -178,31 +178,7 @@ export const Check200Table: React.FC<Check200TableProps> = ({ month }) => {
       title: <div>Thao tác</div>,
       align: 'center',
       render: (_, record) => {
-        return (
-          <Flex gap="small" justify="center">
-            {/* TODO: Implement action */}
-            <Button
-              variant="solid"
-              color="blue"
-              icon={<IconEdit />}
-              onClick={() => {
-                console.log('Cập nhật sản phẩm', record.id);
-              }}
-            >
-              Cập nhật
-            </Button>
-            <Button
-              variant="solid"
-              color="red"
-              icon={<IconDelete />}
-              onClick={() => {
-                console.log('Xóa sản phẩm', record.id);
-              }}
-            >
-              Xóa
-            </Button>
-          </Flex>
-        );
+        return <RowTableActions productId={record.id} />;
       }
     }
   ];
