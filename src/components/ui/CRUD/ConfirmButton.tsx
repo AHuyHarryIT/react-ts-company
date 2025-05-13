@@ -1,16 +1,18 @@
-import { CrudServiceType } from '@utils/crudService';
 import { Button, Modal } from 'antd';
-
-import { useDynamicCrudForm } from '@/hooks/useDynamicCrudForm';
-import { BiTrash } from 'react-icons/bi';
-import { LuUndoDot } from 'react-icons/lu';
+import { SizeType } from 'antd/es/config-provider/SizeContext';
 import { useState } from 'react';
+
+import { useDynamicCrudForm } from '@hooks/useDynamicCrudForm';
+import { CrudServiceType } from '@utils/crudService';
+
+import { IconDelete, IconRestore } from '@components/icons';
 
 interface DeleteProps<TData, TCreateDto, TUpdateDto> {
   id: string;
   service: CrudServiceType<TData, TCreateDto, TUpdateDto>;
   content?: React.ReactNode;
   isRestore?: boolean;
+  size?: SizeType;
 }
 
 export function ConfirmButton<
@@ -21,7 +23,8 @@ export function ConfirmButton<
   id,
   service,
   content,
-  isRestore
+  isRestore,
+  size = 'middle'
 }: DeleteProps<TData, TCreateDto, TUpdateDto>) {
   const [open, setOpen] = useState(false);
   const { deleteItem, isDeleting, restoreItem, isRestoring } =
@@ -41,10 +44,10 @@ export function ConfirmButton<
   return (
     <>
       <Button
-        size="large"
+        size={size}
         variant="solid"
-        color={isRestore ? 'gold' : 'danger'}
-        icon={isRestore ? <LuUndoDot /> : <BiTrash />}
+        color={isRestore ? 'gold' : 'red'}
+        icon={isRestore ? <IconRestore /> : <IconDelete />}
         onClick={handleOpen}
         loading={isDeleting}
       >
@@ -65,7 +68,7 @@ export function ConfirmButton<
         okButtonProps={{
           loading: isDeleting || isRestoring,
           danger: !isRestore,
-          size: 'large',
+          size,
           variant: 'solid',
           color: isRestore ? 'gold' : 'danger'
         }}
@@ -78,7 +81,7 @@ export function ConfirmButton<
           }
         }}
         cancelButtonProps={{
-          size: 'large'
+          size
         }}
         onCancel={handleClose}
         cancelText="Hủy"

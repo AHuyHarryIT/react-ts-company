@@ -2,7 +2,9 @@ import { Link } from '@tanstack/react-router';
 import { Button, Flex } from 'antd';
 import React from 'react';
 
-import { IconDelete, IconEdit } from '@components/icons';
+import { IconEdit } from '@components/icons';
+import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
+import { productService } from '@services/ProductService';
 
 interface RowTableActionsProps {
   productId: string;
@@ -18,16 +20,11 @@ export const RowTableActions: React.FC<RowTableActionsProps> = ({
           Cập nhật
         </Button>
       </Link>
-      <Button
-        variant="solid"
-        color="red"
-        icon={<IconDelete />}
-        onClick={() => {
-          console.log('Xóa sản phẩm', productId);
-        }}
-      >
-        Xóa
-      </Button>
+      <ConfirmButton
+        id={productId}
+        service={productService}
+        content="Bạn có chắc chắn muốn xóa sản phẩm này không?"
+      />
     </Flex>
   );
 };
