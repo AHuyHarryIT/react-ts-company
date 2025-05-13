@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { productFields } from '@/configs/productForm.config';
+import { productCreateFields } from '@/configs/productForm.config';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { CreateForm } from '@components/ui/CRUD/CreateForm';
@@ -17,7 +17,7 @@ function RouteComponent() {
       <BackButton />
       <ComponentCard title="Thêm sản phẩm">
         <CreateForm
-          fields={productFields}
+          fields={productCreateFields}
           schema={productCreateSchema}
           service={productService}
         />

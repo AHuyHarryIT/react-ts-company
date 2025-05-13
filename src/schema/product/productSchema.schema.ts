@@ -37,7 +37,8 @@ export const productCreateSchema = overrideSchema(productSchema, {
   FAVV: true
 });
 
-export const productUpdateSchema = overrideSchema(productSchema).omit({
-  totalmonthquantities: true,
-  totaldailyquantities: true
+export const productUpdateSchema = overrideSchema(productCreateSchema).omit({
+  stockQuan: true,
+  stockQuan200: true,
+  stockQuanMOQ: true
 });
