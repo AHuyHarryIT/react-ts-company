@@ -74,7 +74,9 @@ export function useDynamicCrudForm<
         : values;
 
       return id
-        ? service.update(id, payload as TUpdateDto, config)
+        ? isFormData
+          ? service.update(id, payload as TUpdateDto, config)
+          : service.updatePatch(id, payload as TUpdateDto, config)
         : service.create(payload as TCreateDto, config);
     },
     onSuccess: () => {

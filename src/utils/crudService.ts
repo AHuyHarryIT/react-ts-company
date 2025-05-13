@@ -39,6 +39,18 @@ export class CrudService<
     );
   }
 
+  updatePatch(
+    id: number | string,
+    data: TUpdateDto,
+    config?: AxiosRequestConfig
+  ) {
+    return axiosPrivate.patch<TData, TData>(
+      `${this.endpoint}/${id}`,
+      data,
+      config
+    );
+  }
+
   delete(id: number | string) {
     return axiosPrivate.delete(`${this.endpoint}/${id}`);
   }
