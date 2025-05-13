@@ -1,9 +1,13 @@
-import { Table, TableColumnsType, TableProps } from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { Button, Flex, Table, TableColumnsType, TableProps } from 'antd';
 import React, { useState } from 'react';
 
+import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
-import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
+import { getMonthlyQuantities } from '@services/TotalQuantityService';
+
+import { IconDelete, IconEdit } from '@components/icons';
 
 export type TotalTableType = {
   id: string;
@@ -23,13 +27,22 @@ export type TotalTableType = {
   notCheck200: number;
   stockEndQuantity: number;
   storageTime: number;
+  times: {
+    [date: string]: {
+      quantity: number;
+    };
+  };
 };
 
 interface TotalTableProps {
   month: string; // MM-YYYY
+  months?: string[];
 }
 
-export const TotalTable: React.FC<TotalTableProps> = ({ month }) => {
+export const TotalTable: React.FC<TotalTableProps> = ({
+  month,
+  months = []
+}) => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
@@ -48,7 +61,15 @@ export const TotalTable: React.FC<TotalTableProps> = ({ month }) => {
     }
   });
 
+  const { data: monthlyQuantities } = useQuery({
+    queryKey: ['month-quantities', page, limit],
+    queryFn: ({ signal }) => {
+      return getMonthlyQuantities({ limit: 0, status: 3, signal: signal });
+    }
+  });
+
   const dataSource: TotalTableType[] = tableData.map((product) => {
+    const timeMap: TotalTableType['times'] = {};
     const totalMonthQuantities: TotalMonthQuantityType[] =
       product?.totalmonthquantities || [];
 
@@ -95,6 +116,15 @@ export const TotalTable: React.FC<TotalTableProps> = ({ month }) => {
     const storageTime =
       stockQuantityMOQ !== 0 ? stockEndQuantity / (stockQuantityMOQ / 24) : 0;
 
+    monthlyQuantities
+      ?.filter((item) => item.product_id == product.id)
+      .forEach((item) => {
+        if (!timeMap[item.month]) {
+          timeMap[item.month] = { quantity: 0 };
+        }
+        timeMap[item.month].quantity += item.totalQuan;
+      });
+
     return {
       id: product.id,
       name: product.name,
@@ -112,7 +142,30 @@ export const TotalTable: React.FC<TotalTableProps> = ({ month }) => {
       checked200: checked200,
       notCheck200: notCheck200,
       stockEndQuantity: stockEndQuantity,
-      storageTime: storageTime
+      storageTime: storageTime,
+      times: timeMap
+    };
+  });
+
+  const dateColumns: TableColumnsType<TotalTableType> = months.map((month) => {
+    return {
+      key: `${month}_quantity`,
+      title: (
+        <div>
+          Số lượng
+          <br />
+          Đã xuất tháng {month}
+        </div>
+      ),
+      align: 'center',
+      className: 'bg-indigo-300',
+      dataIndex: ['times', month, 'quantity'],
+      render: (value) => {
+        if (!value) return 0;
+        return value.toLocaleString({
+          maximumFractionDigits: 0
+        });
+      }
     };
   });
 
@@ -353,6 +406,37 @@ export const TotalTable: React.FC<TotalTableProps> = ({ month }) => {
           minimumFractionDigits: 1,
           maximumFractionDigits: 1
         });
+      }
+    },
+    ...dateColumns.reverse(),
+    {
+      title: <div>Thao tác</div>,
+      align: 'center',
+      render: (_, record) => {
+        return (
+          <Flex gap="small" justify="center">
+            <Button
+              variant="solid"
+              color="blue"
+              icon={<IconEdit />}
+              onClick={() => {
+                console.log('Cập nhật sản phẩm', record.id);
+              }}
+            >
+              Cập nhật
+            </Button>
+            <Button
+              variant="solid"
+              color="red"
+              icon={<IconDelete />}
+              onClick={() => {
+                console.log('Xóa sản phẩm', record.id);
+              }}
+            >
+              Xóa
+            </Button>
+          </Flex>
+        );
       }
     }
   ];

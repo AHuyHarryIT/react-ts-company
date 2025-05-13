@@ -43,7 +43,7 @@ function RouteComponent() {
     {
       key: 'total',
       label: 'Tổng quan',
-      children: <TotalTable month={month} />
+      children: <TotalTable month={month} months={months} />
     },
     {
       key: 'produce',
