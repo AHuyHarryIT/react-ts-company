@@ -1,10 +1,18 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import '@ant-design/v5-patch-for-react-19';
+// import 'antd/dist/reset.css';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+import App from './App.tsx';
+import './index.css';
+
+// Render the app
+const rootElement = document.getElementById('root')!;
+if (!rootElement.innerHTML) {
+  const root = createRoot(rootElement);
+  root.render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+}

@@ -1,0 +1,168 @@
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { Button, Table, TableColumnsType, TableProps } from 'antd';
+import { useState } from 'react';
+
+import { useCrudList } from '@/hooks/useCrudList';
+import { SalaryType } from '@/types/salaryType';
+import ComponentCard from '@components/common/ComponentCard';
+import RefreshButton from '@components/common/RefreshButton';
+import { AddSalary } from '@components/salaries/AddModal';
+import { salariesService } from '@services/SalaryService';
+
+import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
+import { GoInfo } from 'react-icons/go';
+
+export const Route = createFileRoute('/_authenticated/admin/salaries/')({
+  component: RouteComponent
+});
+
+function RouteComponent() {
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
+
+  const { data, pagination, queryResult } = useCrudList({
+    service: salariesService,
+    queryKey: 'salaries',
+    initialFilters: {
+      page,
+      limit
+    }
+  });
+
+  const { isLoading, isFetching, refetch } = queryResult;
+
+  const salaries = data || [];
+  const total = pagination.total || 0;
+
+  const columns: TableColumnsType<SalaryType> = [
+    {
+      title: 'STT',
+      rowScope: 'row',
+      minWidth: 50,
+      align: 'center',
+      render: (_value, _record, index) => index + 1 + limit * (page - 1)
+    },
+    {
+      title: 'Mã',
+      minWidth: 100,
+      dataIndex: 'id',
+      hidden: true
+    },
+    {
+      title: 'Tiêu đề',
+      minWidth: 200,
+      dataIndex: 'title'
+    },
+    {
+      title: 'Tổng (VNĐ)',
+      minWidth: 100,
+      dataIndex: 'total',
+      render: (value) =>
+        new Intl.NumberFormat('vi-VN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }).format(value)
+    },
+    {
+      title: 'Ngày bắt đầu',
+      minWidth: 100,
+      dataIndex: 'start_date',
+      render: (value) =>
+        new Date(value).toLocaleString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        })
+    },
+    {
+      title: 'Ngày kết thúc',
+      minWidth: 100,
+      dataIndex: 'end_date',
+      render: (value) =>
+        new Date(value).toLocaleString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        })
+    },
+    {
+      title: 'Hành động',
+      minWidth: 100,
+      align: 'center',
+      render: (_value, _record) => {
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <Link to={`/admin/salaries/$id`} params={{ id: _record.id }}>
+              <Button
+                color="primary"
+                variant="solid"
+                size="large"
+                icon={<GoInfo />}
+              >
+                Chi tiết
+              </Button>
+            </Link>
+            <ConfirmButton
+              id={_record.id}
+              service={salariesService}
+              content={
+                <p>
+                  Bạn có chắc chắn muốn xóa bản lương{' '}
+                  <strong>
+                    {_record.title} - {_record.id}
+                  </strong>{' '}
+                  không?
+                </p>
+              }
+            />
+          </div>
+        );
+      }
+    }
+  ];
+
+  const tableProps: TableProps<SalaryType> = {
+    rowKey: (record) => ['salary', record.id].join('-'),
+    bordered: true,
+    columns: columns,
+    dataSource: salaries,
+    loading: isLoading,
+    size: 'small',
+    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
+    tableLayout: 'auto',
+    pagination: {
+      size: 'default',
+      showSizeChanger: true,
+      pageSize: limit,
+      total: total,
+      showTotal: (total) => `Tổng ${total} bản lương`,
+      onShowSizeChange: (_current, size) => {
+        setLimit(size);
+      },
+      onChange: (page) => {
+        setPage(page);
+      }
+    }
+  };
+
+  const Actions = () => {
+    return (
+      <>
+        <div className="flex flex-wrap gap-4">
+          <RefreshButton refresh={refetch} isLoading={isFetching} />
+          <AddSalary />
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <>
+      <ComponentCard title="Danh sách bản lương">
+        <Actions />
+
+        <Table<SalaryType> {...tableProps} />
+      </ComponentCard>
+    </>
+  );
+}

@@ -1,1 +1,2 @@
+# lint staged files before commit
 npx lint-staged

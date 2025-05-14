@@ -1,28 +1,37 @@
-import { FaRegFaceSmile } from 'react-icons/fa6'
-import { useEffect, useState } from 'react'
+import { createRouter, RouterProvider } from '@tanstack/react-router';
+
+// Import the generated route tree
+import NotFound from '@pages/NotFound';
+import { routeTree } from './routeTree.gen';
+import { useAuth } from '@/hooks/useAuth';
+
+// Create a new router instance
+const router = createRouter({
+  routeTree,
+  context: {
+    user: null,
+    authenticated: undefined!
+  },
+  defaultNotFoundComponent: () => {
+    return <NotFound />;
+  }
+});
+
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 function App() {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCount((prevCount) => prevCount + 1)
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [])
+  const authenticated = useAuth();
 
   return (
     <>
-      <div className="flex h-screen flex-col items-center justify-center gap-3">
-        <h1 className="text-5xl font-bold text-red-500">Hello world!</h1>
-        <h2 className="flex gap-3 text-3xl font-bold text-red-500">
-          <FaRegFaceSmile />
-          <FaRegFaceSmile />
-          <FaRegFaceSmile />
-        </h2>
-        <h2 className="text-3xl text-blue-500">{count}</h2>
-      </div>
+      <RouterProvider router={router} context={{ authenticated }} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
