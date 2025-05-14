@@ -35,6 +35,7 @@ import { Route as AuthenticatedAdminStampsRequestImport } from './routes/_authen
 import { Route as AuthenticatedAdminStampsHistoryImport } from './routes/_authenticated/admin/stamps/history'
 import { Route as AuthenticatedAdminStampsBoxImport } from './routes/_authenticated/admin/stamps/box'
 import { Route as AuthenticatedAdminStampsBagImport } from './routes/_authenticated/admin/stamps/bag'
+import { Route as AuthenticatedAdminProductsTrashImport } from './routes/_authenticated/admin/products/trash'
 import { Route as AuthenticatedAdminProductsAddImport } from './routes/_authenticated/admin/products/add'
 import { Route as AuthenticatedAdminPlansProductionImport } from './routes/_authenticated/admin/plans/production'
 import { Route as AuthenticatedAdminPlansMaterialImport } from './routes/_authenticated/admin/plans/material'
@@ -208,6 +209,13 @@ const AuthenticatedAdminStampsBagRoute =
     id: '/admin/stamps/bag',
     path: '/admin/stamps/bag',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+
+const AuthenticatedAdminProductsTrashRoute =
+  AuthenticatedAdminProductsTrashImport.update({
+    id: '/trash',
+    path: '/trash',
+    getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
   } as any)
 
 const AuthenticatedAdminProductsAddRoute =
@@ -396,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProductsAddImport
       parentRoute: typeof AuthenticatedAdminProductsRouteImport
     }
+    '/_authenticated/admin/products/trash': {
+      id: '/_authenticated/admin/products/trash'
+      path: '/trash'
+      fullPath: '/admin/products/trash'
+      preLoaderRoute: typeof AuthenticatedAdminProductsTrashImport
+      parentRoute: typeof AuthenticatedAdminProductsRouteImport
+    }
     '/_authenticated/admin/stamps/bag': {
       id: '/_authenticated/admin/stamps/bag'
       path: '/admin/stamps/bag'
@@ -520,6 +535,7 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 
 interface AuthenticatedAdminProductsRouteRouteChildren {
   AuthenticatedAdminProductsAddRoute: typeof AuthenticatedAdminProductsAddRoute
+  AuthenticatedAdminProductsTrashRoute: typeof AuthenticatedAdminProductsTrashRoute
   AuthenticatedAdminProductsIndexRoute: typeof AuthenticatedAdminProductsIndexRoute
   AuthenticatedAdminProductsEditIdRoute: typeof AuthenticatedAdminProductsEditIdRoute
 }
@@ -527,6 +543,7 @@ interface AuthenticatedAdminProductsRouteRouteChildren {
 const AuthenticatedAdminProductsRouteRouteChildren: AuthenticatedAdminProductsRouteRouteChildren =
   {
     AuthenticatedAdminProductsAddRoute: AuthenticatedAdminProductsAddRoute,
+    AuthenticatedAdminProductsTrashRoute: AuthenticatedAdminProductsTrashRoute,
     AuthenticatedAdminProductsIndexRoute: AuthenticatedAdminProductsIndexRoute,
     AuthenticatedAdminProductsEditIdRoute:
       AuthenticatedAdminProductsEditIdRoute,
@@ -627,6 +644,7 @@ export interface FileRoutesByFullPath {
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
   '/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
+  '/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
   '/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
   '/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
@@ -659,6 +677,7 @@ export interface FileRoutesByTo {
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
   '/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
+  '/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
   '/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
   '/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
@@ -695,6 +714,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/_authenticated/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
   '/_authenticated/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
+  '/_authenticated/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/_authenticated/admin/stamps/bag': typeof AuthenticatedAdminStampsBagRoute
   '/_authenticated/admin/stamps/box': typeof AuthenticatedAdminStampsBoxRoute
   '/_authenticated/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
@@ -731,6 +751,7 @@ export interface FileRouteTypes {
     | '/admin/plans/material'
     | '/admin/plans/production'
     | '/admin/products/add'
+    | '/admin/products/trash'
     | '/admin/stamps/bag'
     | '/admin/stamps/box'
     | '/admin/stamps/history'
@@ -762,6 +783,7 @@ export interface FileRouteTypes {
     | '/admin/plans/material'
     | '/admin/plans/production'
     | '/admin/products/add'
+    | '/admin/products/trash'
     | '/admin/stamps/bag'
     | '/admin/stamps/box'
     | '/admin/stamps/history'
@@ -796,6 +818,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/plans/material'
     | '/_authenticated/admin/plans/production'
     | '/_authenticated/admin/products/add'
+    | '/_authenticated/admin/products/trash'
     | '/_authenticated/admin/stamps/bag'
     | '/_authenticated/admin/stamps/box'
     | '/_authenticated/admin/stamps/history'
@@ -888,6 +911,7 @@ export const routeTree = rootRoute
       "parent": "/_authenticated",
       "children": [
         "/_authenticated/admin/products/add",
+        "/_authenticated/admin/products/trash",
         "/_authenticated/admin/products/",
         "/_authenticated/admin/products/edit/$id"
       ]
@@ -938,6 +962,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/products/add": {
       "filePath": "_authenticated/admin/products/add.tsx",
+      "parent": "/_authenticated/admin/products"
+    },
+    "/_authenticated/admin/products/trash": {
+      "filePath": "_authenticated/admin/products/trash.tsx",
       "parent": "/_authenticated/admin/products"
     },
     "/_authenticated/admin/stamps/bag": {

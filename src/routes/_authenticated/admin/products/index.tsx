@@ -107,15 +107,14 @@ function RouteComponent() {
               />
             </Tooltip>
             <Tooltip title="Sản phẩm đã xóa">
-              <Button
-                size="large"
-                variant="solid"
-                color="gold"
-                icon={<IconDelete />}
-                onClick={() => {
-                  console.log('Sản phẩm đã xóa');
-                }}
-              />
+              <Link to="/admin/products/trash">
+                <Button
+                  size="large"
+                  variant="solid"
+                  color="gold"
+                  icon={<IconDelete />}
+                />
+              </Link>
             </Tooltip>
             <Tooltip title="Xuất excel">
               <Button
