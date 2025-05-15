@@ -53,3 +53,23 @@ export const getMonthlyQuantities = async ({
   });
   return response.data;
 };
+
+export const updateMonthlyQuantities = async ({
+  month,
+  status,
+  products
+}: {
+  status: number;
+  month: string;
+  products: {
+    productId: string;
+    quantity: number;
+  }[];
+}) => {
+  const response = await axiosPrivate.patch(`${ENDPOINT}/monthly/updateList`, {
+    month: month,
+    status: status,
+    products: products
+  });
+  return response;
+};
