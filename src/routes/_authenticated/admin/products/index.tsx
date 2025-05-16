@@ -84,27 +84,25 @@ function RouteComponent() {
                 />
               </Link>
             </Tooltip>
-            <Tooltip title="Thêm sản lượng MOQ, tồn đầu kỳ, tồn 200%">
-              <Button
-                size="large"
-                variant="solid"
-                color="blue"
-                icon={<FaBox />}
-                onClick={() => {
-                  console.log('Thêm sản lượng MOQ, tồn đầu kỳ, tồn 200%');
-                }}
-              />
+            <Tooltip title="Cập nhật sản lượng MOQ, tồn đầu kỳ, tồn 200%">
+              <Link to="/admin/products/quantity/update">
+                <Button
+                  size="large"
+                  variant="solid"
+                  color="blue"
+                  icon={<FaBox />}
+                />
+              </Link>
             </Tooltip>
             <Tooltip title="Thêm sản lượng sản xuất">
-              <Button
-                size="large"
-                variant="solid"
-                color="blue"
-                icon={<FaIndustry />}
-                onClick={() => {
-                  console.log('Thêm sản lượng sản xuất');
-                }}
-              />
+              <Link to="/admin/products/quantity/add">
+                <Button
+                  size="large"
+                  variant="solid"
+                  color="blue"
+                  icon={<FaIndustry />}
+                />
+              </Link>
             </Tooltip>
             <Tooltip title="Sản phẩm đã xóa">
               <Link to="/admin/products/trash">
