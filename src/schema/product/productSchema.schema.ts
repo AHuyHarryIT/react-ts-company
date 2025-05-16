@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { defaultModelSchema, overrideSchema } from '../defaultModel.schema';
 import { totalMonthQuantitySchema } from '@schemas/totalMonthQuantitySchema.schema';
 import { totalDayQuantitySchema } from '@schemas/totalDayQuantitySchema.schema';
+import { dailyQuantitiesSchema } from '@schemas/dailyQuantitiesSchema.schema';
 
 export const productSchema = defaultModelSchema.extend({
   code: z.string(),
@@ -20,7 +21,8 @@ export const productSchema = defaultModelSchema.extend({
   // color: z.string().nullable(),
   // quantity_per_package: z.number().nullable(),
   totalmonthquantities: totalMonthQuantitySchema.array().optional(),
-  totaldailyquantities: totalDayQuantitySchema.array().optional()
+  totaldailyquantities: totalDayQuantitySchema.array().optional(),
+  dailyquantities: dailyQuantitiesSchema.array().optional()
 });
 
 export const productCreateSchema = overrideSchema(productSchema, {

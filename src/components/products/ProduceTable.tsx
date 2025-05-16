@@ -22,17 +22,25 @@ interface ProduceTableProps {
   month: string; // MM-YYYY
 }
 
-// TODO: confirm shift time
-const dateTimeToShift = (time: string) => {
-  const date = dayjs(time).format('HH:mm');
+const dateTimeToShift = (currentDate: string, shiftDate: string) => {
+  const current = dayjs(currentDate, 'DD-MM-YYYY');
+  const date = dayjs(shiftDate, 'YYYY-MM-DD HH:mm');
 
-  if (date >= '07:30' && date < '21:30') {
+  // shift 1: 07:30(today) - 21:30(today)`
+  if (
+    date >= current.add(7, 'hour').add(30, 'minute') &&
+    date < current.add(21, 'hour').add(30, 'minute')
+  ) {
     return 1; // Shift 1
   }
-  // end at 09:00 next day or 7:30 next day
-  else if (date >= '21:30' && date < '09:00') {
+  // shift 2: 21:30(today) - 09:00(next day)
+  else if (
+    date >= current.add(21, 'hour').add(30, 'minute') &&
+    date < current.add(1, 'day').startOf('day').add(9, 'hour')
+  ) {
     return 2; // Shift 2
   }
+  return 1;
 };
 
 export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
@@ -52,7 +60,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
     initialFilters: {
       page: page,
       limit: limit,
-      include: ['totaldailyquantities'],
+      include: ['dailyquantities'],
       month: month
     }
   });
@@ -82,20 +90,20 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
       const newDataSource = tableData.map((product) => {
         const timeMap: ProduceTableType['times'] = {};
 
-        (product.totaldailyquantities || [])
+        (product.dailyquantities || [])
           .filter((item) => item.status === 1)
           .forEach((time) => {
             const dateKey = dayjs(time.date).format('DD-MM-YYYY');
-            const shift = dateTimeToShift(time.created_at);
+            const shift = dateTimeToShift(dateKey, time.created_at);
 
             if (!timeMap[dateKey]) {
               timeMap[dateKey] = { shift1: 0, shift2: 0 };
             }
 
             if (shift === 1) {
-              timeMap[dateKey].shift1 += time.totalQuan;
+              timeMap[dateKey].shift1 += time.quantity;
             } else if (shift === 2) {
-              timeMap[dateKey].shift2 += time.totalQuan;
+              timeMap[dateKey].shift2 += time.quantity;
             }
           });
 
