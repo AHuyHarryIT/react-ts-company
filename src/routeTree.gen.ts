@@ -44,6 +44,7 @@ import { Route as AuthenticatedAdminAttendancesSheetImport } from './routes/_aut
 import { Route as AuthenticatedAdminAttendancesHistoryImport } from './routes/_authenticated/admin/attendances/history'
 import { Route as AuthenticatedAdminEmployeesTrashIndexImport } from './routes/_authenticated/admin/employees/trash/index'
 import { Route as AuthenticatedAdminProductsQuantityUpdateImport } from './routes/_authenticated/admin/products/quantity/update'
+import { Route as AuthenticatedAdminProductsQuantityAddImport } from './routes/_authenticated/admin/products/quantity/add'
 import { Route as AuthenticatedAdminProductsEditIdImport } from './routes/_authenticated/admin/products/edit.$id'
 import { Route as AuthenticatedAdminEmployeesEditIdImport } from './routes/_authenticated/admin/employees/edit.$id'
 
@@ -272,6 +273,13 @@ const AuthenticatedAdminProductsQuantityUpdateRoute =
   AuthenticatedAdminProductsQuantityUpdateImport.update({
     id: '/quantity/update',
     path: '/quantity/update',
+    getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
+  } as any)
+
+const AuthenticatedAdminProductsQuantityAddRoute =
+  AuthenticatedAdminProductsQuantityAddImport.update({
+    id: '/quantity/add',
+    path: '/quantity/add',
     getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
   } as any)
 
@@ -517,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProductsEditIdImport
       parentRoute: typeof AuthenticatedAdminProductsRouteImport
     }
+    '/_authenticated/admin/products/quantity/add': {
+      id: '/_authenticated/admin/products/quantity/add'
+      path: '/quantity/add'
+      fullPath: '/admin/products/quantity/add'
+      preLoaderRoute: typeof AuthenticatedAdminProductsQuantityAddImport
+      parentRoute: typeof AuthenticatedAdminProductsRouteImport
+    }
     '/_authenticated/admin/products/quantity/update': {
       id: '/_authenticated/admin/products/quantity/update'
       path: '/quantity/update'
@@ -553,6 +568,7 @@ interface AuthenticatedAdminProductsRouteRouteChildren {
   AuthenticatedAdminProductsTrashRoute: typeof AuthenticatedAdminProductsTrashRoute
   AuthenticatedAdminProductsIndexRoute: typeof AuthenticatedAdminProductsIndexRoute
   AuthenticatedAdminProductsEditIdRoute: typeof AuthenticatedAdminProductsEditIdRoute
+  AuthenticatedAdminProductsQuantityAddRoute: typeof AuthenticatedAdminProductsQuantityAddRoute
   AuthenticatedAdminProductsQuantityUpdateRoute: typeof AuthenticatedAdminProductsQuantityUpdateRoute
 }
 
@@ -563,6 +579,8 @@ const AuthenticatedAdminProductsRouteRouteChildren: AuthenticatedAdminProductsRo
     AuthenticatedAdminProductsIndexRoute: AuthenticatedAdminProductsIndexRoute,
     AuthenticatedAdminProductsEditIdRoute:
       AuthenticatedAdminProductsEditIdRoute,
+    AuthenticatedAdminProductsQuantityAddRoute:
+      AuthenticatedAdminProductsQuantityAddRoute,
     AuthenticatedAdminProductsQuantityUpdateRoute:
       AuthenticatedAdminProductsQuantityUpdateRoute,
   }
@@ -677,6 +695,7 @@ export interface FileRoutesByFullPath {
   '/admin/work-schedules': typeof AuthenticatedAdminWorkSchedulesIndexRoute
   '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
   '/admin/products/edit/$id': typeof AuthenticatedAdminProductsEditIdRoute
+  '/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
   '/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
@@ -711,6 +730,7 @@ export interface FileRoutesByTo {
   '/admin/work-schedules': typeof AuthenticatedAdminWorkSchedulesIndexRoute
   '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
   '/admin/products/edit/$id': typeof AuthenticatedAdminProductsEditIdRoute
+  '/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
   '/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
@@ -749,6 +769,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/work-schedules/': typeof AuthenticatedAdminWorkSchedulesIndexRoute
   '/_authenticated/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
   '/_authenticated/admin/products/edit/$id': typeof AuthenticatedAdminProductsEditIdRoute
+  '/_authenticated/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
   '/_authenticated/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/_authenticated/admin/employees/trash/': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
@@ -787,6 +808,7 @@ export interface FileRouteTypes {
     | '/admin/work-schedules'
     | '/admin/employees/edit/$id'
     | '/admin/products/edit/$id'
+    | '/admin/products/quantity/add'
     | '/admin/products/quantity/update'
     | '/admin/employees/trash'
   fileRoutesByTo: FileRoutesByTo
@@ -820,6 +842,7 @@ export interface FileRouteTypes {
     | '/admin/work-schedules'
     | '/admin/employees/edit/$id'
     | '/admin/products/edit/$id'
+    | '/admin/products/quantity/add'
     | '/admin/products/quantity/update'
     | '/admin/employees/trash'
   id:
@@ -856,6 +879,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/work-schedules/'
     | '/_authenticated/admin/employees/edit/$id'
     | '/_authenticated/admin/products/edit/$id'
+    | '/_authenticated/admin/products/quantity/add'
     | '/_authenticated/admin/products/quantity/update'
     | '/_authenticated/admin/employees/trash/'
   fileRoutesById: FileRoutesById
@@ -938,6 +962,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/products/trash",
         "/_authenticated/admin/products/",
         "/_authenticated/admin/products/edit/$id",
+        "/_authenticated/admin/products/quantity/add",
         "/_authenticated/admin/products/quantity/update"
       ]
     },
@@ -1047,6 +1072,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/products/edit/$id": {
       "filePath": "_authenticated/admin/products/edit.$id.tsx",
+      "parent": "/_authenticated/admin/products"
+    },
+    "/_authenticated/admin/products/quantity/add": {
+      "filePath": "_authenticated/admin/products/quantity/add.tsx",
       "parent": "/_authenticated/admin/products"
     },
     "/_authenticated/admin/products/quantity/update": {
