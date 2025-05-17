@@ -4,6 +4,7 @@ import { defaultModelSchema, overrideSchema } from '../defaultModel.schema';
 import { totalMonthQuantitySchema } from '@schemas/totalMonthQuantitySchema.schema';
 import { totalDayQuantitySchema } from '@schemas/totalDayQuantitySchema.schema';
 import { dailyQuantitiesSchema } from '@schemas/dailyQuantitiesSchema.schema';
+import { totalDailyQuantityPoSchema } from '@schemas/totalDailyQuantityPoSchema.schema';
 
 export const productSchema = defaultModelSchema.extend({
   code: z.string(),
@@ -22,7 +23,8 @@ export const productSchema = defaultModelSchema.extend({
   // quantity_per_package: z.number().nullable(),
   totalmonthquantities: totalMonthQuantitySchema.array().optional(),
   totaldailyquantities: totalDayQuantitySchema.array().optional(),
-  dailyquantities: dailyQuantitiesSchema.array().optional()
+  dailyquantities: dailyQuantitiesSchema.array().optional(),
+  totaldailyquantitiespo: totalDailyQuantityPoSchema.array().optional()
 });
 
 export const productCreateSchema = overrideSchema(productSchema, {
@@ -33,6 +35,8 @@ export const productCreateSchema = overrideSchema(productSchema, {
 }).omit({
   totalmonthquantities: true,
   totaldailyquantities: true,
+  dailyquantities: true,
+  totaldailyquantities_po: true,
   quantity: true,
   FAPV: true,
   FASV: true,
