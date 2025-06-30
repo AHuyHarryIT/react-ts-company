@@ -26,7 +26,7 @@ export const ExportTable: React.FC<ExportTableProps> = ({ month }) => {
   const [dataSource, setDataSource] = useState<ExportTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
   const [total, setTotal] = useState(0);
 
   const {

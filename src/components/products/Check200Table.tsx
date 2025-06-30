@@ -28,7 +28,7 @@ export const Check200Table: React.FC<Check200TableProps> = ({ month }) => {
   const [dataSource, setDataSource] = useState<Check200TableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
   const [total, setTotal] = useState(0);
 
   const {
