@@ -43,7 +43,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
   months = []
 }) => {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
 
   const {
     data: tableData,

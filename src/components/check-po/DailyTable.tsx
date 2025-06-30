@@ -4,31 +4,30 @@ import React, { useEffect, useState } from 'react';
 
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
-import { RowTableActions } from './RowTableActions';
+import { dateTimeToShift } from '@utils/dateTimeToShift';
 
-export type Check200TableType = {
+export type ProduceTableType = {
   id: string;
   name: string;
   code: string;
-  startStock: number;
-  incurred: number;
-
+  totalQuantity: number;
   times: {
     [date: string]: {
-      quantity: number;
+      shift1: number;
+      shift2: number;
     };
   };
 };
 
-interface Check200TableProps {
+interface DailyTableProps {
   month: string; // MM-YYYY
 }
 
-export const Check200Table: React.FC<Check200TableProps> = ({ month }) => {
-  const [dataSource, setDataSource] = useState<Check200TableType[]>([]);
+export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
+  const [dataSource, setDataSource] = useState<ProduceTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(50);
+  const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
 
   const {
@@ -41,8 +40,9 @@ export const Check200Table: React.FC<Check200TableProps> = ({ month }) => {
     initialFilters: {
       page: page,
       limit: limit,
-      include: ['totaldailyquantities', 'totalmonthquantities'],
-      month: month
+      include: ['dailyquantities', 'totalmonthquantities'],
+      month: month,
+      status: 1
     }
   });
 
@@ -69,34 +69,33 @@ export const Check200Table: React.FC<Check200TableProps> = ({ month }) => {
 
     const generateDataSource = () => {
       const newDataSource = tableData.map((product) => {
-        const timeMap: Check200TableType['times'] = {};
+        const timeMap: ProduceTableType['times'] = {};
+        const totalQuantity = (product.totalmonthquantities || [])
+          .filter((item) => item.status === 1)
+          .reduce((acc, item) => acc + item.totalQuan, 0);
 
-        const totalMonthQuantities = product.totalmonthquantities || [];
-
-        const startStock = totalMonthQuantities.find(
-          (item) => item.status === 5
-        )?.totalQuan;
-        const incurred = totalMonthQuantities.find(
-          (item) => item.status === 2
-        )?.totalQuan;
-
-        (product.totaldailyquantities || [])
-          .filter((item) => item.status === 2)
+        (product.dailyquantities || [])
+          .filter((item) => item.status === 1)
           .forEach((time) => {
             const dateKey = dayjs(time.date).format('DD-MM-YYYY');
+            const shift = dateTimeToShift(dateKey, time.created_at);
 
             if (!timeMap[dateKey]) {
-              timeMap[dateKey] = { quantity: 0 };
+              timeMap[dateKey] = { shift1: 0, shift2: 0 };
             }
-            timeMap[dateKey].quantity += time.totalQuan;
+
+            if (shift === 1) {
+              timeMap[dateKey].shift1 += time.quantity;
+            } else if (shift === 2) {
+              timeMap[dateKey].shift2 += time.quantity;
+            }
           });
 
         return {
           id: product.id,
           name: product.name,
           code: product.code,
-          startStock: startStock || 0,
-          incurred: incurred || 0,
+          totalQuantity: totalQuantity,
           times: timeMap
         };
       });
@@ -107,25 +106,44 @@ export const Check200Table: React.FC<Check200TableProps> = ({ month }) => {
     generateDataSource();
   }, [tableData]);
 
-  const dateColumns: TableColumnsType<Check200TableType> = dayList.map(
+  const dateColumns: TableColumnsType<ProduceTableType> = dayList.map(
     (date, index) => {
       return {
         title: date,
         align: 'center',
-        dataIndex: ['times', date, 'quantity'],
-        className: index % 2 === 0 ? 'bg-indigo-200' : '',
-        key: `${date}_quantity`,
-        render: (value) => {
-          if (!value) return '0';
-          return value.toLocaleString('vi-VN', {
-            maximumFractionDigits: 0
-          });
-        }
+        children: [
+          {
+            title: 'Ca 1',
+            dataIndex: ['times', date, 'shift1'],
+            align: 'center',
+            className: index % 2 === 0 ? 'bg-indigo-200' : '',
+            key: `${date}_shift1`,
+            render: (value) => {
+              if (!value) return '0';
+              return value.toLocaleString({
+                maximumFractionDigits: 0
+              });
+            }
+          },
+          {
+            title: 'Ca 2',
+            dataIndex: ['times', date, 'shift2'],
+            align: 'center',
+            className: index % 2 === 0 ? 'bg-indigo-200' : '',
+            key: `${date}_shift2`,
+            render: (value) => {
+              if (!value) return '0';
+              return value.toLocaleString({
+                maximumFractionDigits: 0
+              });
+            }
+          }
+        ]
       };
     }
   );
 
-  const columns: TableColumnsType<Check200TableType> = [
+  const columns: TableColumnsType<ProduceTableType> = [
     {
       title: <div className="capitalize">STT</div>,
       rowScope: 'row',
@@ -140,51 +158,22 @@ export const Check200Table: React.FC<Check200TableProps> = ({ month }) => {
       dataIndex: 'name'
     },
     {
-      title: (
-        <div>
-          Tồn đầu kỳ
-          <br />
-          Hàng 200%
-        </div>
-      ),
+      title: <div>Tổng cộng</div>,
       align: 'center',
-      dataIndex: 'startStock',
+      minWidth: 100,
+      dataIndex: 'totalQuantity',
       render: (value) => {
-        if (!value) return '0';
+        if (!value) return 0;
         return value.toLocaleString({
           maximumFractionDigits: 0
         });
       }
     },
-    {
-      title: (
-        <div>
-          Phát sinh
-          <br />
-          Kiểm hàng 200%
-        </div>
-      ),
-      align: 'center',
-      dataIndex: 'incurred',
-      render: (value) => {
-        if (!value) return '0';
-        return value.toLocaleString({
-          maximumFractionDigits: 0
-        });
-      }
-    },
-    ...dateColumns,
-    {
-      title: <div>Thao tác</div>,
-      align: 'center',
-      render: (_, record) => {
-        return <RowTableActions productId={record.id} />;
-      }
-    }
+    ...dateColumns
   ];
 
-  const tableProps: TableProps<Check200TableType> = {
-    rowKey: (record) => ['check', record.id].join('-'),
+  const tableProps: TableProps<ProduceTableType> = {
+    rowKey: (record) => ['produce', record.id].join('-'),
     bordered: true,
     columns: columns,
     dataSource: dataSource,

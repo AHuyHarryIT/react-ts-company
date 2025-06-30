@@ -26,7 +26,7 @@ export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
   const [dataSource, setDataSource] = useState<Error200TableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
   const [total, setTotal] = useState(0);
 
   const {

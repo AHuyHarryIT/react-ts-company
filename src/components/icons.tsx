@@ -13,3 +13,5 @@ export {
   IoArrowUndo as IconRestore,
   IoReload as IconReload
 } from 'react-icons/io5';
+
+export { FaHistory as IconHistory } from 'react-icons/fa';
