@@ -21,6 +21,7 @@ export default defineConfig({
     proxy: {
       '/api': BASE_URL || 'http://localhost:8000',
       '/storage': BASE_URL || 'http://localhost:8000'
-    }
+    },
+    allowedHosts: ['localhost', 'a7atest.codeforfun.id.vn']
   }
 });

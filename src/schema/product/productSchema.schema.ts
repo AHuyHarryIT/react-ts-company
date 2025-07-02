@@ -18,8 +18,8 @@ export const productSchema = defaultModelSchema.extend({
   FAVV: z.number().nullable(),
   binCode: z.string(),
   quanEntityBin: z.number(),
-  // material: z.string().nullable(),
-  // color: z.string().nullable(),
+  material: z.string().nullable().optional(),
+  color: z.string().nullable().optional(),
   // quantity_per_package: z.number().nullable(),
   totalmonthquantities: totalMonthQuantitySchema.array().optional(),
   totaldailyquantities: totalDayQuantitySchema.array().optional(),
@@ -36,11 +36,13 @@ export const productCreateSchema = overrideSchema(productSchema, {
   totalmonthquantities: true,
   totaldailyquantities: true,
   dailyquantities: true,
-  totaldailyquantities_po: true,
+  totaldailyquantitiespo: true,
   quantity: true,
   FAPV: true,
   FASV: true,
-  FAVV: true
+  FAVV: true,
+  material: true,
+  color: true
 });
 
 export const productUpdateSchema = overrideSchema(productCreateSchema).omit({

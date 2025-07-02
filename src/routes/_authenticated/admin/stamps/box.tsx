@@ -1,9 +1,6 @@
+import BoxStamp from '@pages/admin/stamps/box';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_authenticated/admin/stamps/box')({
-  component: RouteComponent
+  component: BoxStamp
 });
-
-function RouteComponent() {
-  return <div>Hello "/admin/stamps/box"!</div>;
-}
