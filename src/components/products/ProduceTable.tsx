@@ -6,6 +6,7 @@ import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
 import { RowTableActions } from './RowTableActions';
 import { dateTimeToShift } from '@utils/dateTimeToShift';
+import { productStatus } from '@constants/productStatus.enum';
 
 export type ProduceTableType = {
   id: string;
@@ -40,7 +41,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
     initialFilters: {
       page: page,
       limit: limit,
-      include: ['dailyquantities'],
+      include: ['dailyquantities', 'totalmonthquantities'],
       month: month
     }
   });
@@ -70,8 +71,14 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
       const newDataSource = tableData.map((product) => {
         const timeMap: ProduceTableType['times'] = {};
 
+        const totalMonthQuantities = product.totalmonthquantities || [];
+
+        const total = totalMonthQuantities.find(
+          (item) => item.status == productStatus.enum.PRODUCE
+        )?.totalQuan;
+
         (product.dailyquantities || [])
-          .filter((item) => item.status === 1)
+          .filter((item) => item.status == productStatus.enum.PRODUCE)
           .forEach((time) => {
             const dateKey = dayjs(time.date).format('DD-MM-YYYY');
             const shift = dateTimeToShift(dateKey, time.created_at);
@@ -91,6 +98,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
           id: product.id,
           name: product.name,
           code: product.code,
+          total: total || 0,
           times: timeMap
         };
       });
@@ -151,6 +159,18 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
       title: <div>Tên sản phẩm</div>,
       fixed: 'left',
       dataIndex: 'name'
+    },
+    {
+      title: <div>Tổng cộng</div>,
+      fixed: 'left',
+      dataIndex: 'total',
+      align: 'center',
+      render: (value) => {
+        if (!value) return 0;
+        return value.toLocaleString({
+          maximumFractionDigits: 0
+        });
+      }
     },
     ...dateColumns,
     {
