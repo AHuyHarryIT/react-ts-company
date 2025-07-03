@@ -111,11 +111,11 @@ export default function BoxStamp() {
               ]}
               extra={
                 <>
-                  <strong>
+                  <p className="font-bold text-black">
                     Lưu ý: Trường hợp nếu cần in lại nhiều tem với số tem khác
                     nhau thì nhập số lượng tem theo các số lượng cần in, ví dụ:
                     cần in 2 tem lẻ 3,5 thì nhập số lượng là 2
-                  </strong>
+                  </p>
                 </>
               }
             >
@@ -136,11 +136,11 @@ export default function BoxStamp() {
               ]}
               extra={
                 <>
-                  <strong>
-                    Lưu ý: Trường hợp nếu cần in lại nhiều tem với số thùng khác
-                    nhau thì nhập cách mỗi số thùng dấu phẩy(,). ví dụ thùng 1
-                    và 2 thì nhập, ví dụ: 3,5
-                  </strong>
+                  <p className="font-bold text-black">
+                    Lưu ý: Trường hợp nếu cần in lại nhiều tem với số tem khác
+                    nhau thì nhập cách mỗi số tem dấu phẩy(,). ví dụ tem 1 và 2
+                    thì nhập, ví dụ: 3,5
+                  </p>
                 </>
               }
             >
