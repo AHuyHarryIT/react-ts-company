@@ -4,6 +4,7 @@ import {
   Flex,
   Form,
   FormProps,
+  Input,
   InputNumber,
   Select
 } from 'antd';
@@ -29,9 +30,13 @@ interface FormFields {
 
 export default function BoxStamp() {
   const [form] = Form.useForm<FormFields>();
-  const [selectProduct, setSelectProduct] = useState<ProductType>();
-  const [startBox, setStartBox] = useState<number>(0);
-  const [totalBox, setTotalBox] = useState<number>(0);
+  const [stampData, setStampData] = useState<{
+    product: ProductType;
+    startBox: number;
+    totalBox: number;
+    shift: Shift;
+    date: string;
+  }>();
 
   // Disable shortcut for print (Ctrl + P or Cmd + P)
   useEffect(() => {
@@ -64,16 +69,18 @@ export default function BoxStamp() {
     ...customFormProps,
     form: form,
     onFinish: (values) => {
-      setSelectProduct(
-        productsData.find((product) => product.code === values.productCode)
-      );
-      setStartBox(values.startBox);
-      setTotalBox(values.totalBox);
+      setStampData({
+        product: productsData.find(
+          (product) => product.code === values.productCode
+        )!,
+        startBox: values.startBox,
+        totalBox: values.totalBox,
+        shift: values.shift,
+        date: values.date.format('DD/MM/YYYY')
+      });
     },
     onReset: () => {
-      setSelectProduct(undefined);
-      setStartBox(0);
-      setTotalBox(0);
+      setStampData(undefined);
     }
   };
 
@@ -104,12 +111,11 @@ export default function BoxStamp() {
               ]}
               extra={
                 <>
-                  <strong>Lưu ý:</strong>
-                  <span>
-                    Trường hợp nếu cần in lại nhiều tem với số lượng khác nhau
-                    thì nhập số lượng tem theo các số lượng cần in, ví dụ: cần
-                    in 2 tem 50 và 200 thì nhập số lượng là 50,200
-                  </span>
+                  <strong>
+                    Lưu ý: Trường hợp nếu cần in lại nhiều tem với số tem khác
+                    nhau thì nhập số lượng tem theo các số lượng cần in, ví dụ:
+                    cần in 2 tem lẻ 3,5 thì nhập số lượng là 2
+                  </strong>
                 </>
               }
             >
@@ -121,21 +127,24 @@ export default function BoxStamp() {
             <Form.Item<FormFields>
               label="Tem bắt đầu"
               name="startBox"
-              rules={[{ required: true, message: 'Vui lòng nhập tem bắt đầu' }]}
+              rules={[
+                { required: true, message: 'Vui lòng nhập tem bắt đầu' },
+                {
+                  pattern: /^[0-9]+(,[0-9]+)*$/,
+                  message: 'Vui lòng nhập số tem hợp lệ (ví dụ: 1,2,3 hoặc 5)'
+                }
+              ]}
               extra={
                 <>
-                  <strong>Lưu ý:</strong>
-                  <span>
-                    Trường hợp nếu cần in lại nhiều tem với số tem khác nhau thì
-                    nhập cách mỗi số tem ví dụ tem 10 và 20 thì nhập "10,20"
-                  </span>
+                  <strong>
+                    Lưu ý: Trường hợp nếu cần in lại nhiều tem với số thùng khác
+                    nhau thì nhập cách mỗi số thùng dấu phẩy(,). ví dụ thùng 1
+                    và 2 thì nhập, ví dụ: 3,5
+                  </strong>
                 </>
               }
             >
-              <InputNumber
-                placeholder="Nhập tem bắt đầu"
-                style={{ width: '100%' }}
-              />
+              <Input placeholder="Nhập tem bắt đầu" />
             </Form.Item>
             <Form.Item<FormFields>
               label="Sản phẩm"
@@ -182,14 +191,14 @@ export default function BoxStamp() {
           </Form.Item>
         </Form>
       </ComponentCard>
-      {selectProduct && (
+      {stampData && (
         <ComponentCard title="Xem trước khi in">
           <PrintBoxStamp
-            product={selectProduct}
-            startBox={startBox}
-            totalBox={totalBox}
-            shift={form.getFieldValue('shift') as Shift}
-            date={form.getFieldValue('date')?.format('DD/MM/YYYY') || ''}
+            product={stampData.product}
+            startStamp={stampData.startBox}
+            totalStamp={stampData.totalBox}
+            shift={stampData.shift}
+            date={stampData.date}
           />
         </ComponentCard>
       )}
