@@ -15,7 +15,7 @@ import { ProductType } from '@/types/productType';
 import { Shift } from '@/types/shift';
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
-import { PrintBoxStamp } from '@components/print/BoxStamp';
+import { PrintBoxStamp } from '@components/print/PrintBoxStamp';
 import { ShiftEnumOptions } from '@constants/shift.enum';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
