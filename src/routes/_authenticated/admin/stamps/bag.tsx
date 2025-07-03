@@ -1,9 +1,6 @@
+import BagStamp from '@pages/admin/stamps/bag';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_authenticated/admin/stamps/bag')({
-  component: RouteComponent
+  component: BagStamp
 });
-
-function RouteComponent() {
-  return <div>Hello "/admin/stamps/bag"!</div>;
-}
