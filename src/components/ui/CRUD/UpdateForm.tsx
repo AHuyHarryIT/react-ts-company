@@ -16,7 +16,7 @@ interface UpdateFormProps<
   service: CrudServiceType<TData, TCreateDto, TUpdateDto>;
   schema: ZodObject<ZodRawShape>;
   fields: FieldConfig[];
-  onClose?: () => void;
+  onSuccess?: () => void;
   isGrid?: boolean;
   config?: AxiosRequestConfig;
 }
@@ -30,7 +30,7 @@ export function UpdateForm<
   service,
   schema,
   fields = [],
-  onClose,
+  onSuccess,
   isGrid = true,
   config = {}
 }: UpdateFormProps<TData, TCreateDto, TUpdateDto>) {
@@ -44,7 +44,7 @@ export function UpdateForm<
     id: id,
     service: service,
     onSuccess: (): void => {
-      onClose?.();
+      onSuccess?.();
     },
     schema: schema,
     config: config,

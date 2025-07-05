@@ -10,6 +10,7 @@ import { convertToFormData } from '@/utils/convertToFormData';
 import { convertDateStringsToDayjs } from '@utils/convertDateStringsToDayjs';
 import { CrudServiceType } from '@utils/crudService';
 import { handleValidationErrors } from '@utils/handleValidationError';
+import { formatJsonData } from '@utils/formatJsonData';
 
 interface UseDynamicCrudFormProps<TData, TCreateDto, TUpdateDto> {
   id?: string | number;
@@ -69,9 +70,12 @@ export function useDynamicCrudForm<
         ? convertToFormData({
             values,
             action: id ? 'update' : 'create',
-            fields
+            fields: fields
           })
-        : values;
+        : formatJsonData({
+            data: values,
+            fields: fields
+          });
 
       return id
         ? isFormData

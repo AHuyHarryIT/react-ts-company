@@ -3,7 +3,8 @@ export {
   FaTrash as IconDelete,
   FaPen as IconEdit,
   FaFileExport as IconExport,
-  FaFilter as IconFilter
+  FaFilter as IconFilter,
+  FaTable as IconTable
 } from 'react-icons/fa6';
 
 export { BiSearch as IconSearch } from 'react-icons/bi';

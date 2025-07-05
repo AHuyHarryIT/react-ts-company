@@ -16,6 +16,7 @@ import {
   Input,
   InputNumber,
   Select,
+  TimePicker,
   Upload
 } from 'antd';
 
@@ -93,6 +94,22 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
           <DatePicker
             style={{ width: '100%' }}
             format="YYYY-MM-DD"
+            placeholder={`Chọn ${field.label.toLowerCase()}`}
+          />
+        );
+      case 'time':
+        return (
+          <TimePicker
+            style={{ width: '100%' }}
+            format="HH:mm:ss"
+            placeholder={`Chọn ${field.label.toLowerCase()}`}
+          />
+        );
+      case 'datetime':
+        return (
+          <DatePicker
+            style={{ width: '100%' }}
+            showTime
             placeholder={`Chọn ${field.label.toLowerCase()}`}
           />
         );

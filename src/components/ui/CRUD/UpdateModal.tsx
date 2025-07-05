@@ -34,7 +34,7 @@ export function UpdateModal<
     setOpen(true);
   };
 
-  const onCancel = () => {
+  const handleClose = () => {
     setOpen(false);
   };
 
@@ -53,7 +53,7 @@ export function UpdateModal<
       <Modal
         title="Cập nhật"
         open={open}
-        onCancel={onCancel}
+        onCancel={handleClose}
         destroyOnClose
         centered
         footer={null}
@@ -64,7 +64,7 @@ export function UpdateModal<
             schema={schema}
             service={service}
             fields={fields}
-            onClose={onCancel}
+            onSuccess={handleClose}
             isGrid={false}
             config={config}
           />

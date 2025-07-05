@@ -19,6 +19,8 @@ export function convertToFormData({
   Object.entries(values).forEach(([key, value]) => {
     if (value === undefined || value === null) return;
 
+    const fieldType = fields?.find((field) => field.name === key)?.type;
+
     const field = fields?.find((f) => f.name === key && f.type === 'image');
     if (field && typeof value === 'string') return;
 
@@ -32,7 +34,10 @@ export function convertToFormData({
     } else if (value?.fileList?.[0]?.originFileObj) {
       formData.append(key, value.fileList[0].originFileObj);
     } else if (dayjs.isDayjs(value)) {
-      formData.append(key, value.format('YYYY-MM-DD'));
+      let format = 'YYYY-MM-DD';
+      if (fieldType === 'time') format = 'HH:mm:ss';
+      else if (fieldType === 'datetime') format = 'YYYY-MM-DD HH:mm:ss';
+      formData.append(key, value.format(format));
     } else if (Array.isArray(value)) {
       value.forEach((item) => {
         formData.append(`${key}[]`, item);

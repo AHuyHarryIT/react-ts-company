@@ -1,11 +1,9 @@
-import { useStore } from '@tanstack/react-store';
 import { Button, Modal, Tooltip } from 'antd';
+import { AxiosRequestConfig } from 'axios';
 import { useState } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
-import { AxiosRequestConfig } from 'axios';
 
 import { FieldConfig } from '@/types/form';
-import { uiStore } from '@stores/uiStore';
 import { CrudServiceType } from '@utils/crudService';
 import { CreateForm } from './CreateForm';
 
@@ -16,6 +14,7 @@ interface CreateRoleProps<
   TCreateDto extends object,
   TUpdateDto extends object
 > {
+  title?: string;
   service: CrudServiceType<TData, TCreateDto, TUpdateDto>;
   schema: ZodObject<ZodRawShape>;
   fields: FieldConfig[];
@@ -27,13 +26,12 @@ export function CreateModal<
   TCreateDto extends object,
   TUpdateDto extends object
 >({
+  title = 'Thêm mới',
   service,
   schema,
   fields = [],
   config = {}
 }: CreateRoleProps<TData, TCreateDto, TUpdateDto>) {
-  const { isMobile } = useStore(uiStore);
-
   const [open, setOpen] = useState(false);
 
   const showModal = () => {
@@ -46,7 +44,7 @@ export function CreateModal<
 
   return (
     <>
-      <Tooltip title="Thêm">
+      <Tooltip title={title}>
         <Button
           color="green"
           variant="solid"
@@ -54,11 +52,11 @@ export function CreateModal<
           size="large"
           onClick={showModal}
         >
-          {!isMobile && <>Thêm</>}
+          {title}
         </Button>
       </Tooltip>
       <Modal
-        title="Thêm mới"
+        title={title}
         open={open}
         onCancel={handleClose}
         destroyOnClose
@@ -71,6 +69,7 @@ export function CreateModal<
           fields={fields}
           isGrid={false}
           config={config}
+          onSuccess={handleClose}
         />
       </Modal>
     </>

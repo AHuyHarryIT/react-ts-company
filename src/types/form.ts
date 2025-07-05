@@ -11,6 +11,8 @@ export type FieldType =
   | 'checkbox-group'
   | 'textarea'
   | 'date'
+  | 'time'
+  | 'datetime'
   | 'file'
   | 'image';
 
