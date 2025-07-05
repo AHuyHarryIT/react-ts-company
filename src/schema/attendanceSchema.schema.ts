@@ -2,13 +2,12 @@ import { z } from 'zod';
 
 import {
   defaultModelSchema,
-  overrideSchema,
-  makeUpdateSchema
+  makeUpdateSchema,
+  overrideSchema
 } from './defaultModel.schema';
 import { employeeSchema } from './employeeSchema.schema';
 
 export const attendanceSchema = defaultModelSchema.extend({
-  id: z.string(),
   employee_code: z.string(),
   datetime: z.string(),
   date: z.string(),
@@ -16,6 +15,16 @@ export const attendanceSchema = defaultModelSchema.extend({
   employee: employeeSchema.optional()
 });
 
-export const attendanceCreateSchema = overrideSchema(attendanceSchema);
+export const attendanceCreateSchema = overrideSchema(attendanceSchema).omit({
+  date: true,
+  time: true,
+  employee: true
+});
 
-export const attendanceUpdateSchema = makeUpdateSchema(attendanceSchema);
+export const attendanceUpdateSchema = makeUpdateSchema(attendanceSchema).omit({
+  id: true,
+  employee_code: true,
+  date: true,
+  time: true,
+  employee: true
+});

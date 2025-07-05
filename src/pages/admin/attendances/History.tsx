@@ -14,15 +14,22 @@ import {
 } from 'antd';
 import { useState } from 'react';
 
+import {
+  useAttendanceCreateFields,
+  attendanceUpdateFields
+} from '@/configs/attendanceForm.config';
 import { AttendanceType } from '@/types/attendanceType';
 import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
-import { IconAdd, IconFilter } from '@components/icons';
+import { IconFilter, IconTable } from '@components/icons';
+import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
+import { CreateModal } from '@components/ui/CRUD/CreateModal';
+import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
 import { useCrudList } from '@hooks/useCrudList';
+import { attendanceSchema } from '@schemas/attendanceSchema.schema';
 import { attendanceService } from '@services/AttendanceService';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
-import { FaTable } from 'react-icons/fa6';
 
 type TableColumns = AttendanceType;
 const initialParams: QueryParams = {
@@ -66,14 +73,12 @@ export const History = () => {
     {
       title: 'Mã nhân viên',
       dataIndex: 'employee_code',
-      minWidth: 120,
-      ellipsis: true
+      minWidth: 120
     },
     {
       title: 'Tên nhân viên',
       key: 'employeeName',
       minWidth: 200,
-      ellipsis: true,
       render: (_value, record) => {
         return record.employee?.name || 'Chưa có thông tin';
       }
@@ -82,8 +87,7 @@ export const History = () => {
       title: 'Thời gian chấm công',
       dataIndex: 'datetime',
       key: 'datetime',
-      minWidth: 150,
-      ellipsis: true,
+      minWidth: 170,
       render: (value) => {
         if (!value) return null;
         return new Date(value).toLocaleString('vi-VN', {
@@ -99,8 +103,7 @@ export const History = () => {
     {
       title: 'Danh mục làm việc',
       key: 'workScheduleCategory',
-      width: 200,
-      ellipsis: true,
+      minWidth: 200,
       render: (_value, record) => {
         return (
           categories?.workScheduleCategories.find(
@@ -112,17 +115,37 @@ export const History = () => {
     {
       title: 'Hành động',
       key: 'action',
-      width: 100,
       align: 'center',
-      render: () => (
-        // TODO: enhance actions
-        <>
-          <Tooltip title="Xem chi tiết">
-            {/* <Link to={`/admin/attendances/${record.employeeCode}`}> */}
-            <Button type="link">Chi tiết</Button>
-            {/* </Link> */}
-          </Tooltip>
-        </>
+      render: (_value, record) => (
+        <div className="flex gap-2">
+          <UpdateModal
+            id={record.id}
+            service={attendanceService}
+            schema={attendanceSchema}
+            fields={attendanceUpdateFields}
+          />
+          <ConfirmButton
+            id={record.id}
+            service={attendanceService}
+            content={
+              <p>
+                Bạn có chắc chắn muốn xóa dữ liệu chấm công của nhân viên{' '}
+                <strong>{record.employee_code}</strong> vào ngày{' '}
+                <strong>
+                  {new Date(record.datetime).toLocaleDateString('vi-VN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
+                </strong>{' '}
+                không?
+              </p>
+            }
+          />
+        </div>
       )
     }
   ];
@@ -171,18 +194,19 @@ export const History = () => {
           isLoading={isFetching}
         />
         <Tooltip title="Thêm dữ liệu chấm công">
-          {/* <Link to="/admin/employees/add"> */}
-          <Button color="green" variant="solid" icon={<IconAdd />} size="large">
-            Thêm dữ liệu chấm công
-          </Button>
-          {/* </Link> */}
+          <CreateModal
+            title="Thêm dữ liệu chấm công"
+            service={attendanceService}
+            schema={attendanceSchema}
+            fields={useAttendanceCreateFields()}
+          />
         </Tooltip>
         <Tooltip title="Bảng tính công">
           <Link to="/admin/attendances/sheet">
             <Button
               color="blue"
               variant="solid"
-              icon={<FaTable />}
+              icon={<IconTable />}
               size="large"
             >
               Bảng tính công
