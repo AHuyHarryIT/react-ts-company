@@ -243,7 +243,14 @@ function Sidebar() {
         onCollapse={toggleSidebar}
       >
         <div className="flex items-center justify-center p-4">
-          <Link to="/admin">
+          <Link
+            to="/admin"
+            onClick={() => {
+              if (isMobile) {
+                toggleSidebar();
+              }
+            }}
+          >
             <Image className="w-full" src={logo} alt="Logo" preview={false} />
           </Link>
         </div>
@@ -254,6 +261,11 @@ function Sidebar() {
             items={items}
             defaultSelectedKeys={['/admin']}
             selectedKeys={[pathname]}
+            onClick={() => {
+              if (isMobile) {
+                toggleSidebar();
+              }
+            }}
           />
         </IconContext.Provider>
       </Side>
