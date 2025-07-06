@@ -233,7 +233,9 @@ export const History = () => {
                   onChange={(_value, dateString) => {
                     setParams((prev) => ({
                       ...prev,
-                      month: dateString ? dateString : undefined
+                      'filter[date]': Array.isArray(dateString)
+                        ? dateString[0]
+                        : dateString || undefined
                     }));
                   }}
                 />
