@@ -202,7 +202,7 @@ export const History = () => {
           />
         </Tooltip>
         <Tooltip title="Bảng tính công">
-          <Link to="/admin/attendances/sheet">
+          <Link to="/admin/attendances/record">
             <Button
               color="blue"
               variant="solid"

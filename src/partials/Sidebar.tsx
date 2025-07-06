@@ -152,9 +152,9 @@ const items: MenuItem[] = [
         )
       },
       {
-        key: '/admin/attendances/sheet',
+        key: '/admin/attendances/record',
         label: (
-          <Link to={'/admin/attendances/sheet'}>
+          <Link to={'/admin/attendances/record'}>
             <span className="capitalize">Bảng Tính Công</span>
           </Link>
         )
