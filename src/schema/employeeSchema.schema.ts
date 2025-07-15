@@ -10,7 +10,7 @@ import { maritalStatusEnum } from './maritalStatusEnum.schema';
 
 export const employeeSchema = defaultModelSchema.extend({
   name: z.string(),
-  code: z.string(),
+  // code: z.string(),
   phone: z.string(),
   email: z.string().email().nullable().optional(),
   CCCD: z.string(),
@@ -22,12 +22,13 @@ export const employeeSchema = defaultModelSchema.extend({
   company: z.string(),
   date_joining: z.string(),
   role_id: z.union([z.string(), z.number()]),
-  category_celender_id: z.union([z.string(), z.number()]),
+  calendar_category_id: z.union([z.string(), z.number()]),
   photo: z.string(),
   card_photo: z.string()
 });
 
 export const employeeCreateSchema = overrideSchema(employeeSchema, {
+  id: z.string(),
   photo: z.instanceof(File),
   card_photo: z.instanceof(File),
   birthday: dayjsSchema,

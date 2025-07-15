@@ -3,7 +3,7 @@ import { User } from '@/types/authType';
 import { clearAuth, setToken, setUser } from '@stores/authStore';
 import { convertImageName2Url } from '@utils/convertImageName2Url';
 
-const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 0;
+const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 120;
 
 type AuthResponse = {
   name: string;

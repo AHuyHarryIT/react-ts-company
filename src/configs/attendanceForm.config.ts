@@ -16,8 +16,8 @@ export const useAttendanceCreateFields = () => {
   });
 
   const employeeOptions = employees?.map((employee) => ({
-    label: `${employee.code} -${employee.name}`,
-    value: employee.code
+    label: `${employee.id} -${employee.name}`,
+    value: employee.id
   }));
 
   return zodToFieldsWithOverride(attendanceCreateSchema, {

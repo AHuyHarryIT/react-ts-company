@@ -157,7 +157,7 @@ function RouteComponent() {
                 <p>
                   Bạn có chắc chắn muốn khôi phục nhân viên{' '}
                   <strong>
-                    {_record.name} - {_record.code}
+                    {_record.name} - {_record.id}
                   </strong>{' '}
                   không?
                 </p>
@@ -170,7 +170,7 @@ function RouteComponent() {
   ];
 
   const tableProps: TableProps<EmployeeTable> = {
-    rowKey: (record) => ['employee', record.id, record.code].join('-'),
+    rowKey: (record) => ['employee', record.id].join('-'),
     bordered: true,
     columns: columns,
     dataSource: employees,

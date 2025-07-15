@@ -32,13 +32,13 @@ import { attendanceService } from '@services/AttendanceService';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
 
 type TableColumns = AttendanceType;
-const initialParams: QueryParams = {
-  page: 1,
-  limit: 50
-};
 
 export const History = () => {
-  const [params, setParams] = useState<QueryParams>(initialParams);
+  const [params, setParams] = useState<QueryParams>({
+    page: 1,
+    limit: 50,
+    include: ['employee']
+  });
   const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
 
   const {
@@ -107,7 +107,7 @@ export const History = () => {
       render: (_value, record) => {
         return (
           categories?.workScheduleCategories.find(
-            (item) => item.id === record.employee?.category_celender_id
+            (item) => item.id === record.employee?.calendar_category_id
           )?.name || 'Chưa có thông tin'
         );
       }

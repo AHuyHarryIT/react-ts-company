@@ -27,7 +27,7 @@ import { LuUserRoundPlus } from 'react-icons/lu';
 
 interface EmployeeTable extends EmployeeType {
   role?: { id: string; role_name: string };
-  category_celender?: { id: string; name: string };
+  calendar_category?: { id: string; name: string };
 }
 
 export const Route = createFileRoute('/_authenticated/admin/employees/')({
@@ -40,7 +40,7 @@ function RouteComponent() {
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 10,
-    include: ['role', 'category_celender']
+    include: ['role', 'calendarCategory']
   });
 
   const {
@@ -146,13 +146,13 @@ function RouteComponent() {
       title: 'Mã nhân viên',
       minWidth: 110,
       align: 'center',
-      dataIndex: 'code'
+      dataIndex: 'id'
     },
     {
       title: 'Danh mục lịch làm việc',
       minWidth: 200,
-      dataIndex: 'category_celender',
-      render: (_, record) => record.category_celender?.name
+      dataIndex: 'calendar_category',
+      render: (_, record) => record.calendar_category?.name
     },
     {
       title: 'Hành động',
@@ -173,7 +173,7 @@ function RouteComponent() {
                 <p>
                   Bạn có chắc chắn muốn xóa nhân viên{' '}
                   <strong>
-                    {_record.name} - {_record.code}
+                    {_record.name} - {_record.id}
                   </strong>{' '}
                   không?
                 </p>
@@ -186,7 +186,7 @@ function RouteComponent() {
   ];
 
   const tableProps: TableProps<EmployeeTable> = {
-    rowKey: (record) => ['employee', record.id, record.code].join('-'),
+    rowKey: (record) => ['employee', record.id, record.id].join('-'),
     bordered: true,
     columns: columns,
     dataSource: employees,

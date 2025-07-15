@@ -24,13 +24,16 @@ export const useEmployeeFields = () => {
 
   return zodToFieldsWithOverride(employeeCreateSchema, {
     name: {
-      label: 'Họ và tên'
+      label: 'Họ và tên',
+      index: 1
     },
     phone: {
-      label: 'Số điện thoại'
+      label: 'Số điện thoại',
+      index: 2
     },
-    code: {
-      label: 'Mã nhân viên'
+    id: {
+      label: 'Mã nhân viên',
+      index: 3
     },
     email: {
       label: 'Email',
@@ -86,7 +89,7 @@ export const useEmployeeFields = () => {
         };
       })
     },
-    category_celender_id: {
+    calendar_category_id: {
       label: 'Danh mục lịch làm việc',
       type: 'select',
       options: workScheduleCategoriesData?.workScheduleCategories.map(
