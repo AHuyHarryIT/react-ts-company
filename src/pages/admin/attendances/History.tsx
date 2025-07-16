@@ -247,13 +247,13 @@ export const History = () => {
                   onSelect={(value) => {
                     setParams((prev) => ({
                       ...prev,
-                      'filter[employee.category_celender_id]': value
+                      'filter[employee.calendar_category_id]': value
                     }));
                   }}
                   onClear={() => {
                     setParams((prev) => ({
                       ...prev,
-                      'filter[employee.category_celender_id]': undefined
+                      'filter[employee.calendar_category_id]': undefined
                     }));
                   }}
                 />
