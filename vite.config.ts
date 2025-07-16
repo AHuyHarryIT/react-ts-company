@@ -22,6 +22,12 @@ export default defineConfig({
       '/api': BASE_URL || 'http://localhost:8000',
       '/storage': BASE_URL || 'http://localhost:8000'
     },
-    allowedHosts: ['localhost', '.codeforfun.id.vn', '.onrender.com']
+    allowedHosts: [
+      'localhost',
+      '.codeforfun.id.vn',
+      '.onrender.com',
+      '.a7atest.id.vn',
+      '.a7acompany.id.vn'
+    ]
   }
 });
