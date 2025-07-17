@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
   Button,
@@ -9,20 +10,21 @@ import {
   Table,
   TableColumnsType,
   TableProps,
+  Tag,
   Tooltip
 } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
+import axiosPrivate from '@/api/axiosInstance';
 import { QueryParams } from '@/types/queryParams';
+import { PaginatedResponse } from '@/types/responseTypes';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
-
-import axiosPrivate from '@/api/axiosInstance';
-import { IconFilter, IconHistory } from '@components/icons';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
-import { useQuery } from '@tanstack/react-query';
+
+import { IconFilter, IconHistory } from '@components/icons';
 
 interface TableColumns {
   employee_id: string;
@@ -36,7 +38,7 @@ interface TableColumns {
   administrative_hours: number | null;
 }
 
-interface responseData {
+interface attendanceResponse {
   employee_id: string;
   name: string;
   date: string;
@@ -53,19 +55,10 @@ export const Records = () => {
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
-    sort: 'employee_id,date'
+    sort: 'date'
   });
   const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
 
-  // const {
-  //   data: attendances,
-  //   pagination,
-  //   queryResult: { isLoading, isFetching, refetch }
-  // } = useCrudList({
-  //   service: attendanceService,
-  //   queryKey: 'attendances',
-  //   initialFilters: params
-  // });
   const { data: categories, refetch: refetchCategories } = useQuery({
     queryKey: ['workScheduleCategories', { limit: 0 }],
     queryFn: () => fetchWorkScheduleCategories({ limit: 0 })
@@ -77,22 +70,24 @@ export const Records = () => {
   }));
 
   const {
-    data: attendances,
+    data: response,
     isLoading,
     isFetching,
     refetch
   } = useQuery({
     queryKey: ['attendances', params],
     queryFn: async () => {
-      const response = await axiosPrivate.get('api/attendances/', {
+      const response = await axiosPrivate.get<
+        attendanceResponse,
+        PaginatedResponse<attendanceResponse>
+      >('api/attendances/', {
         params: {
           ...params
         }
       });
-      const data: responseData[] = response.data;
+      const { data, current_page, total, per_page } = response;
 
-      // Map the data to include employee information
-      return data.map((attendance) => {
+      const attendances = data.map((attendance) => {
         const { employee_id, name, date, hnhc, dates, calendar_category_id } =
           attendance;
 
@@ -284,11 +279,26 @@ export const Records = () => {
           time_out,
           total_hours: total_hours,
           overtime_hours: total_hours > 8 ? total_hours - 8 : 0,
-          administrative_hours: 0
+          administrative_hours: total_hours > 0 ? 8 : total_hours
         };
       }) as TableColumns[];
+
+      return {
+        attendances,
+        pagination: {
+          total: total,
+          pageSize: per_page,
+          current: current_page
+        }
+      };
     }
   });
+
+  const { attendances, pagination } = response || {
+    attendances: [],
+    pagination: { total: 0, pageSize: params.limit, current: params.page }
+  };
+
   const columns: TableColumnsType<TableColumns> = [
     {
       title: 'STT',
@@ -344,11 +354,10 @@ export const Records = () => {
       minWidth: 170,
       render: (value) => {
         if (!value) return '-';
-        // show start time of today
         return new Date(value).toLocaleString('vi-VN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
+          // year: 'numeric',
+          // month: '2-digit',
+          // day: '2-digit',
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit'
@@ -363,12 +372,12 @@ export const Records = () => {
       render: (value) => {
         if (!value) return '-';
         return new Date(value).toLocaleString('vi-VN', {
+          // year: 'numeric',
+          // month: '2-digit',
+          // day: '2-digit',
           hour: '2-digit',
           minute: '2-digit',
-          second: '2-digit',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
+          second: '2-digit'
         });
       }
     },
@@ -380,7 +389,7 @@ export const Records = () => {
       render: (value) => {
         if (value === 1) return 'Ca 1';
         if (value === 2) return 'Ca 2';
-        return 'Nghỉ';
+        return <Tag color="green">Nghỉ</Tag>;
       }
     },
     {
@@ -388,17 +397,19 @@ export const Records = () => {
       dataIndex: 'total_hours',
       key: 'total_hours',
       minWidth: 150,
-      render: (value) => {
-        return value ? value : '-';
+      render: (value, record) => {
+        if (!record.shift) return '-';
+        return value ? value : <Tag color="red">Chấm công chưa đủ</Tag>;
       }
     },
     {
       title: 'Giờ hành chính(h)',
-      dataIndex: 'working_hours_office',
-      key: 'working_hours_office',
+      dataIndex: 'administrative_hours',
+      key: 'administrative_hours',
       minWidth: 120,
-      render: (value) => {
-        return value ? value : '-';
+      render: (value, record) => {
+        if (!record.shift) return '-';
+        return value ? value : <Tag color="red">Chấm công chưa đủ</Tag>;
       }
     },
     {
@@ -424,7 +435,7 @@ export const Records = () => {
       ...customTableProps.pagination,
       current: params.page,
       pageSize: params.limit,
-      // total: pagination.total,
+      total: pagination.total,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
           ...prev,

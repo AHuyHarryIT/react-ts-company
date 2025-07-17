@@ -9,6 +9,8 @@ export const customTableProps: TableProps = {
     size: 'default',
     showSizeChanger: true,
     pageSizeOptions: ['10', '20', '50', '100', '200', '500'],
-    showTotal: (total) => `Tổng ${total} dòng`
+    showTotal: (total, range) =>
+      `Hiển thị ${range[0]}-${range[1]} (Tổng ${total})`,
+    position: ['topRight', 'bottomRight']
   }
 };
