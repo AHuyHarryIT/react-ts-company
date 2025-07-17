@@ -22,6 +22,7 @@ import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
+import { EmployeeListModal } from '@components/attendances/EmployeeListModal';
 
 import { IconFilter, IconHistory } from '@components/icons';
 
@@ -32,6 +33,7 @@ interface TableColumns {
   time_in: string;
   time_out: string;
   shift: number;
+  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
   total_hours: number | null;
   overtime_hours: number | null;
   administrative_hours: number | null;
@@ -50,13 +52,14 @@ interface attendanceResponse {
   }[];
 }
 
-export const Records = () => {
+export default function Records() {
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
     sort: 'date'
   });
   const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
+  const [month, setMonth] = useState<string>(dayjs().format('MM-YYYY'));
 
   const { data: categories, refetch: refetchCategories } = useQuery({
     queryKey: ['workScheduleCategories', { limit: 0 }],
@@ -86,201 +89,206 @@ export const Records = () => {
       });
       const { data, current_page, total, per_page } = response;
 
-      const attendances = data.map((attendance) => {
-        const { employee_id, name, date, hnhc, dates, calendar_category_id } =
-          attendance;
+      const attendances = data
+        .map((attendance) => {
+          const { employee_id, name, date, hnhc, dates, calendar_category_id } =
+            attendance;
 
-        let shift = 0;
-        if (dates.filter((d) => d.date === date).length > 0) {
-          if (hnhc === 'N' || hnhc === 'LN') shift = 1;
-          else if (hnhc === 'D' || hnhc === 'TC') shift = 2;
-          else if (hnhc === 'X') {
-            const yesterday = dayjs(date)
-              .subtract(1, 'day')
-              .format('YYYY-MM-DD');
-            const yesterdayEntries = data.filter(
-              (item) =>
-                item.employee_id === employee_id && item.date === yesterday
-            );
-            const tomorrow = dayjs(date).add(1, 'day').format('YYYY-MM-DD');
-            const tomorrowEntries = data.filter(
-              (item) =>
-                item.employee_id === employee_id && item.date === tomorrow
-            );
+          let shift = 0;
+          if (dates.filter((d) => d.date === date).length > 0) {
+            if (hnhc === 'N' || hnhc === 'LN') shift = 1;
+            else if (hnhc === 'D' || hnhc === 'TC') shift = 2;
+            else if (hnhc === 'X') {
+              const yesterday = dayjs(date)
+                .subtract(1, 'day')
+                .format('YYYY-MM-DD');
+              const yesterdayEntries = data.filter(
+                (item) =>
+                  item.employee_id === employee_id && item.date === yesterday
+              );
+              const tomorrow = dayjs(date).add(1, 'day').format('YYYY-MM-DD');
+              const tomorrowEntries = data.filter(
+                (item) =>
+                  item.employee_id === employee_id && item.date === tomorrow
+              );
 
-            if (yesterdayEntries.length > 0) {
-              const yesterdayHnhc = yesterdayEntries[0].hnhc;
-              const tomorrowHnhc = tomorrowEntries[0]?.hnhc || null;
-              if (
-                (yesterdayHnhc === 'N' || yesterdayHnhc === 'LN') &&
-                (tomorrowHnhc === 'N' || tomorrowHnhc !== 'LN')
-              )
-                shift = 1;
-              else if (
-                (yesterdayHnhc === 'D' || yesterdayHnhc === 'TC') &&
-                (tomorrowHnhc === 'D' || tomorrowHnhc === 'TC')
-              )
-                shift = 2;
+              if (yesterdayEntries.length > 0) {
+                const yesterdayHnhc = yesterdayEntries[0].hnhc;
+                const tomorrowHnhc = tomorrowEntries[0]?.hnhc || null;
+                if (
+                  (yesterdayHnhc === 'N' || yesterdayHnhc === 'LN') &&
+                  (tomorrowHnhc === 'N' || tomorrowHnhc !== 'LN')
+                )
+                  shift = 1;
+                else if (
+                  (yesterdayHnhc === 'D' || yesterdayHnhc === 'TC') &&
+                  (tomorrowHnhc === 'D' || tomorrowHnhc === 'TC')
+                )
+                  shift = 2;
+              }
             }
           }
-        }
 
-        // Find time_in and time_out based on shift
-        let time_in = '';
-        let time_out = '';
-        if (shift === 1) {
-          const dateEntries = dates.filter((d) => d.date === date);
-          time_in =
-            dateEntries.length > 0
-              ? dateEntries.reduce(
-                  (min, d) => (d.datetime < min ? d.datetime : min),
-                  dateEntries[0].datetime
-                )
-              : '';
-          time_out =
-            dateEntries.length > 0
-              ? dateEntries.reduce(
-                  (max, d) => (d.datetime > max ? d.datetime : max),
-                  dateEntries[0].datetime
-                )
-              : '';
-        } else if (shift === 2) {
-          // Get entries from 18:00 today to 11:30 tomorrow
-          const startDateTime = new Date(date);
-          startDateTime.setHours(18, 0, 0, 0);
-          const endDateTime = new Date(date);
-          endDateTime.setDate(endDateTime.getDate() + 1);
-          endDateTime.setHours(11, 30, 0, 0);
-
-          const dateEntries = dates.filter((d) => {
-            const entryDate = new Date(d.datetime);
-            return entryDate >= startDateTime && entryDate <= endDateTime;
-          });
-          time_in =
-            dateEntries.length > 0 && dateEntries[0].date === date
-              ? dateEntries.reduce(
-                  (min, d) => (d.datetime < min ? d.datetime : min),
-                  dateEntries[0].datetime
-                )
-              : '';
-          time_out =
-            dateEntries.length > 0 &&
-            dateEntries[dateEntries.length - 1].date !== date
-              ? dateEntries.reduce(
-                  (max, d) => (d.datetime > max ? d.datetime : max),
-                  dateEntries[0].datetime
-                )
-              : '';
-        }
-
-        let total_hours = 0;
-        let break_time = 0;
-
-        if (time_in && time_out) {
-          let start = new Date(time_in);
-          const end = new Date(time_out);
-
+          // Find time_in and time_out based on shift
+          let time_in = '';
+          let time_out = '';
           if (shift === 1) {
-            start.setHours(7, 30, 0, 0);
-            start = start > new Date(time_in) ? start : new Date(time_in);
+            const dateEntries = dates.filter((d) => d.date === date);
+            time_in =
+              dateEntries.length > 0
+                ? dateEntries.reduce(
+                    (min, d) => (d.datetime < min ? d.datetime : min),
+                    dateEntries[0].datetime
+                  )
+                : '';
+            time_out =
+              dateEntries.length > 0
+                ? dateEntries.reduce(
+                    (max, d) => (d.datetime > max ? d.datetime : max),
+                    dateEntries[0].datetime
+                  )
+                : '';
           } else if (shift === 2) {
-            start.setHours(19, 30, 0, 0);
-            start = start > new Date(time_in) ? start : new Date(time_in);
+            // Get entries from 18:00 today to 11:30 tomorrow
+            const startDateTime = new Date(date);
+            startDateTime.setHours(18, 0, 0, 0);
+            const endDateTime = new Date(date);
+            endDateTime.setDate(endDateTime.getDate() + 1);
+            endDateTime.setHours(11, 30, 0, 0);
+
+            const dateEntries = dates.filter((d) => {
+              const entryDate = new Date(d.datetime);
+              return entryDate >= startDateTime && entryDate <= endDateTime;
+            });
+            time_in =
+              dateEntries.length > 0 && dateEntries[0].date === date
+                ? dateEntries.reduce(
+                    (min, d) => (d.datetime < min ? d.datetime : min),
+                    dateEntries[0].datetime
+                  )
+                : '';
+            time_out =
+              dateEntries.length > 0 &&
+              dateEntries[dateEntries.length - 1].date !== date
+                ? dateEntries.reduce(
+                    (max, d) => (d.datetime > max ? d.datetime : max),
+                    dateEntries[0].datetime
+                  )
+                : '';
           }
 
-          // Calculate break times efficiently
-          const startMinutes = start.getHours() * 60 + start.getMinutes();
-          const endMinutes =
-            (end.getTime() - start.getTime()) / 60000 + startMinutes;
+          let total_hours = 0;
+          let break_time = 0;
 
-          if (calendar_category_id == '4') {
-            // 9:30 - 9:45 break (15 min)
-            if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 45) {
-              break_time += 15;
-            }
-            // 12:00 - 13:00 lunch break (60 min)
-            if (endMinutes > 12 * 60 && startMinutes < 13 * 60) {
-              break_time += 60;
-            }
-            // 14:30 - 14:45 break (15 min)
-            if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 45) {
-              break_time += 15;
+          if (time_in && time_out) {
+            let start = new Date(time_in);
+            const end = new Date(time_out);
+
+            if (shift === 1) {
+              start.setHours(7, 30, 0, 0);
+              start = start > new Date(time_in) ? start : new Date(time_in);
+            } else if (shift === 2) {
+              start.setHours(19, 30, 0, 0);
+              start = start > new Date(time_in) ? start : new Date(time_in);
             }
 
-            // 17:00 break (10 min)
-            if (endMinutes < 17 * 60) {
-              break_time += 10;
+            // Calculate break times efficiently
+            const startMinutes = start.getHours() * 60 + start.getMinutes();
+            const endMinutes =
+              shift == 2
+                ? (end.getTime() - start.getTime()) / 60000 + startMinutes
+                : end.getHours() * 60 + end.getMinutes();
+
+            if (calendar_category_id == '4') {
+              // 9:30 - 9:45 break (15 min)
+              if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 45) {
+                break_time += 15;
+              }
+              // 12:00 - 13:00 lunch break (60 min)
+              if (endMinutes > 12 * 60 && startMinutes < 13 * 60) {
+                break_time += 60;
+              }
+              // 14:30 - 14:45 break (15 min)
+              if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 45) {
+                break_time += 15;
+              }
+
+              // 17:00 break (10 min)
+              if (endMinutes < 17 * 60) {
+                break_time += 10;
+              }
+            } else if (calendar_category_id == '2') {
+              // 9:30 - 9:35 break (5 min)
+              if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 35) {
+                break_time += 5;
+              }
+              // 11:20 - 12:00 break (40 min)
+              if (endMinutes > 11 * 60 + 20 && startMinutes < 12 * 60) {
+                break_time += 40;
+              }
+              // 14:30 - 14:35 break (5 min)
+              if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 35) {
+                break_time += 5;
+              }
+              // 17:00 - 17:10 break (10 min)
+              if (endMinutes > 17 * 60 && startMinutes < 17 * 60 + 10) {
+                break_time += 10;
+              }
+            } else if (shift === 1) {
+              // 9:30 - 9:40 break (10 min)
+              if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 40) {
+                break_time += 10;
+              }
+              // 11:20 - 11:50 lunch break (30 min)
+              if (endMinutes > 11 * 60 + 20 && startMinutes < 11 * 60 + 50) {
+                break_time += 30;
+              }
+              // 14:30 - 14:40 break (10 min)
+              if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 40) {
+                break_time += 10;
+              }
+              // 17:00 - 17:10 break (10 min)
+              if (endMinutes > 17 * 60 && startMinutes < 17 * 60 + 10) {
+                break_time += 10;
+              }
+            } else if (shift === 2) {
+              // 21:30 - 21:40 break (10 min)
+              if (endMinutes > 21 * 60 + 30 && startMinutes < 21 * 60 + 40) {
+                break_time += 10;
+              }
+              // 23:30 - 00:00 break (30 min)
+              if (endMinutes > 23 * 60 + 30 && startMinutes < 24 * 60) {
+                break_time += 30;
+              }
+              // 02:30 next day - 02:40 next day break (10 min)
+              if (endMinutes > 26 * 60 + 30 && startMinutes < 26 * 60 + 40) {
+                break_time += 10;
+              }
+              // 05:00 next day - 05:10 next day break (10 min)
+              if (endMinutes > 29 * 60 && startMinutes < 29 * 60 + 10) {
+                break_time += 10;
+              }
             }
-          } else if (calendar_category_id == '2') {
-            // 9:30 - 9:35 break (5 min)
-            if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 35) {
-              break_time += 5;
-            }
-            // 11:20 - 12:00 break (40 min)
-            if (endMinutes > 11 * 60 + 20 && startMinutes < 12 * 60) {
-              break_time += 40;
-            }
-            // 14:30 - 14:35 break (5 min)
-            if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 35) {
-              break_time += 5;
-            }
-            // 17:00 - 17:10 break (10 min)
-            if (endMinutes > 17 * 60 && startMinutes < 17 * 60 + 10) {
-              break_time += 10;
-            }
-          } else if (shift === 1) {
-            // 9:30 - 9:40 break (10 min)
-            if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 40) {
-              break_time += 10;
-            }
-            // 11:20 - 11:50 lunch break (30 min)
-            if (endMinutes > 11 * 60 + 20 && startMinutes < 11 * 60 + 50) {
-              break_time += 30;
-            }
-            // 14:30 - 14:40 break (10 min)
-            if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 40) {
-              break_time += 10;
-            }
-            // 17:00 - 17:10 break (10 min)
-            if (endMinutes > 17 * 60 && startMinutes < 17 * 60 + 10) {
-              break_time += 10;
-            }
-          } else if (shift === 2) {
-            // 21:30 - 21:40 break (10 min)
-            if (endMinutes > 21 * 60 + 30 && startMinutes < 21 * 60 + 40) {
-              break_time += 10;
-            }
-            // 23:30 - 00:00 break (30 min)
-            if (endMinutes > 23 * 60 + 30 && startMinutes < 24 * 60) {
-              break_time += 30;
-            }
-            // 02:30 next day - 02:40 next day break (10 min)
-            if (endMinutes > 26 * 60 + 30 && startMinutes < 26 * 60 + 40) {
-              break_time += 10;
-            }
-            // 05:00 next day - 05:10 next day break (10 min)
-            if (endMinutes > 29 * 60 && startMinutes < 29 * 60 + 10) {
-              break_time += 10;
-            }
+            total_hours =
+              (end.getTime() - start.getTime() - break_time * 60000) / 3600000;
+            total_hours = total_hours < 0 ? 0 : total_hours;
+            total_hours = Math.floor(total_hours * 4) / 4;
           }
-          total_hours =
-            (end.getTime() - start.getTime() - break_time * 60000) / 3600000;
-          total_hours = total_hours < 0 ? 0 : total_hours;
-          total_hours = Math.floor(total_hours * 4) / 4;
-        }
 
-        return {
-          employee_id,
-          name,
-          date,
-          shift,
-          time_in,
-          time_out,
-          total_hours: total_hours,
-          overtime_hours: total_hours > 8 ? total_hours - 8 : 0,
-          administrative_hours: total_hours > 0 ? 8 : total_hours
-        };
-      }) as TableColumns[];
+          return {
+            employee_id,
+            name,
+            date,
+            shift,
+            hnhc: hnhc || null,
+            time_in,
+            time_out,
+            total_hours: total_hours,
+            overtime_hours: total_hours > 8 ? total_hours - 8 : 0,
+            administrative_hours: total_hours > 8 ? 8 : total_hours
+          };
+        })
+        .filter((item) => item.shift != 0) as TableColumns[];
 
       return {
         attendances,
@@ -385,7 +393,9 @@ export const Records = () => {
       dataIndex: 'shift',
       key: 'shift',
       minWidth: 120,
-      render: (value) => {
+      render: (value, record) => {
+        if (record.hnhc == 'X' && record.shift)
+          return <Tag color="yellow">Đổi lịch làm</Tag>;
         if (value === 1) return 'Ca 1';
         if (value === 2) return 'Ca 2';
         return <Tag color="green">Nghỉ</Tag>;
@@ -451,7 +461,7 @@ export const Records = () => {
   };
 
   return (
-    <ComponentCard title="Bảng tính công">
+    <ComponentCard title={`Bảng tính công tháng ${month}`}>
       <div className="flex flex-wrap gap-4">
         <RefreshButton
           refresh={() => {
@@ -462,14 +472,15 @@ export const Records = () => {
         />
         <Link to="/admin/attendances/history">
           <Button
-            color="blue"
+            color="green"
             variant="solid"
             icon={<IconHistory />}
             size="large"
           >
-            Bảng tính công
+            Lịch sử chấm công
           </Button>
         </Link>
+        <EmployeeListModal />
       </div>
       <Collapse
         style={{ marginBottom: '1.5rem' }}
@@ -487,7 +498,12 @@ export const Records = () => {
                   picker="month"
                   format="YYYY-MM"
                   placeholder="Chọn tháng"
-                  onChange={(_value, dateString) => {
+                  onChange={(value, dateString) => {
+                    setMonth(
+                      value
+                        ? dayjs(value).format('MM-YYYY')
+                        : dayjs().format('MM-YYYY')
+                    );
                     setParams((prev) => ({
                       ...prev,
                       'filter[date_between]':
@@ -558,4 +574,4 @@ export const Records = () => {
       <Table<TableColumns> {...tableProps} />
     </ComponentCard>
   );
-};
+}

@@ -1,8 +1,5 @@
-import { useStore } from '@tanstack/react-store';
 import { Button } from 'antd';
 import React from 'react';
-
-import { uiStore } from '@stores/uiStore';
 
 import { IoReload } from 'react-icons/io5';
 
@@ -15,8 +12,6 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({
   refresh,
   isLoading
 }) => {
-  const { isMobile } = useStore(uiStore);
-
   return (
     <Button
       color="primary"
@@ -26,7 +21,7 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({
       onClick={() => refresh()}
       loading={isLoading}
     >
-      {!isMobile && <>Làm mới</>}
+      Làm mới
     </Button>
   );
 };

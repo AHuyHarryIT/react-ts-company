@@ -20,10 +20,10 @@ export function useCrudList<TData, TCreateDto, TUpdateDto>({
 }: UseCrudListProps<TData, TCreateDto, TUpdateDto>) {
   const queryResult = useQuery({
     queryKey: [queryKey, initialFilters, isTrash],
-    queryFn: () =>
+    queryFn: async () =>
       isTrash
-        ? service.listTrash(initialFilters)
-        : service.list(initialFilters),
+        ? await service.listTrash(initialFilters)
+        : await service.list(initialFilters),
     enabled
   });
 
