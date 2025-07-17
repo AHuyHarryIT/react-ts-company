@@ -1,4 +1,9 @@
 import apiPrivate from '@/api/axiosInstance';
+import {
+  ScheduleCreateType,
+  ScheduleType,
+  ScheduleUpdateType
+} from '@/types/scheduleType';
 
 import {
   EmployeeSchedule,
@@ -6,6 +11,15 @@ import {
   NewWorkScheduleType,
   WorkScheduleType
 } from '@/types/workScheduleType';
+import { CrudService } from '@utils/crudService';
+
+const ENDPOINT = '/api/schedules';
+
+export const scheduleService = new CrudService<
+  ScheduleType,
+  ScheduleCreateType,
+  ScheduleUpdateType
+>(ENDPOINT);
 
 type FilterWorkSchedule = {
   name?: string;
@@ -92,8 +106,6 @@ type WorkScheduleResponse = {
     day5: string;
   }[];
 };
-
-const ENDPOINT = '/api/schedules';
 
 // Fetch all work calendars
 export const fetchWorkSchedules = async ({

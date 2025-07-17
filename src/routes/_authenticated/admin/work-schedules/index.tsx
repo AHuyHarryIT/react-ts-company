@@ -1,15 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button, Table, TableColumnsType, TableProps } from 'antd';
 import { useState } from 'react';
 
-import { WorkScheduleType } from '@/types/workScheduleType';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { AddWorkSchedule } from '@components/workSchedules/AddModal';
 import { DeleteModal } from '@components/workSchedules/DeleteModal';
-import { fetchWorkSchedules } from '@services/workScheduleService';
+import { scheduleService } from '@services/workScheduleService';
 
+import { QueryParams } from '@/types/queryParams';
+import { ScheduleType } from '@/types/scheduleType';
+import { customTableProps } from '@components/custom/TableProps.custom';
+import { useCrudList } from '@hooks/useCrudList';
 import { GoInfo } from 'react-icons/go';
 
 export const Route = createFileRoute('/_authenticated/admin/work-schedules/')({
@@ -17,29 +19,26 @@ export const Route = createFileRoute('/_authenticated/admin/work-schedules/')({
 });
 
 function RouteComponent() {
-  const [limit, setLimit] = useState(10);
-  const [page, setPage] = useState(1);
+  const [params, setParams] = useState<QueryParams>({ limit: 10, page: 1 });
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['workSchedules', page, limit],
-    queryFn: () =>
-      fetchWorkSchedules({
-        page,
-        limit,
-        filters: {
-          sort: 'date:desc'
-        }
-      }),
-    refetchOnWindowFocus: true
+  const {
+    data,
+    pagination,
+    queryResult: { isLoading, isFetching, refetch }
+  } = useCrudList({
+    service: scheduleService,
+    queryKey: 'workSchedules',
+    initialFilters: params
   });
 
-  const columns: TableColumnsType<WorkScheduleType> = [
+  const columns: TableColumnsType<ScheduleType> = [
     {
       title: 'STT',
       rowScope: 'row',
       minWidth: 50,
       align: 'center',
-      render: (_value, _record, index) => index + 1 + limit * (page - 1)
+      render: (_value, _record, index) =>
+        index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
     },
     {
       title: 'Mã',
@@ -55,7 +54,7 @@ function RouteComponent() {
     {
       title: 'Ngày bắt đầu',
       minWidth: 200,
-      dataIndex: 'start_date',
+      dataIndex: 'date',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
           day: '2-digit',
@@ -87,46 +86,33 @@ function RouteComponent() {
     }
   ];
 
-  const tableProps: TableProps<WorkScheduleType> = {
+  const tableProps: TableProps<ScheduleType> = {
+    ...(customTableProps as unknown as TableProps<ScheduleType>),
     rowKey: (record) => ['workSchedule', record.id].join('-'),
-    bordered: true,
     columns: columns,
-    dataSource: data?.workSchedules,
+    dataSource: data,
     loading: isLoading,
-    size: 'small',
-    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
-      pageSize: limit,
-      total: data?.total,
-      showTotal: (total) => `Tổng ${total} lịch làm việc`,
+      ...customTableProps.pagination,
+      pageSize: pagination?.pageSize,
+      total: pagination?.total,
       onShowSizeChange: (_current, size) => {
-        setLimit(size);
+        setParams((prev) => ({ ...prev, limit: size }));
       },
       onChange: (page) => {
-        setPage(page);
+        setParams((prev) => ({ ...prev, page: page }));
       }
     }
   };
 
-  const Actions = () => {
-    return (
-      <>
+  return (
+    <>
+      <ComponentCard title="Danh sách lịch làm việc">
         <div className="flex flex-wrap gap-4">
           <RefreshButton refresh={refetch} isLoading={isFetching} />
           <AddWorkSchedule />
         </div>
-      </>
-    );
-  };
-  return (
-    <>
-      <ComponentCard title="Danh sách lịch làm việc">
-        <Actions />
-
-        <Table<WorkScheduleType> {...tableProps} />
+        <Table<ScheduleType> {...tableProps} />
       </ComponentCard>
     </>
   );

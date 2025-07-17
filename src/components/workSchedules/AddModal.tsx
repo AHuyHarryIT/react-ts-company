@@ -25,6 +25,7 @@ export const AddWorkSchedule = () => {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
+  const [scheduleFile, setScheduleFile] = useState<File>();
 
   const showModal = () => {
     setOpen(true);
@@ -38,7 +39,6 @@ export const AddWorkSchedule = () => {
     mutationFn: addWorkSchedule,
     mutationKey: ['addWorkSchedule'],
     onSuccess: () => {
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['workSchedules'] });
       message.success('Thêm lịch làm việc thành công');
     },
@@ -52,8 +52,8 @@ export const AddWorkSchedule = () => {
   ) => {
     const data = {
       title: value.title,
-      start_date: value.start_date?.format('YYYY/MM/01') || '',
-      fileImport: value.fileImport
+      start_date: value.start_date?.format('YYYY-MM-01') || '',
+      fileImport: scheduleFile as File
     };
     mutate(data);
   };
@@ -111,7 +111,13 @@ export const AddWorkSchedule = () => {
             <Input
               type="file"
               size="large"
-              accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+              accept=".xls*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setScheduleFile(file);
+                }
+              }}
             />
           </Form.Item>
           <div className="text-end">
