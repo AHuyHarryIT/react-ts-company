@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Button, Select, Tabs, TabsProps, Tooltip } from 'antd';
+import { Button, Select, Tabs, TabsProps } from 'antd';
 import { useState } from 'react';
 
 import axiosPrivate from '@/api/axiosInstance';
@@ -102,46 +102,36 @@ function RouteComponent() {
     <ComponentCard title="Danh sách PO">
       <div className="flex flex-wrap justify-between gap-2">
         <div className="flex flex-wrap gap-2">
-          <Tooltip title="Thêm sản lượng">
-            <Button
-              size="large"
-              variant="solid"
-              color="green"
-              icon={<IconAdd />}
-            />
-          </Tooltip>
-          <Tooltip title="Thêm PO xuất hàng">
-            <Button
-              size="large"
-              variant="solid"
-              color="blue"
-              icon={<FaTruck />}
-            />
-          </Tooltip>
-          <Tooltip title="Thêm tồn đầu kỳ">
-            <Button
-              size="large"
-              variant="solid"
-              color="blue"
-              icon={<FaWarehouse />}
-            />
-          </Tooltip>
-          <Tooltip title="Lịch sử nhập PO">
-            <Button
-              size="large"
-              variant="solid"
-              color="blue"
-              icon={<IconHistory />}
-            />
-          </Tooltip>
-          <Tooltip title="Export">
-            <Button
-              size="large"
-              variant="solid"
-              color="green"
-              icon={<IconExport />}
-            />
-          </Tooltip>
+          <Button size="large" variant="solid" color="green" icon={<IconAdd />}>
+            Thêm sản lượng
+          </Button>
+          <Button size="large" variant="solid" color="blue" icon={<FaTruck />}>
+            Thêm PO xuất hàng
+          </Button>
+          <Button
+            size="large"
+            variant="solid"
+            color="blue"
+            icon={<FaWarehouse />}
+          >
+            Thêm tồn đầu kỳ
+          </Button>
+          <Button
+            size="large"
+            variant="solid"
+            color="blue"
+            icon={<IconHistory />}
+          >
+            Lịch sử nhập PO
+          </Button>
+          <Button
+            size="large"
+            variant="solid"
+            color="green"
+            icon={<IconExport />}
+          >
+            Export
+          </Button>
         </div>
         <Select
           placeholder="Chọn tháng"

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Form, FormProps, Input, message, Modal, Tooltip } from 'antd';
+import { Button, Form, FormProps, Input, message, Modal } from 'antd';
 import { useState } from 'react';
 
 import { updateWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
@@ -65,16 +65,14 @@ export const UpdateWorkScheduleCategory: React.FC<
 
   return (
     <>
-      <Tooltip title="Cập nhật">
-        <Button
-          color="primary"
-          variant="solid"
-          icon={<FaPen />}
-          onClick={showModal}
-        >
-          Sửa
-        </Button>
-      </Tooltip>
+      <Button
+        color="primary"
+        variant="solid"
+        icon={<FaPen />}
+        onClick={showModal}
+      >
+        Sửa
+      </Button>
       <Modal
         title="Cập nhật mục lịch làm việc"
         open={open}

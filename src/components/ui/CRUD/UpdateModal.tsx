@@ -1,11 +1,11 @@
-import { Button, Modal, Tooltip } from 'antd';
+import { Button, Modal } from 'antd';
+import { AxiosRequestConfig } from 'axios';
 import { useState } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
-import { AxiosRequestConfig } from 'axios';
 
+import { FieldConfig } from '@/types/form';
 import { UpdateForm } from '@components/ui/CRUD/UpdateForm';
 import { CrudServiceType } from '@utils/crudService';
-import { FieldConfig } from '@/types/form';
 
 import { FaPen } from 'react-icons/fa6';
 
@@ -40,16 +40,14 @@ export function UpdateModal<
 
   return (
     <>
-      <Tooltip title="Cập nhật">
-        <Button
-          color="primary"
-          variant="solid"
-          icon={<FaPen />}
-          onClick={showModal}
-        >
-          Sửa
-        </Button>
-      </Tooltip>
+      <Button
+        color="primary"
+        variant="solid"
+        icon={<FaPen />}
+        onClick={showModal}
+      >
+        Sửa
+      </Button>
       <Modal
         title="Cập nhật"
         open={open}

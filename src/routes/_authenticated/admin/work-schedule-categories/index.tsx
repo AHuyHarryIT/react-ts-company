@@ -1,19 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useStore } from '@tanstack/react-store';
-import { Button, Table, TableColumnsType, TableProps, Tooltip } from 'antd';
+import { Table, TableColumnsType, TableProps } from 'antd';
 import { useState } from 'react';
 
 import ComponentCard from '@components/common/ComponentCard';
+import RefreshButton from '@components/common/RefreshButton';
 import { AddModal } from '@components/workScheduleCategories/AddModal';
 import { DeleteModal } from '@components/workScheduleCategories/DeleteModal';
 import { UpdateWorkScheduleCategory } from '@components/workScheduleCategories/UpdateModal';
 
-import { IoReload } from 'react-icons/io5';
-
 import { WorkScheduleCategoryType } from '@/types/workScheduleCategoryType';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
-import { uiStore } from '@stores/uiStore';
 
 export const Route = createFileRoute(
   '/_authenticated/admin/work-schedule-categories/'
@@ -22,8 +19,6 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
-  const { isMobile } = useStore(uiStore);
-
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
@@ -131,18 +126,7 @@ function RouteComponent() {
     return (
       <>
         <div className="flex flex-wrap gap-4">
-          <Tooltip title="Làm mới">
-            <Button
-              color="primary"
-              variant="solid"
-              icon={<IoReload />}
-              size="large"
-              onClick={() => refetch()}
-              loading={isFetching}
-            >
-              {!isMobile && <>Làm mới</>}
-            </Button>
-          </Tooltip>
+          <RefreshButton refresh={refetch} isLoading={isFetching} />
           <AddModal />
         </div>
       </>

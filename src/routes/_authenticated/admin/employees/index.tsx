@@ -1,13 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useStore } from '@tanstack/react-store';
-import {
-  Avatar,
-  Button,
-  Table,
-  TableColumnsType,
-  TableProps,
-  Tooltip
-} from 'antd';
+import { Avatar, Button, Table, TableColumnsType, TableProps } from 'antd';
 import { useState } from 'react';
 
 import { useCrudList } from '@/hooks/useCrudList';
@@ -17,7 +9,6 @@ import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
-import { uiStore } from '@stores/uiStore';
 import { convertImageName2Url } from '@utils/convertImageName2Url';
 
 import { BiTrash } from 'react-icons/bi';
@@ -35,8 +26,6 @@ export const Route = createFileRoute('/_authenticated/admin/employees/')({
 });
 
 function RouteComponent() {
-  const { isMobile } = useStore(uiStore);
-
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 10,
@@ -222,35 +211,29 @@ function RouteComponent() {
       <>
         <div className="flex flex-wrap gap-4">
           <RefreshButton refresh={refetch} isLoading={isFetching} />
-          <Tooltip title="Thêm nhân viên">
-            <Link to="/admin/employees/add">
-              <Button
-                color="green"
-                variant="solid"
-                icon={<LuUserRoundPlus />}
-                size="large"
-              >
-                {!isMobile && <>Thêm</>}
-              </Button>
-            </Link>
-          </Tooltip>
-          <Tooltip title="Đã xóa">
-            <Link to="/admin/employees/trash">
-              <Button
-                color="gold"
-                variant="solid"
-                icon={<BiTrash />}
-                size="large"
-              >
-                {!isMobile && <>Đã xóa</>}
-              </Button>
-            </Link>
-          </Tooltip>
-          <Tooltip title="Thêm chấm công">
-            <Button variant="solid" icon={<FaFingerprint />} size="large">
-              {!isMobile && <>Thêm chấm công</>}
+          <Link to="/admin/employees/add">
+            <Button
+              color="green"
+              variant="solid"
+              icon={<LuUserRoundPlus />}
+              size="large"
+            >
+              Thêm nhân viên
             </Button>
-          </Tooltip>
+          </Link>
+          <Link to="/admin/employees/trash">
+            <Button
+              color="gold"
+              variant="solid"
+              icon={<BiTrash />}
+              size="large"
+            >
+              Đã xóa
+            </Button>
+          </Link>
+          <Button variant="solid" icon={<FaFingerprint />} size="large">
+            Thêm chấm công
+          </Button>
         </div>
       </>
     );

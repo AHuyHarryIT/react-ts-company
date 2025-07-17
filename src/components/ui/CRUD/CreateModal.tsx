@@ -1,4 +1,4 @@
-import { Button, Modal, Tooltip } from 'antd';
+import { Button, Modal } from 'antd';
 import { AxiosRequestConfig } from 'axios';
 import { useState } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
@@ -44,17 +44,15 @@ export function CreateModal<
 
   return (
     <>
-      <Tooltip title={title}>
-        <Button
-          color="green"
-          variant="solid"
-          icon={<FaPlus />}
-          size="large"
-          onClick={showModal}
-        >
-          {title}
-        </Button>
-      </Tooltip>
+      <Button
+        color="green"
+        variant="solid"
+        icon={<FaPlus />}
+        size="large"
+        onClick={showModal}
+      >
+        {title}
+      </Button>
       <Modal
         title={title}
         open={open}

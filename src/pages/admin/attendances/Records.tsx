@@ -10,8 +10,7 @@ import {
   Table,
   TableColumnsType,
   TableProps,
-  Tag,
-  Tooltip
+  Tag
 } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -461,18 +460,16 @@ export const Records = () => {
           }}
           isLoading={isFetching}
         />
-        <Tooltip title="Bảng tính công">
-          <Link to="/admin/attendances/history">
-            <Button
-              color="blue"
-              variant="solid"
-              icon={<IconHistory />}
-              size="large"
-            >
-              Bảng tính công
-            </Button>
-          </Link>
-        </Tooltip>
+        <Link to="/admin/attendances/history">
+          <Button
+            color="blue"
+            variant="solid"
+            icon={<IconHistory />}
+            size="large"
+          >
+            Bảng tính công
+          </Button>
+        </Link>
       </div>
       <Collapse
         style={{ marginBottom: '1.5rem' }}

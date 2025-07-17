@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useStore } from '@tanstack/react-store';
 import {
   Button,
   DatePicker,
@@ -7,14 +6,12 @@ import {
   FormProps,
   Input,
   message,
-  Modal,
-  Tooltip
+  Modal
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { useState } from 'react';
 
 import { addWorkSchedule } from '@services/workScheduleService';
-import { uiStore } from '@stores/uiStore';
 
 import { FaPlus } from 'react-icons/fa';
 
@@ -25,8 +22,6 @@ type FormField = {
 };
 
 export const AddWorkSchedule = () => {
-  const { isMobile } = useStore(uiStore);
-
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
@@ -70,17 +65,15 @@ export const AddWorkSchedule = () => {
 
   return (
     <>
-      <Tooltip title="Thêm">
-        <Button
-          color="green"
-          variant="solid"
-          icon={<FaPlus />}
-          size="large"
-          onClick={showModal}
-        >
-          {!isMobile && <>Thêm lịch làm việc</>}
-        </Button>
-      </Tooltip>
+      <Button
+        color="green"
+        variant="solid"
+        icon={<FaPlus />}
+        size="large"
+        onClick={showModal}
+      >
+        Thêm lịch làm việc
+      </Button>
       <Modal
         title="Thêm lịch làm việc"
         open={open}

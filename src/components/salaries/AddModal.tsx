@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useStore } from '@tanstack/react-store';
 import {
   Button,
   DatePicker,
@@ -7,14 +6,12 @@ import {
   FormProps,
   Input,
   message,
-  Modal,
-  Tooltip
+  Modal
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { useState } from 'react';
 
 import { addSalary, AddSalaryParams } from '@services/SalaryService';
-import { uiStore } from '@stores/uiStore';
 
 import { FaPlus } from 'react-icons/fa6';
 
@@ -27,7 +24,6 @@ type FormField = {
 };
 
 export const AddSalary = () => {
-  const { isMobile } = useStore(uiStore);
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
@@ -85,17 +81,15 @@ export const AddSalary = () => {
 
   return (
     <>
-      <Tooltip title="Thêm">
-        <Button
-          color="green"
-          variant="solid"
-          icon={<FaPlus />}
-          size="large"
-          onClick={showModal}
-        >
-          {!isMobile && <>Thêm bản lương</>}
-        </Button>
-      </Tooltip>
+      <Button
+        color="green"
+        variant="solid"
+        icon={<FaPlus />}
+        size="large"
+        onClick={showModal}
+      >
+        Thêm bản lương
+      </Button>
 
       <Modal
         title="Thêm bản lương"

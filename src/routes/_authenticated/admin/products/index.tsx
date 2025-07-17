@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Button, Flex, Select, Tabs, TabsProps, Tooltip } from 'antd';
+import { Button, Flex, Select, Tabs, TabsProps } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import axiosPrivate from '@/api/axiosInstance';
@@ -74,58 +74,57 @@ function RouteComponent() {
         {/* TODO: implement actions */}
         <div className="flex flex-wrap justify-between gap-2">
           <Flex gap="small" wrap>
-            <Tooltip title="Thêm sản phẩm">
-              <Link to="/admin/products/add">
-                <Button
-                  size="large"
-                  variant="solid"
-                  color="green"
-                  icon={<IconAdd />}
-                />
-              </Link>
-            </Tooltip>
-            <Tooltip title="Cập nhật sản lượng MOQ, tồn đầu kỳ, tồn 200%">
-              <Link to="/admin/products/quantity/update">
-                <Button
-                  size="large"
-                  variant="solid"
-                  color="blue"
-                  icon={<FaBox />}
-                />
-              </Link>
-            </Tooltip>
-            <Tooltip title="Thêm sản lượng sản xuất">
-              <Link to="/admin/products/quantity/add">
-                <Button
-                  size="large"
-                  variant="solid"
-                  color="blue"
-                  icon={<FaIndustry />}
-                />
-              </Link>
-            </Tooltip>
-            <Tooltip title="Sản phẩm đã xóa">
-              <Link to="/admin/products/trash">
-                <Button
-                  size="large"
-                  variant="solid"
-                  color="gold"
-                  icon={<IconDelete />}
-                />
-              </Link>
-            </Tooltip>
-            <Tooltip title="Xuất excel">
+            <Link to="/admin/products/add">
               <Button
                 size="large"
                 variant="solid"
                 color="green"
-                icon={<IconExport />}
-                onClick={() => {
-                  console.log('Xuất excel');
-                }}
-                children={'Export'}
-              />
-            </Tooltip>
+                icon={<IconAdd />}
+              >
+                Thêm sản phẩm
+              </Button>
+            </Link>
+            <Link to="/admin/products/quantity/update">
+              <Button
+                size="large"
+                variant="solid"
+                color="blue"
+                icon={<FaBox />}
+              >
+                Cập nhật sản lượng MOQ, tồn đầu kỳ, tồn 200%
+              </Button>
+            </Link>
+            <Link to="/admin/products/quantity/add">
+              <Button
+                size="large"
+                variant="solid"
+                color="blue"
+                icon={<FaIndustry />}
+              >
+                Thêm sản lượng sản xuất
+              </Button>
+            </Link>
+            <Link to="/admin/products/trash">
+              <Button
+                size="large"
+                variant="solid"
+                color="gold"
+                icon={<IconDelete />}
+              >
+                Sản phẩm đã xóa
+              </Button>
+            </Link>
+            <Button
+              size="large"
+              variant="solid"
+              color="green"
+              icon={<IconExport />}
+              onClick={() => {
+                console.log('Xuất excel');
+              }}
+            >
+              Xuất excel
+            </Button>
           </Flex>
           <Flex gap="small" wrap>
             {/* Month */}
@@ -138,17 +137,17 @@ function RouteComponent() {
               size="large"
             />
 
-            <Tooltip title="Tìm kiếm nâng cao">
-              <Button
-                size="large"
-                variant="solid"
-                color="blue"
-                icon={<IconFilter />}
-                onClick={() => {
-                  console.log('Tìm kiếm nâng cao');
-                }}
-              />
-            </Tooltip>
+            <Button
+              size="large"
+              variant="solid"
+              color="blue"
+              icon={<IconFilter />}
+              onClick={() => {
+                console.log('Tìm kiếm nâng cao');
+              }}
+            >
+              Tìm kiếm nâng cao
+            </Button>
           </Flex>
         </div>
         {/* Tabs */}

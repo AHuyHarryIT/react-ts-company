@@ -9,14 +9,13 @@ import {
   Space,
   Table,
   TableColumnsType,
-  TableProps,
-  Tooltip
+  TableProps
 } from 'antd';
 import { useState } from 'react';
 
 import {
-  useAttendanceCreateFields,
-  attendanceUpdateFields
+  attendanceUpdateFields,
+  useAttendanceCreateFields
 } from '@/configs/attendanceForm.config';
 import { AttendanceType } from '@/types/attendanceType';
 import { QueryParams } from '@/types/queryParams';
@@ -193,26 +192,22 @@ export const History = () => {
           }}
           isLoading={isFetching}
         />
-        <Tooltip title="Thêm dữ liệu chấm công">
-          <CreateModal
-            title="Thêm dữ liệu chấm công"
-            service={attendanceService}
-            schema={attendanceSchema}
-            fields={useAttendanceCreateFields()}
-          />
-        </Tooltip>
-        <Tooltip title="Bảng tính công">
-          <Link to="/admin/attendances/record">
-            <Button
-              color="blue"
-              variant="solid"
-              icon={<IconTable />}
-              size="large"
-            >
-              Bảng tính công
-            </Button>
-          </Link>
-        </Tooltip>
+        <CreateModal
+          title="Thêm dữ liệu chấm công"
+          service={attendanceService}
+          schema={attendanceSchema}
+          fields={useAttendanceCreateFields()}
+        />
+        <Link to="/admin/attendances/record">
+          <Button
+            color="blue"
+            variant="solid"
+            icon={<IconTable />}
+            size="large"
+          >
+            Bảng tính công
+          </Button>
+        </Link>
       </div>
       <Collapse
         style={{ marginBottom: '1.5rem' }}

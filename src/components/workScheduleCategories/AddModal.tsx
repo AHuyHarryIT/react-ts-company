@@ -1,10 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useStore } from '@tanstack/react-store';
-import { Button, Form, FormProps, Input, Modal, Tooltip, message } from 'antd';
+import { Button, Form, FormProps, Input, Modal, message } from 'antd';
 import { useState } from 'react';
 
 import { addWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
-import { uiStore } from '@stores/uiStore';
 
 import { FaPlus } from 'react-icons/fa';
 
@@ -13,7 +11,6 @@ type FormField = {
 };
 
 export const AddModal = () => {
-  const { isMobile } = useStore(uiStore);
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
@@ -46,17 +43,15 @@ export const AddModal = () => {
 
   return (
     <>
-      <Tooltip title="Thêm">
-        <Button
-          color="green"
-          variant="solid"
-          icon={<FaPlus />}
-          size="large"
-          onClick={showModal}
-        >
-          {!isMobile && <>Thêm</>}
-        </Button>
-      </Tooltip>
+      <Button
+        color="green"
+        variant="solid"
+        icon={<FaPlus />}
+        size="large"
+        onClick={showModal}
+      >
+        Thêm
+      </Button>
       <Modal
         title="Thêm danh mục lịch làm việc"
         open={open}
