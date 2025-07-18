@@ -8,7 +8,8 @@ import { toggleSidebar, uiStore } from '@stores/uiStore';
 
 import { IconContext } from 'react-icons';
 import { AiOutlineHome } from 'react-icons/ai';
-import { BsCalendar2Check, BsCalendar2Week } from 'react-icons/bs';
+import { BsCalendar2Check } from 'react-icons/bs';
+// import { BsCalendar2Week } from 'react-icons/bs';
 import { CiBoxes } from 'react-icons/ci';
 import { FaHistory, FaMoneyCheckAlt, FaRegCalendarAlt } from 'react-icons/fa';
 import { FaBriefcase, FaPrint } from 'react-icons/fa6';
@@ -76,29 +77,29 @@ const items: MenuItem[] = [
     ),
     icon: <CiBoxes />
   },
-  {
-    key: '/admin/plans',
-    label: <span className="capitalize">Kế hoạch</span>,
-    icon: <BsCalendar2Week />,
-    children: [
-      {
-        key: '/admin/plans/production',
-        label: (
-          <Link to={'/admin/plans/production'}>
-            <span className="capitalize">Kế hoạch sản xuất</span>
-          </Link>
-        )
-      },
-      {
-        key: '/admin/plans/material',
-        label: (
-          <Link to={'/admin/plans/material'}>
-            <span className="capitalize">Kế hoạch nguyên liệu</span>
-          </Link>
-        )
-      }
-    ]
-  },
+  // {
+  //   key: '/admin/plans',
+  //   label: <span className="capitalize">Kế hoạch</span>,
+  //   icon: <BsCalendar2Week />,
+  //   children: [
+  //     {
+  //       key: '/admin/plans/production',
+  //       label: (
+  //         <Link to={'/admin/plans/production'}>
+  //           <span className="capitalize">Kế hoạch sản xuất</span>
+  //         </Link>
+  //       )
+  //     },
+  //     {
+  //       key: '/admin/plans/material',
+  //       label: (
+  //         <Link to={'/admin/plans/material'}>
+  //           <span className="capitalize">Kế hoạch nguyên liệu</span>
+  //         </Link>
+  //       )
+  //     }
+  //   ]
+  // },
   {
     key: 'stamp',
     label: <span className="capitalize">Tạo Tem</span>,
