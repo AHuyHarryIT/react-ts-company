@@ -7,6 +7,7 @@ import {
 } from './defaultModel.schema';
 import { genderEnum } from './genderEnum.schema';
 import { maritalStatusEnum } from './maritalStatusEnum.schema';
+import { scheduleCategorySchema } from './schedule/scheduleCategorySchema.schema';
 
 export const employeeSchema = defaultModelSchema.extend({
   name: z.string(),
@@ -24,7 +25,8 @@ export const employeeSchema = defaultModelSchema.extend({
   role_id: z.union([z.string(), z.number()]),
   calendar_category_id: z.union([z.string(), z.number()]),
   photo: z.string(),
-  card_photo: z.string()
+  card_photo: z.string(),
+  calendar_category: scheduleCategorySchema.optional()
 });
 
 export const employeeCreateSchema = overrideSchema(employeeSchema, {
@@ -33,6 +35,8 @@ export const employeeCreateSchema = overrideSchema(employeeSchema, {
   card_photo: z.instanceof(File),
   birthday: dayjsSchema,
   date_joining: dayjsSchema
+}).omit({
+  calendar_category: true
 });
 
 export const employeeUpdateSchema = overrideSchema(employeeSchema, {
@@ -40,4 +44,6 @@ export const employeeUpdateSchema = overrideSchema(employeeSchema, {
   card_photo: z.instanceof(File).optional(),
   birthday: dayjsSchema,
   date_joining: dayjsSchema
+}).omit({
+  calendar_category: true
 });

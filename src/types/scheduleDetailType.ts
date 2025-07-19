@@ -4,7 +4,7 @@ import {
   scheduleDetailCreateSchema,
   scheduleDetailSchema,
   scheduleDetailUpdateSchema
-} from '@schemas/schedule/scheduleDetailSchemal.schema';
+} from '@schemas/schedule/scheduleDetailSchema.schema';
 
 export type ScheduleDetailType = z.infer<typeof scheduleDetailSchema>;
 export type ScheduleDetailCreateType = z.infer<

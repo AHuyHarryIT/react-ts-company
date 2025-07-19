@@ -18,13 +18,21 @@ export const scheduleDetailSchema = defaultModelSchema
     is_wc_clean_women: z.boolean().default(false),
     is_wc_trash: z.boolean().default(false),
     is_eat_room: z.boolean().default(false),
-    hnhc: hnhcEnum,
-    employee: employeeSchema.optional()
+    hnhc: hnhcEnum.nullable(),
+    employees: employeeSchema.optional(),
+    schedules: scheduleSchema.optional()
   })
   .omit({
     id: true
   });
-export const scheduleDetailCreateSchema = overrideSchema(scheduleDetailSchema);
+export const scheduleDetailCreateSchema = overrideSchema(
+  scheduleDetailSchema
+).omit({
+  id: true,
+  employees: true,
+  schedules: true
+});
+
 export const scheduleDetailUpdateSchema = makeUpdateSchema(
   scheduleDetailCreateSchema
 );
