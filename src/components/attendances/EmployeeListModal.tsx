@@ -24,7 +24,7 @@ export const EmployeeListModal = () => {
     queryKey: 'scheduleDetails',
     initialFilters: {
       limit: 0,
-      include: ['employee'],
+      include: ['employees'],
       'filter[date]': date,
       'filter[hnhc]': 'D,TC,N,LN'
     }
@@ -80,7 +80,7 @@ export const EmployeeListModal = () => {
                         className="rounded-lg border p-2"
                       >
                         <Typography.Title level={5}>
-                          {item.employee?.name}
+                          {item.employees?.name}
                         </Typography.Title>
                         <Typography.Text>{item.employee_id}</Typography.Text>
                       </li>
@@ -100,7 +100,7 @@ export const EmployeeListModal = () => {
                         className="rounded-lg border p-2"
                       >
                         <Typography.Title level={5}>
-                          {item.employee?.name}
+                          {item.employees?.name}
                         </Typography.Title>
                         <Typography.Text>{item.employee_id}</Typography.Text>
                       </li>

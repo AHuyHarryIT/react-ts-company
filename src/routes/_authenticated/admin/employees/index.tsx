@@ -18,7 +18,6 @@ import { LuUserRoundPlus } from 'react-icons/lu';
 
 interface EmployeeTable extends EmployeeType {
   role?: { id: string; role_name: string };
-  calendar_category?: { id: string; name: string };
 }
 
 export const Route = createFileRoute('/_authenticated/admin/employees/')({

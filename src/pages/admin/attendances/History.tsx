@@ -36,7 +36,7 @@ export const History = () => {
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
-    include: ['employee']
+    include: ['employees']
   });
   const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
 
