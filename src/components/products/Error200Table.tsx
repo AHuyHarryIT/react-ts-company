@@ -1,10 +1,13 @@
 import { Table, TableColumnsType, TableProps } from 'antd';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
 import { RowTableActions } from './RowTableActions';
+import { QueryParams } from '@/types/queryParams';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 export type Error200TableType = {
   id: string;
@@ -19,15 +22,17 @@ export type Error200TableType = {
 };
 
 interface Error200TableProps {
-  month: string; // MM-YYYY
+  month: Dayjs | null; // MM-YYYY
 }
 
 export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
   const [dataSource, setDataSource] = useState<Error200TableType[]>([]);
-  const [dayList, setDayList] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(50);
-  const [total, setTotal] = useState(0);
+  const [params, setParams] = useState<QueryParams>({
+    page: 1,
+    limit: 50,
+    include: ['totaldailyquantities', 'totalmonthquantities'],
+    month: dayjs(month).format('YYYY-MM')
+  });
 
   const {
     data: tableData,
@@ -36,31 +41,8 @@ export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
   } = useCrudList({
     service: productService,
     queryKey: 'products',
-    initialFilters: {
-      page: page,
-      limit: limit,
-      include: ['totaldailyquantities', 'totalmonthquantities'],
-      month: month
-    }
+    initialFilters: params
   });
-
-  useEffect(() => {
-    if (!pagination.total) return;
-    setTotal(pagination.total || 0);
-  }, [pagination.total]);
-
-  useEffect(() => {
-    if (month) {
-      const day = dayjs(month, 'MM-YYYY');
-      const daysInMonth = day.daysInMonth();
-
-      const dayList = Array.from({ length: daysInMonth }, (_, i) =>
-        day.date(i + 1).format('DD-MM-YYYY')
-      );
-
-      setDayList(dayList);
-    }
-  }, [month]);
 
   useEffect(() => {
     if (!tableData.length) return;
@@ -101,23 +83,27 @@ export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
     generateDataSource();
   }, [tableData]);
 
-  const dateColumns: TableColumnsType<Error200TableType> = dayList.map(
-    (date, index) => {
-      return {
-        title: date,
-        align: 'center',
-        dataIndex: ['times', date, 'quantity'],
-        className: index % 2 === 0 ? 'bg-indigo-200' : '',
-        key: `${date}_quantity`,
-        render: (value) => {
-          if (!value) return '0';
-          return value.toLocaleString('vi-VN', {
-            maximumFractionDigits: 0
-          });
-        }
-      };
-    }
-  );
+  const dateColumns: TableColumnsType<Error200TableType> = Array.from({
+    length: dayjs(month).daysInMonth()
+  }).map((_, index) => {
+    const date = dayjs(month)
+      .date(index + 1)
+      .format('DD-MM-YYYY');
+    return {
+      title: date,
+      align: 'center',
+      dataIndex: ['times', date, 'quantity'],
+      key: `${date}_quantity`,
+      minWidth: 100,
+      className: index % 2 === 0 ? 'bg-indigo-200' : '',
+      render: (value) => {
+        if (!value) return '0';
+        return value.toLocaleString('vi-VN', {
+          maximumFractionDigits: 0
+        });
+      }
+    };
+  });
 
   const columns: TableColumnsType<Error200TableType> = [
     {
@@ -126,7 +112,8 @@ export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
       minWidth: 50,
       align: 'center',
       fixed: 'left',
-      render: (_value, _record, index) => index + 1 + limit * (page - 1)
+      render: (_value, _record, index) =>
+        index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
@@ -155,6 +142,8 @@ export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
   ];
 
   const tableProps: TableProps<Error200TableType> = {
+    ...(customTableProps as unknown as TableProps<Error200TableType>),
+
     rowKey: (record) => ['error', record.id].join('-'),
     bordered: true,
     columns: columns,
@@ -164,17 +153,16 @@ export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
     scroll: { x: 'max-content' },
     tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
-      pageSize: limit,
-      current: page,
-      total: total,
+      ...customTableProps.pagination,
+      pageSize: params.limit,
+      current: params.page,
+      total: pagination.total,
       showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
-        setLimit(size);
+        setParams((prev) => ({ ...prev, limit: size }));
       },
       onChange: (page) => {
-        setPage(page);
+        setParams((prev) => ({ ...prev, page }));
       }
     }
   };

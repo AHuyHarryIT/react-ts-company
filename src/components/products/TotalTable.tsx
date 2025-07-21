@@ -62,8 +62,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
 
   const { data: monthlyQuantities } = useQuery({
     queryKey: ['month-quantities', page, limit],
-    queryFn: ({ signal }) => {
-      return getMonthlyQuantities({ limit: 0, status: 3, signal: signal });
+    queryFn: () => {
+      return getMonthlyQuantities({ limit: 0, status: 3 });
     }
   });
 

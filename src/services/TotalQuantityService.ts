@@ -17,13 +17,11 @@ const ENDPOINT = '/api/quantities';
 export const getMonthlyQuantity = async ({
   productId,
   month,
-  status,
-  signal
+  status
 }: {
   productId: string;
   month: string;
   status?: number;
-  signal?: AbortSignal;
 }) => {
   const response = await axiosPrivate.get<
     TotalMonthQuantityType,
@@ -33,8 +31,7 @@ export const getMonthlyQuantity = async ({
       productId: productId,
       month: month,
       status: status
-    },
-    signal: signal
+    }
   });
   return response.data;
 };
@@ -42,13 +39,11 @@ export const getMonthlyQuantity = async ({
 export const getMonthlyQuantities = async ({
   limit,
   page,
-  status,
-  signal
+  status
 }: {
   limit?: number;
   page?: number;
   status?: number;
-  signal?: AbortSignal;
 }) => {
   const response = await axiosPrivate.get<
     TotalMonthQuantityType,
@@ -58,8 +53,7 @@ export const getMonthlyQuantities = async ({
       limit: limit,
       page: page,
       status: status
-    },
-    signal: signal
+    }
   });
   return response.data;
 };
