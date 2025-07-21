@@ -47,7 +47,6 @@ export interface SalaryTableType {
   actually_received_payroll: number;
   employee: {
     id: number;
-    code: string;
     name: string;
     role_id: number;
     role: {

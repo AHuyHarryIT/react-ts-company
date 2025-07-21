@@ -137,10 +137,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         </div>
       ),
       minWidth: 100,
-      dataIndex: 'employee_code',
+      dataIndex: 'employee_id',
       align: 'center',
       render: (_value, record) => {
-        return record.employee?.code || '-';
+        return record.employee_id || '-';
       }
     },
     {
