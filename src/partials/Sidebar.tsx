@@ -1,8 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import type { MenuProps } from 'antd';
-import { Image, Layout, Menu } from 'antd';
-import { CSSProperties } from 'react';
+import { Button, Drawer, Image, Layout, Menu } from 'antd';
 
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 
@@ -21,6 +20,7 @@ import {
 } from 'react-icons/io5';
 
 import logo from '@assets/images/logo/logoAsset.svg';
+import { BiLeftArrow, BiRightArrow } from 'react-icons/bi';
 
 const { Sider: Side } = Layout;
 
@@ -225,51 +225,107 @@ function Sidebar() {
   const { pathname } = useLocation();
   const { isSidebarClose, theme, isMobile } = useStore(uiStore);
 
-  const sideStyle: CSSProperties = {};
-  if (isMobile) {
-    sideStyle.position = 'absolute';
-    sideStyle.height = '100%';
-    sideStyle.zIndex = 99999;
-  }
+  const sidebarStyle: React.CSSProperties = {
+    overflow: 'auto',
+    height: '100vh',
+    position: 'sticky',
+    insetInlineStart: 0,
+    top: 0,
+    bottom: 0,
+    scrollbarWidth: 'none'
+  };
 
   return (
     <>
-      <Side
-        style={{ ...sideStyle }}
-        width={256}
-        theme={theme}
-        breakpoint="md"
-        collapsedWidth="0"
-        collapsed={isSidebarClose}
-        onCollapse={toggleSidebar}
-      >
-        <div className="flex items-center justify-center p-4">
-          <Link
-            to="/admin"
-            onClick={() => {
-              if (isMobile) {
-                toggleSidebar();
-              }
-            }}
-          >
-            <Image className="w-full" src={logo} alt="Logo" preview={false} />
-          </Link>
-        </div>
-        <IconContext.Provider value={{ size: '1.25rem' }}>
-          <Menu
-            theme={theme}
-            mode="inline"
-            items={items}
-            defaultSelectedKeys={['/admin']}
-            selectedKeys={[pathname]}
-            onClick={() => {
-              if (isMobile) {
-                toggleSidebar();
-              }
-            }}
-          />
-        </IconContext.Provider>
-      </Side>
+      {isMobile ? (
+        <Drawer
+          closable={false}
+          width={256}
+          placement="left"
+          onClose={toggleSidebar}
+          open={!isSidebarClose}
+        >
+          <div className="flex items-center justify-center p-4">
+            <Link
+              to="/admin"
+              onClick={() => {
+                if (isMobile) {
+                  toggleSidebar();
+                }
+              }}
+            >
+              <Image className="w-full" src={logo} alt="Logo" preview={false} />
+            </Link>
+          </div>
+          <div className="text-end">
+            <Button
+              color="blue"
+              shape="circle"
+              variant="solid"
+              icon={isSidebarClose ? <BiRightArrow /> : <BiLeftArrow />}
+              onClick={toggleSidebar}
+              style={{
+                fontSize: '16px',
+                width: 40,
+                height: 40
+              }}
+            />
+          </div>
+
+          <IconContext.Provider value={{ size: '1.25rem' }}>
+            <Menu
+              theme={theme}
+              mode="inline"
+              items={items}
+              defaultSelectedKeys={['/admin']}
+              selectedKeys={[pathname]}
+              onClick={() => {
+                if (isMobile) {
+                  toggleSidebar();
+                }
+              }}
+            />
+          </IconContext.Provider>
+        </Drawer>
+      ) : (
+        <Side
+          style={{ ...sidebarStyle }}
+          width={256}
+          theme={theme}
+          trigger={null}
+          breakpoint="md"
+          collapsible
+          collapsed={isSidebarClose}
+          onCollapse={toggleSidebar}
+        >
+          <div className="flex items-center justify-center p-4">
+            <Link
+              to="/admin"
+              onClick={() => {
+                if (isMobile) {
+                  toggleSidebar();
+                }
+              }}
+            >
+              <Image className="w-full" src={logo} alt="Logo" preview={false} />
+            </Link>
+          </div>
+          <IconContext.Provider value={{ size: '1.25rem' }}>
+            <Menu
+              theme={theme}
+              mode="inline"
+              items={items}
+              defaultSelectedKeys={['/admin']}
+              selectedKeys={[pathname]}
+              onClick={() => {
+                if (isMobile) {
+                  toggleSidebar();
+                }
+              }}
+            />
+          </IconContext.Provider>
+        </Side>
+      )}
     </>
   );
 }

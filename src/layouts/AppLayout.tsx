@@ -18,7 +18,7 @@ function AppLayout() {
   }, []);
 
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer, borderRadiusLG }
   } = antTheme.useToken();
 
   return (
@@ -28,14 +28,17 @@ function AppLayout() {
           style={{
             minHeight: '100vh',
             background: colorBgContainer,
-            borderRadius: borderRadiusLG,
+            borderRadius: borderRadiusLG
           }}
-          className="relative"
+          hasSider
         >
           <Sidebar />
           <Layout>
             <Header />
-            <Content className="p-6 dark:bg-gray-900">
+            <Content
+              style={{ margin: '24px 16px 0', overflow: 'initial' }}
+              className="p-6 dark:bg-gray-900"
+            >
               <Outlet />
             </Content>
             <AppFooter />
