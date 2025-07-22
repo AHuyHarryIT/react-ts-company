@@ -1,15 +1,16 @@
+import { UseQueryResult } from '@tanstack/react-query';
 import { Table, TableColumnsType, TableProps } from 'antd';
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
 import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { useCrudList } from '@hooks/useCrudList';
-import { productService } from '@services/ProductService';
-import { RowTableActions } from './RowTableActions';
-import { dateTimeToShift } from '@utils/dateTimeToShift';
-import { productStatus } from '@constants/productStatus.enum';
-import { customTableProps } from '@components/custom/TableProps.custom';
+import { ProductType } from '@/types/productType';
 import { QueryParams } from '@/types/queryParams';
+import { PaginatedResponse } from '@/types/responseTypes';
+import { customTableProps } from '@components/custom/TableProps.custom';
+import { productStatus } from '@constants/productStatus.enum';
+import { dateTimeToShift } from '@utils/dateTimeToShift';
+import { RowTableActions } from './RowTableActions';
 
 export type ProduceTableType = {
   id: string;
@@ -24,71 +25,69 @@ export type ProduceTableType = {
 };
 
 interface ProduceTableProps {
-  month: Dayjs | null; // MM-YYYY
+  month: Dayjs | null;
+  queryResult: UseQueryResult<PaginatedResponse<ProductType>>;
+  setParams: React.Dispatch<React.SetStateAction<QueryParams>>;
 }
 
-export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
+export const ProduceTable: React.FC<ProduceTableProps> = ({
+  month,
+  queryResult,
+  setParams
+}) => {
   const [dataSource, setDataSource] = useState<ProduceTableType[]>([]);
-  const [params, setParams] = useState<QueryParams>({
-    page: 1,
-    limit: 50,
-    include: ['dailyquantities', 'totalmonthquantities'],
-    month: dayjs(month).format('YYYY-MM')
-  });
 
-  const {
-    data: tableData,
-    pagination,
-    queryResult
-  } = useCrudList({
-    service: productService,
-    queryKey: 'products',
-    initialFilters: params
-  });
+  const { data: response } = queryResult;
+  const { tableData, pagination } = useMemo(() => {
+    return {
+      tableData: response?.data || [],
+      pagination: {
+        current: response?.current_page,
+        total: response?.total,
+        pageSize: response?.per_page
+      }
+    };
+  }, [response]);
 
   useEffect(() => {
     if (!tableData.length) return;
 
-    const generateDataSource = () => {
-      const newDataSource = tableData.map((product) => {
-        const timeMap: ProduceTableType['times'] = {};
+    const newDataSource = tableData.map((product) => {
+      const timeMap: ProduceTableType['times'] = {};
 
-        const totalMonthQuantities = product.totalmonthquantities || [];
+      const totalMonthQuantities = product.totalmonthquantities || [];
 
-        const total = totalMonthQuantities.find(
-          (item) => item.status == productStatus.enum.PRODUCE
-        )?.totalQuan;
+      const total = totalMonthQuantities.find(
+        (item) => item.status == productStatus.enum.PRODUCE
+      )?.totalQuan;
 
-        (product.dailyquantities || [])
-          .filter((item) => item.status == productStatus.enum.PRODUCE)
-          .forEach((time) => {
-            const dateKey = dayjs(time.date).format('DD-MM-YYYY');
-            const shift = dateTimeToShift(dateKey, time.created_at);
+      (product.dailyquantities || [])
+        .filter((item) => item.status == productStatus.enum.PRODUCE)
+        .forEach((time) => {
+          const dateKey = dayjs(time.date).format('DD-MM-YYYY');
+          const shift = dateTimeToShift(dateKey, time.created_at);
 
-            if (!timeMap[dateKey]) {
-              timeMap[dateKey] = { shift1: 0, shift2: 0 };
-            }
+          if (!timeMap[dateKey]) {
+            timeMap[dateKey] = { shift1: 0, shift2: 0 };
+          }
 
-            if (shift === 1) {
-              timeMap[dateKey].shift1 += time.quantity;
-            } else if (shift === 2) {
-              timeMap[dateKey].shift2 += time.quantity;
-            }
-          });
+          if (shift === 1) {
+            timeMap[dateKey].shift1 += time.quantity;
+          } else if (shift === 2) {
+            timeMap[dateKey].shift2 += time.quantity;
+          }
+        });
 
-        return {
-          id: product.id,
-          name: product.name,
-          code: product.code,
-          total: total || 0,
-          times: timeMap
-        };
-      });
+      return {
+        id: product.id,
+        name: product.name,
+        code: product.code,
+        total: total || 0,
+        times: timeMap
+      };
+    });
 
-      setDataSource(newDataSource);
-    };
-
-    generateDataSource();
+    setDataSource(newDataSource);
   }, [tableData]);
 
   const dateColumns: TableColumnsType<ProduceTableType> = Array.from({
@@ -141,7 +140,9 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
       align: 'center',
       fixed: 'left',
       render: (_value, _record, index) =>
-        index + 1 + (params.limit || 50) * ((params.page || 1) - 1)
+        index +
+        1 +
+        (pagination.pageSize ?? 50) * ((pagination.current ?? 1) - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
@@ -182,8 +183,8 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({ month }) => {
     loading: queryResult.isLoading,
     pagination: {
       ...customTableProps.pagination,
-      pageSize: params.limit,
-      current: params.page,
+      pageSize: pagination.pageSize,
+      current: pagination.current,
       total: pagination.total,
       showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {

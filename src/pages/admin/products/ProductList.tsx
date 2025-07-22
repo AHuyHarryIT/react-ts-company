@@ -16,9 +16,18 @@ import { TotalTable } from '@components/products/TotalTable';
 
 import { IconAdd, IconDelete, IconExport, IconFilter } from '@components/icons';
 import { FaBox, FaIndustry } from 'react-icons/fa6';
+import { QueryParams } from '@/types/queryParams';
+import { productService } from '@services/ProductService';
+import { useCrudList } from '@hooks/useCrudList';
 
 export default function ProductList() {
   const [month, setMonth] = useState<Dayjs | null>(dayjs().startOf('month'));
+  const [params, setParams] = useState<QueryParams>({
+    page: 1,
+    limit: 50,
+    include: ['totaldailyquantities', 'totalmonthquantities'],
+    month: dayjs(month).format('YYYY-MM')
+  });
 
   const { data: monthList } = useQuery<{ months: string[] }>({
     queryKey: ['months'],
@@ -29,36 +38,67 @@ export default function ProductList() {
 
   const months = useMemo(() => monthList?.months || [], [monthList]);
 
+  const { queryResult } = useCrudList({
+    service: productService,
+    queryKey: 'products',
+    initialFilters: params
+  });
+
   const productTabs: TabsProps['items'] = [
     {
       key: 'total',
       label: 'Tổng quan',
       children: (
         <TotalTable
-          month={month ? month.format('YYYY-MM') : ''}
           months={months}
+          queryResult={queryResult}
+          setParams={setParams}
         />
       )
     },
     {
       key: 'produce',
       label: 'Hàng sản xuất',
-      children: <ProduceTable month={month} />
+      children: (
+        <ProduceTable
+          month={month}
+          queryResult={queryResult}
+          setParams={setParams}
+        />
+      )
     },
     {
       key: 'check-200',
       label: 'Hàng kiểm 200%',
-      children: <Check200Table month={month} />
+      children: (
+        <Check200Table
+          month={month}
+          queryResult={queryResult}
+          setParams={setParams}
+        />
+      )
     },
     {
       key: 'error-200',
       label: 'Hàng lỗi 200%',
-      children: <Error200Table month={month} />
+      children: (
+        <Error200Table
+          month={month}
+          queryResult={queryResult}
+          setParams={setParams}
+        />
+      )
     },
     {
       key: 'export',
       label: 'Xuất hàng',
-      children: <ExportTable month={month} />
+      children: (
+        <ExportTable
+          month={month}
+          queryResult={queryResult}
+          setParams={setParams}
+        />
+      )
     }
   ];
 
@@ -126,10 +166,9 @@ export default function ProductList() {
               picker="month"
               placeholder="Chọn tháng"
               onChange={(date) => {
-                console.log('Selected month:', date);
-                if (date) {
-                  setMonth(date);
-                }
+                setMonth(
+                  date ? date.startOf('month') : dayjs().startOf('month')
+                );
               }}
               size="large"
             />

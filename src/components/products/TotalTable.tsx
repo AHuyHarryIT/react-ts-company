@@ -1,10 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { Table, TableColumnsType, TableProps } from 'antd';
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 
+import { ProductType } from '@/types/productType';
+import { QueryParams } from '@/types/queryParams';
+import { PaginatedResponse } from '@/types/responseTypes';
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
-import { useCrudList } from '@hooks/useCrudList';
-import { productService } from '@services/ProductService';
+import { customTableProps } from '@components/custom/TableProps.custom';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
 import { RowTableActions } from './RowTableActions';
 
@@ -34,34 +36,30 @@ export type TotalTableType = {
 };
 
 interface TotalTableProps {
-  month: string; // MM-YYYY
   months?: string[];
+  queryResult: UseQueryResult<PaginatedResponse<ProductType>>;
+  setParams: React.Dispatch<React.SetStateAction<QueryParams>>;
 }
 
 export const TotalTable: React.FC<TotalTableProps> = ({
-  month,
-  months = []
+  months = [],
+  queryResult,
+  setParams
 }) => {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(50);
-
-  const {
-    data: tableData,
-    pagination,
-    queryResult
-  } = useCrudList({
-    service: productService,
-    queryKey: 'products',
-    initialFilters: {
-      page: page,
-      limit: limit,
-      include: ['totalmonthquantities'],
-      month: month
-    }
-  });
+  const { data: response } = queryResult;
+  const { tableData, pagination } = useMemo(() => {
+    return {
+      tableData: response?.data || [],
+      pagination: {
+        current: response?.current_page,
+        total: response?.total,
+        pageSize: response?.per_page
+      }
+    };
+  }, [response]);
 
   const { data: monthlyQuantities } = useQuery({
-    queryKey: ['month-quantities', page, limit],
+    queryKey: ['month-quantities'],
     queryFn: () => {
       return getMonthlyQuantities({ limit: 0, status: 3 });
     }
@@ -156,6 +154,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           Đã xuất tháng {month}
         </div>
       ),
+      minWidth: 120,
       align: 'center',
       className: 'bg-indigo-300',
       dataIndex: ['times', month, 'quantity'],
@@ -175,10 +174,14 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       minWidth: 50,
       align: 'center',
       fixed: 'left',
-      render: (_value, _record, index) => index + 1 + limit * (page - 1)
+      render: (_value, _record, index) =>
+        index +
+        1 +
+        (pagination.pageSize ?? 50) * ((pagination.current ?? 1) - 1)
     },
     {
       title: <div className="">Tên sản phẩm</div>,
+      minWidth: 100,
       fixed: 'left',
       dataIndex: 'name'
     },
@@ -210,7 +213,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           (MOQ)
         </div>
       ),
-      minWidth: 100,
+      minWidth: 120,
       className: 'bg-indigo-300',
       align: 'center',
       dataIndex: 'catonQuantity',
@@ -269,6 +272,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     {
       title: <div className="">FAPV出荷</div>,
       className: 'bg-indigo-300',
+      minWidth: 50,
       align: 'center',
       dataIndex: 'FAPV',
       render: (value) => {
@@ -279,6 +283,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     {
       title: <div className="">FASV出荷</div>,
       className: 'bg-indigo-300',
+      minWidth: 50,
       align: 'center',
       dataIndex: 'FASV',
       render: (value) => {
@@ -289,6 +294,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     {
       title: <div className="">FAVV出荷</div>,
       className: 'bg-indigo-300',
+      minWidth: 50,
       align: 'center',
       dataIndex: 'FAVV',
       render: (value) => {
@@ -304,6 +310,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           tồn đầu kỳ
         </div>
       ),
+      minWidth: 100,
       align: 'center',
       dataIndex: 'stockStartQuantity',
       render: (value) => {
@@ -321,6 +328,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           (cái/tháng)
         </div>
       ),
+      minWidth: 100,
       align: 'center',
       dataIndex: 'realityQuantity',
       render: (value) => {
@@ -336,6 +344,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           đã xuất
         </div>
       ),
+      minWidth: 100,
       align: 'center',
       dataIndex: 'exportQuantity',
       render: (value) => {
@@ -351,6 +360,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           đã kiểm 200%
         </div>
       ),
+      minWidth: 100,
       align: 'center',
       dataIndex: 'checked200',
       render: (value) => {
@@ -366,6 +376,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           chưa kiểm 200%
         </div>
       ),
+      minWidth: 100,
       align: 'center',
       dataIndex: 'notCheck200',
       render: (value) => {
@@ -381,6 +392,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           tồn cuối kỳ
         </div>
       ),
+      minWidth: 100,
       align: 'center',
       dataIndex: 'stockEndQuantity',
       render: (value) => {
@@ -396,6 +408,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
           tồn kho
         </div>
       ),
+      minWidth: 100,
       align: 'center',
       dataIndex: 'storageTime',
       render: (value) => {
@@ -410,6 +423,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     ...dateColumns.reverse(),
     {
       title: <div>Thao tác</div>,
+      minWidth: 100,
       align: 'center',
       render: (_, record) => {
         return <RowTableActions productId={record.id} />;
@@ -418,26 +432,22 @@ export const TotalTable: React.FC<TotalTableProps> = ({
   ];
 
   const tableProps: TableProps<TotalTableType> = {
+    ...(customTableProps as unknown as TableProps<TotalTableType>),
     rowKey: (record) => ['product', record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
-    size: 'small',
-    scroll: { x: 'max-content' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
-      pageSize: limit,
-      current: page,
+      ...customTableProps.pagination,
+      pageSize: pagination.pageSize,
+      current: pagination.current,
       total: pagination.total,
       showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
-        setLimit(size);
+        setParams((prev) => ({ ...prev, limit: size }));
       },
       onChange: (page) => {
-        setPage(page);
+        setParams((prev) => ({ ...prev, page }));
       }
     }
   };

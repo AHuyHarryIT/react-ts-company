@@ -1,13 +1,14 @@
+import { UseQueryResult } from '@tanstack/react-query';
 import { Table, TableColumnsType, TableProps } from 'antd';
-import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
-import React, { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { useCrudList } from '@hooks/useCrudList';
-import { productService } from '@services/ProductService';
-import { RowTableActions } from './RowTableActions';
+import { ProductType } from '@/types/productType';
 import { QueryParams } from '@/types/queryParams';
+import { PaginatedResponse } from '@/types/responseTypes';
 import { customTableProps } from '@components/custom/TableProps.custom';
+import { RowTableActions } from './RowTableActions';
 
 export type Error200TableType = {
   id: string;
@@ -22,65 +23,63 @@ export type Error200TableType = {
 };
 
 interface Error200TableProps {
-  month: Dayjs | null; // MM-YYYY
+  month: Dayjs | null;
+  queryResult: UseQueryResult<PaginatedResponse<ProductType>>;
+  setParams: React.Dispatch<React.SetStateAction<QueryParams>>;
 }
 
-export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
+export const Error200Table: React.FC<Error200TableProps> = ({
+  month,
+  queryResult,
+  setParams
+}) => {
   const [dataSource, setDataSource] = useState<Error200TableType[]>([]);
-  const [params, setParams] = useState<QueryParams>({
-    page: 1,
-    limit: 50,
-    include: ['totaldailyquantities', 'totalmonthquantities'],
-    month: dayjs(month).format('YYYY-MM')
-  });
 
-  const {
-    data: tableData,
-    pagination,
-    queryResult
-  } = useCrudList({
-    service: productService,
-    queryKey: 'products',
-    initialFilters: params
-  });
+  const { data: response } = queryResult;
+  const { tableData, pagination } = useMemo(() => {
+    return {
+      tableData: response?.data || [],
+      pagination: {
+        current: response?.current_page,
+        total: response?.total,
+        pageSize: response?.per_page
+      }
+    };
+  }, [response]);
 
   useEffect(() => {
     if (!tableData.length) return;
 
-    const generateDataSource = () => {
-      const newDataSource = tableData.map((product) => {
-        const timeMap: Error200TableType['times'] = {};
+    const newDataSource = tableData.map((product) => {
+      const timeMap: Error200TableType['times'] = {};
 
-        const totalMonthQuantities = product.totalmonthquantities || [];
+      const totalMonthQuantities = product.totalmonthquantities || [];
 
-        const total = totalMonthQuantities.find(
-          (item) => item.status === 6
-        )?.totalQuan;
+      const total = totalMonthQuantities.find(
+        (item) => item.status === 6
+      )?.totalQuan;
 
-        (product.totaldailyquantities || [])
-          .filter((item) => item.status === 6)
-          .forEach((time) => {
-            const dateKey = dayjs(time.date).format('DD-MM-YYYY');
+      (product.totaldailyquantities || [])
+        .filter((item) => item.status === 6)
+        .forEach((time) => {
+          const dateKey = dayjs(time.date).format('DD-MM-YYYY');
 
-            if (!timeMap[dateKey]) {
-              timeMap[dateKey] = { quantity: 0 };
-            }
-            timeMap[dateKey].quantity += time.totalQuan;
-          });
+          if (!timeMap[dateKey]) {
+            timeMap[dateKey] = { quantity: 0 };
+          }
+          timeMap[dateKey].quantity += time.totalQuan;
+        });
 
-        return {
-          id: product.id,
-          name: product.name,
-          code: product.code,
-          total: total || 0,
-          times: timeMap
-        };
-      });
+      return {
+        id: product.id,
+        name: product.name,
+        code: product.code,
+        total: total || 0,
+        times: timeMap
+      };
+    });
 
-      setDataSource(newDataSource);
-    };
-
-    generateDataSource();
+    setDataSource(newDataSource);
   }, [tableData]);
 
   const dateColumns: TableColumnsType<Error200TableType> = Array.from({
@@ -113,15 +112,19 @@ export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
       align: 'center',
       fixed: 'left',
       render: (_value, _record, index) =>
-        index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
+        index +
+        1 +
+        (pagination.pageSize ?? 50) * ((pagination.current ?? 1) - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
+      minWidth: 100,
       fixed: 'left',
       dataIndex: 'name'
     },
     {
       title: <div>Tổng cộng</div>,
+      minWidth: 100,
       align: 'center',
       dataIndex: 'total',
       render: (value) => {
@@ -149,13 +152,10 @@ export const Error200Table: React.FC<Error200TableProps> = ({ month }) => {
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
-    size: 'small',
-    scroll: { x: 'max-content' },
-    tableLayout: 'auto',
     pagination: {
       ...customTableProps.pagination,
-      pageSize: params.limit,
-      current: params.page,
+      pageSize: pagination.pageSize,
+      current: pagination.current,
       total: pagination.total,
       showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
