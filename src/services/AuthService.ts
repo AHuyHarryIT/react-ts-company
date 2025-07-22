@@ -68,11 +68,17 @@ export const authCheck = async () => {
       }
     };
 
-    if (response?.image && response?.role_id == 15) {
-      userData.image_url = convertImageName2Url(response.image, 'admin');
-    } else if (response?.image) {
-      userData.image_url = convertImageName2Url(response.image);
+    if (response?.image) {
+      switch (response.role_name.toLowerCase()) {
+        case 'admin':
+        case 'super admin':
+          userData.image_url = convertImageName2Url(response.image, 'admin');
+          break;
+        default:
+          userData.image_url = convertImageName2Url(response.image);
+      }
     }
+
     setUser(userData);
 
     return response;
