@@ -4,21 +4,22 @@ import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 
 import { Button, DatePicker, Flex, Tabs, TabsProps } from 'antd';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import axiosPrivate from '@/api/axiosInstance';
 import ComponentCard from '@components/common/ComponentCard';
+import RefreshButton from '@components/common/RefreshButton';
 import { Check200Table } from '@components/products/Check200Table';
 import { Error200Table } from '@components/products/Error200Table';
 import { ExportTable } from '@components/products/ExportTable';
 import { ProduceTable } from '@components/products/ProduceTable';
 import { TotalTable } from '@components/products/TotalTable';
 
-import { IconAdd, IconDelete, IconExport, IconFilter } from '@components/icons';
-import { FaBox, FaIndustry } from 'react-icons/fa6';
 import { QueryParams } from '@/types/queryParams';
-import { productService } from '@services/ProductService';
+import { IconAdd, IconDelete, IconExport, IconFilter } from '@components/icons';
 import { useCrudList } from '@hooks/useCrudList';
+import { productService } from '@services/ProductService';
+import { FaBox, FaIndustry } from 'react-icons/fa6';
 
 export default function ProductList() {
   const [month, setMonth] = useState<Dayjs | null>(dayjs().startOf('month'));
@@ -43,6 +44,16 @@ export default function ProductList() {
     queryKey: 'products',
     initialFilters: params
   });
+
+  useEffect(() => {
+    const total = queryResult.data?.total || 0;
+    const limit = params.limit || 50;
+    const page = params.page || 1;
+    console.log('Total:', total, 'Limit:', limit, 'Page:', page);
+    if (total <= limit * (page - 1)) {
+      setParams((prev) => ({ ...prev, page: 1 }));
+    }
+  }, [params.limit, params.page, queryResult.data?.total]);
 
   const productTabs: TabsProps['items'] = [
     {
@@ -108,6 +119,10 @@ export default function ProductList() {
         {/* Actions */}
         {/* TODO: implement actions */}
         <div className="flex flex-wrap justify-between gap-2">
+          <RefreshButton
+            isLoading={queryResult.isFetching}
+            refresh={queryResult.refetch}
+          />
           <Flex gap="small" wrap>
             <Link to="/admin/products/add">
               <Button
@@ -166,6 +181,12 @@ export default function ProductList() {
               picker="month"
               placeholder="Chọn tháng"
               onChange={(date) => {
+                setParams((prev) => ({
+                  ...prev,
+                  month: date
+                    ? date.startOf('month').format('YYYY-MM')
+                    : dayjs().startOf('month').format('YYYY-MM')
+                }));
                 setMonth(
                   date ? date.startOf('month') : dayjs().startOf('month')
                 );

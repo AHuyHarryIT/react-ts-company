@@ -157,7 +157,6 @@ export const Error200Table: React.FC<Error200TableProps> = ({
       pageSize: pagination.pageSize,
       current: pagination.current,
       total: pagination.total,
-      showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({ ...prev, limit: size }));
       },

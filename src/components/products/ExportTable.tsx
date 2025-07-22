@@ -155,7 +155,6 @@ export const ExportTable: React.FC<ExportTableProps> = ({
       pageSize: pagination.pageSize,
       current: pagination.current,
       total: pagination.total,
-      showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({ ...prev, limit: size }));
       },
