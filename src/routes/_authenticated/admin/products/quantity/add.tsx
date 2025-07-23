@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import {
   Button,
@@ -12,18 +13,19 @@ import {
 import { SizeType } from 'antd/es/config-provider/SizeContext';
 import dayjs, { Dayjs } from 'dayjs';
 
+import { ProductType } from '@/types/productType';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
-
-import { IconAdd } from '@components/icons';
+import { productStatus } from '@constants/productStatus.enum';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
-import { IoCloseOutline } from 'react-icons/io5';
-import { useMutation } from '@tanstack/react-query';
 import {
-  addProductsQuantity,
-  AddProductQuantitiesRequest
+  AddProductQuantitiesRequest,
+  addProductsQuantity
 } from '@services/TotalQuantityService';
+
+import { IconAdd } from '@components/icons';
+import { IoCloseOutline } from 'react-icons/io5';
 
 export const Route = createFileRoute(
   '/_authenticated/admin/products/quantity/add'
@@ -35,7 +37,7 @@ interface ProductField {
   date: Dayjs | null;
   productType: number;
   shift: number;
-  productId: string;
+  productId: ProductType['id'];
   quantity: number;
 }
 
@@ -46,6 +48,11 @@ interface FormFields {
 function RouteComponent() {
   const [form] = Form.useForm<FormFields>();
   const size: SizeType = 'large';
+  // Helper to get selected product IDs from form
+  const getSelectedProductIds = () => {
+    const products = form.getFieldValue('products') || [];
+    return products.map((p: ProductField) => p?.productId).filter(Boolean);
+  };
 
   const { data: products } = useCrudList({
     queryKey: 'products',
@@ -59,6 +66,7 @@ function RouteComponent() {
     label: product.name,
     value: product.id
   }));
+
   const { mutate, isPending } = useMutation({
     mutationKey: ['addProductQuantity'],
     mutationFn: async (values: AddProductQuantitiesRequest) => {
@@ -164,19 +172,19 @@ function RouteComponent() {
                           options={[
                             {
                               label: 'Hàng 100%',
-                              value: 1
+                              value: productStatus.enum.PRODUCE
                             },
                             {
                               label: 'Hàng 200%',
-                              value: 2
+                              value: productStatus.enum.CHECK200
                             },
                             {
                               label: 'Hàng lỗi',
-                              value: 6
+                              value: productStatus.enum.ERROR
                             },
                             {
                               label: 'Xuất hàng',
-                              value: 3
+                              value: productStatus.enum.EXPORT
                             }
                           ]}
                           placeholder="Chọn loại sản lượng"
@@ -195,19 +203,14 @@ function RouteComponent() {
                             field.name,
                             'productType'
                           ]);
-                          return productType === 1 ? (
+                          return productType === productStatus.enum.PRODUCE ? (
                             <Form.Item
                               label="Ca làm việc"
                               name={[field.name, 'shift']}
                               rules={[
                                 {
-                                  validator(_, value, callback) {
-                                    if (!value) {
-                                      callback('Vui lòng chọn ca làm việc');
-                                    } else {
-                                      callback();
-                                    }
-                                  }
+                                  required: true,
+                                  message: 'Vui lòng chọn ca làm việc'
                                 }
                               ]}
                             >
@@ -229,20 +232,54 @@ function RouteComponent() {
                         }}
                       </Form.Item>
                       <Form.Item
-                        label="Sản phẩm"
-                        name={[field.name, 'productId']}
-                        rules={[
-                          {
-                            required: true,
-                            message: 'Vui lòng chọn sản phẩm'
-                          }
-                        ]}
+                        noStyle
+                        shouldUpdate={(prev, curr) => {
+                          // Re-render when any productId changes
+                          return (
+                            prev.products
+                              ?.map((p: ProductField) => p?.productId)
+                              .join(',') !==
+                            curr.products
+                              ?.map((p: ProductField) => p?.productId)
+                              .join(',')
+                          );
+                        }}
                       >
-                        <Select
-                          options={productOptions}
-                          placeholder="Chọn sản phẩm"
-                          showSearch
-                        />
+                        {() => (
+                          <Form.Item
+                            label="Sản phẩm"
+                            name={[field.name, 'productId']}
+                            rules={[
+                              {
+                                required: true,
+                                message: 'Vui lòng chọn sản phẩm'
+                              }
+                            ]}
+                          >
+                            <Select
+                              options={productOptions?.filter((option) => {
+                                const selectedIds = getSelectedProductIds();
+                                const currentValue = form.getFieldValue([
+                                  'products',
+                                  field.name,
+                                  'productId'
+                                ]);
+                                return (
+                                  !selectedIds.includes(option.value) ||
+                                  option.value === currentValue
+                                );
+                              })}
+                              placeholder="Chọn sản phẩm"
+                              showSearch
+                              onChange={() => {
+                                // Force update to refresh dropdowns
+                                form.setFieldsValue({
+                                  products: form.getFieldValue('products')
+                                });
+                              }}
+                            />
+                          </Form.Item>
+                        )}
                       </Form.Item>
                       <Form.Item
                         label="Sản lượng"
