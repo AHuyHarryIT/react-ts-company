@@ -9,6 +9,7 @@ import {
   Spin
 } from 'antd';
 import { useState } from 'react';
+import dayjs from 'dayjs';
 
 import axiosPrivate from '@/api/axiosInstance';
 import BackButton from '@components/common/BackButton';
@@ -66,7 +67,7 @@ function RouteComponent() {
         PaginatedResponse<ProductsResponse>
       >('/api/products', {
         params: {
-          month,
+          month: dayjs(month, 'MM-YYYY').format('YYYY-MM'),
           status: productType,
           limit: 0,
           include: ['totalmonthquantities'].join(','),
@@ -195,6 +196,9 @@ function RouteComponent() {
                     key={`product_${product.id}_${month}_${productType}`}
                     label={product.name}
                     name={`product_${product.id}_${month}_${productType}`}
+                    initialValue={
+                      product.totalmonthquantities?.[0]?.totalQuan ?? 0
+                    }
                     rules={[
                       {
                         type: 'number',
@@ -202,12 +206,8 @@ function RouteComponent() {
                         message: 'Số lượng phải lớn hơn hoặc bằng 0'
                       },
                       {
-                        validator(_, value, callback) {
-                          if (value === null || value === '') {
-                            callback('Số lượng không được để trống');
-                          }
-                          callback();
-                        }
+                        required: true,
+                        message: 'Số lượng không được để trống'
                       }
                     ]}
                   >
@@ -215,9 +215,6 @@ function RouteComponent() {
                       min={0}
                       style={{ width: '100%' }}
                       placeholder="Nhập số lượng"
-                      defaultValue={
-                        product.totalmonthquantities?.[0]?.totalQuan ?? 0
-                      }
                     />
                   </Form.Item>
                 ))}
