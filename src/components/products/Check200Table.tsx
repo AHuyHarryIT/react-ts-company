@@ -129,6 +129,11 @@ export const Check200Table: React.FC<Check200TableProps> = ({
       dataIndex: 'name'
     },
     {
+      title: <div>Mã sản phẩm</div>,
+      minWidth: 100,
+      dataIndex: 'code'
+    },
+    {
       title: (
         <div>
           Tồn đầu kỳ

@@ -123,6 +123,11 @@ export const ExportTable: React.FC<ExportTableProps> = ({
       dataIndex: 'name'
     },
     {
+      title: <div>Mã sản phẩm</div>,
+      minWidth: 100,
+      dataIndex: 'code'
+    },
+    {
       title: <div>Tổng cộng</div>,
       minWidth: 100,
       align: 'center',

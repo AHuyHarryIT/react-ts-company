@@ -152,6 +152,11 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
       fixed: 'left'
     },
     {
+      title: <div>Mã sản phẩm</div>,
+      minWidth: 100,
+      dataIndex: 'code'
+    },
+    {
       title: <div>Tổng cộng</div>,
       key: 'total',
       dataIndex: 'total',

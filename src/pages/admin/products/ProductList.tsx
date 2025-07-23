@@ -3,7 +3,17 @@ import { Link } from '@tanstack/react-router';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 
-import { Button, DatePicker, Flex, Tabs, TabsProps } from 'antd';
+import {
+  Button,
+  Collapse,
+  DatePicker,
+  Flex,
+  Input,
+  Select,
+  Space,
+  Tabs,
+  TabsProps
+} from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import axiosPrivate from '@/api/axiosInstance';
@@ -18,11 +28,15 @@ import { TotalTable } from '@components/products/TotalTable';
 import { QueryParams } from '@/types/queryParams';
 import { IconAdd, IconDelete, IconExport, IconFilter } from '@components/icons';
 import { useCrudList } from '@hooks/useCrudList';
+import { ProductModelEnumOptions } from '@schemas/product/productModelEnum.enum';
 import { productService } from '@services/ProductService';
 import { FaBox, FaIndustry } from 'react-icons/fa6';
+import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEnum.enum';
 
 export default function ProductList() {
   const [month, setMonth] = useState<Dayjs | null>(dayjs().startOf('month'));
+  const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
+
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
@@ -184,37 +198,110 @@ export default function ProductList() {
               Xuất excel
             </Button>
           </div>
-          <Flex gap="small" wrap>
-            <DatePicker
-              picker="month"
-              placeholder="Chọn tháng"
-              onChange={(date) => {
-                setParams((prev) => ({
-                  ...prev,
-                  month: date
-                    ? date.startOf('month').format('YYYY-MM')
-                    : dayjs().startOf('month').format('YYYY-MM')
-                }));
-                setMonth(
-                  date ? date.startOf('month') : dayjs().startOf('month')
-                );
-              }}
-              size="large"
-            />
-
-            <Button
-              size="large"
-              variant="solid"
-              color="blue"
-              icon={<IconFilter />}
-              onClick={() => {
-                console.log('Tìm kiếm nâng cao');
-              }}
-            >
-              Tìm kiếm nâng cao
-            </Button>
-          </Flex>
         </div>
+        <Collapse
+          style={{ marginBottom: '1.5rem' }}
+          items={[
+            {
+              key: 'filter',
+              label: (
+                <div className="flex items-center gap-1">
+                  <IconFilter /> Bộ lọc
+                </div>
+              ),
+              children: (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  <DatePicker
+                    picker="month"
+                    placeholder="Chọn tháng"
+                    onChange={(date) => {
+                      setParams((prev) => ({
+                        ...prev,
+                        month: date
+                          ? date.startOf('month').format('YYYY-MM')
+                          : dayjs().startOf('month').format('YYYY-MM')
+                      }));
+                      setMonth(
+                        date ? date.startOf('month') : dayjs().startOf('month')
+                      );
+                    }}
+                  />
+                  <Select
+                    options={ProductModelEnumOptions}
+                    placeholder="Chọn mã thùng"
+                    popupMatchSelectWidth={false}
+                    allowClear
+                    onSelect={(value) => {
+                      setParams((prev) => ({
+                        ...prev,
+                        'filter[binCode]': value
+                      }));
+                    }}
+                    onClear={() => {
+                      setParams((prev) => ({
+                        ...prev,
+                        'filter[binCode]': undefined
+                      }));
+                    }}
+                  />
+                  <Select
+                    options={ProductModelSizeEnumOptions}
+                    placeholder="Chọn kích thước khuôn"
+                    popupMatchSelectWidth={false}
+                    allowClear
+                    onSelect={(value) => {
+                      setParams((prev) => ({
+                        ...prev,
+                        'filter[moldSize]': value
+                      }));
+                    }}
+                    onClear={() => {
+                      setParams((prev) => ({
+                        ...prev,
+                        'filter[moldSize]': undefined
+                      }));
+                    }}
+                  />
+                  <Space.Compact className="col-span-1 sm:col-span-2">
+                    <Select
+                      defaultValue={searchOn}
+                      options={[
+                        { label: 'Tên', value: 'name' },
+                        { label: 'Mã', value: 'code' }
+                      ]}
+                      onChange={(value) => {
+                        setSearchOn(value);
+                      }}
+                    />
+                    <Input.Search
+                      placeholder="Tìm kiếm sản phẩm"
+                      allowClear
+                      onSearch={(value) => {
+                        setParams((prev) => ({
+                          ...prev,
+                          'filter[code]': undefined,
+                          'filter[name]': undefined
+                        }));
+                        if (searchOn === 'code') {
+                          setParams((prev) => ({
+                            ...prev,
+                            'filter[code]': value ? value : undefined
+                          }));
+                        } else {
+                          setParams((prev) => ({
+                            ...prev,
+                            'filter[name]': value ? value : undefined
+                          }));
+                        }
+                      }}
+                    />
+                  </Space.Compact>
+                </div>
+              ),
+              showArrow: false
+            }
+          ]}
+        />
         {/* Tabs */}
         <Tabs items={productTabs} type="card" />
       </ComponentCard>

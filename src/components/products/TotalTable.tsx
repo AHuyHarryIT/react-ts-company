@@ -180,10 +180,15 @@ export const TotalTable: React.FC<TotalTableProps> = ({
         (pagination.pageSize ?? 50) * ((pagination.current ?? 1) - 1)
     },
     {
-      title: <div className="">Tên sản phẩm</div>,
+      title: <div>Tên sản phẩm</div>,
       minWidth: 100,
       fixed: 'left',
       dataIndex: 'name'
+    },
+    {
+      title: <div>Mã sản phẩm</div>,
+      minWidth: 100,
+      dataIndex: 'code'
     },
     {
       title: (
