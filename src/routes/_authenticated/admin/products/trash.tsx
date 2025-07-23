@@ -7,6 +7,7 @@ import { QueryParams } from '@/types/queryParams';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
+import { customTableProps } from '@components/custom/TableProps.custom';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { useCrudList } from '@hooks/useCrudList';
 import { ProductModelEnumOptions } from '@schemas/product/productModelEnum.enum';
@@ -153,21 +154,16 @@ function RouteComponent() {
   ];
 
   const tableProps: TableProps<ProductType> = {
+    ...(customTableProps as unknown as TableProps<ProductType>),
     rowKey: (record) => ['retrieval', record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: products,
     loading: isLoading,
-    size: 'small',
-    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       pageSize: pagination.pageSize,
       current: pagination.current,
       total: pagination.total,
-      showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
           ...prev,
