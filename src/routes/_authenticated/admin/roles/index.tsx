@@ -12,6 +12,7 @@ import RefreshButton from '@components/common/RefreshButton';
 import { CreateModal } from '@components/ui/CRUD/CreateModal';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 export const Route = createFileRoute('/_authenticated/admin/roles/')({
   component: RouteComponent
@@ -103,20 +104,15 @@ function RouteComponent() {
   ];
 
   const tableProps: TableProps<RoleType> = {
+    ...(customTableProps as unknown as TableProps<RoleType>),
     rowKey: (record) => ['role', record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: roles,
     loading: isLoading,
-    size: 'small',
-    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       pageSize: limit,
       total: total,
-      showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
         setLimit(size);
       },

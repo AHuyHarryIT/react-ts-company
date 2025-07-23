@@ -11,6 +11,7 @@ import { UpdateWorkScheduleCategory } from '@components/workScheduleCategories/U
 
 import { WorkScheduleCategoryType } from '@/types/workScheduleCategoryType';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 export const Route = createFileRoute(
   '/_authenticated/admin/work-schedule-categories/'
@@ -98,20 +99,15 @@ function RouteComponent() {
     ];
 
   const tableProps: TableProps<WorkScheduleCategoryType> = {
+    ...(customTableProps as unknown as TableProps<WorkScheduleCategoryType>),
     rowKey: (record) => ['workScheduleCategory', record.id].join('-'),
-    bordered: true,
     columns: workScheduleCategoryColumns,
     dataSource: workScheduleCategories,
     loading: isLoading,
-    size: 'small',
-    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       pageSize: limit,
       total: total,
-      showTotal: (total) => `Tổng ${total} danh mục`,
       onShowSizeChange: (_current, size) => {
         setLimit(size);
       },

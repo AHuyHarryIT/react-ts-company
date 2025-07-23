@@ -15,6 +15,7 @@ import { BiTrash } from 'react-icons/bi';
 import { FaUser } from 'react-icons/fa';
 import { FaFingerprint, FaPen } from 'react-icons/fa6';
 import { LuUserRoundPlus } from 'react-icons/lu';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 interface EmployeeTable extends EmployeeType {
   role?: { id: string; role_name: string };
@@ -174,21 +175,16 @@ function RouteComponent() {
   ];
 
   const tableProps: TableProps<EmployeeTable> = {
+    ...(customTableProps as unknown as TableProps<EmployeeTable>),
     rowKey: (record) => ['employee', record.id, record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: employees,
     loading: isLoading,
-    size: 'small',
-    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       current: params.page,
       pageSize: params.limit,
       total: pagination.total,
-      showTotal: (total) => `Tổng ${total} nhân viên`,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
           ...prev,

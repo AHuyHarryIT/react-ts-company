@@ -49,7 +49,6 @@ export default function ProductList() {
     const total = queryResult.data?.total || 0;
     const limit = params.limit || 50;
     const page = params.page || 1;
-    console.log('Total:', total, 'Limit:', limit, 'Page:', page);
     if (total <= limit * (page - 1)) {
       setParams((prev) => ({ ...prev, page: 1 }));
     }
@@ -118,11 +117,11 @@ export default function ProductList() {
       <ComponentCard title="Danh sách sản phẩm">
         {/* Actions */}
         {/* TODO: implement actions */}
-        <div className="flex flex-wrap justify-between gap-2">
-          <RefreshButton
-            isLoading={queryResult.isFetching}
-            refresh={queryResult.refetch}
-          />
+        <RefreshButton
+          isLoading={queryResult.isFetching}
+          refresh={queryResult.refetch}
+        />
+        <div className="flex flex-col flex-wrap gap-2">
           <Flex gap="small" wrap>
             <Link to="/admin/products/add">
               <Button
@@ -134,16 +133,7 @@ export default function ProductList() {
                 Thêm sản phẩm
               </Button>
             </Link>
-            <Link to="/admin/products/quantity/update">
-              <Button
-                size="large"
-                variant="solid"
-                color="blue"
-                icon={<FaBox />}
-              >
-                Cập nhật sản lượng MOQ, tồn đầu kỳ, tồn 200%
-              </Button>
-            </Link>
+
             <Link to="/admin/products/quantity/add">
               <Button
                 size="large"
@@ -152,6 +142,18 @@ export default function ProductList() {
                 icon={<FaIndustry />}
               >
                 Thêm sản lượng sản xuất
+              </Button>
+            </Link>
+          </Flex>
+          <Flex gap="small" wrap>
+            <Link to="/admin/products/quantity/update">
+              <Button
+                size="large"
+                variant="solid"
+                color="blue"
+                icon={<FaBox />}
+              >
+                Cập nhật sản lượng
               </Button>
             </Link>
             <Link to="/admin/products/trash">
@@ -164,6 +166,8 @@ export default function ProductList() {
                 Sản phẩm đã xóa
               </Button>
             </Link>
+          </Flex>
+          <div>
             <Button
               size="large"
               variant="solid"
@@ -175,7 +179,7 @@ export default function ProductList() {
             >
               Xuất excel
             </Button>
-          </Flex>
+          </div>
           <Flex gap="small" wrap>
             <DatePicker
               picker="month"
