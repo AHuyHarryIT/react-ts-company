@@ -26,7 +26,11 @@ export default function ProductList() {
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
-    include: ['totaldailyquantities', 'totalmonthquantities'],
+    include: [
+      'totaldailyquantities',
+      'totalmonthquantities',
+      'dailyquantities'
+    ],
     month: dayjs(month).format('YYYY-MM')
   });
 
