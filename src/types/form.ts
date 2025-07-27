@@ -22,6 +22,7 @@ export interface FieldConfig {
   type: FieldType;
   required?: boolean;
   hidden?: boolean;
+  disabled?: boolean;
   placeholder?: string;
   options?: { label: string; value: string | number }[]; // for select
   rules?: Rule[]; // Antd Form rules

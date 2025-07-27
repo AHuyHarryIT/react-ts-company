@@ -51,7 +51,8 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
     if (field.hidden) return null;
 
     const commonProps = {
-      placeholder: field.placeholder || `Nhập ${field.label.toLowerCase()}`
+      placeholder: field.placeholder || `Nhập ${field.label.toLowerCase()}`,
+      disabled: field.disabled
     };
 
     switch (field.type) {
@@ -69,11 +70,14 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         return <Checkbox>{field.label}</Checkbox>;
       case 'checkbox-group':
         return (
-          <Checkbox.Group options={field.options}>{field.label}</Checkbox.Group>
+          <Checkbox.Group {...commonProps} options={field.options}>
+            {field.label}
+          </Checkbox.Group>
         );
       case 'select':
         return (
           <Select
+            {...commonProps}
             showSearch
             allowClear
             options={field.options}
@@ -83,6 +87,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
       case 'select-multiple':
         return (
           <Select
+            {...commonProps}
             allowClear
             mode="multiple"
             options={field.options}
@@ -92,6 +97,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
       case 'date':
         return (
           <DatePicker
+            {...commonProps}
             style={{ width: '100%' }}
             format="YYYY-MM-DD"
             placeholder={`Chọn ${field.label.toLowerCase()}`}
@@ -100,6 +106,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
       case 'time':
         return (
           <TimePicker
+            {...commonProps}
             style={{ width: '100%' }}
             format="HH:mm:ss"
             placeholder={`Chọn ${field.label.toLowerCase()}`}
@@ -108,6 +115,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
       case 'datetime':
         return (
           <DatePicker
+            {...commonProps}
             style={{ width: '100%' }}
             showTime
             placeholder={`Chọn ${field.label.toLowerCase()}`}
@@ -115,7 +123,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         );
       case 'file':
         return (
-          <Upload beforeUpload={() => false} maxCount={1}>
+          <Upload {...commonProps} beforeUpload={() => false} maxCount={1}>
             <Input
               readOnly
               value="Tải lên tệp..."
@@ -127,6 +135,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         const image = form.getFieldValue(`${field.name}`);
         return (
           <UploadImage
+            {...commonProps}
             maxCount={1}
             customRequest={({ onSuccess }) => {
               setTimeout(() => {
