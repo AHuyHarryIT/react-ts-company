@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Button, message } from 'antd';
 import { useReactToPrint } from 'react-to-print';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Dayjs } from 'dayjs';
 
 import { ProductType } from '@/types/productType';
 import { saveStamp } from '@services/StampService';
@@ -9,13 +10,16 @@ import { Shift } from '@/types/shift';
 
 import '@assets/css/barcode-1.css';
 import logo from '@assets/images/logo/vvp02.png';
+import { EmployeeType } from '@/types/employeeType';
 
 interface PrintBoxStampProps {
   product: ProductType;
   startStamp: string | number;
   totalStamp: number;
-  date: string;
+  date: Dayjs;
   shift: Shift;
+  employee_id?: EmployeeType['id'];
+  stamp_id?: string;
 }
 
 export const PrintBoxStamp = ({
@@ -23,18 +27,23 @@ export const PrintBoxStamp = ({
   startStamp,
   totalStamp,
   date,
-  shift
+  shift,
+  employee_id,
+  stamp_id
 }: PrintBoxStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
 
   const stampList = (startStamp as string).split(',');
 
+  const queryClient = useQueryClient();
+
   const { mutate } = useMutation({
     mutationKey: ['savePrintLog'],
     mutationFn: saveStamp,
     onSuccess: () => {
       message.success('Print log saved successfully');
+      queryClient.invalidateQueries();
     },
     onError: () => {
       console.error('Error saving print log');
@@ -46,13 +55,25 @@ export const PrintBoxStamp = ({
     handlePrint();
     mutate({
       productId: product.id,
-      date: date.split('/').reverse().join('-'),
+      date: date.format('YYYY-MM-DD'),
       shift,
       binCount: totalStamp,
       binStart: stampList.slice(0, totalStamp).join(','),
-      type: 'box'
+      type: 'box',
+      employee_id: employee_id,
+      stamp_id: stamp_id
     });
-  }, [stampList, date, handlePrint, mutate, product, shift, totalStamp]);
+  }, [
+    stampList,
+    date,
+    handlePrint,
+    mutate,
+    product,
+    shift,
+    totalStamp,
+    employee_id,
+    stamp_id
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -188,7 +209,7 @@ export const PrintBoxStamp = ({
                         <div className="flex items-center justify-between">
                           <p>A</p>
                           <p>-</p>
-                          <p>{date.replace(/\//g, '')}</p>
+                          <p>{date.format('DDMMYYYY')}</p>
                           <p>-</p>
                           <p>{shift}</p>
                           <p>-</p>
@@ -214,7 +235,7 @@ export const PrintBoxStamp = ({
                           <div className="flex items-center justify-center">
                             <img
                               className="h-[24px] max-w-[250px]"
-                              // TODO: Replace with actual barcode data
+                              // FIXME: Replace with actual barcode data
                               // src="data:image/png;base64,{{ $bin['barcode'] }}"
                               src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAAeCAQAAAAieNtfAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAD/h4/MvwAAAKxJREFUeNrt0kGOgzAQAMFh//9ncsgeELIhUl+rLgl4BMbqY875Ombm/P+d2/+53JvFzHmZOW6zT/Ord+1mZrM+i+t5eM/u+nyYm5f11dpqX7+cw+65b3vYnePb/lbnsHru/Zsus38DkYjIREQmIjIRkYmITERkIiITEZmIyEREJiIyEZGJiExEZCIiExGZiMhERCYiMhGRiYhMRGQiIhMRmYjIREQmIjIRkX0ACSsoO9p8JuEAAAAASUVORK5CYII="
                               alt="Mã vạch"
@@ -262,7 +283,8 @@ export const PrintBoxStamp = ({
                     <tr>
                       <td className="text-start">(Thời gian) 時間</td>
                       <td colSpan={5}>
-                        {date} {shift == 1 ? '07:30' : '19:30'}
+                        {date.format('DD/MM/YYYY')}{' '}
+                        {shift == 1 ? '07:30' : '19:30'}
                       </td>
                     </tr>
                   </tbody>

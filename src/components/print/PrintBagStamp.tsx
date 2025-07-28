@@ -1,20 +1,24 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, message } from 'antd';
+import type { Dayjs } from 'dayjs';
+import { useCallback, useEffect, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { useMutation } from '@tanstack/react-query';
 
 import { ProductType } from '@/types/productType';
-import { saveStamp } from '@services/StampService';
 import { Shift } from '@/types/shift';
+import { saveStamp } from '@services/StampService';
 
+import { EmployeeType } from '@/types/employeeType';
 import '@assets/css/print-bag.css';
 
 interface PrintBagStampProps {
   product: ProductType;
   startStamp: string | number;
   totalStamp: number;
-  date: string;
+  date: Dayjs;
   shift: Shift;
+  employee_id?: EmployeeType['id'];
+  stamp_id?: string;
 }
 
 export const PrintBagStamp = ({
@@ -22,18 +26,23 @@ export const PrintBagStamp = ({
   startStamp,
   totalStamp,
   date,
-  shift
+  shift,
+  employee_id,
+  stamp_id
 }: PrintBagStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
 
   const stampList = (startStamp as string).split(',');
 
+  const queryClient = useQueryClient();
+
   const { mutate } = useMutation({
     mutationKey: ['savePrintLog'],
     mutationFn: saveStamp,
     onSuccess: () => {
       message.success('Print log saved successfully');
+      queryClient.invalidateQueries();
     },
     onError: () => {
       console.error('Error saving print log');
@@ -45,13 +54,25 @@ export const PrintBagStamp = ({
     handlePrint();
     mutate({
       productId: product.id,
-      date: date.split('/').reverse().join('-'),
+      date: date.format('YYYY-MM-DD'),
       shift,
       binCount: totalStamp,
       binStart: stampList.slice(0, totalStamp).join(','),
-      type: 'bag'
+      type: 'bag',
+      employee_id: employee_id,
+      stamp_id: stamp_id
     });
-  }, [stampList, date, handlePrint, mutate, product, shift, totalStamp]);
+  }, [
+    handlePrint,
+    mutate,
+    product.id,
+    date,
+    shift,
+    totalStamp,
+    stampList,
+    employee_id,
+    stamp_id
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -147,7 +168,7 @@ export const PrintBagStamp = ({
                         <div className="flex items-center justify-between">
                           <p>A</p>
                           <p>-</p>
-                          <p>{date.replace(/\//g, '')}</p>
+                          <p>{date.format('DDMMYYYY')}</p>
                           <p>-</p>
                           <p>{shift}</p>
                           <p>-</p>
@@ -202,7 +223,8 @@ export const PrintBagStamp = ({
                         Thời gian <br /> 時間
                       </td>
                       <td colSpan={4}>
-                        {date} {shift == 1 ? '07:30' : '19:30'}
+                        {date.format('DD/MM/YYYY')}{' '}
+                        {shift == 1 ? '07:30' : '19:30'}
                       </td>
                     </tr>
                   </tbody>

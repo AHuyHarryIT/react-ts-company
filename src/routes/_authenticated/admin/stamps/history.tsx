@@ -1,9 +1,6 @@
+import HistoryPrintStamp from '@pages/admin/stamps/HistoryPrintStamp';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_authenticated/admin/stamps/history')({
-  component: RouteComponent
+  component: HistoryPrintStamp
 });
-
-function RouteComponent() {
-  return <div>Hello "/admin/stamps/history"!</div>;
-}

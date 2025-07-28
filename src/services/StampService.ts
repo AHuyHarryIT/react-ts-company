@@ -1,4 +1,8 @@
 import axiosPrivate from '@/api/axiosInstance';
+import { EmployeeType } from '@/types/employeeType';
+import { ProductType } from '@/types/productType';
+import { QueryParams } from '@/types/queryParams';
+import { PaginatedResponse } from '@/types/responseTypes';
 import { Shift } from '@/types/shift';
 
 const ENDPOINT = '/api/stamps';
@@ -10,9 +14,46 @@ interface StampLogRequest {
   binCount: number;
   binStart: string;
   type: 'box' | 'bag' | string;
+  employee_id?: EmployeeType['id'];
+  stamp_id?: string;
+}
+
+export interface HistoryPrintStampType {
+  id: string;
+  product_id: string;
+  employee_id: string;
+  manager_id: string;
+  date: string;
+  shift: Shift;
+  binCount: number;
+  binStart: string;
+  type: string;
+  status: string;
+  manager_time: string;
+  created_at: string;
+  employee: EmployeeType;
+  manager: EmployeeType;
+  product: ProductType;
 }
 
 export const saveStamp = (request: StampLogRequest) => {
-  const response = axiosPrivate.post(ENDPOINT + '/savePrint', request);
+  const response = axiosPrivate.put(ENDPOINT + '/savePrint', request);
   return response;
 };
+
+export const getStampHistory = async (params: QueryParams) => {
+  const response = await axiosPrivate.get<
+    HistoryPrintStampType,
+    PaginatedResponse<HistoryPrintStampType>
+  >(ENDPOINT + '/history', {
+    params: params
+  });
+  return response;
+};
+
+export const rejectStamp = async (id: string) => {
+  const response = await axiosPrivate.post(`${ENDPOINT}/reject/${id}`);
+  return response;
+};
+
+// export

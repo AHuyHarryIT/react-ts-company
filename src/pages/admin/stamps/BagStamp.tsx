@@ -35,7 +35,7 @@ export default function BagStamp() {
     startBag: number;
     totalBag: number;
     shift: Shift;
-    date: string;
+    date: Dayjs;
   }>();
 
   // Disable shortcut for print (Ctrl + P or Cmd + P)
@@ -76,7 +76,7 @@ export default function BagStamp() {
         startBag: values.startBag,
         totalBag: values.totalBag,
         shift: values.shift,
-        date: values.date.format('DD/MM/YYYY')
+        date: values.date
       });
     },
     onReset: () => {

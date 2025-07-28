@@ -4,7 +4,8 @@ export {
   FaPen as IconEdit,
   FaFileExport as IconExport,
   FaFilter as IconFilter,
-  FaTable as IconTable
+  FaTable as IconTable,
+  FaPrint as IconPrint
 } from 'react-icons/fa6';
 
 export { BiSearch as IconSearch } from 'react-icons/bi';
