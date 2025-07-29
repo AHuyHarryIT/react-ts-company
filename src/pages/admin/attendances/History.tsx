@@ -29,6 +29,7 @@ import { useCrudList } from '@hooks/useCrudList';
 import { attendanceSchema } from '@schemas/attendanceSchema.schema';
 import { attendanceService } from '@services/AttendanceService';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 type TableColumns = AttendanceType;
 
@@ -76,10 +77,11 @@ export const History = () => {
     },
     {
       title: 'Tên nhân viên',
-      key: 'employeeName',
+      key: 'employee_name',
+      dataIndex: ['employees', 'name'],
       minWidth: 200,
-      render: (_value, record) => {
-        return record.employee?.name || 'Chưa có thông tin';
+      render: (value) => {
+        return value || 'Chưa có thông tin';
       }
     },
     {
@@ -106,7 +108,7 @@ export const History = () => {
       render: (_value, record) => {
         return (
           categories?.workScheduleCategories.find(
-            (item) => item.id === record.employee?.calendar_category_id
+            (item) => item.id === record.employees?.calendar_category_id
           )?.name || 'Chưa có thông tin'
         );
       }
@@ -150,23 +152,17 @@ export const History = () => {
   ];
 
   const tableProps: TableProps<TableColumns> = {
+    ...(customTableProps as unknown as TableProps<TableColumns>),
     rowKey: (record) =>
       ['attendances', record.id, record.employee_code].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: attendances,
     loading: isLoading,
-    size: 'small',
-    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       current: params.page,
       pageSize: params.limit,
       total: pagination.total,
-      pageSizeOptions: ['10', '20', '50', '100', '200', '500'],
-      showTotal: (total) => `Tổng ${total} dòng`,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
           ...prev,

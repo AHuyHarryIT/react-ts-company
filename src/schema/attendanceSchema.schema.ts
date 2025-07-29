@@ -12,7 +12,7 @@ export const attendanceSchema = defaultModelSchema.extend({
   datetime: z.string(),
   date: z.string(),
   time: z.string(),
-  employee: employeeSchema.optional()
+  employees: employeeSchema.optional()
 });
 
 export const attendanceCreateSchema = overrideSchema(attendanceSchema).omit({
