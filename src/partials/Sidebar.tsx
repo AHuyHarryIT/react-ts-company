@@ -1,7 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import type { MenuProps } from 'antd';
-import { Button, Drawer, Image, Layout, Menu } from 'antd';
+import { Drawer, Image, Layout, Menu } from 'antd';
 
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 
@@ -20,7 +20,6 @@ import {
 } from 'react-icons/io5';
 
 import logo from '@assets/images/logo/logoAsset.svg';
-import { BiLeftArrow, BiRightArrow } from 'react-icons/bi';
 
 const { Sider: Side } = Layout;
 
@@ -256,20 +255,6 @@ function Sidebar() {
             >
               <Image className="w-full" src={logo} alt="Logo" preview={false} />
             </Link>
-          </div>
-          <div className="text-end">
-            <Button
-              color="blue"
-              shape="circle"
-              variant="solid"
-              icon={isSidebarClose ? <BiRightArrow /> : <BiLeftArrow />}
-              onClick={toggleSidebar}
-              style={{
-                fontSize: '16px',
-                width: 40,
-                height: 40
-              }}
-            />
           </div>
 
           <IconContext.Provider value={{ size: '1.25rem' }}>
