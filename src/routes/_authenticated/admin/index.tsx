@@ -13,7 +13,7 @@ import { FiUserCheck } from 'react-icons/fi';
 import { HiOutlineUserGroup } from 'react-icons/hi';
 import { IoCalculatorOutline } from 'react-icons/io5';
 import { LiaMoneyCheckAltSolid, LiaUserTagSolid } from 'react-icons/lia';
-import { LuBoxes, LuCalendarFold, LuClipboardList } from 'react-icons/lu';
+import { LuBoxes, LuCalendarFold } from 'react-icons/lu';
 
 export const Route = createFileRoute('/_authenticated/admin/')({
   component: Dashboard,
@@ -28,12 +28,14 @@ function Dashboard() {
     {
       title: 'Tổng nhân viên',
       icon: <HiOutlineUserGroup />,
-      value: dashboardData?.totalEmployee.toLocaleString()
+      value: dashboardData?.totalEmployee.toLocaleString(),
+      navLink: '/admin/employees'
     },
     {
       title: 'Bảng Lịch Sử Chấm Công',
       icon: <FaRegClock />,
-      value: dashboardData?.totalRecord.toLocaleString()
+      value: dashboardData?.totalRecord.toLocaleString(),
+      navLink: '/admin/attendances/history'
     },
     {
       title: 'Bảng Tính Toán Chấm Công',
@@ -41,37 +43,43 @@ function Dashboard() {
       value: new Date().toLocaleDateString('vi-VN', {
         month: 'numeric',
         year: 'numeric'
-      })
+      }),
+      navLink: '/admin/attendances/record'
     },
     {
       title: 'Tổng chức vụ',
       icon: <LiaUserTagSolid />,
-      value: dashboardData?.totalRole.toLocaleString()
+      value: dashboardData?.totalRole.toLocaleString(),
+      navLink: '/admin/roles'
     },
-    {
-      title: 'Kế hoạch sản xuất',
-      icon: <LuClipboardList />,
-      value: dashboardData?.totalPlan.toLocaleString()
-    },
+    // {
+    //   title: 'Kế hoạch sản xuất',
+    //   icon: <LuClipboardList />,
+    //   value: dashboardData?.totalPlan.toLocaleString(),
+    // },
     {
       title: 'Tổng bảng lương',
       icon: <LiaMoneyCheckAltSolid />,
-      value: dashboardData?.totalSalary.toLocaleString()
+      value: dashboardData?.totalSalary.toLocaleString(),
+      navLink: '/admin/salaries'
     },
     {
       title: 'Danh sách NV làm việc trong ngày',
       icon: <FiUserCheck />,
-      value: dashboardData?.totalCheckEmployee.toLocaleString()
+      value: dashboardData?.totalCheckEmployee.toLocaleString(),
+      navLink: '/admin/activity-schedule'
     },
     {
       title: 'Tổng lịch làm việc',
       icon: <LuCalendarFold />,
-      value: dashboardData?.totalCalender.toLocaleString()
+      value: dashboardData?.totalCalender.toLocaleString(),
+      navLink: '/admin/work-schedules'
     },
     {
       title: 'Tổng sản phẩm',
       icon: <LuBoxes />,
-      value: dashboardData?.totalProduct.toLocaleString()
+      value: dashboardData?.totalProduct.toLocaleString(),
+      navLink: '/admin/products'
     },
     {
       title: 'Tổng lịch sử',
@@ -93,7 +101,8 @@ function Dashboard() {
         day: 'numeric',
         month: 'numeric',
         year: 'numeric'
-      })
+      }),
+      navLink: '/admin/stamps/history'
     }
   ];
 
@@ -107,6 +116,7 @@ function Dashboard() {
               title={item.title}
               icon={item.icon}
               value={item.value}
+              navLink={item.navLink}
             />
           ))}
         </div>

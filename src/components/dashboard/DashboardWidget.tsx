@@ -1,16 +1,19 @@
+import { Link, LinkProps } from '@tanstack/react-router';
 import React from 'react';
 export interface WidgetProps {
   title: string;
   value: string;
   icon: React.ReactNode;
+  navLink?: LinkProps['to'];
 }
 
 const DashboardWidget: React.FC<WidgetProps> = ({
   title,
   value,
   icon,
+  navLink
 }: WidgetProps) => {
-  return (
+  const content = (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex h-full flex-col justify-between">
         <div>
@@ -29,6 +32,8 @@ const DashboardWidget: React.FC<WidgetProps> = ({
       </div>
     </div>
   );
+
+  return navLink ? <Link to={navLink}>{content}</Link> : content;
 };
 
 export default DashboardWidget;
