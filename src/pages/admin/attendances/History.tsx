@@ -238,13 +238,13 @@ export const History = () => {
                   onSelect={(value) => {
                     setParams((prev) => ({
                       ...prev,
-                      'filter[employee.calendar_category_id]': value
+                      'filter[employees.calendar_category_id]': value
                     }));
                   }}
                   onClear={() => {
                     setParams((prev) => ({
                       ...prev,
-                      'filter[employee.calendar_category_id]': undefined
+                      'filter[employees.calendar_category_id]': undefined
                     }));
                   }}
                 />
@@ -265,18 +265,18 @@ export const History = () => {
                     onSearch={(value) => {
                       setParams((prev) => ({
                         ...prev,
-                        'filter[employee.code]': undefined,
-                        'filter[employee.name]': undefined
+                        'filter[employees.id]': undefined,
+                        'filter[employees.name]': undefined
                       }));
                       if (searchOn === 'code') {
                         setParams((prev) => ({
                           ...prev,
-                          'filter[employee.code]': value ? value : undefined
+                          'filter[employees.id]': value ? value : undefined
                         }));
                       } else {
                         setParams((prev) => ({
                           ...prev,
-                          'filter[employee.name]': value ? value : undefined
+                          'filter[employees.name]': value ? value : undefined
                         }));
                       }
                     }}

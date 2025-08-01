@@ -105,14 +105,25 @@ export const ExportModal = () => {
         );
 
         const supplyMealDay = attendances.reduce((sum, attendance) => {
-          return sum + (attendance.shift == 1 ? 1 : 0);
+          return (
+            sum +
+            (attendance.shift == 1 && attendance.administrative_hours > 0
+              ? 1
+              : 0)
+          );
         }, 0);
         const supplyMealNight = attendances.reduce((sum, attendance) => {
-          return sum + (attendance.shift == 2 ? 1 : 0);
+          return (
+            sum +
+            (attendance.shift == 2 && attendance.administrative_hours > 0
+              ? 1
+              : 0)
+          );
         }, 0);
 
         const supplyMealOvertime = attendances.reduce(
-          (sum, attendance) => sum + (attendance.overtime_hours > 0 ? 1 : 0),
+          (sum, attendance) =>
+            sum + (attendance.administrative_hours >= 8 ? 1 : 0),
           0
         );
 
@@ -291,6 +302,7 @@ export const ExportModal = () => {
 
         flattenedData[key]?.forEach((row: (string | number)[]) => {
           const newRow = sheet.addRow(row);
+          newRow.height = 40;
           newRow.eachCell((cell, colNumber) => {
             cell.alignment = {
               vertical: 'middle',
@@ -333,6 +345,7 @@ export const ExportModal = () => {
               const subCol = dateColIndex % 3;
               // Alternate background color for each date group
               const isEvenDate = dateIndex % 2 === 0;
+              cell.font.size = 12;
               cell.fill = {
                 type: 'pattern',
                 pattern: 'solid',

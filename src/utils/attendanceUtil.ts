@@ -115,46 +115,110 @@ export function calculateAttendances(
           start.setHours(19, 30, 0, 0);
           start = start > new Date(time_in) ? start : new Date(time_in);
         }
+
         const startMinutes = start.getHours() * 60 + start.getMinutes();
         const endMinutes =
           shift == 2
             ? (end.getTime() - start.getTime()) / 60000 + startMinutes
             : end.getHours() * 60 + end.getMinutes();
+
         if (calendar_category_id == '4') {
-          if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 45)
+          if (
+            endMinutes > 9 * 60 + 30 &&
+            startMinutes < 9 * 60 + 45 &&
+            startMinutes < 9 * 60 + 30
+          )
             break_time += 15;
-          if (endMinutes > 12 * 60 && startMinutes < 13 * 60) break_time += 60;
-          if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 45)
+          if (
+            endMinutes > 12 * 60 &&
+            startMinutes < 13 * 60 &&
+            startMinutes < 12 * 60
+          )
+            break_time += 60;
+          if (
+            endMinutes > 14 * 60 + 30 &&
+            startMinutes < 14 * 60 + 45 &&
+            startMinutes < 14 * 60 + 30
+          )
             break_time += 15;
-          if (endMinutes < 17 * 60) break_time += 10;
+          if (endMinutes < 17 * 60 && startMinutes < 17 * 60) break_time += 10;
         } else if (calendar_category_id == '2') {
-          if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 35)
+          if (
+            endMinutes > 9 * 60 + 30 &&
+            startMinutes < 9 * 60 + 35 &&
+            startMinutes < 9 * 60 + 30
+          )
             break_time += 5;
-          if (endMinutes > 11 * 60 + 20 && startMinutes < 12 * 60)
+          if (
+            endMinutes > 11 * 60 + 20 &&
+            startMinutes < 12 * 60 &&
+            startMinutes < 11 * 60 + 20
+          )
             break_time += 40;
-          if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 35)
+          if (
+            endMinutes > 14 * 60 + 30 &&
+            startMinutes < 14 * 60 + 35 &&
+            startMinutes < 14 * 60 + 30
+          )
             break_time += 5;
-          if (endMinutes > 17 * 60 && startMinutes < 17 * 60 + 10)
+          if (
+            endMinutes > 16 * 60 &&
+            startMinutes < 17 * 60 + 10 &&
+            startMinutes < 16 * 60
+          )
             break_time += 10;
         } else if (shift === 1) {
-          if (endMinutes > 9 * 60 + 30 && startMinutes < 9 * 60 + 40)
+          if (
+            endMinutes > 9 * 60 + 30 &&
+            startMinutes < 9 * 60 + 40 &&
+            startMinutes < 9 * 60 + 30
+          )
             break_time += 10;
-          if (endMinutes > 11 * 60 + 20 && startMinutes < 11 * 60 + 50)
+          if (
+            endMinutes > 11 * 60 + 20 &&
+            startMinutes < 11 * 60 + 50 &&
+            startMinutes < 11 * 60 + 20
+          )
             break_time += 30;
-          if (endMinutes > 14 * 60 + 30 && startMinutes < 14 * 60 + 40)
+          if (
+            endMinutes > 14 * 60 + 30 &&
+            startMinutes < 14 * 60 + 40 &&
+            startMinutes < 14 * 60 + 30
+          )
             break_time += 10;
-          if (endMinutes > 17 * 60 && startMinutes < 17 * 60 + 10)
+          if (
+            endMinutes > 17 * 60 &&
+            startMinutes < 17 * 60 + 10 &&
+            startMinutes < 17 * 60
+          )
             break_time += 10;
         } else if (shift === 2) {
-          if (endMinutes > 21 * 60 + 30 && startMinutes < 21 * 60 + 40)
+          if (
+            endMinutes > 21 * 60 + 30 &&
+            startMinutes < 21 * 60 + 40 &&
+            startMinutes < 21 * 60 + 30
+          )
             break_time += 10;
-          if (endMinutes > 23 * 60 + 30 && startMinutes < 24 * 60)
+          if (
+            endMinutes > 23 * 60 + 30 &&
+            startMinutes < 24 * 60 &&
+            startMinutes < 23 * 60 + 30
+          )
             break_time += 30;
-          if (endMinutes > 26 * 60 + 30 && startMinutes < 26 * 60 + 40)
+          if (
+            endMinutes > 26 * 60 + 30 &&
+            startMinutes < 26 * 60 + 40 &&
+            startMinutes < 26 * 60 + 30
+          )
             break_time += 10;
-          if (endMinutes > 29 * 60 && startMinutes < 29 * 60 + 10)
+          if (
+            endMinutes > 29 * 60 &&
+            startMinutes < 29 * 60 + 10 &&
+            startMinutes < 29 * 60
+          )
             break_time += 10;
         }
+
         total_hours =
           (end.getTime() - start.getTime() - break_time * 60000) / 3600000;
         total_hours = total_hours < 0 ? 0 : total_hours;

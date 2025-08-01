@@ -43,6 +43,9 @@ export const attendanceUpdateFields = zodToFieldsWithOverride(
       label: 'Thời gian chấm công',
       required: true,
       type: 'datetime'
+    },
+    employees: {
+      hidden: true
     }
   }
 );
