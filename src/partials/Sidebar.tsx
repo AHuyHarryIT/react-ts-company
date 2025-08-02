@@ -6,18 +6,13 @@ import { Drawer, Image, Layout, Menu } from 'antd';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 
 import { IconContext } from 'react-icons';
-import { AiOutlineHome } from 'react-icons/ai';
 import { BsCalendar2Check } from 'react-icons/bs';
 // import { BsCalendar2Week } from 'react-icons/bs';
 import { CiBoxes } from 'react-icons/ci';
-import { FaHistory, FaMoneyCheckAlt, FaRegCalendarAlt } from 'react-icons/fa';
+import { FaMoneyCheckAlt, FaRegCalendarAlt } from 'react-icons/fa';
 import { FaBriefcase, FaPrint } from 'react-icons/fa6';
 import { FiUsers } from 'react-icons/fi';
-import {
-  IoCalendarNumberOutline,
-  IoCheckboxOutline,
-  IoHomeOutline
-} from 'react-icons/io5';
+import { IoCalendarNumberOutline, IoHomeOutline } from 'react-icons/io5';
 
 import logo from '@assets/images/logo/logoAsset.svg';
 
@@ -35,15 +30,15 @@ const items: MenuItem[] = [
     ),
     icon: <IoHomeOutline />
   },
-  {
-    key: '/admin/about',
-    label: (
-      <Link to={'/admin/about'}>
-        <span className="capitalize">about</span>
-      </Link>
-    ),
-    icon: <AiOutlineHome />
-  },
+  // {
+  //   key: '/admin/about',
+  //   label: (
+  //     <Link to={'/admin/about'}>
+  //       <span className="capitalize">about</span>
+  //     </Link>
+  //   ),
+  //   icon: <AiOutlineHome />
+  // },
   {
     key: 'HR',
     label: <span className="capitalize">Nhân sự</span>,
@@ -127,15 +122,16 @@ const items: MenuItem[] = [
             <span className="capitalize">Lịch Sử In Tem</span>
           </Link>
         )
-      },
-      {
-        key: '/admin/stamps/request',
-        label: (
-          <Link to={'/admin/stamps/request'}>
-            <span className="capitalize">Yêu Cầu In Tem</span>
-          </Link>
-        )
       }
+      // employee role
+      // {
+      //   key: '/admin/stamps/request',
+      //   label: (
+      //     <Link to={'/admin/stamps/request'}>
+      //       <span className="capitalize">Yêu Cầu In Tem</span>
+      //     </Link>
+      //   )
+      // }
     ]
   },
   {
@@ -161,15 +157,15 @@ const items: MenuItem[] = [
       }
     ]
   },
-  {
-    key: '/admin/check-po',
-    label: (
-      <Link to={'/admin/check-po'}>
-        <span className="capitalize">Kiểm tra PO</span>
-      </Link>
-    ),
-    icon: <IoCheckboxOutline />
-  },
+  // {
+  //   key: '/admin/check-po',
+  //   label: (
+  //     <Link to={'/admin/check-po'}>
+  //       <span className="capitalize">Kiểm tra PO</span>
+  //     </Link>
+  //   ),
+  //   icon: <IoCheckboxOutline />
+  // },
   {
     key: '/admin/work-schedules',
     label: (
@@ -208,16 +204,16 @@ const items: MenuItem[] = [
   },
   {
     type: 'divider'
-  },
-  {
-    key: '/admin/activity-history',
-    label: (
-      <Link to={'/admin/activity-history'}>
-        <span className="capitalize">Lịch sử hoạt động</span>
-      </Link>
-    ),
-    icon: <FaHistory />
   }
+  // {
+  //   key: '/admin/activity-history',
+  //   label: (
+  //     <Link to={'/admin/activity-history'}>
+  //       <span className="capitalize">Lịch sử hoạt động</span>
+  //     </Link>
+  //   ),
+  //   icon: <FaHistory />
+  // }
 ];
 
 function Sidebar() {
