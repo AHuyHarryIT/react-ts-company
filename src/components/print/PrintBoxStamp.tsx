@@ -114,7 +114,7 @@ export const PrintBoxStamp = ({
                 className="w-auto max-w-[435px] break-inside-avoid-page text-[5px] not-print:flex not-print:justify-center"
               >
                 <table
-                  className={`table border border-black text-center ${item.FAVV == 1 ? 'text-[6.6px]' : 'text-[8px]'}`}
+                  className={`table border border-black text-center ${item.FAVV ? 'text-[6.6px]' : 'text-[8px]'}`}
                 >
                   <tbody>
                     <tr>
@@ -224,7 +224,7 @@ export const PrintBoxStamp = ({
                         </div>
                       </td>
                     </tr>
-                    {item.FAVV == 1 && (
+                    {item.FAVV && (
                       <tr>
                         <td className="text-start">
                           Mã vạch
