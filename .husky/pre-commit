@@ -1,2 +1,5 @@
+# check lint
+npx eslint .
+
 # lint staged files before commit
 npx lint-staged
