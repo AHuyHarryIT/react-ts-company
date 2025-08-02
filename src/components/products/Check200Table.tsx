@@ -9,6 +9,7 @@ import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { RowTableActions } from './RowTableActions';
+import { calculateCheck200Product } from '@utils/calculateCheck200Product';
 
 export type Check200TableType = {
   id: string;
@@ -52,38 +53,9 @@ export const Check200Table: React.FC<Check200TableProps> = ({
   useEffect(() => {
     if (!tableData.length) return;
 
-    const newDataSource = tableData.map((product) => {
-      const timeMap: Check200TableType['times'] = {};
-
-      const totalMonthQuantities = product.totalmonthquantities || [];
-
-      const startStock = totalMonthQuantities.find(
-        (item) => item.status === 5
-      )?.totalQuan;
-      const incurred = totalMonthQuantities.find(
-        (item) => item.status === 2
-      )?.totalQuan;
-
-      (product.totaldailyquantities || [])
-        .filter((item) => item.status === 2)
-        .forEach((time) => {
-          const dateKey = dayjs(time.date).format('DD-MM-YYYY');
-
-          if (!timeMap[dateKey]) {
-            timeMap[dateKey] = { quantity: 0 };
-          }
-          timeMap[dateKey].quantity += time.totalQuan;
-        });
-
-      return {
-        id: product.id,
-        name: product.name,
-        code: product.code,
-        startStock: startStock || 0,
-        incurred: incurred || 0,
-        times: timeMap
-      };
-    });
+    const newDataSource = calculateCheck200Product(
+      tableData
+    ) as Check200TableType[];
 
     setDataSource(newDataSource);
   }, [tableData]);
@@ -103,7 +75,7 @@ export const Check200Table: React.FC<Check200TableProps> = ({
       className: index % 2 === 0 ? 'bg-indigo-200' : '',
       render: (value) => {
         if (!value) return '0';
-        return value.toLocaleString('vi-VN', {
+        return value.toLocaleString({
           maximumFractionDigits: 0
         });
       }

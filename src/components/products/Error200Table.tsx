@@ -97,7 +97,7 @@ export const Error200Table: React.FC<Error200TableProps> = ({
       className: index % 2 === 0 ? 'bg-indigo-200' : '',
       render: (value) => {
         if (!value) return '0';
-        return value.toLocaleString('vi-VN', {
+        return value.toLocaleString({
           maximumFractionDigits: 0
         });
       }

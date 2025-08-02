@@ -5,9 +5,9 @@ import React, { useMemo } from 'react';
 import { ProductType } from '@/types/productType';
 import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
-import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
+import { calculateTotalProduct } from '@utils/calculateTotalProduct';
 import { RowTableActions } from './RowTableActions';
 
 export type TotalTableType = {
@@ -18,9 +18,9 @@ export type TotalTableType = {
   catonQuantity: number;
   planTime: number;
   realTime: number;
-  FAPV: number;
-  FASV: number;
-  FAVV: number;
+  FAPV: boolean;
+  FASV: boolean;
+  FAVV: boolean;
   stockStartQuantity: number;
   realityQuantity: number;
   exportQuantity: number;
@@ -65,84 +65,10 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     }
   });
 
-  const dataSource: TotalTableType[] = tableData.map((product) => {
-    const timeMap: TotalTableType['times'] = {};
-    const totalMonthQuantities: TotalMonthQuantityType[] =
-      product?.totalmonthquantities || [];
-
-    const realityQuantity =
-      totalMonthQuantities.find((item) => item.status === 1)?.totalQuan || 0;
-    const importQuantity =
-      totalMonthQuantities.find((item) => item.status === 2)?.totalQuan || 0;
-    const exportQuantity =
-      totalMonthQuantities.find((item) => item.status === 3)?.totalQuan || 0;
-    const stockStartQuantity =
-      totalMonthQuantities.find((item) => item.status === 4)?.totalQuan || 0;
-    const stockQuantity200 =
-      totalMonthQuantities.find((item) => item.status === 5)?.totalQuan || 0;
-    const errorQuantity =
-      totalMonthQuantities.find((item) => item.status === 6)?.totalQuan || 0;
-    const stockQuantityMOQ =
-      totalMonthQuantities.find((item) => item.status === 7)?.totalQuan || 0;
-
-    const checked200 = stockQuantity200 + importQuantity - exportQuantity;
-    const stockEndQuantity =
-      stockStartQuantity + realityQuantity - exportQuantity - errorQuantity;
-    const notCheck200 =
-      stockStartQuantity +
-      realityQuantity -
-      exportQuantity -
-      checked200 -
-      errorQuantity;
-    const catonQuantity = product.quanEntityBin
-      ? stockQuantityMOQ / product.quanEntityBin
-      : 0;
-    const planTime =
-      product.CAV && product.cycle
-        ? ((((stockQuantityMOQ / product.CAV) * product.cycle) / 3600 / 24) *
-            100) /
-          90
-        : 0;
-    const realTime =
-      product.CAV && product.cycle
-        ? ((((exportQuantity / product.CAV) * product.cycle) / 3600 / 24) *
-            100) /
-          90
-        : 0;
-
-    const storageTime =
-      stockQuantityMOQ !== 0 ? stockEndQuantity / (stockQuantityMOQ / 24) : 0;
-
-    monthlyQuantities
-      ?.filter((item) => item.product_id == product.id)
-      .forEach((item) => {
-        if (!timeMap[item.month]) {
-          timeMap[item.month] = { quantity: 0 };
-        }
-        timeMap[item.month].quantity += item.totalQuan;
-      });
-
-    return {
-      id: product.id,
-      name: product.name,
-      code: product.code,
-      stockMOQ: stockQuantityMOQ,
-      catonQuantity: catonQuantity,
-      planTime: planTime,
-      realTime: realTime,
-      FAPV: product.FAPV || 0,
-      FASV: product.FASV || 0,
-      FAVV: product.FAVV || 0,
-      stockStartQuantity: stockStartQuantity,
-      realityQuantity: realityQuantity,
-      exportQuantity: exportQuantity,
-      checked200: checked200,
-      notCheck200: notCheck200,
-      stockEndQuantity: stockEndQuantity,
-      storageTime: storageTime,
-      times: timeMap
-    };
-  });
+  const dataSource = calculateTotalProduct(
+    tableData,
+    monthlyQuantities ?? []
+  ) as TotalTableType[];
 
   const dateColumns: TableColumnsType<TotalTableType> = months.map((month) => {
     return {
@@ -160,9 +86,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       dataIndex: ['times', month, 'quantity'],
       render: (value) => {
         if (!value) return 0;
-        return value.toLocaleString({
-          maximumFractionDigits: 0
-        });
+        return value.toLocaleString();
       }
     };
   });
@@ -192,7 +116,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div className="">
+        <div>
           Sản Lượng
           <br />
           (MOQ)
@@ -204,15 +128,12 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       dataIndex: 'stockMOQ',
       render: (value) => {
         if (!value) return 0;
-        return value.toLocaleString('vi-VN', {
-          style: 'decimal',
-          maximumFractionDigits: 0
-        });
+        return value.toLocaleString();
       }
     },
     {
       title: (
-        <div className="">
+        <div>
           Thùng CATON/tháng
           <br />
           (MOQ)
@@ -224,15 +145,12 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       dataIndex: 'catonQuantity',
       render: (value) => {
         if (!value) return 0;
-        return value.toLocaleString('vi-VN', {
-          style: 'decimal',
-          maximumFractionDigits: 0
-        });
+        return value.toLocaleString();
       }
     },
     {
       title: (
-        <div className="">
+        <div>
           Dự định
           <br />
           Thời gian hoạt động thiết bị
@@ -245,16 +163,14 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       dataIndex: 'planTime',
       render: (value) => {
         if (!value) return 0;
-        return value.toLocaleString('vi-VN', {
-          style: 'decimal',
-          minimumFractionDigits: 1,
+        return value.toLocaleString('en-US', {
           maximumFractionDigits: 1
         });
       }
     },
     {
       title: (
-        <div className="">
+        <div>
           Thực tế
           <br />
           Thời gian hoạt động thiết bị
@@ -267,49 +183,47 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       dataIndex: 'realTime',
       render: (value) => {
         if (!value) return 0;
-        return value.toLocaleString('vi-VN', {
-          style: 'decimal',
-          minimumFractionDigits: 1,
+        return value.toLocaleString('en-US', {
           maximumFractionDigits: 1
         });
       }
     },
     {
-      title: <div className="">FAPV出荷</div>,
+      title: <div>FAPV出荷</div>,
       className: 'bg-indigo-300',
       minWidth: 50,
       align: 'center',
       dataIndex: 'FAPV',
       render: (value) => {
         if (!value) return '';
-        return value == 1 ? 'O' : '';
+        return value ? '〇' : '';
       }
     },
     {
-      title: <div className="">FASV出荷</div>,
+      title: <div>FASV出荷</div>,
       className: 'bg-indigo-300',
       minWidth: 50,
       align: 'center',
       dataIndex: 'FASV',
       render: (value) => {
         if (!value) return '';
-        return value == 1 ? 'O' : '';
+        return value ? '〇' : '';
       }
     },
     {
-      title: <div className="">FAVV出荷</div>,
+      title: <div>FAVV出荷</div>,
       className: 'bg-indigo-300',
       minWidth: 50,
       align: 'center',
       dataIndex: 'FAVV',
       render: (value) => {
         if (!value) return '';
-        return value == 1 ? 'O' : '';
+        return value ? '〇' : '';
       }
     },
     {
       title: (
-        <div className="">
+        <div>
           Số lượng
           <br />
           tồn đầu kỳ
@@ -325,7 +239,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div className="">
+        <div>
           Thực tế
           <br />
           sản xuất
@@ -343,7 +257,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div className="">
+        <div>
           Số Lượng
           <br />
           đã xuất
@@ -359,7 +273,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div className="">
+        <div>
           Số lượng
           <br />
           đã kiểm 200%
@@ -375,7 +289,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div className="">
+        <div>
           Số lượng
           <br />
           chưa kiểm 200%
@@ -391,7 +305,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div className="">
+        <div>
           Số lượng
           <br />
           tồn cuối kỳ
@@ -407,7 +321,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div className="">
+        <div>
           Số ngày
           <br />
           tồn kho
@@ -418,9 +332,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       dataIndex: 'storageTime',
       render: (value) => {
         if (!value) return 0;
-        return value.toLocaleString('vi-VN', {
-          style: 'decimal',
-          minimumFractionDigits: 1,
+        return value.toLocaleString('en-US', {
           maximumFractionDigits: 1
         });
       }

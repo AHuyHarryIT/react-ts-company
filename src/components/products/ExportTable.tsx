@@ -9,6 +9,7 @@ import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { RowTableActions } from './RowTableActions';
+import { calculateExportProduct } from '@utils/calculateExportProduct';
 
 export type ExportTableType = {
   id: string;
@@ -50,34 +51,9 @@ export const ExportTable: React.FC<ExportTableProps> = ({
   useEffect(() => {
     if (!tableData.length) return;
 
-    const newDataSource = tableData.map((product) => {
-      const timeMap: ExportTableType['times'] = {};
-
-      const totalMonthQuantities = product.totalmonthquantities || [];
-
-      const total = totalMonthQuantities.find(
-        (item) => item.status === 3
-      )?.totalQuan;
-
-      (product.totaldailyquantities || [])
-        .filter((item) => item.status === 3)
-        .forEach((time) => {
-          const dateKey = dayjs(time.date).format('DD-MM-YYYY');
-
-          if (!timeMap[dateKey]) {
-            timeMap[dateKey] = { quantity: 0 };
-          }
-          timeMap[dateKey].quantity += time.totalQuan;
-        });
-
-      return {
-        id: product.id,
-        name: product.name,
-        code: product.code,
-        total: total || 0,
-        times: timeMap
-      };
-    });
+    const newDataSource = calculateExportProduct(
+      tableData
+    ) as ExportTableType[];
 
     setDataSource(newDataSource);
   }, [tableData]);
@@ -97,7 +73,7 @@ export const ExportTable: React.FC<ExportTableProps> = ({
       className: index % 2 === 0 ? 'bg-indigo-200' : '',
       render: (value) => {
         if (!value) return '0';
-        return value.toLocaleString('vi-VN', {
+        return value.toLocaleString({
           maximumFractionDigits: 0
         });
       }

@@ -26,12 +26,13 @@ import { ProduceTable } from '@components/products/ProduceTable';
 import { TotalTable } from '@components/products/TotalTable';
 
 import { QueryParams } from '@/types/queryParams';
-import { IconAdd, IconDelete, IconExport, IconFilter } from '@components/icons';
+import { IconAdd, IconDelete, IconFilter } from '@components/icons';
 import { useCrudList } from '@hooks/useCrudList';
 import { ProductModelEnumOptions } from '@schemas/product/productModelEnum.enum';
+import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEnum.enum';
 import { productService } from '@services/ProductService';
 import { FaBox, FaIndustry } from 'react-icons/fa6';
-import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEnum.enum';
+import { ExportModal } from './ExportModal';
 
 export default function ProductList() {
   const [month, setMonth] = useState<Dayjs | null>(dayjs().startOf('month'));
@@ -186,17 +187,7 @@ export default function ProductList() {
             </Link>
           </Flex>
           <div>
-            <Button
-              size="large"
-              variant="solid"
-              color="green"
-              icon={<IconExport />}
-              onClick={() => {
-                console.log('Xuất excel');
-              }}
-            >
-              Xuất excel
-            </Button>
+            <ExportModal />
           </div>
         </div>
         <Collapse
