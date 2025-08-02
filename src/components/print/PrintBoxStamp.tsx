@@ -3,6 +3,7 @@ import { Button, message } from 'antd';
 import { useReactToPrint } from 'react-to-print';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Dayjs } from 'dayjs';
+import Barcode from 'react-barcode';
 
 import { ProductType } from '@/types/productType';
 import { saveStamp } from '@services/StampService';
@@ -224,7 +225,7 @@ export const PrintBoxStamp = ({
                         </div>
                       </td>
                     </tr>
-                    {item.FAVV && (
+                    {item.FAVV == true && (
                       <tr>
                         <td className="text-start">
                           Mã vạch
@@ -233,12 +234,19 @@ export const PrintBoxStamp = ({
                         </td>
                         <td colSpan={5}>
                           <div className="flex items-center justify-center">
-                            <img
-                              className="h-[24px] max-w-[250px]"
-                              // FIXME: Replace with actual barcode data
-                              // src="data:image/png;base64,{{ $bin['barcode'] }}"
-                              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAAeCAQAAAAieNtfAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAD/h4/MvwAAAKxJREFUeNrt0kGOgzAQAMFh//9ncsgeELIhUl+rLgl4BMbqY875Ombm/P+d2/+53JvFzHmZOW6zT/Ord+1mZrM+i+t5eM/u+nyYm5f11dpqX7+cw+65b3vYnePb/lbnsHru/Zsus38DkYjIREQmIjIRkYmITERkIiITEZmIyEREJiIyEZGJiExEZCIiExGZiMhERCYiMhGRiYhMRGQiIhMRmYjIREQmIjIRkX0ACSsoO9p8JuEAAAAASUVORK5CYII="
-                              alt="Mã vạch"
+                            <Barcode
+                              width={2}
+                              height={30}
+                              format="CODE128"
+                              displayValue={false}
+                              margin={1}
+                              value={`${item.id}a${date.format('DDMMYYYY')}${shift}${(stampList.length >
+                              1
+                                ? stampList[index]
+                                : index + parseInt(startStamp as string)
+                              )
+                                .toString()
+                                .padStart(3, '0')}`}
                             />
                           </div>
                         </td>
