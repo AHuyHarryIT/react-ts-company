@@ -6,6 +6,7 @@ import { convertImageName2Url } from '@utils/convertImageName2Url';
 const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 120;
 
 type AuthResponse = {
+  id: string;
   name: string;
   role_id: number;
   role_name: string;
@@ -33,6 +34,7 @@ export const authLogin = async (
   const response: AuthResponse = await axiosPrivate.post('/api/login', data);
 
   const userData: User = {
+    id: response.id,
     name: response.name,
     role: {
       id: response.role_id.toString(),
@@ -61,6 +63,7 @@ export const authCheck = async () => {
   try {
     const response: AuthResponse = await axiosPrivate.post('/api/auth/check');
     const userData: User = {
+      id: response.id,
       name: response.name,
       role: {
         id: response.role_id.toString(),
