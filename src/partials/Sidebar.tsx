@@ -15,12 +15,14 @@ import { FiUsers } from 'react-icons/fi';
 import { IoCalendarNumberOutline, IoHomeOutline } from 'react-icons/io5';
 
 import logo from '@assets/images/logo/logoAsset.svg';
+import { useAuth } from '@hooks/useAuth';
+import { isAdmin } from '@utils/authUtil';
 
 const { Sider: Side } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
 
-const items: MenuItem[] = [
+const adminItems: MenuItem[] = [
   {
     key: '/admin',
     label: (
@@ -216,9 +218,23 @@ const items: MenuItem[] = [
   // }
 ];
 
+const employeeItems: MenuItem[] = [
+  {
+    key: '/employee',
+    label: (
+      <Link to={'/employee'}>
+        <span className="capitalize">Trang chủ</span>
+      </Link>
+    ),
+    icon: <IoHomeOutline />
+  }
+];
+
 function Sidebar() {
   const { pathname } = useLocation();
   const { isSidebarClose, theme, isMobile } = useStore(uiStore);
+  const { user } = useAuth();
+  const admin = isAdmin(user?.role?.name || '');
 
   const sidebarStyle: React.CSSProperties = {
     overflow: 'auto',
@@ -242,7 +258,7 @@ function Sidebar() {
         >
           <div className="flex items-center justify-center p-4">
             <Link
-              to="/admin"
+              to="/"
               onClick={() => {
                 if (isMobile) {
                   toggleSidebar();
@@ -257,7 +273,7 @@ function Sidebar() {
             <Menu
               theme={theme}
               mode="inline"
-              items={items}
+              items={admin ? adminItems : employeeItems}
               defaultSelectedKeys={['/admin']}
               selectedKeys={[pathname]}
               onClick={() => {
@@ -281,7 +297,7 @@ function Sidebar() {
         >
           <div className="flex items-center justify-center p-4">
             <Link
-              to="/admin"
+              to="/"
               onClick={() => {
                 if (isMobile) {
                   toggleSidebar();
@@ -295,7 +311,7 @@ function Sidebar() {
             <Menu
               theme={theme}
               mode="inline"
-              items={items}
+              items={admin ? adminItems : employeeItems}
               defaultSelectedKeys={['/admin']}
               selectedKeys={[pathname]}
               onClick={() => {
