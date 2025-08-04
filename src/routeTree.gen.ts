@@ -37,6 +37,7 @@ import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authentic
 import { Route as AuthenticatedAdminProductsIndexImport } from './routes/_authenticated/admin/products/index'
 import { Route as AuthenticatedAdminEmployeesIndexImport } from './routes/_authenticated/admin/employees/index'
 import { Route as AuthenticatedAdminCheckPoIndexImport } from './routes/_authenticated/admin/check-po/index'
+import { Route as AuthenticatedEmployeeSchedulesIdImport } from './routes/_authenticated/employee/schedules/$id'
 import { Route as AuthenticatedAdminWorkSchedulesIdImport } from './routes/_authenticated/admin/work-schedules/$id'
 import { Route as AuthenticatedAdminStampsRequestImport } from './routes/_authenticated/admin/stamps/request'
 import { Route as AuthenticatedAdminStampsHistoryImport } from './routes/_authenticated/admin/stamps/history'
@@ -236,6 +237,13 @@ const AuthenticatedAdminSalariesIdLazyRoute =
       (d) => d.Route,
     ),
   )
+
+const AuthenticatedEmployeeSchedulesIdRoute =
+  AuthenticatedEmployeeSchedulesIdImport.update({
+    id: '/schedules/$id',
+    path: '/schedules/$id',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
 
 const AuthenticatedAdminWorkSchedulesIdRoute =
   AuthenticatedAdminWorkSchedulesIdImport.update({
@@ -556,6 +564,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminWorkSchedulesIdImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/employee/schedules/$id': {
+      id: '/_authenticated/employee/schedules/$id'
+      path: '/schedules/$id'
+      fullPath: '/employee/schedules/$id'
+      preLoaderRoute: typeof AuthenticatedEmployeeSchedulesIdImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
     '/_authenticated/admin/salaries/$id': {
       id: '/_authenticated/admin/salaries/$id'
       path: '/salaries/$id'
@@ -815,6 +830,7 @@ const AuthenticatedAdminRouteRouteWithChildren =
 
 interface AuthenticatedEmployeeRouteRouteChildren {
   AuthenticatedEmployeeIndexRoute: typeof AuthenticatedEmployeeIndexRoute
+  AuthenticatedEmployeeSchedulesIdRoute: typeof AuthenticatedEmployeeSchedulesIdRoute
   AuthenticatedEmployeeActivityScheduleIndexRoute: typeof AuthenticatedEmployeeActivityScheduleIndexRoute
   AuthenticatedEmployeeProductsIndexRoute: typeof AuthenticatedEmployeeProductsIndexRoute
   AuthenticatedEmployeeSalariesIndexRoute: typeof AuthenticatedEmployeeSalariesIndexRoute
@@ -827,6 +843,8 @@ interface AuthenticatedEmployeeRouteRouteChildren {
 const AuthenticatedEmployeeRouteRouteChildren: AuthenticatedEmployeeRouteRouteChildren =
   {
     AuthenticatedEmployeeIndexRoute: AuthenticatedEmployeeIndexRoute,
+    AuthenticatedEmployeeSchedulesIdRoute:
+      AuthenticatedEmployeeSchedulesIdRoute,
     AuthenticatedEmployeeActivityScheduleIndexRoute:
       AuthenticatedEmployeeActivityScheduleIndexRoute,
     AuthenticatedEmployeeProductsIndexRoute:
@@ -889,6 +907,7 @@ export interface FileRoutesByFullPath {
   '/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
   '/admin/stamps/request': typeof AuthenticatedAdminStampsRequestRoute
   '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
+  '/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
@@ -932,6 +951,7 @@ export interface FileRoutesByTo {
   '/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
   '/admin/stamps/request': typeof AuthenticatedAdminStampsRequestRoute
   '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
+  '/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
@@ -981,6 +1001,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/stamps/history': typeof AuthenticatedAdminStampsHistoryRoute
   '/_authenticated/admin/stamps/request': typeof AuthenticatedAdminStampsRequestRoute
   '/_authenticated/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
+  '/_authenticated/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
   '/_authenticated/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/_authenticated/admin/check-po/': typeof AuthenticatedAdminCheckPoIndexRoute
   '/_authenticated/admin/employees/': typeof AuthenticatedAdminEmployeesIndexRoute
@@ -1030,6 +1051,7 @@ export interface FileRouteTypes {
     | '/admin/stamps/history'
     | '/admin/stamps/request'
     | '/admin/work-schedules/$id'
+    | '/employee/schedules/$id'
     | '/admin/salaries/$id'
     | '/admin/check-po'
     | '/admin/employees'
@@ -1072,6 +1094,7 @@ export interface FileRouteTypes {
     | '/admin/stamps/history'
     | '/admin/stamps/request'
     | '/admin/work-schedules/$id'
+    | '/employee/schedules/$id'
     | '/admin/salaries/$id'
     | '/admin/check-po'
     | '/admin/employees'
@@ -1119,6 +1142,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/stamps/history'
     | '/_authenticated/admin/stamps/request'
     | '/_authenticated/admin/work-schedules/$id'
+    | '/_authenticated/employee/schedules/$id'
     | '/_authenticated/admin/salaries/$id'
     | '/_authenticated/admin/check-po/'
     | '/_authenticated/admin/employees/'
@@ -1221,6 +1245,7 @@ export const routeTree = rootRoute
       "parent": "/_authenticated",
       "children": [
         "/_authenticated/employee/",
+        "/_authenticated/employee/schedules/$id",
         "/_authenticated/employee/activity-schedule/",
         "/_authenticated/employee/products/",
         "/_authenticated/employee/salaries/",
@@ -1317,6 +1342,10 @@ export const routeTree = rootRoute
     "/_authenticated/admin/work-schedules/$id": {
       "filePath": "_authenticated/admin/work-schedules/$id.tsx",
       "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/employee/schedules/$id": {
+      "filePath": "_authenticated/employee/schedules/$id.tsx",
+      "parent": "/_authenticated/employee"
     },
     "/_authenticated/admin/salaries/$id": {
       "filePath": "_authenticated/admin/salaries/$id.lazy.tsx",

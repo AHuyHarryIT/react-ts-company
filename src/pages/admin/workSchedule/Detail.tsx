@@ -10,12 +10,13 @@ import {
   TableColumnsType,
   TableProps,
   Tabs,
-  TabsProps,
-  Tag
+  TabsProps
 } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 
+import { workLegends } from '@/configs/legend/workLegends.config';
+import { QueryParams } from '@/types/queryParams';
 import { ScheduleDetailType } from '@/types/scheduleDetailType';
 import { ScheduleType } from '@/types/scheduleType';
 import BackButton from '@components/common/BackButton';
@@ -25,7 +26,6 @@ import { scheduleDetailService } from '@services/ScheduleDetailService';
 import { scheduleService } from '@services/workScheduleService';
 import { uiStore } from '@stores/uiStore';
 import { countDayOfWeekInMonth } from '@utils/countDayOfWeekInMonth';
-import { QueryParams } from '@/types/queryParams';
 
 interface HnhcTableType {
   key: string;
@@ -48,63 +48,6 @@ interface HNHCGroupedData {
   group_name: string;
   data: HnhcTableType[];
 }
-
-const legends = [
-  {
-    key: 'N',
-    label: 'Ca ngày',
-    icon: (
-      <Tag className="font-bold" color="blue-inverse">
-        N
-      </Tag>
-    )
-  },
-  {
-    key: 'D',
-    label: 'Ca đêm',
-    icon: (
-      <Tag className="font-bold" color="#000">
-        D
-      </Tag>
-    )
-  },
-  {
-    key: 'X',
-    label: 'Nghĩ',
-    icon: (
-      <Tag className="font-bold" color="red-inverse">
-        X
-      </Tag>
-    )
-  },
-  {
-    key: 'TC',
-    label: 'Tăng cường đêm',
-    icon: (
-      <Tag className="font-bold" color="red-inverse">
-        TC
-      </Tag>
-    )
-  },
-  {
-    key: 'LN',
-    label: 'Làm thêm ca ngày',
-    icon: (
-      <Tag className="font-bold" color="red-inverse">
-        LN
-      </Tag>
-    )
-  },
-  {
-    key: 'VS',
-    label: 'Vệ sinh',
-    icon: (
-      <Tag className="font-bold" color="yellow-inverse">
-        <span className="text-black">VS</span>
-      </Tag>
-    )
-  }
-];
 
 export default function Detail() {
   const { id } = Route.useParams();
@@ -236,7 +179,7 @@ export default function Detail() {
         if (!value) return null;
         return (
           <center>
-            {legends.find((legend) => legend.key == value)?.icon || value}
+            {workLegends[value as keyof typeof workLegends]?.icon || value}
           </center>
         );
       }
@@ -260,11 +203,7 @@ export default function Detail() {
       dataIndex: 'day' + (index + 1),
       render: (value: boolean) => {
         if (!value) return null;
-        return (
-          <center>
-            {legends.find((legend) => legend.key === 'VS')?.icon || value}
-          </center>
-        );
+        return <center>{value && workLegends['VS'].icon}</center>;
       }
     }))
   ];
@@ -284,11 +223,7 @@ export default function Detail() {
         dataIndex: 'day' + day.date(),
         render: (value: boolean) => {
           if (!value) return null;
-          return (
-            <center>
-              {legends.find((legend) => legend.key === 'VS')?.icon || value}
-            </center>
-          );
+          return <center>{value && (workLegends['VS'].icon || value)}</center>;
         }
       };
     })
@@ -553,8 +488,8 @@ export default function Detail() {
       >
         <div className="space-y-6">
           <div className="flex flex-wrap gap-2">
-            {legends.map((legend) => (
-              <div key={legend.key}>
+            {Object.entries(workLegends).map(([key, legend]) => (
+              <div key={key}>
                 {legend.icon}
                 <span>{legend.label}</span>
               </div>

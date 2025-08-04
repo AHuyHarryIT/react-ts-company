@@ -14,12 +14,19 @@ import {
 import { CrudService } from '@utils/crudService';
 
 const ENDPOINT = '/api/schedules';
+const EMP_ENDPOINT = '/api/employee/schedules';
 
 export const scheduleService = new CrudService<
   ScheduleType,
   ScheduleCreateType,
   ScheduleUpdateType
 >(ENDPOINT);
+
+export const empScheduleService = new CrudService<
+  ScheduleType,
+  ScheduleCreateType,
+  ScheduleUpdateType
+>(EMP_ENDPOINT);
 
 type FilterWorkSchedule = {
   name?: string;
