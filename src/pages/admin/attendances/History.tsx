@@ -12,6 +12,7 @@ import {
   TableProps
 } from 'antd';
 import { useState } from 'react';
+import { debounce } from 'lodash';
 
 import {
   attendanceUpdateFields,
@@ -55,6 +56,28 @@ export const History = () => {
     queryKey: ['workScheduleCategories', { limit: 0 }],
     queryFn: () => fetchWorkScheduleCategories({ limit: 0 })
   });
+
+  const handleSearch = debounce((value: string, type: 'name' | 'code') => {
+    setParams((prev) => ({
+      ...prev,
+      'filter[employee_id]': undefined,
+      'filter[employees.name]': undefined
+    }));
+    if (!value) {
+      return;
+    }
+    if (type == 'name') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[employees.name]': value ? value : undefined
+      }));
+    } else if (type == 'code') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[employee_id]': value ? value : undefined
+      }));
+    }
+  }, 300);
 
   const categoryOptions = categories?.workScheduleCategories.map((item) => ({
     label: item.name,
@@ -262,22 +285,12 @@ export const History = () => {
                   <Input.Search
                     placeholder="Tìm kiếm nhân viên"
                     allowClear
-                    onSearch={(value) => {
-                      setParams((prev) => ({
-                        ...prev,
-                        'filter[employees.id]': undefined,
-                        'filter[employees.name]': undefined
-                      }));
-                      if (searchOn === 'code') {
-                        setParams((prev) => ({
-                          ...prev,
-                          'filter[employees.id]': value ? value : undefined
-                        }));
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      if (/^\d+$/.test(inputValue)) {
+                        handleSearch(inputValue, 'code');
                       } else {
-                        setParams((prev) => ({
-                          ...prev,
-                          'filter[employees.name]': value ? value : undefined
-                        }));
+                        handleSearch(inputValue, 'name');
                       }
                     }}
                   />

@@ -7,13 +7,13 @@ import {
   DatePicker,
   Input,
   Select,
-  Space,
   Table,
   TableColumnsType,
   TableProps,
   Tag
 } from 'antd';
 import dayjs from 'dayjs';
+import { debounce } from 'lodash';
 import { useState } from 'react';
 
 import { QueryParams } from '@/types/queryParams';
@@ -46,7 +46,6 @@ export default function Records() {
     limit: 50,
     sort: 'date'
   });
-  const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
   const [month, setMonth] = useState<string>(dayjs().format('MM-YYYY'));
 
   const { data: categories, refetch: refetchCategories } = useQuery({
@@ -87,6 +86,28 @@ export default function Records() {
     attendances: [],
     pagination: { total: 0, pageSize: params.limit, current: params.page }
   };
+
+  const handleSearch = debounce((value: string, type: 'name' | 'code') => {
+    setParams((prev) => ({
+      ...prev,
+      'filter[employee_id]': undefined,
+      'filter[employees.name]': undefined
+    }));
+    if (!value) {
+      return;
+    }
+    if (type == 'name') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[employees.name]': value ? value : undefined
+      }));
+    } else if (type == 'code') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[employee_id]': value ? value : undefined
+      }));
+    }
+  }, 300);
 
   const columns: TableColumnsType<TableColumns> = [
     {
@@ -314,40 +335,18 @@ export default function Records() {
                     }));
                   }}
                 />
-                <Space.Compact className="col-span-1 sm:col-span-2">
-                  <Select
-                    defaultValue={searchOn}
-                    options={[
-                      { label: 'Tên', value: 'name' },
-                      { label: 'Mã', value: 'code' }
-                    ]}
-                    onChange={(value) => {
-                      setSearchOn(value);
-                    }}
-                  />
-                  <Input.Search
-                    placeholder="Tìm kiếm nhân viên"
-                    allowClear
-                    onSearch={(value) => {
-                      setParams((prev) => ({
-                        ...prev,
-                        'filter[employee_id]': undefined,
-                        'filter[employees.name]': undefined
-                      }));
-                      if (searchOn === 'code') {
-                        setParams((prev) => ({
-                          ...prev,
-                          'filter[employee_id]': value ? value : undefined
-                        }));
-                      } else {
-                        setParams((prev) => ({
-                          ...prev,
-                          'filter[employees.name]': value ? value : undefined
-                        }));
-                      }
-                    }}
-                  />
-                </Space.Compact>
+                <Input.Search
+                  placeholder="Tìm kiếm nhân viên"
+                  allowClear
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    if (/^\d+$/.test(inputValue)) {
+                      handleSearch(inputValue, 'code');
+                    } else {
+                      handleSearch(inputValue, 'name');
+                    }
+                  }}
+                />
               </div>
             ),
             showArrow: false

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
+import { debounce } from 'lodash';
 
 import {
   Button,
@@ -10,7 +11,6 @@ import {
   Flex,
   Input,
   Select,
-  Space,
   Tabs,
   TabsProps
 } from 'antd';
@@ -36,7 +36,6 @@ import { ExportModal } from './ExportModal';
 
 export default function ProductList() {
   const [month, setMonth] = useState<Dayjs | null>(dayjs().startOf('month'));
-  const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
 
   const [params, setParams] = useState<QueryParams>({
     page: 1,
@@ -56,14 +55,35 @@ export default function ProductList() {
     }
   });
 
-  const months = useMemo(() => monthList?.months || [], [monthList]);
-
   const { queryResult } = useCrudList({
     service: productService,
     queryKey: 'products',
     initialFilters: params
   });
 
+  const months = useMemo(() => monthList?.months || [], [monthList]);
+
+  const handleSearch = debounce((value: string, type: 'name' | 'code') => {
+    setParams((prev) => ({
+      ...prev,
+      'filter[name]': undefined,
+      'filter[code]': undefined
+    }));
+    if (!value) {
+      return;
+    }
+    if (type == 'name') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[name]': value
+      }));
+    } else if (type == 'code') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[code]': value
+      }));
+    }
+  }, 300);
   useEffect(() => {
     const total = queryResult.data?.total || 0;
     const limit = params.limit || 50;
@@ -253,40 +273,19 @@ export default function ProductList() {
                       }));
                     }}
                   />
-                  <Space.Compact className="col-span-1 sm:col-span-2">
-                    <Select
-                      defaultValue={searchOn}
-                      options={[
-                        { label: 'Tên', value: 'name' },
-                        { label: 'Mã', value: 'code' }
-                      ]}
-                      onChange={(value) => {
-                        setSearchOn(value);
-                      }}
-                    />
-                    <Input.Search
-                      placeholder="Tìm kiếm sản phẩm"
-                      allowClear
-                      onSearch={(value) => {
-                        setParams((prev) => ({
-                          ...prev,
-                          'filter[code]': undefined,
-                          'filter[name]': undefined
-                        }));
-                        if (searchOn === 'code') {
-                          setParams((prev) => ({
-                            ...prev,
-                            'filter[code]': value ? value : undefined
-                          }));
-                        } else {
-                          setParams((prev) => ({
-                            ...prev,
-                            'filter[name]': value ? value : undefined
-                          }));
-                        }
-                      }}
-                    />
-                  </Space.Compact>
+                  <Input.Search
+                    className="col-span-1 sm:col-span-2"
+                    placeholder="Tìm kiếm sản phẩm"
+                    allowClear
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      if (/^\d+$/.test(inputValue)) {
+                        handleSearch(inputValue, 'code');
+                      } else {
+                        handleSearch(inputValue, 'name');
+                      }
+                    }}
+                  />
                 </div>
               ),
               showArrow: false

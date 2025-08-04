@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Avatar, Button, Table, TableColumnsType, TableProps } from 'antd';
+import {
+  Avatar,
+  Button,
+  Input,
+  Table,
+  TableColumnsType,
+  TableProps
+} from 'antd';
+import { debounce } from 'lodash';
 import { useState } from 'react';
 
 import { useCrudList } from '@/hooks/useCrudList';
@@ -11,11 +19,11 @@ import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
 import { convertImageName2Url } from '@utils/convertImageName2Url';
 
+import { customTableProps } from '@components/custom/TableProps.custom';
 import { BiTrash } from 'react-icons/bi';
 import { FaUser } from 'react-icons/fa';
 import { FaFingerprint, FaPen } from 'react-icons/fa6';
 import { LuUserRoundPlus } from 'react-icons/lu';
-import { customTableProps } from '@components/custom/TableProps.custom';
 
 interface EmployeeTable extends EmployeeType {
   role?: { id: string; role_name: string };
@@ -41,6 +49,28 @@ function RouteComponent() {
     queryKey: 'employees',
     initialFilters: params
   });
+
+  const handleSearch = debounce((value: string, type: 'name' | 'code') => {
+    setParams((prev) => ({
+      ...prev,
+      'filter[name]': undefined,
+      'filter[id]': undefined
+    }));
+    if (!value) {
+      return;
+    }
+    if (type == 'name') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[name]': value
+      }));
+    } else if (type == 'code') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[id]': value
+      }));
+    }
+  }, 300);
 
   const handleChange: TableProps<EmployeeTable>['onChange'] = (
     pagination,
@@ -238,6 +268,19 @@ function RouteComponent() {
     <>
       <ComponentCard title="Danh sách nhân viên">
         <Actions />
+        <Input.Search
+          className="max-w-3xs"
+          placeholder="Tìm kiếm nhân viên"
+          allowClear
+          onChange={(e) => {
+            const inputValue = e.target.value;
+            if (/^\d+$/.test(inputValue)) {
+              handleSearch(inputValue, 'code');
+            } else {
+              handleSearch(inputValue, 'name');
+            }
+          }}
+        />
         <Table<EmployeeType> {...tableProps} />
       </ComponentCard>
     </>
