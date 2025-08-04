@@ -56,7 +56,7 @@ export const AddModal = () => {
         title="Thêm danh mục lịch làm việc"
         open={open}
         onCancel={onCancel}
-        destroyOnClose
+        destroyOnHidden
         centered
         footer={null}
       >

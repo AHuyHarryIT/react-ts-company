@@ -78,7 +78,7 @@ export const AddWorkSchedule = () => {
         title="Thêm lịch làm việc"
         open={open}
         onCancel={onCancel}
-        destroyOnClose
+        destroyOnHidden
         centered
         footer={null}
       >

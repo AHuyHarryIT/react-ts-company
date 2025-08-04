@@ -52,7 +52,7 @@ export function UpdateModal<
         title="Cập nhật"
         open={open}
         onCancel={handleClose}
-        destroyOnClose
+        destroyOnHidden
         centered
         footer={null}
       >

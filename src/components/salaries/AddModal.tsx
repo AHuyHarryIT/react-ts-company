@@ -95,7 +95,7 @@ export const AddSalary = () => {
         title="Thêm bản lương"
         open={open}
         onCancel={onCancel}
-        destroyOnClose
+        destroyOnHidden
         centered
         footer={null}
       >

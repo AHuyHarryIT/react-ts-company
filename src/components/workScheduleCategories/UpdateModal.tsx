@@ -77,7 +77,7 @@ export const UpdateWorkScheduleCategory: React.FC<
         title="Cập nhật mục lịch làm việc"
         open={open}
         onCancel={onCancel}
-        destroyOnClose
+        destroyOnHidden
         centered
         footer={null}
       >

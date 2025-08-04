@@ -57,7 +57,7 @@ export function CreateModal<
         title={title}
         open={open}
         onCancel={handleClose}
-        destroyOnClose
+        destroyOnHidden
         centered
         footer={null}
       >
