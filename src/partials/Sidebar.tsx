@@ -10,13 +10,14 @@ import { BsCalendar2Check } from 'react-icons/bs';
 // import { BsCalendar2Week } from 'react-icons/bs';
 import { CiBoxes } from 'react-icons/ci';
 import { FaMoneyCheckAlt, FaRegCalendarAlt } from 'react-icons/fa';
-import { FaBriefcase, FaPrint } from 'react-icons/fa6';
+import { FaBriefcase, FaEnvelopesBulk, FaPrint } from 'react-icons/fa6';
 import { FiUsers } from 'react-icons/fi';
 import { IoCalendarNumberOutline, IoHomeOutline } from 'react-icons/io5';
 
 import logo from '@assets/images/logo/logoAsset.svg';
 import { useAuth } from '@hooks/useAuth';
 import { isAdmin } from '@utils/authUtil';
+import { IconHistory } from '@components/icons';
 
 const { Sider: Side } = Layout;
 
@@ -125,15 +126,6 @@ const adminItems: MenuItem[] = [
           </Link>
         )
       }
-      // employee role
-      // {
-      //   key: '/admin/stamps/request',
-      //   label: (
-      //     <Link to={'/admin/stamps/request'}>
-      //       <span className="capitalize">Yêu Cầu In Tem</span>
-      //     </Link>
-      //   )
-      // }
     ]
   },
   {
@@ -227,6 +219,74 @@ const employeeItems: MenuItem[] = [
       </Link>
     ),
     icon: <IoHomeOutline />
+  },
+  {
+    key: '/employee/schedules',
+    label: (
+      <Link to={'/employee/schedules'}>
+        <span className="capitalize">Lịch làm việc</span>
+      </Link>
+    ),
+    icon: <FaRegCalendarAlt />
+  },
+  {
+    key: '/employee/salaries',
+    label: (
+      <Link to={'/employee/salaries'}>
+        <span className="capitalize">Bảng lương</span>
+      </Link>
+    ),
+    icon: <FaMoneyCheckAlt />
+  },
+  {
+    key: 'employee/attendance',
+    label: <span className="capitalize">Chấm Công</span>,
+    icon: <BsCalendar2Check />,
+    children: [
+      {
+        key: '/employee/attendances/history',
+        label: (
+          <Link to={'/employee/attendances/history'}>
+            <span className="capitalize">Lịch Sử Chấm Công</span>
+          </Link>
+        )
+      },
+      {
+        key: '/employee/attendances/calculate',
+        label: (
+          <Link to={'/employee/attendances/calculate'}>
+            <span className="capitalize">Bảng Tính Công</span>
+          </Link>
+        )
+      }
+    ]
+  },
+  {
+    key: '/employee/products',
+    label: (
+      <Link to={'/employee/products'}>
+        <span className="capitalize">Sản Phẩm</span>
+      </Link>
+    ),
+    icon: <CiBoxes />
+  },
+  {
+    key: '/employee/activity-schedule',
+    label: (
+      <Link to={'/employee/activity-schedule'}>
+        <span className="capitalize">Lịch hoạt động / ngày</span>
+      </Link>
+    ),
+    icon: <IconHistory />
+  },
+  {
+    key: '/employee/stamps/request',
+    label: (
+      <Link to={'/employee/stamps/request'}>
+        <span className="capitalize">Yêu Cầu In Tem</span>
+      </Link>
+    ),
+    icon: <FaEnvelopesBulk />
   }
 ];
 

@@ -28,6 +28,8 @@ import { Route as AuthenticatedAdminAboutImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products/route'
 import { Route as AuthenticatedEmployeeSchedulesIndexImport } from './routes/_authenticated/employee/schedules/index'
 import { Route as AuthenticatedEmployeeSalariesIndexImport } from './routes/_authenticated/employee/salaries/index'
+import { Route as AuthenticatedEmployeeProductsIndexImport } from './routes/_authenticated/employee/products/index'
+import { Route as AuthenticatedEmployeeActivityScheduleIndexImport } from './routes/_authenticated/employee/activity-schedule/index'
 import { Route as AuthenticatedAdminWorkSchedulesIndexImport } from './routes/_authenticated/admin/work-schedules/index'
 import { Route as AuthenticatedAdminWorkScheduleCategoriesIndexImport } from './routes/_authenticated/admin/work-schedule-categories/index'
 import { Route as AuthenticatedAdminSalariesIndexImport } from './routes/_authenticated/admin/salaries/index'
@@ -47,6 +49,9 @@ import { Route as AuthenticatedAdminPlansMaterialImport } from './routes/_authen
 import { Route as AuthenticatedAdminEmployeesAddImport } from './routes/_authenticated/admin/employees/add'
 import { Route as AuthenticatedAdminAttendancesRecordImport } from './routes/_authenticated/admin/attendances/record'
 import { Route as AuthenticatedAdminAttendancesHistoryImport } from './routes/_authenticated/admin/attendances/history'
+import { Route as AuthenticatedEmployeeStampsRequestIndexImport } from './routes/_authenticated/employee/stamps/request/index'
+import { Route as AuthenticatedEmployeeAttendancesHistoryIndexImport } from './routes/_authenticated/employee/attendances/history/index'
+import { Route as AuthenticatedEmployeeAttendancesCalculateIndexImport } from './routes/_authenticated/employee/attendances/calculate/index'
 import { Route as AuthenticatedAdminEmployeesTrashIndexImport } from './routes/_authenticated/admin/employees/trash/index'
 import { Route as AuthenticatedAdminProductsQuantityUpdateImport } from './routes/_authenticated/admin/products/quantity/update'
 import { Route as AuthenticatedAdminProductsQuantityAddImport } from './routes/_authenticated/admin/products/quantity/add'
@@ -155,6 +160,20 @@ const AuthenticatedEmployeeSalariesIndexRoute =
   AuthenticatedEmployeeSalariesIndexImport.update({
     id: '/salaries/',
     path: '/salaries/',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
+
+const AuthenticatedEmployeeProductsIndexRoute =
+  AuthenticatedEmployeeProductsIndexImport.update({
+    id: '/products/',
+    path: '/products/',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
+
+const AuthenticatedEmployeeActivityScheduleIndexRoute =
+  AuthenticatedEmployeeActivityScheduleIndexImport.update({
+    id: '/activity-schedule/',
+    path: '/activity-schedule/',
     getParentRoute: () => AuthenticatedEmployeeRouteRoute,
   } as any)
 
@@ -300,6 +319,27 @@ const AuthenticatedAdminAttendancesHistoryRoute =
     id: '/attendances/history',
     path: '/attendances/history',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedEmployeeStampsRequestIndexRoute =
+  AuthenticatedEmployeeStampsRequestIndexImport.update({
+    id: '/stamps/request/',
+    path: '/stamps/request/',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
+
+const AuthenticatedEmployeeAttendancesHistoryIndexRoute =
+  AuthenticatedEmployeeAttendancesHistoryIndexImport.update({
+    id: '/attendances/history/',
+    path: '/attendances/history/',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
+
+const AuthenticatedEmployeeAttendancesCalculateIndexRoute =
+  AuthenticatedEmployeeAttendancesCalculateIndexImport.update({
+    id: '/attendances/calculate/',
+    path: '/attendances/calculate/',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
   } as any)
 
 const AuthenticatedAdminEmployeesTrashIndexRoute =
@@ -572,6 +612,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminWorkSchedulesIndexImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/employee/activity-schedule/': {
+      id: '/_authenticated/employee/activity-schedule/'
+      path: '/activity-schedule'
+      fullPath: '/employee/activity-schedule'
+      preLoaderRoute: typeof AuthenticatedEmployeeActivityScheduleIndexImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
+    '/_authenticated/employee/products/': {
+      id: '/_authenticated/employee/products/'
+      path: '/products'
+      fullPath: '/employee/products'
+      preLoaderRoute: typeof AuthenticatedEmployeeProductsIndexImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
     '/_authenticated/employee/salaries/': {
       id: '/_authenticated/employee/salaries/'
       path: '/salaries'
@@ -620,6 +674,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/employees/trash'
       preLoaderRoute: typeof AuthenticatedAdminEmployeesTrashIndexImport
       parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/employee/attendances/calculate/': {
+      id: '/_authenticated/employee/attendances/calculate/'
+      path: '/attendances/calculate'
+      fullPath: '/employee/attendances/calculate'
+      preLoaderRoute: typeof AuthenticatedEmployeeAttendancesCalculateIndexImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
+    '/_authenticated/employee/attendances/history/': {
+      id: '/_authenticated/employee/attendances/history/'
+      path: '/attendances/history'
+      fullPath: '/employee/attendances/history'
+      preLoaderRoute: typeof AuthenticatedEmployeeAttendancesHistoryIndexImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
+    '/_authenticated/employee/stamps/request/': {
+      id: '/_authenticated/employee/stamps/request/'
+      path: '/stamps/request'
+      fullPath: '/employee/stamps/request'
+      preLoaderRoute: typeof AuthenticatedEmployeeStampsRequestIndexImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
     }
   }
 }
@@ -740,17 +815,32 @@ const AuthenticatedAdminRouteRouteWithChildren =
 
 interface AuthenticatedEmployeeRouteRouteChildren {
   AuthenticatedEmployeeIndexRoute: typeof AuthenticatedEmployeeIndexRoute
+  AuthenticatedEmployeeActivityScheduleIndexRoute: typeof AuthenticatedEmployeeActivityScheduleIndexRoute
+  AuthenticatedEmployeeProductsIndexRoute: typeof AuthenticatedEmployeeProductsIndexRoute
   AuthenticatedEmployeeSalariesIndexRoute: typeof AuthenticatedEmployeeSalariesIndexRoute
   AuthenticatedEmployeeSchedulesIndexRoute: typeof AuthenticatedEmployeeSchedulesIndexRoute
+  AuthenticatedEmployeeAttendancesCalculateIndexRoute: typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
+  AuthenticatedEmployeeAttendancesHistoryIndexRoute: typeof AuthenticatedEmployeeAttendancesHistoryIndexRoute
+  AuthenticatedEmployeeStampsRequestIndexRoute: typeof AuthenticatedEmployeeStampsRequestIndexRoute
 }
 
 const AuthenticatedEmployeeRouteRouteChildren: AuthenticatedEmployeeRouteRouteChildren =
   {
     AuthenticatedEmployeeIndexRoute: AuthenticatedEmployeeIndexRoute,
+    AuthenticatedEmployeeActivityScheduleIndexRoute:
+      AuthenticatedEmployeeActivityScheduleIndexRoute,
+    AuthenticatedEmployeeProductsIndexRoute:
+      AuthenticatedEmployeeProductsIndexRoute,
     AuthenticatedEmployeeSalariesIndexRoute:
       AuthenticatedEmployeeSalariesIndexRoute,
     AuthenticatedEmployeeSchedulesIndexRoute:
       AuthenticatedEmployeeSchedulesIndexRoute,
+    AuthenticatedEmployeeAttendancesCalculateIndexRoute:
+      AuthenticatedEmployeeAttendancesCalculateIndexRoute,
+    AuthenticatedEmployeeAttendancesHistoryIndexRoute:
+      AuthenticatedEmployeeAttendancesHistoryIndexRoute,
+    AuthenticatedEmployeeStampsRequestIndexRoute:
+      AuthenticatedEmployeeStampsRequestIndexRoute,
   }
 
 const AuthenticatedEmployeeRouteRouteWithChildren =
@@ -807,6 +897,8 @@ export interface FileRoutesByFullPath {
   '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/admin/work-schedules': typeof AuthenticatedAdminWorkSchedulesIndexRoute
+  '/employee/activity-schedule': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
+  '/employee/products': typeof AuthenticatedEmployeeProductsIndexRoute
   '/employee/salaries': typeof AuthenticatedEmployeeSalariesIndexRoute
   '/employee/schedules': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
@@ -814,6 +906,9 @@ export interface FileRoutesByFullPath {
   '/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
   '/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
+  '/employee/attendances/calculate': typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
+  '/employee/attendances/history': typeof AuthenticatedEmployeeAttendancesHistoryIndexRoute
+  '/employee/stamps/request': typeof AuthenticatedEmployeeStampsRequestIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -845,6 +940,8 @@ export interface FileRoutesByTo {
   '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/admin/work-schedules': typeof AuthenticatedAdminWorkSchedulesIndexRoute
+  '/employee/activity-schedule': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
+  '/employee/products': typeof AuthenticatedEmployeeProductsIndexRoute
   '/employee/salaries': typeof AuthenticatedEmployeeSalariesIndexRoute
   '/employee/schedules': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
@@ -852,6 +949,9 @@ export interface FileRoutesByTo {
   '/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
   '/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
+  '/employee/attendances/calculate': typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
+  '/employee/attendances/history': typeof AuthenticatedEmployeeAttendancesHistoryIndexRoute
+  '/employee/stamps/request': typeof AuthenticatedEmployeeStampsRequestIndexRoute
 }
 
 export interface FileRoutesById {
@@ -889,6 +989,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
   '/_authenticated/admin/work-schedule-categories/': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/_authenticated/admin/work-schedules/': typeof AuthenticatedAdminWorkSchedulesIndexRoute
+  '/_authenticated/employee/activity-schedule/': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
+  '/_authenticated/employee/products/': typeof AuthenticatedEmployeeProductsIndexRoute
   '/_authenticated/employee/salaries/': typeof AuthenticatedEmployeeSalariesIndexRoute
   '/_authenticated/employee/schedules/': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/_authenticated/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
@@ -896,6 +998,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
   '/_authenticated/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/_authenticated/admin/employees/trash/': typeof AuthenticatedAdminEmployeesTrashIndexRoute
+  '/_authenticated/employee/attendances/calculate/': typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
+  '/_authenticated/employee/attendances/history/': typeof AuthenticatedEmployeeAttendancesHistoryIndexRoute
+  '/_authenticated/employee/stamps/request/': typeof AuthenticatedEmployeeStampsRequestIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -933,6 +1038,8 @@ export interface FileRouteTypes {
     | '/admin/salaries'
     | '/admin/work-schedule-categories'
     | '/admin/work-schedules'
+    | '/employee/activity-schedule'
+    | '/employee/products'
     | '/employee/salaries'
     | '/employee/schedules'
     | '/admin/employees/edit/$id'
@@ -940,6 +1047,9 @@ export interface FileRouteTypes {
     | '/admin/products/quantity/add'
     | '/admin/products/quantity/update'
     | '/admin/employees/trash'
+    | '/employee/attendances/calculate'
+    | '/employee/attendances/history'
+    | '/employee/stamps/request'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -970,6 +1080,8 @@ export interface FileRouteTypes {
     | '/admin/salaries'
     | '/admin/work-schedule-categories'
     | '/admin/work-schedules'
+    | '/employee/activity-schedule'
+    | '/employee/products'
     | '/employee/salaries'
     | '/employee/schedules'
     | '/admin/employees/edit/$id'
@@ -977,6 +1089,9 @@ export interface FileRouteTypes {
     | '/admin/products/quantity/add'
     | '/admin/products/quantity/update'
     | '/admin/employees/trash'
+    | '/employee/attendances/calculate'
+    | '/employee/attendances/history'
+    | '/employee/stamps/request'
   id:
     | '__root__'
     | '/(auth)'
@@ -1012,6 +1127,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/salaries/'
     | '/_authenticated/admin/work-schedule-categories/'
     | '/_authenticated/admin/work-schedules/'
+    | '/_authenticated/employee/activity-schedule/'
+    | '/_authenticated/employee/products/'
     | '/_authenticated/employee/salaries/'
     | '/_authenticated/employee/schedules/'
     | '/_authenticated/admin/employees/edit/$id'
@@ -1019,6 +1136,9 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/products/quantity/add'
     | '/_authenticated/admin/products/quantity/update'
     | '/_authenticated/admin/employees/trash/'
+    | '/_authenticated/employee/attendances/calculate/'
+    | '/_authenticated/employee/attendances/history/'
+    | '/_authenticated/employee/stamps/request/'
   fileRoutesById: FileRoutesById
 }
 
@@ -1101,8 +1221,13 @@ export const routeTree = rootRoute
       "parent": "/_authenticated",
       "children": [
         "/_authenticated/employee/",
+        "/_authenticated/employee/activity-schedule/",
+        "/_authenticated/employee/products/",
         "/_authenticated/employee/salaries/",
-        "/_authenticated/employee/schedules/"
+        "/_authenticated/employee/schedules/",
+        "/_authenticated/employee/attendances/calculate/",
+        "/_authenticated/employee/attendances/history/",
+        "/_authenticated/employee/stamps/request/"
       ]
     },
     "/(auth)/login": {
@@ -1225,6 +1350,14 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/admin/work-schedules/index.tsx",
       "parent": "/_authenticated/admin"
     },
+    "/_authenticated/employee/activity-schedule/": {
+      "filePath": "_authenticated/employee/activity-schedule/index.tsx",
+      "parent": "/_authenticated/employee"
+    },
+    "/_authenticated/employee/products/": {
+      "filePath": "_authenticated/employee/products/index.tsx",
+      "parent": "/_authenticated/employee"
+    },
     "/_authenticated/employee/salaries/": {
       "filePath": "_authenticated/employee/salaries/index.tsx",
       "parent": "/_authenticated/employee"
@@ -1252,6 +1385,18 @@ export const routeTree = rootRoute
     "/_authenticated/admin/employees/trash/": {
       "filePath": "_authenticated/admin/employees/trash/index.tsx",
       "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/employee/attendances/calculate/": {
+      "filePath": "_authenticated/employee/attendances/calculate/index.tsx",
+      "parent": "/_authenticated/employee"
+    },
+    "/_authenticated/employee/attendances/history/": {
+      "filePath": "_authenticated/employee/attendances/history/index.tsx",
+      "parent": "/_authenticated/employee"
+    },
+    "/_authenticated/employee/stamps/request/": {
+      "filePath": "_authenticated/employee/stamps/request/index.tsx",
+      "parent": "/_authenticated/employee"
     }
   }
 }
