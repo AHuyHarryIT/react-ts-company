@@ -14,6 +14,8 @@ import { ScheduleWcListSection } from './SchemaListSection';
 
 export const ScheduleDetail = () => {
   const { id: scheduleId } = Route.useParams();
+  const { authenticated } = Route.useRouteContext();
+  const gender = authenticated.user?.gender;
 
   const { data, isLoading } = useQuery({
     queryKey: ['empScheduleDetail', scheduleId],
@@ -35,7 +37,7 @@ export const ScheduleDetail = () => {
             header={<strong>Chú thích</strong>}
             bordered
             dataSource={Object.values(workLegends)}
-            className="max-w-3xs"
+            className="max-w-xs"
             renderItem={(item) => (
               <List.Item>
                 <div className="flex content-center">
@@ -100,24 +102,28 @@ export const ScheduleDetail = () => {
                 loading={isLoading}
               />
             </div>
-            <div>
-              <ScheduleWcListSection
-                header={<strong>Lịch trực WC nữ</strong>}
-                dataSource={
-                  data?.data.filter((item) => item.is_wc_clean_women) ?? []
-                }
-                loading={isLoading}
-              />
-            </div>
-            <div>
-              <ScheduleWcListSection
-                header={<strong>Lịch trực WC nam</strong>}
-                dataSource={
-                  data?.data.filter((item) => item.is_wc_clean_men) ?? []
-                }
-                loading={isLoading}
-              />
-            </div>
+            {gender == 'female' && (
+              <div>
+                <ScheduleWcListSection
+                  header={<strong>Lịch trực WC nữ</strong>}
+                  dataSource={
+                    data?.data.filter((item) => item.is_wc_clean_women) ?? []
+                  }
+                  loading={isLoading}
+                />
+              </div>
+            )}
+            {gender == 'male' && (
+              <div>
+                <ScheduleWcListSection
+                  header={<strong>Lịch trực WC nam</strong>}
+                  dataSource={
+                    data?.data.filter((item) => item.is_wc_clean_men) ?? []
+                  }
+                  loading={isLoading}
+                />
+              </div>
+            )}
           </section>
         </section>
       </ComponentCard>

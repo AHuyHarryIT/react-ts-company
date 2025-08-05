@@ -1,5 +1,6 @@
 import axiosPrivate from '@/api/axiosInstance';
 import { User } from '@/types/authType';
+import { Gender } from '@schemas/genderEnum.schema';
 import { clearAuth, setToken, setUser } from '@stores/authStore';
 import { convertImageName2Url } from '@utils/convertImageName2Url';
 
@@ -8,6 +9,7 @@ const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 120;
 type AuthResponse = {
   id: string;
   name: string;
+  gender: Gender;
   role_id: number;
   role_name: string;
   image: string;
@@ -36,6 +38,7 @@ export const authLogin = async (
   const userData: User = {
     id: response.id,
     name: response.name,
+    gender: response.gender,
     role: {
       id: response.role_id.toString(),
       name: response.role_name
@@ -65,6 +68,7 @@ export const authCheck = async () => {
     const userData: User = {
       id: response.id,
       name: response.name,
+      gender: response.gender,
       role: {
         id: response.role_id.toString(),
         name: response.role_name
