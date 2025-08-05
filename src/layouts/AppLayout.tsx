@@ -36,8 +36,8 @@ function AppLayout() {
           <Layout>
             <Header />
             <Content
-              style={{ margin: '24px 16px 0', overflow: 'initial' }}
-              className="p-6 dark:bg-gray-900"
+              style={{ overflow: 'initial' }}
+              className="p-4 dark:bg-gray-900"
             >
               <Outlet />
             </Content>
