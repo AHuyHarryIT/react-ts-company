@@ -89,7 +89,9 @@ export const ScheduleList = () => {
           ) : (
             <Empty />
           )}
-          <Pagination {...paginationProps} />
+          <div className="mt-4">
+            <Pagination {...paginationProps} />
+          </div>
         </Spin>
       </ComponentCard>
     </>
