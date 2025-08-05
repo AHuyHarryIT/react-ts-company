@@ -14,7 +14,7 @@ export const DateRangeCard: React.FC<DateRangeCardProps> = ({
   endDate
 }) => {
   return (
-    <Card title={title}>
+    <Card title={title} style={{ borderColor: '#d9d9d9' }}>
       <div className="flex items-center justify-between">
         <div>
           <strong>Bắt đầu</strong>
