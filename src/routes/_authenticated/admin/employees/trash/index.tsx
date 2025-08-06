@@ -15,7 +15,6 @@ import RefreshButton from '@components/common/RefreshButton';
 import { FaUser } from 'react-icons/fa';
 
 interface EmployeeTable extends EmployeeType {
-  role?: { id: string; role_name: string };
   category_celender?: { id: string; name: string };
 }
 

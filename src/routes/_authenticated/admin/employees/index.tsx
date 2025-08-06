@@ -25,10 +25,6 @@ import { FaUser } from 'react-icons/fa';
 import { FaFingerprint, FaPen } from 'react-icons/fa6';
 import { LuUserRoundPlus } from 'react-icons/lu';
 
-interface EmployeeTable extends EmployeeType {
-  role?: { id: string; role_name: string };
-}
-
 export const Route = createFileRoute('/_authenticated/admin/employees/')({
   component: RouteComponent
 });
@@ -72,7 +68,7 @@ function RouteComponent() {
     }
   }, 300);
 
-  const handleChange: TableProps<EmployeeTable>['onChange'] = (
+  const handleChange: TableProps<EmployeeType>['onChange'] = (
     pagination,
     filters,
     sorter
@@ -104,7 +100,7 @@ function RouteComponent() {
     }));
   };
 
-  const columns: TableColumnsType<EmployeeTable> = [
+  const columns: TableColumnsType<EmployeeType> = [
     {
       title: 'STT',
       rowScope: 'row',
@@ -204,8 +200,8 @@ function RouteComponent() {
     }
   ];
 
-  const tableProps: TableProps<EmployeeTable> = {
-    ...(customTableProps as unknown as TableProps<EmployeeTable>),
+  const tableProps: TableProps<EmployeeType> = {
+    ...(customTableProps as unknown as TableProps<EmployeeType>),
     rowKey: (record) => ['employee', record.id, record.id].join('-'),
     columns: columns,
     dataSource: employees,
