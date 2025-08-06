@@ -1,4 +1,6 @@
 import axiosPrivate from '@/api/axiosInstance';
+import { QueryParams } from '@/types/queryParams';
+import { PaginatedResponse } from '@/types/responseTypes';
 import {
   AttendanceTableType,
   CategoryTableType,
@@ -44,6 +46,7 @@ export type AddSalaryParams = {
 };
 
 const ENDPOINT = '/api/salaries';
+const EMP_ENDPOINT = '/api/employee/salaries';
 
 export const salariesService = new CrudService<SalaryType, SalaryType>(
   ENDPOINT
@@ -105,4 +108,21 @@ export const deleteSalary = async (id: string) => {
   } catch (error) {
     throw handleApiError(error);
   }
+};
+
+/* EMPLOYEE */
+export const fetchEmpSalaries = async (params: QueryParams) => {
+  const response = await axiosPrivate.get<
+    SalaryType,
+    PaginatedResponse<SalaryType>
+  >(EMP_ENDPOINT, { params: params });
+  return response;
+};
+
+export const fetchSalaryDetail = async (id: string) => {
+  const response = await axiosPrivate.get<
+    SalaryDetailTableType,
+    SalaryDetailTableType
+  >(`${EMP_ENDPOINT}/${id}`);
+  return response;
 };

@@ -8,7 +8,8 @@ export const salarySchema = defaultModelSchema.extend({
   total: z.number(),
   start_date: z.string(),
   end_date: z.string(),
-  employee: employeeSchema
+  date_show: z.string(),
+  employee: employeeSchema.optional()
 });
 
 export const salaryCreateSchema = overrideSchema(salarySchema).omit({

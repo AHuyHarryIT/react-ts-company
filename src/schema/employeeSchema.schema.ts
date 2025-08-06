@@ -8,6 +8,7 @@ import {
 import { genderEnum } from './genderEnum.schema';
 import { maritalStatusEnum } from './maritalStatusEnum.schema';
 import { scheduleCategorySchema } from './schedule/scheduleCategorySchema.schema';
+import { roleSchema } from './roleSchema.schema';
 
 export const employeeSchema = defaultModelSchema.extend({
   name: z.string(),
@@ -26,7 +27,8 @@ export const employeeSchema = defaultModelSchema.extend({
   calendar_category_id: z.union([z.string(), z.number()]),
   photo: z.string(),
   card_photo: z.string(),
-  calendar_category: scheduleCategorySchema.optional()
+  calendar_category: scheduleCategorySchema.optional(),
+  role: roleSchema.optional()
 });
 
 export const employeeCreateSchema = overrideSchema(employeeSchema, {

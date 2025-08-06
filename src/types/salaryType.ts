@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { salarySchema } from '@/schema/salarySchma.schema';
+import { EmployeeType } from './employeeType';
 
 export type SalaryType = z.infer<typeof salarySchema>;
 
@@ -23,16 +24,7 @@ export interface CategoryTableType {
   allowance_rice: number;
   company_insurance: number;
   insurance: number;
-  employee: {
-    id: number;
-    code: string;
-    name: string;
-    role_id: number;
-    role: {
-      id: number;
-      role_name: string;
-    };
-  };
+  employee: EmployeeType;
 }
 
 export interface SalaryTableType {
@@ -45,15 +37,7 @@ export interface SalaryTableType {
   KPI_Subtraction_payroll: number;
   previous_period_debt_payroll: number;
   actually_received_payroll: number;
-  employee: {
-    id: number;
-    name: string;
-    role_id: number;
-    role: {
-      id: number;
-      role_name: string;
-    };
-  };
+  employee: EmployeeType;
 }
 
 export interface SalaryDetailTableType {
@@ -126,6 +110,7 @@ export interface SalaryDetailTableType {
   advance_money: number;
   advance_money_notice: string;
   number_of_violations: number;
+  subtract_of_violations_notice: string;
   unicon_deduction: number;
   unicon_deduction_notice: string;
   daysleave_allowed: number;
@@ -145,16 +130,8 @@ export interface SalaryDetailTableType {
   actually_received: number;
   forms_of_payment: string;
   company_insurance_detail: number;
-  employee: {
-    id: number;
-    code: string;
-    name: string;
-    role_id: number;
-    role: {
-      id: number;
-      role_name: string;
-    };
-  };
+  employee: EmployeeType;
+  salary_manager: SalaryType;
 }
 export interface AttendanceTableType {
   id: number;
@@ -172,16 +149,7 @@ export interface AttendanceTableType {
   paid_holidays_count: number;
   daysleave_allowed_timekeeping: number;
   daysleave_notallowed_timekeeping: number;
-  employee: {
-    id: number;
-    code: string;
-    name: string;
-    role_id: number;
-    role: {
-      id: number;
-      role_name: string;
-    };
-  };
+  employee: EmployeeType;
   salary_official_v_v_p_timekeepings?: {
     id: number;
     salary_official_vvp_id: number;
