@@ -48,3 +48,12 @@ export const fetchEmpAttendances = async (params?: QueryParams) => {
     params
   });
 };
+
+export const fetchEmpAttendancesHistory = async (params?: QueryParams) => {
+  return await axiosPrivate.get<
+    AttendanceType,
+    PaginatedResponse<AttendanceType>
+  >([EMP_ENDPOINT, 'history'].join('/'), {
+    params
+  });
+};

@@ -1,11 +1,8 @@
+import { HistoryRecord } from '@pages/employee/attendance/HistoryRecord';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute(
   '/_authenticated/employee/attendances/history/'
 )({
-  component: RouteComponent
+  component: HistoryRecord
 });
-
-function RouteComponent() {
-  return <div>Hello "/_authenticated/employee/attendances/history/"!</div>;
-}
