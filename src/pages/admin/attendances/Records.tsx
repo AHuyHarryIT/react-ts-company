@@ -7,6 +7,7 @@ import {
   DatePicker,
   Input,
   Select,
+  Switch,
   Table,
   TableColumnsType,
   TableProps,
@@ -46,6 +47,7 @@ export default function Records() {
     limit: 50,
     sort: 'date'
   });
+  const [forgottenDays, setForgottenDays] = useState<boolean>(false);
   const [month, setMonth] = useState<string>(dayjs().format('MM-YYYY'));
 
   const { data: categories, refetch: refetchCategories } = useQuery({
@@ -241,12 +243,21 @@ export default function Records() {
     rowKey: (record) =>
       ['attendances', 'sheet', record.employee_id, record.date].join('-'),
     columns: columns,
-    dataSource: attendances,
+    dataSource: forgottenDays
+      ? attendances.filter((attendance) => {
+          return (
+            !attendance.time_in ||
+            !attendance.time_out ||
+            attendance.time_in === '' ||
+            attendance.time_out === ''
+          );
+        })
+      : attendances,
     loading: isLoading,
     pagination: {
       ...customTableProps.pagination,
-      current: params.page,
-      pageSize: params.limit,
+      current: pagination.current,
+      pageSize: pagination.pageSize,
       total: pagination.total,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
@@ -353,6 +364,30 @@ export default function Records() {
           }
         ]}
       />
+      <div>
+        <label htmlFor="forgotten-days-switch">
+          Hiển thị những ngày quên chấm công
+        </label>
+        <div>
+          <Switch
+            id="forgotten-days-switch"
+            onChange={(checked) => {
+              setForgottenDays(checked);
+              if (checked) {
+                setParams((prev) => ({
+                  ...prev,
+                  limit: 0
+                }));
+              } else {
+                setParams((prev) => ({
+                  ...prev,
+                  limit: 50
+                }));
+              }
+            }}
+          />
+        </div>
+      </div>
       <Table<TableColumns> {...tableProps} />
     </ComponentCard>
   );
