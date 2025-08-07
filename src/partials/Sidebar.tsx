@@ -265,7 +265,7 @@ const employeeItems: MenuItem[] = [
     key: '/employee/products',
     label: (
       <Link to={'/employee/products'}>
-        <span className="capitalize">Sản Phẩm</span>
+        <span className="capitalize">Chọn sản phẩm</span>
       </Link>
     ),
     icon: <CiBoxes />
@@ -274,7 +274,7 @@ const employeeItems: MenuItem[] = [
     key: '/employee/activity-schedule',
     label: (
       <Link to={'/employee/activity-schedule'}>
-        <span className="capitalize">Lịch hoạt động / ngày</span>
+        <span className="capitalize">Lịch sử hoạt động</span>
       </Link>
     ),
     icon: <IconHistory />
