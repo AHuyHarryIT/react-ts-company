@@ -28,6 +28,7 @@ export const SalaryTable: React.FC<SalaryTableProps> = ({ data }) => {
       <Table.Column
         title="Số giờ / ngày"
         dataIndex="hours"
+        align="center"
         render={(value) => {
           if (!value) return '-';
           return value.toLocaleString('en-US', {
@@ -39,6 +40,7 @@ export const SalaryTable: React.FC<SalaryTableProps> = ({ data }) => {
       <Table.Column
         title="Thành tiền"
         dataIndex="amount"
+        align="center"
         render={(value) => {
           if (!value) return '-';
           return value.toLocaleString('en-US', {
