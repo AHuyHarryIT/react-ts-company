@@ -9,6 +9,7 @@ import { PaginatedResponse } from '@/types/responseTypes';
 import { CrudService } from '@utils/crudService';
 
 const ENDPOINT = '/api/attendances';
+const EMP_ENDPOINT = '/api/employee/attendances';
 
 export interface AttendanceResponse {
   employee_id: string;
@@ -35,6 +36,15 @@ export const fetchAttendances = async (params?: QueryParams) => {
     AttendanceResponse,
     PaginatedResponse<AttendanceResponse>
   >(ENDPOINT, {
+    params
+  });
+};
+
+export const fetchEmpAttendances = async (params?: QueryParams) => {
+  return await axiosPrivate.get<
+    AttendanceResponse,
+    PaginatedResponse<AttendanceResponse>
+  >(EMP_ENDPOINT, {
     params
   });
 };
