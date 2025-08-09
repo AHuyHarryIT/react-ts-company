@@ -141,7 +141,7 @@ export const History = () => {
       key: 'action',
       align: 'center',
       render: (_value, record) => (
-        <div className="flex gap-2">
+        <div className="flex items-center justify-center gap-2">
           <UpdateModal
             id={record.id}
             service={attendanceService}

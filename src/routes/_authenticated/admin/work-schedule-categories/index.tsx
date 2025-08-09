@@ -86,7 +86,7 @@ function RouteComponent() {
         align: 'center',
         render: (_value, _record) => {
           return (
-            <div className="flex gap-2">
+            <div className="flex items-center justify-center gap-2">
               <UpdateWorkScheduleCategory
                 categoryId={_record.id}
                 categoryName={_record.name}

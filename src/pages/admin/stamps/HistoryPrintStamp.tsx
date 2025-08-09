@@ -195,7 +195,7 @@ export default function HistoryPrintStamp() {
           );
         }
         return (
-          <div className="flex justify-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <PrintStampModal
               product={record.product}
               startStamp={record.binStart}

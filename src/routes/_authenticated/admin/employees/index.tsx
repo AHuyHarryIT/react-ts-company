@@ -175,7 +175,7 @@ function RouteComponent() {
       align: 'center',
       render: (_value, _record) => {
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center justify-center gap-2">
             <Link to={`/admin/employees/edit/$id`} params={{ id: _record.id }}>
               <Button color="primary" variant="solid" icon={<FaPen />}>
                 Sửa
