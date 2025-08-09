@@ -1,4 +1,5 @@
 import axiosPrivate from '@/api/axiosInstance';
+import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 
@@ -36,24 +37,12 @@ export const getMonthlyQuantity = async ({
   return response.data;
 };
 
-export const getMonthlyQuantities = async ({
-  limit,
-  page,
-  status
-}: {
-  limit?: number;
-  page?: number;
-  status?: number;
-}) => {
+export const getMonthlyQuantities = async (params: QueryParams) => {
   const response = await axiosPrivate.get<
     TotalMonthQuantityType,
     PaginatedResponse<TotalMonthQuantityType>
   >(`${ENDPOINT}/monthly`, {
-    params: {
-      limit: limit,
-      page: page,
-      status: status
-    }
+    params
   });
   return response.data;
 };
