@@ -28,7 +28,6 @@ import { Route as AuthenticatedAdminAboutImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products/route'
 import { Route as AuthenticatedEmployeeSchedulesIndexImport } from './routes/_authenticated/employee/schedules/index'
 import { Route as AuthenticatedEmployeeSalariesIndexImport } from './routes/_authenticated/employee/salaries/index'
-import { Route as AuthenticatedEmployeeProductsIndexImport } from './routes/_authenticated/employee/products/index'
 import { Route as AuthenticatedEmployeeActivityScheduleIndexImport } from './routes/_authenticated/employee/activity-schedule/index'
 import { Route as AuthenticatedAdminWorkSchedulesIndexImport } from './routes/_authenticated/admin/work-schedules/index'
 import { Route as AuthenticatedAdminWorkScheduleCategoriesIndexImport } from './routes/_authenticated/admin/work-schedule-categories/index'
@@ -37,6 +36,10 @@ import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authentic
 import { Route as AuthenticatedAdminProductsIndexImport } from './routes/_authenticated/admin/products/index'
 import { Route as AuthenticatedAdminEmployeesIndexImport } from './routes/_authenticated/admin/employees/index'
 import { Route as AuthenticatedAdminCheckPoIndexImport } from './routes/_authenticated/admin/check-po/index'
+import { Route as AuthenticatedEmployeeTodoUpdateQuantityErrorImport } from './routes/_authenticated/employee/todo/update-quantity-error'
+import { Route as AuthenticatedEmployeeTodoUpdateQuantityImport } from './routes/_authenticated/employee/todo/update-quantity'
+import { Route as AuthenticatedEmployeeTodoHistoryImport } from './routes/_authenticated/employee/todo/history'
+import { Route as AuthenticatedEmployeeTodoAddProductImport } from './routes/_authenticated/employee/todo/add-product'
 import { Route as AuthenticatedEmployeeSchedulesIdImport } from './routes/_authenticated/employee/schedules/$id'
 import { Route as AuthenticatedEmployeeSalariesIdImport } from './routes/_authenticated/employee/salaries/$id'
 import { Route as AuthenticatedAdminWorkSchedulesIdImport } from './routes/_authenticated/admin/work-schedules/$id'
@@ -165,13 +168,6 @@ const AuthenticatedEmployeeSalariesIndexRoute =
     getParentRoute: () => AuthenticatedEmployeeRouteRoute,
   } as any)
 
-const AuthenticatedEmployeeProductsIndexRoute =
-  AuthenticatedEmployeeProductsIndexImport.update({
-    id: '/products/',
-    path: '/products/',
-    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
-  } as any)
-
 const AuthenticatedEmployeeActivityScheduleIndexRoute =
   AuthenticatedEmployeeActivityScheduleIndexImport.update({
     id: '/activity-schedule/',
@@ -238,6 +234,34 @@ const AuthenticatedAdminSalariesIdLazyRoute =
       (d) => d.Route,
     ),
   )
+
+const AuthenticatedEmployeeTodoUpdateQuantityErrorRoute =
+  AuthenticatedEmployeeTodoUpdateQuantityErrorImport.update({
+    id: '/todo/update-quantity-error',
+    path: '/todo/update-quantity-error',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
+
+const AuthenticatedEmployeeTodoUpdateQuantityRoute =
+  AuthenticatedEmployeeTodoUpdateQuantityImport.update({
+    id: '/todo/update-quantity',
+    path: '/todo/update-quantity',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
+
+const AuthenticatedEmployeeTodoHistoryRoute =
+  AuthenticatedEmployeeTodoHistoryImport.update({
+    id: '/todo/history',
+    path: '/todo/history',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
+
+const AuthenticatedEmployeeTodoAddProductRoute =
+  AuthenticatedEmployeeTodoAddProductImport.update({
+    id: '/todo/add-product',
+    path: '/todo/add-product',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
 
 const AuthenticatedEmployeeSchedulesIdRoute =
   AuthenticatedEmployeeSchedulesIdImport.update({
@@ -586,6 +610,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeSchedulesIdImport
       parentRoute: typeof AuthenticatedEmployeeRouteImport
     }
+    '/_authenticated/employee/todo/add-product': {
+      id: '/_authenticated/employee/todo/add-product'
+      path: '/todo/add-product'
+      fullPath: '/employee/todo/add-product'
+      preLoaderRoute: typeof AuthenticatedEmployeeTodoAddProductImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
+    '/_authenticated/employee/todo/history': {
+      id: '/_authenticated/employee/todo/history'
+      path: '/todo/history'
+      fullPath: '/employee/todo/history'
+      preLoaderRoute: typeof AuthenticatedEmployeeTodoHistoryImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
+    '/_authenticated/employee/todo/update-quantity': {
+      id: '/_authenticated/employee/todo/update-quantity'
+      path: '/todo/update-quantity'
+      fullPath: '/employee/todo/update-quantity'
+      preLoaderRoute: typeof AuthenticatedEmployeeTodoUpdateQuantityImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
+    '/_authenticated/employee/todo/update-quantity-error': {
+      id: '/_authenticated/employee/todo/update-quantity-error'
+      path: '/todo/update-quantity-error'
+      fullPath: '/employee/todo/update-quantity-error'
+      preLoaderRoute: typeof AuthenticatedEmployeeTodoUpdateQuantityErrorImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
     '/_authenticated/admin/salaries/$id': {
       id: '/_authenticated/admin/salaries/$id'
       path: '/salaries/$id'
@@ -647,13 +699,6 @@ declare module '@tanstack/react-router' {
       path: '/activity-schedule'
       fullPath: '/employee/activity-schedule'
       preLoaderRoute: typeof AuthenticatedEmployeeActivityScheduleIndexImport
-      parentRoute: typeof AuthenticatedEmployeeRouteImport
-    }
-    '/_authenticated/employee/products/': {
-      id: '/_authenticated/employee/products/'
-      path: '/products'
-      fullPath: '/employee/products'
-      preLoaderRoute: typeof AuthenticatedEmployeeProductsIndexImport
       parentRoute: typeof AuthenticatedEmployeeRouteImport
     }
     '/_authenticated/employee/salaries/': {
@@ -847,8 +892,11 @@ interface AuthenticatedEmployeeRouteRouteChildren {
   AuthenticatedEmployeeIndexRoute: typeof AuthenticatedEmployeeIndexRoute
   AuthenticatedEmployeeSalariesIdRoute: typeof AuthenticatedEmployeeSalariesIdRoute
   AuthenticatedEmployeeSchedulesIdRoute: typeof AuthenticatedEmployeeSchedulesIdRoute
+  AuthenticatedEmployeeTodoAddProductRoute: typeof AuthenticatedEmployeeTodoAddProductRoute
+  AuthenticatedEmployeeTodoHistoryRoute: typeof AuthenticatedEmployeeTodoHistoryRoute
+  AuthenticatedEmployeeTodoUpdateQuantityRoute: typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
+  AuthenticatedEmployeeTodoUpdateQuantityErrorRoute: typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   AuthenticatedEmployeeActivityScheduleIndexRoute: typeof AuthenticatedEmployeeActivityScheduleIndexRoute
-  AuthenticatedEmployeeProductsIndexRoute: typeof AuthenticatedEmployeeProductsIndexRoute
   AuthenticatedEmployeeSalariesIndexRoute: typeof AuthenticatedEmployeeSalariesIndexRoute
   AuthenticatedEmployeeSchedulesIndexRoute: typeof AuthenticatedEmployeeSchedulesIndexRoute
   AuthenticatedEmployeeAttendancesCalculateIndexRoute: typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
@@ -862,10 +910,16 @@ const AuthenticatedEmployeeRouteRouteChildren: AuthenticatedEmployeeRouteRouteCh
     AuthenticatedEmployeeSalariesIdRoute: AuthenticatedEmployeeSalariesIdRoute,
     AuthenticatedEmployeeSchedulesIdRoute:
       AuthenticatedEmployeeSchedulesIdRoute,
+    AuthenticatedEmployeeTodoAddProductRoute:
+      AuthenticatedEmployeeTodoAddProductRoute,
+    AuthenticatedEmployeeTodoHistoryRoute:
+      AuthenticatedEmployeeTodoHistoryRoute,
+    AuthenticatedEmployeeTodoUpdateQuantityRoute:
+      AuthenticatedEmployeeTodoUpdateQuantityRoute,
+    AuthenticatedEmployeeTodoUpdateQuantityErrorRoute:
+      AuthenticatedEmployeeTodoUpdateQuantityErrorRoute,
     AuthenticatedEmployeeActivityScheduleIndexRoute:
       AuthenticatedEmployeeActivityScheduleIndexRoute,
-    AuthenticatedEmployeeProductsIndexRoute:
-      AuthenticatedEmployeeProductsIndexRoute,
     AuthenticatedEmployeeSalariesIndexRoute:
       AuthenticatedEmployeeSalariesIndexRoute,
     AuthenticatedEmployeeSchedulesIndexRoute:
@@ -926,6 +980,10 @@ export interface FileRoutesByFullPath {
   '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
   '/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
+  '/employee/todo/add-product': typeof AuthenticatedEmployeeTodoAddProductRoute
+  '/employee/todo/history': typeof AuthenticatedEmployeeTodoHistoryRoute
+  '/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
+  '/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
@@ -935,7 +993,6 @@ export interface FileRoutesByFullPath {
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/admin/work-schedules': typeof AuthenticatedAdminWorkSchedulesIndexRoute
   '/employee/activity-schedule': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
-  '/employee/products': typeof AuthenticatedEmployeeProductsIndexRoute
   '/employee/salaries': typeof AuthenticatedEmployeeSalariesIndexRoute
   '/employee/schedules': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
@@ -971,6 +1028,10 @@ export interface FileRoutesByTo {
   '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
   '/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
+  '/employee/todo/add-product': typeof AuthenticatedEmployeeTodoAddProductRoute
+  '/employee/todo/history': typeof AuthenticatedEmployeeTodoHistoryRoute
+  '/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
+  '/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
@@ -980,7 +1041,6 @@ export interface FileRoutesByTo {
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/admin/work-schedules': typeof AuthenticatedAdminWorkSchedulesIndexRoute
   '/employee/activity-schedule': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
-  '/employee/products': typeof AuthenticatedEmployeeProductsIndexRoute
   '/employee/salaries': typeof AuthenticatedEmployeeSalariesIndexRoute
   '/employee/schedules': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
@@ -1022,6 +1082,10 @@ export interface FileRoutesById {
   '/_authenticated/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/_authenticated/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
   '/_authenticated/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
+  '/_authenticated/employee/todo/add-product': typeof AuthenticatedEmployeeTodoAddProductRoute
+  '/_authenticated/employee/todo/history': typeof AuthenticatedEmployeeTodoHistoryRoute
+  '/_authenticated/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
+  '/_authenticated/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/_authenticated/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/_authenticated/admin/check-po/': typeof AuthenticatedAdminCheckPoIndexRoute
   '/_authenticated/admin/employees/': typeof AuthenticatedAdminEmployeesIndexRoute
@@ -1031,7 +1095,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/work-schedule-categories/': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/_authenticated/admin/work-schedules/': typeof AuthenticatedAdminWorkSchedulesIndexRoute
   '/_authenticated/employee/activity-schedule/': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
-  '/_authenticated/employee/products/': typeof AuthenticatedEmployeeProductsIndexRoute
   '/_authenticated/employee/salaries/': typeof AuthenticatedEmployeeSalariesIndexRoute
   '/_authenticated/employee/schedules/': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/_authenticated/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
@@ -1073,6 +1136,10 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/employee/salaries/$id'
     | '/employee/schedules/$id'
+    | '/employee/todo/add-product'
+    | '/employee/todo/history'
+    | '/employee/todo/update-quantity'
+    | '/employee/todo/update-quantity-error'
     | '/admin/salaries/$id'
     | '/admin/check-po'
     | '/admin/employees'
@@ -1082,7 +1149,6 @@ export interface FileRouteTypes {
     | '/admin/work-schedule-categories'
     | '/admin/work-schedules'
     | '/employee/activity-schedule'
-    | '/employee/products'
     | '/employee/salaries'
     | '/employee/schedules'
     | '/admin/employees/edit/$id'
@@ -1117,6 +1183,10 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/employee/salaries/$id'
     | '/employee/schedules/$id'
+    | '/employee/todo/add-product'
+    | '/employee/todo/history'
+    | '/employee/todo/update-quantity'
+    | '/employee/todo/update-quantity-error'
     | '/admin/salaries/$id'
     | '/admin/check-po'
     | '/admin/employees'
@@ -1126,7 +1196,6 @@ export interface FileRouteTypes {
     | '/admin/work-schedule-categories'
     | '/admin/work-schedules'
     | '/employee/activity-schedule'
-    | '/employee/products'
     | '/employee/salaries'
     | '/employee/schedules'
     | '/admin/employees/edit/$id'
@@ -1166,6 +1235,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/work-schedules/$id'
     | '/_authenticated/employee/salaries/$id'
     | '/_authenticated/employee/schedules/$id'
+    | '/_authenticated/employee/todo/add-product'
+    | '/_authenticated/employee/todo/history'
+    | '/_authenticated/employee/todo/update-quantity'
+    | '/_authenticated/employee/todo/update-quantity-error'
     | '/_authenticated/admin/salaries/$id'
     | '/_authenticated/admin/check-po/'
     | '/_authenticated/admin/employees/'
@@ -1175,7 +1248,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/work-schedule-categories/'
     | '/_authenticated/admin/work-schedules/'
     | '/_authenticated/employee/activity-schedule/'
-    | '/_authenticated/employee/products/'
     | '/_authenticated/employee/salaries/'
     | '/_authenticated/employee/schedules/'
     | '/_authenticated/admin/employees/edit/$id'
@@ -1270,8 +1342,11 @@ export const routeTree = rootRoute
         "/_authenticated/employee/",
         "/_authenticated/employee/salaries/$id",
         "/_authenticated/employee/schedules/$id",
+        "/_authenticated/employee/todo/add-product",
+        "/_authenticated/employee/todo/history",
+        "/_authenticated/employee/todo/update-quantity",
+        "/_authenticated/employee/todo/update-quantity-error",
         "/_authenticated/employee/activity-schedule/",
-        "/_authenticated/employee/products/",
         "/_authenticated/employee/salaries/",
         "/_authenticated/employee/schedules/",
         "/_authenticated/employee/attendances/calculate/",
@@ -1375,6 +1450,22 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/employee/schedules/$id.tsx",
       "parent": "/_authenticated/employee"
     },
+    "/_authenticated/employee/todo/add-product": {
+      "filePath": "_authenticated/employee/todo/add-product.tsx",
+      "parent": "/_authenticated/employee"
+    },
+    "/_authenticated/employee/todo/history": {
+      "filePath": "_authenticated/employee/todo/history.tsx",
+      "parent": "/_authenticated/employee"
+    },
+    "/_authenticated/employee/todo/update-quantity": {
+      "filePath": "_authenticated/employee/todo/update-quantity.tsx",
+      "parent": "/_authenticated/employee"
+    },
+    "/_authenticated/employee/todo/update-quantity-error": {
+      "filePath": "_authenticated/employee/todo/update-quantity-error.tsx",
+      "parent": "/_authenticated/employee"
+    },
     "/_authenticated/admin/salaries/$id": {
       "filePath": "_authenticated/admin/salaries/$id.lazy.tsx",
       "parent": "/_authenticated/admin"
@@ -1409,10 +1500,6 @@ export const routeTree = rootRoute
     },
     "/_authenticated/employee/activity-schedule/": {
       "filePath": "_authenticated/employee/activity-schedule/index.tsx",
-      "parent": "/_authenticated/employee"
-    },
-    "/_authenticated/employee/products/": {
-      "filePath": "_authenticated/employee/products/index.tsx",
       "parent": "/_authenticated/employee"
     },
     "/_authenticated/employee/salaries/": {

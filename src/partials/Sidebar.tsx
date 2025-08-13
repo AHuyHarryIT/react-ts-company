@@ -262,9 +262,9 @@ const employeeItems: MenuItem[] = [
     ]
   },
   {
-    key: '/employee/products',
+    key: '/employee/todo/add-product',
     label: (
-      <Link to={'/employee/products'}>
+      <Link to={'/employee/todo/add-product'}>
         <span className="capitalize">Chọn sản phẩm</span>
       </Link>
     ),
