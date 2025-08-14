@@ -29,7 +29,17 @@ export const useEmployeeFields = () => {
     },
     phone: {
       label: 'Số điện thoại',
-      index: 2
+      index: 2,
+      rules: [
+        {
+          required: true,
+          message: 'Vui lòng nhập số điện thoại'
+        },
+        {
+          pattern: /^\d{10}$/,
+          message: 'Số điện thoại không hợp lệ'
+        }
+      ]
     },
     id: {
       label: 'Mã nhân viên',
@@ -41,7 +51,17 @@ export const useEmployeeFields = () => {
     },
     CCCD: {
       label: 'CCCD',
-      type: 'text'
+      type: 'text',
+      rules: [
+        {
+          required: true,
+          message: 'Vui lòng nhập số CCCD'
+        },
+        {
+          pattern: /^\d{12}$/,
+          message: 'Số CCCD không hợp lệ'
+        }
+      ]
     },
     address: {
       label: 'Địa chỉ'

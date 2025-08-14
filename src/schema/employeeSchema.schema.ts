@@ -38,7 +38,8 @@ export const employeeCreateSchema = overrideSchema(employeeSchema, {
   birthday: dayjsSchema,
   date_joining: dayjsSchema
 }).omit({
-  calendar_category: true
+  calendar_category: true,
+  role: true
 });
 
 export const employeeUpdateSchema = overrideSchema(employeeSchema, {
@@ -47,5 +48,6 @@ export const employeeUpdateSchema = overrideSchema(employeeSchema, {
   birthday: dayjsSchema,
   date_joining: dayjsSchema
 }).omit({
-  calendar_category: true
+  calendar_category: true,
+  role: true
 });
