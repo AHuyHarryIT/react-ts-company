@@ -6,6 +6,7 @@ import { PaginatedResponse } from '@/types/responseTypes';
 import { Shift } from '@/types/shift';
 
 const ENDPOINT = '/api/stamps';
+const EMP_ENDPOINT = '/api/employee/stamps';
 
 interface StampLogRequest {
   productId: string;
@@ -16,6 +17,15 @@ interface StampLogRequest {
   type: 'box' | 'bag' | string;
   employee_id?: EmployeeType['id'];
   stamp_id?: string;
+}
+
+export interface RequestStampType {
+  productId: string;
+  date: string;
+  shift: Shift;
+  binCount: number;
+  binStart: string;
+  type: 'box' | 'bag' | string;
 }
 
 export interface HistoryPrintStampType {
@@ -56,4 +66,7 @@ export const rejectStamp = async (id: string) => {
   return response;
 };
 
-// export
+export const empStampRequest = async (data: { stamps: RequestStampType[] }) => {
+  const response = await axiosPrivate.post(EMP_ENDPOINT + '/request', data);
+  return response;
+};

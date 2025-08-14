@@ -40,6 +40,7 @@ import { Route as AuthenticatedEmployeeTodoUpdateQuantityErrorImport } from './r
 import { Route as AuthenticatedEmployeeTodoUpdateQuantityImport } from './routes/_authenticated/employee/todo/update-quantity'
 import { Route as AuthenticatedEmployeeTodoHistoryImport } from './routes/_authenticated/employee/todo/history'
 import { Route as AuthenticatedEmployeeTodoAddProductImport } from './routes/_authenticated/employee/todo/add-product'
+import { Route as AuthenticatedEmployeeStampsRequestImport } from './routes/_authenticated/employee/stamps/request'
 import { Route as AuthenticatedEmployeeSchedulesIdImport } from './routes/_authenticated/employee/schedules/$id'
 import { Route as AuthenticatedEmployeeSalariesIdImport } from './routes/_authenticated/employee/salaries/$id'
 import { Route as AuthenticatedAdminWorkSchedulesIdImport } from './routes/_authenticated/admin/work-schedules/$id'
@@ -54,7 +55,6 @@ import { Route as AuthenticatedAdminPlansMaterialImport } from './routes/_authen
 import { Route as AuthenticatedAdminEmployeesAddImport } from './routes/_authenticated/admin/employees/add'
 import { Route as AuthenticatedAdminAttendancesRecordImport } from './routes/_authenticated/admin/attendances/record'
 import { Route as AuthenticatedAdminAttendancesHistoryImport } from './routes/_authenticated/admin/attendances/history'
-import { Route as AuthenticatedEmployeeStampsRequestIndexImport } from './routes/_authenticated/employee/stamps/request/index'
 import { Route as AuthenticatedEmployeeAttendancesHistoryIndexImport } from './routes/_authenticated/employee/attendances/history/index'
 import { Route as AuthenticatedEmployeeAttendancesCalculateIndexImport } from './routes/_authenticated/employee/attendances/calculate/index'
 import { Route as AuthenticatedAdminEmployeesTrashIndexImport } from './routes/_authenticated/admin/employees/trash/index'
@@ -263,6 +263,13 @@ const AuthenticatedEmployeeTodoAddProductRoute =
     getParentRoute: () => AuthenticatedEmployeeRouteRoute,
   } as any)
 
+const AuthenticatedEmployeeStampsRequestRoute =
+  AuthenticatedEmployeeStampsRequestImport.update({
+    id: '/stamps/request',
+    path: '/stamps/request',
+    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
+  } as any)
+
 const AuthenticatedEmployeeSchedulesIdRoute =
   AuthenticatedEmployeeSchedulesIdImport.update({
     id: '/schedules/$id',
@@ -359,13 +366,6 @@ const AuthenticatedAdminAttendancesHistoryRoute =
     id: '/attendances/history',
     path: '/attendances/history',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-
-const AuthenticatedEmployeeStampsRequestIndexRoute =
-  AuthenticatedEmployeeStampsRequestIndexImport.update({
-    id: '/stamps/request/',
-    path: '/stamps/request/',
-    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
   } as any)
 
 const AuthenticatedEmployeeAttendancesHistoryIndexRoute =
@@ -610,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeSchedulesIdImport
       parentRoute: typeof AuthenticatedEmployeeRouteImport
     }
+    '/_authenticated/employee/stamps/request': {
+      id: '/_authenticated/employee/stamps/request'
+      path: '/stamps/request'
+      fullPath: '/employee/stamps/request'
+      preLoaderRoute: typeof AuthenticatedEmployeeStampsRequestImport
+      parentRoute: typeof AuthenticatedEmployeeRouteImport
+    }
     '/_authenticated/employee/todo/add-product': {
       id: '/_authenticated/employee/todo/add-product'
       path: '/todo/add-product'
@@ -764,13 +771,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeAttendancesHistoryIndexImport
       parentRoute: typeof AuthenticatedEmployeeRouteImport
     }
-    '/_authenticated/employee/stamps/request/': {
-      id: '/_authenticated/employee/stamps/request/'
-      path: '/stamps/request'
-      fullPath: '/employee/stamps/request'
-      preLoaderRoute: typeof AuthenticatedEmployeeStampsRequestIndexImport
-      parentRoute: typeof AuthenticatedEmployeeRouteImport
-    }
   }
 }
 
@@ -892,6 +892,7 @@ interface AuthenticatedEmployeeRouteRouteChildren {
   AuthenticatedEmployeeIndexRoute: typeof AuthenticatedEmployeeIndexRoute
   AuthenticatedEmployeeSalariesIdRoute: typeof AuthenticatedEmployeeSalariesIdRoute
   AuthenticatedEmployeeSchedulesIdRoute: typeof AuthenticatedEmployeeSchedulesIdRoute
+  AuthenticatedEmployeeStampsRequestRoute: typeof AuthenticatedEmployeeStampsRequestRoute
   AuthenticatedEmployeeTodoAddProductRoute: typeof AuthenticatedEmployeeTodoAddProductRoute
   AuthenticatedEmployeeTodoHistoryRoute: typeof AuthenticatedEmployeeTodoHistoryRoute
   AuthenticatedEmployeeTodoUpdateQuantityRoute: typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
@@ -901,7 +902,6 @@ interface AuthenticatedEmployeeRouteRouteChildren {
   AuthenticatedEmployeeSchedulesIndexRoute: typeof AuthenticatedEmployeeSchedulesIndexRoute
   AuthenticatedEmployeeAttendancesCalculateIndexRoute: typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
   AuthenticatedEmployeeAttendancesHistoryIndexRoute: typeof AuthenticatedEmployeeAttendancesHistoryIndexRoute
-  AuthenticatedEmployeeStampsRequestIndexRoute: typeof AuthenticatedEmployeeStampsRequestIndexRoute
 }
 
 const AuthenticatedEmployeeRouteRouteChildren: AuthenticatedEmployeeRouteRouteChildren =
@@ -910,6 +910,8 @@ const AuthenticatedEmployeeRouteRouteChildren: AuthenticatedEmployeeRouteRouteCh
     AuthenticatedEmployeeSalariesIdRoute: AuthenticatedEmployeeSalariesIdRoute,
     AuthenticatedEmployeeSchedulesIdRoute:
       AuthenticatedEmployeeSchedulesIdRoute,
+    AuthenticatedEmployeeStampsRequestRoute:
+      AuthenticatedEmployeeStampsRequestRoute,
     AuthenticatedEmployeeTodoAddProductRoute:
       AuthenticatedEmployeeTodoAddProductRoute,
     AuthenticatedEmployeeTodoHistoryRoute:
@@ -928,8 +930,6 @@ const AuthenticatedEmployeeRouteRouteChildren: AuthenticatedEmployeeRouteRouteCh
       AuthenticatedEmployeeAttendancesCalculateIndexRoute,
     AuthenticatedEmployeeAttendancesHistoryIndexRoute:
       AuthenticatedEmployeeAttendancesHistoryIndexRoute,
-    AuthenticatedEmployeeStampsRequestIndexRoute:
-      AuthenticatedEmployeeStampsRequestIndexRoute,
   }
 
 const AuthenticatedEmployeeRouteRouteWithChildren =
@@ -980,6 +980,7 @@ export interface FileRoutesByFullPath {
   '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
   '/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
+  '/employee/stamps/request': typeof AuthenticatedEmployeeStampsRequestRoute
   '/employee/todo/add-product': typeof AuthenticatedEmployeeTodoAddProductRoute
   '/employee/todo/history': typeof AuthenticatedEmployeeTodoHistoryRoute
   '/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
@@ -1002,7 +1003,6 @@ export interface FileRoutesByFullPath {
   '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
   '/employee/attendances/calculate': typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
   '/employee/attendances/history': typeof AuthenticatedEmployeeAttendancesHistoryIndexRoute
-  '/employee/stamps/request': typeof AuthenticatedEmployeeStampsRequestIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -1028,6 +1028,7 @@ export interface FileRoutesByTo {
   '/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
   '/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
+  '/employee/stamps/request': typeof AuthenticatedEmployeeStampsRequestRoute
   '/employee/todo/add-product': typeof AuthenticatedEmployeeTodoAddProductRoute
   '/employee/todo/history': typeof AuthenticatedEmployeeTodoHistoryRoute
   '/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
@@ -1050,7 +1051,6 @@ export interface FileRoutesByTo {
   '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
   '/employee/attendances/calculate': typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
   '/employee/attendances/history': typeof AuthenticatedEmployeeAttendancesHistoryIndexRoute
-  '/employee/stamps/request': typeof AuthenticatedEmployeeStampsRequestIndexRoute
 }
 
 export interface FileRoutesById {
@@ -1082,6 +1082,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/work-schedules/$id': typeof AuthenticatedAdminWorkSchedulesIdRoute
   '/_authenticated/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
   '/_authenticated/employee/schedules/$id': typeof AuthenticatedEmployeeSchedulesIdRoute
+  '/_authenticated/employee/stamps/request': typeof AuthenticatedEmployeeStampsRequestRoute
   '/_authenticated/employee/todo/add-product': typeof AuthenticatedEmployeeTodoAddProductRoute
   '/_authenticated/employee/todo/history': typeof AuthenticatedEmployeeTodoHistoryRoute
   '/_authenticated/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
@@ -1104,7 +1105,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/employees/trash/': typeof AuthenticatedAdminEmployeesTrashIndexRoute
   '/_authenticated/employee/attendances/calculate/': typeof AuthenticatedEmployeeAttendancesCalculateIndexRoute
   '/_authenticated/employee/attendances/history/': typeof AuthenticatedEmployeeAttendancesHistoryIndexRoute
-  '/_authenticated/employee/stamps/request/': typeof AuthenticatedEmployeeStampsRequestIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -1136,6 +1136,7 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/employee/salaries/$id'
     | '/employee/schedules/$id'
+    | '/employee/stamps/request'
     | '/employee/todo/add-product'
     | '/employee/todo/history'
     | '/employee/todo/update-quantity'
@@ -1158,7 +1159,6 @@ export interface FileRouteTypes {
     | '/admin/employees/trash'
     | '/employee/attendances/calculate'
     | '/employee/attendances/history'
-    | '/employee/stamps/request'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1183,6 +1183,7 @@ export interface FileRouteTypes {
     | '/admin/work-schedules/$id'
     | '/employee/salaries/$id'
     | '/employee/schedules/$id'
+    | '/employee/stamps/request'
     | '/employee/todo/add-product'
     | '/employee/todo/history'
     | '/employee/todo/update-quantity'
@@ -1205,7 +1206,6 @@ export interface FileRouteTypes {
     | '/admin/employees/trash'
     | '/employee/attendances/calculate'
     | '/employee/attendances/history'
-    | '/employee/stamps/request'
   id:
     | '__root__'
     | '/(auth)'
@@ -1235,6 +1235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/work-schedules/$id'
     | '/_authenticated/employee/salaries/$id'
     | '/_authenticated/employee/schedules/$id'
+    | '/_authenticated/employee/stamps/request'
     | '/_authenticated/employee/todo/add-product'
     | '/_authenticated/employee/todo/history'
     | '/_authenticated/employee/todo/update-quantity'
@@ -1257,7 +1258,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/employees/trash/'
     | '/_authenticated/employee/attendances/calculate/'
     | '/_authenticated/employee/attendances/history/'
-    | '/_authenticated/employee/stamps/request/'
   fileRoutesById: FileRoutesById
 }
 
@@ -1342,6 +1342,7 @@ export const routeTree = rootRoute
         "/_authenticated/employee/",
         "/_authenticated/employee/salaries/$id",
         "/_authenticated/employee/schedules/$id",
+        "/_authenticated/employee/stamps/request",
         "/_authenticated/employee/todo/add-product",
         "/_authenticated/employee/todo/history",
         "/_authenticated/employee/todo/update-quantity",
@@ -1350,8 +1351,7 @@ export const routeTree = rootRoute
         "/_authenticated/employee/salaries/",
         "/_authenticated/employee/schedules/",
         "/_authenticated/employee/attendances/calculate/",
-        "/_authenticated/employee/attendances/history/",
-        "/_authenticated/employee/stamps/request/"
+        "/_authenticated/employee/attendances/history/"
       ]
     },
     "/(auth)/login": {
@@ -1450,6 +1450,10 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/employee/schedules/$id.tsx",
       "parent": "/_authenticated/employee"
     },
+    "/_authenticated/employee/stamps/request": {
+      "filePath": "_authenticated/employee/stamps/request.tsx",
+      "parent": "/_authenticated/employee"
+    },
     "/_authenticated/employee/todo/add-product": {
       "filePath": "_authenticated/employee/todo/add-product.tsx",
       "parent": "/_authenticated/employee"
@@ -1536,10 +1540,6 @@ export const routeTree = rootRoute
     },
     "/_authenticated/employee/attendances/history/": {
       "filePath": "_authenticated/employee/attendances/history/index.tsx",
-      "parent": "/_authenticated/employee"
-    },
-    "/_authenticated/employee/stamps/request/": {
-      "filePath": "_authenticated/employee/stamps/request/index.tsx",
       "parent": "/_authenticated/employee"
     }
   }
