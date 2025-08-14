@@ -1,7 +1,7 @@
 import { Button } from 'antd';
 import { IconContext } from 'react-icons';
 
-import { ThemeToggleButton } from '@components/common/ThemeToggleButton';
+// import { ThemeToggleButton } from '@components/common/ThemeToggleButton';
 import NotificationDropdown from '@components/header/NotificationDropdown';
 import UserDropdown from '@components/header/UserDropdown';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
@@ -30,7 +30,7 @@ const Header = () => {
         </div>
         <div className="flex w-full items-center justify-end gap-4">
           <div className="flex items-center gap-3">
-            <ThemeToggleButton />
+            {/* <ThemeToggleButton /> */}
             <NotificationDropdown />
           </div>
           <UserDropdown />
