@@ -2,11 +2,12 @@ import { Shift } from '@/types/shift';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
-import { IconAdd } from '@components/icons';
+import { IconAdd, IconHistory } from '@components/icons';
 import { UserInfo } from '@components/UserInfo';
 import { productService } from '@services/ProductService';
 import { empStampRequest } from '@services/StampService';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import {
   Button,
   Card,
@@ -97,6 +98,13 @@ export const RequestStamp = () => {
     <>
       <BackButton to="/" />
       <ComponentCard title="Gửi yêu cầu in tem">
+        <div>
+          <Link to="/employee/stamps/history">
+            <Button icon={<IconHistory />} variant="solid" color="gold">
+              KIỂM TRA YÊU CẦU IN TEM
+            </Button>
+          </Link>
+        </div>
         <UserInfo />
         <p className="text-center text-xl font-bold text-gray-500">Tạo tem</p>
 

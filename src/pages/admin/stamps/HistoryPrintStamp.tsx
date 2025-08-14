@@ -110,7 +110,7 @@ export default function HistoryPrintStamp() {
     {
       title: 'Ngày gửi',
       key: 'print_day',
-      dataIndex: 'print_date',
+      dataIndex: 'created_at',
       render: (value) => {
         return dayjs(value).format('DD-MM-YYYY');
       }
@@ -118,7 +118,7 @@ export default function HistoryPrintStamp() {
     {
       title: 'Thời gian gửi',
       key: 'print_time',
-      dataIndex: 'print_date',
+      dataIndex: 'created_at',
       render: (value) => {
         return dayjs(value).format('HH:mm:ss');
       }

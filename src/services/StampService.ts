@@ -70,3 +70,13 @@ export const empStampRequest = async (data: { stamps: RequestStampType[] }) => {
   const response = await axiosPrivate.post(EMP_ENDPOINT + '/request', data);
   return response;
 };
+
+export const fetchEmpStampHistory = async (params: QueryParams) => {
+  const response = await axiosPrivate.get<
+    HistoryPrintStampType,
+    PaginatedResponse<HistoryPrintStampType>
+  >(EMP_ENDPOINT + '/history', {
+    params: params
+  });
+  return response;
+};
