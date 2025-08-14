@@ -11,4 +11,6 @@ export interface User {
   image_url?: string;
   role: Role;
   gender: Gender;
+  permissions: string[];
+  permission_titles: Record<string, string>;
 }
