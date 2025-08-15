@@ -11,6 +11,7 @@ import { salariesService } from '@services/SalaryService';
 
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { GoInfo } from 'react-icons/go';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 export const Route = createFileRoute('/_authenticated/admin/salaries/')({
   component: RouteComponent
@@ -38,24 +39,20 @@ function RouteComponent() {
     {
       title: 'STT',
       rowScope: 'row',
-      minWidth: 50,
       align: 'center',
       render: (_value, _record, index) => index + 1 + limit * (page - 1)
     },
     {
       title: 'Mã',
-      minWidth: 100,
       dataIndex: 'id',
       hidden: true
     },
     {
       title: 'Tiêu đề',
-      minWidth: 200,
       dataIndex: 'title'
     },
     {
       title: 'Tổng (VNĐ)',
-      minWidth: 100,
       dataIndex: 'total',
       render: (value) =>
         new Intl.NumberFormat('vi-VN', {
@@ -65,7 +62,6 @@ function RouteComponent() {
     },
     {
       title: 'Ngày bắt đầu',
-      minWidth: 100,
       dataIndex: 'start_date',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
@@ -76,7 +72,6 @@ function RouteComponent() {
     },
     {
       title: 'Ngày kết thúc',
-      minWidth: 100,
       dataIndex: 'end_date',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
@@ -87,7 +82,6 @@ function RouteComponent() {
     },
     {
       title: 'Hành động',
-      minWidth: 100,
       align: 'center',
       render: (_value, _record) => {
         return (
@@ -117,17 +111,13 @@ function RouteComponent() {
   ];
 
   const tableProps: TableProps<SalaryType> = {
+    ...(customTableProps as unknown as TableProps<SalaryType>),
     rowKey: (record) => ['salary', record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: salaries,
     loading: isLoading,
-    size: 'small',
-    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       pageSize: limit,
       total: total,
       showTotal: (total) => `Tổng ${total} bản lương`,
