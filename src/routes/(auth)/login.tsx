@@ -69,7 +69,7 @@ function RouteComponent() {
             name="username"
             rules={[{ required: true, message: 'Please input your username!' }]}
           >
-            <Input placeholder="Phone" prefix={<FaRegUser />} size="large" />
+            <Input placeholder="Phone" prefix={<FaRegUser />} />
           </Form.Item>
 
           <Form.Item<FieldType>
@@ -79,7 +79,6 @@ function RouteComponent() {
             <Input.Password
               placeholder="Password"
               prefix={<IoLockClosedOutline />}
-              size="large"
             />
           </Form.Item>
 
@@ -92,13 +91,7 @@ function RouteComponent() {
           </Form.Item>
 
           <Form.Item>
-            <Button
-              block
-              type="primary"
-              htmlType="submit"
-              size="large"
-              loading={isPending}
-            >
+            <Button block type="primary" htmlType="submit" loading={isPending}>
               Sign in
             </Button>
           </Form.Item>

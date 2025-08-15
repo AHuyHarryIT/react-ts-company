@@ -189,12 +189,7 @@ export default function DailySchedule() {
     <ComponentCard title="Danh sách lịch làm việc trong ngày">
       <div className="flex flex-wrap gap-4">
         {/* TODO: Add navigation to daily schedule */}
-        <Button
-          variant="solid"
-          color="primary"
-          icon={<IconHistory />}
-          size="large"
-        >
+        <Button variant="solid" color="primary" icon={<IconHistory />}>
           Kiểm tra nhân viên nhập sản lượng
         </Button>
         <DatePicker

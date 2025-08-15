@@ -85,7 +85,6 @@ export const AddSalary = () => {
         color="green"
         variant="solid"
         icon={<FaPlus />}
-        size="large"
         onClick={showModal}
       >
         Thêm bản lương
@@ -105,29 +104,21 @@ export const AddSalary = () => {
             label="Tiêu đề"
             rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
           >
-            <Input size="large" />
+            <Input />
           </Form.Item>
           <Form.Item<FormField>
             name="start_date"
             label="Ngày bắt đầu"
             rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu' }]}
           >
-            <DatePicker
-              size="large"
-              style={{ width: '100%' }}
-              format={'YYYY-MM-DD'}
-            />
+            <DatePicker style={{ width: '100%' }} format={'YYYY-MM-DD'} />
           </Form.Item>
           <Form.Item<FormField>
             name="end_date"
             label="Ngày bắt đầu"
             rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc' }]}
           >
-            <DatePicker
-              size="large"
-              style={{ width: '100%' }}
-              format={'YYYY-MM-DD'}
-            />
+            <DatePicker style={{ width: '100%' }} format={'YYYY-MM-DD'} />
           </Form.Item>
 
           <Form.Item<FormField>
@@ -137,7 +128,6 @@ export const AddSalary = () => {
           >
             <Input
               type="file"
-              size="large"
               accept=".xls*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -152,7 +142,6 @@ export const AddSalary = () => {
           >
             <Input
               type="file"
-              size="large"
               accept=".xls*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -167,7 +156,6 @@ export const AddSalary = () => {
               variant="solid"
               htmlType="submit"
               loading={isPending}
-              size="large"
             >
               Import
             </Button>

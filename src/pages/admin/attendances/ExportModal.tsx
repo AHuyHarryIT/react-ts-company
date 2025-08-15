@@ -408,7 +408,6 @@ export const ExportModal = () => {
       <Button
         color="gold"
         variant="solid"
-        size="large"
         icon={<IconExport />}
         children="Xuất excel"
         onClick={handleOpen}

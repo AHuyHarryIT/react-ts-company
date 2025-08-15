@@ -90,12 +90,7 @@ export const PrintBoxStamp = ({
 
   return (
     <>
-      <Button
-        color="default"
-        variant="solid"
-        size="large"
-        onClick={handleSavePrintLog}
-      >
+      <Button color="default" variant="solid" onClick={handleSavePrintLog}>
         Print
       </Button>
       <div ref={contentRef} className="print:m-0 print:p-0 print:shadow-none">
@@ -301,12 +296,7 @@ export const PrintBoxStamp = ({
             ))}
         </div>
       </div>
-      <Button
-        color="default"
-        variant="solid"
-        size="large"
-        onClick={handlePrint}
-      >
+      <Button color="default" variant="solid" onClick={handlePrint}>
         Print
       </Button>
     </>

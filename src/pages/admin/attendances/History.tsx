@@ -210,12 +210,7 @@ export const History = () => {
           fields={useAttendanceCreateFields()}
         />
         <Link to="/admin/attendances/record">
-          <Button
-            color="blue"
-            variant="solid"
-            icon={<IconTable />}
-            size="large"
-          >
+          <Button color="blue" variant="solid" icon={<IconTable />}>
             Bảng tính công
           </Button>
         </Link>

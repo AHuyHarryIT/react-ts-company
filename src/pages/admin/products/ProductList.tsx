@@ -147,45 +147,25 @@ export default function ProductList() {
         <div className="flex flex-col flex-wrap gap-2">
           <Flex gap="small" wrap>
             <Link to="/admin/products/add">
-              <Button
-                size="large"
-                variant="solid"
-                color="green"
-                icon={<IconAdd />}
-              >
+              <Button variant="solid" color="green" icon={<IconAdd />}>
                 Thêm sản phẩm
               </Button>
             </Link>
 
             <Link to="/admin/products/quantity/add">
-              <Button
-                size="large"
-                variant="solid"
-                color="blue"
-                icon={<FaIndustry />}
-              >
+              <Button variant="solid" color="blue" icon={<FaIndustry />}>
                 Thêm sản lượng sản xuất
               </Button>
             </Link>
           </Flex>
           <Flex gap="small" wrap>
             <Link to="/admin/products/quantity/update">
-              <Button
-                size="large"
-                variant="solid"
-                color="blue"
-                icon={<FaBox />}
-              >
+              <Button variant="solid" color="blue" icon={<FaBox />}>
                 Cập nhật sản lượng
               </Button>
             </Link>
             <Link to="/admin/products/trash">
-              <Button
-                size="large"
-                variant="solid"
-                color="gold"
-                icon={<IconDelete />}
-              >
+              <Button variant="solid" color="gold" icon={<IconDelete />}>
                 Sản phẩm đã xóa
               </Button>
             </Link>

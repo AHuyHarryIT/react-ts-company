@@ -273,12 +273,7 @@ export default function Records() {
           isLoading={isFetching}
         />
         <Link to="/admin/attendances/history">
-          <Button
-            color="green"
-            variant="solid"
-            icon={<IconHistory />}
-            size="large"
-          >
+          <Button color="green" variant="solid" icon={<IconHistory />}>
             Lịch sử chấm công
           </Button>
         </Link>

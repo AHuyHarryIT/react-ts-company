@@ -88,7 +88,7 @@ export const AddWorkSchedule = () => {
             label="Tiêu đề"
             rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
           >
-            <Input size="large" />
+            <Input />
           </Form.Item>
           <Form.Item<FormField>
             name="start_date"
@@ -96,7 +96,6 @@ export const AddWorkSchedule = () => {
             rules={[{ required: true, message: 'Vui lòng chọn chọn tháng' }]}
           >
             <DatePicker
-              size="large"
               style={{ width: '100%' }}
               format={'MM/YYYY'}
               picker="month"
@@ -110,7 +109,6 @@ export const AddWorkSchedule = () => {
           >
             <Input
               type="file"
-              size="large"
               accept=".xls*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -126,7 +124,6 @@ export const AddWorkSchedule = () => {
               variant="solid"
               htmlType="submit"
               loading={isPending}
-              size="large"
             >
               Import
             </Button>

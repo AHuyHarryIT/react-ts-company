@@ -47,7 +47,6 @@ export const AddModal = () => {
         color="green"
         variant="solid"
         icon={<FaPlus />}
-        size="large"
         onClick={showModal}
       >
         Thêm
@@ -79,14 +78,13 @@ export const AddModal = () => {
               }
             ]}
           >
-            <Input placeholder="Tên danh mục lịch làm việc" size="large" />
+            <Input placeholder="Tên danh mục lịch làm việc" />
           </Form.Item>
           <div className="text-right">
             <Button
               color="green"
               variant="solid"
               htmlType="submit"
-              size="large"
               loading={isPending}
             >
               Thêm

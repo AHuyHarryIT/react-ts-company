@@ -527,7 +527,7 @@ export default function Detail() {
             }}
           />
         </div>
-        <Spin size="large" tip="Đang tải..." spinning={queryResult.isLoading}>
+        <Spin tip="Đang tải..." spinning={queryResult.isLoading}>
           {queryResult.isError ? (
             <div className="flex items-center justify-center">
               <span className="text-red-500">Không tìm thấy lịch làm việc</span>

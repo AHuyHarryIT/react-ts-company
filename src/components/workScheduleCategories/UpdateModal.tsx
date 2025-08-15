@@ -97,14 +97,13 @@ export const UpdateWorkScheduleCategory: React.FC<
               }
             ]}
           >
-            <Input placeholder="Tên danh mục lịch làm việc" size="large" />
+            <Input placeholder="Tên danh mục lịch làm việc" />
           </Form.Item>
           <div className="text-right">
             <Button
               color="primary"
               variant="solid"
               htmlType="submit"
-              size="large"
               loading={isPending}
             >
               Cập nhật

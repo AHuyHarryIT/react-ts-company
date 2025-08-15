@@ -59,7 +59,6 @@ export function UpdateForm<
       onFinish={handleFinish}
       loading={isLoading}
       submitButtonText="Cập nhật"
-      size="large"
       zodRules={ruleMap}
       isGrid={isGrid}
     />

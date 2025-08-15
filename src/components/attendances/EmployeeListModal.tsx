@@ -34,7 +34,6 @@ export const EmployeeListModal = () => {
     <>
       <Button
         onClick={handleOpen}
-        size="large"
         color="cyan"
         variant="solid"
         icon={<FaUsers />}
@@ -62,7 +61,7 @@ export const EmployeeListModal = () => {
           }
         />
         <div className="text-center">
-          <Spin size="large" spinning={queryResult.isLoading} />
+          <Spin spinning={queryResult.isLoading} />
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {scheduleDetails?.length > 0 && (

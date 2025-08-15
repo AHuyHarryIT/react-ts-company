@@ -93,12 +93,7 @@ function RouteComponent() {
         return (
           <div className="flex items-center justify-center gap-2">
             <Link to={`/admin/salaries/$id`} params={{ id: _record.id }}>
-              <Button
-                color="primary"
-                variant="solid"
-                size="large"
-                icon={<GoInfo />}
-              >
+              <Button color="primary" variant="solid" icon={<GoInfo />}>
                 Chi tiết
               </Button>
             </Link>
