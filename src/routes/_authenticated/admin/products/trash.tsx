@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Table, TableColumnsType, TableProps } from 'antd';
+import { Input, Select, Table, TableColumnsType, TableProps } from 'antd';
 import { useState } from 'react';
 
 import { ProductType } from '@/types/productType';
@@ -13,6 +13,7 @@ import { useCrudList } from '@hooks/useCrudList';
 import { ProductModelEnumOptions } from '@schemas/product/productModelEnum.enum';
 import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEnum.enum';
 import { productService } from '@services/ProductService';
+import { debounce } from 'lodash';
 
 export const Route = createFileRoute('/_authenticated/admin/products/trash')({
   component: RouteComponent
@@ -58,6 +59,20 @@ function RouteComponent() {
       limit: prev.limit
     }));
   };
+
+  const handleSearch = debounce((value: string) => {
+    setParams((prev) => ({
+      ...prev,
+      'filter[search]': undefined
+    }));
+    if (!value) {
+      return;
+    }
+    setParams((prev) => ({
+      ...prev,
+      'filter[search]': value
+    }));
+  }, 300);
 
   const columns: TableColumnsType<ProductType> = [
     {
@@ -185,6 +200,53 @@ function RouteComponent() {
       <BackButton to="/admin/products" />
       <ComponentCard title="Thùng rác">
         <RefreshButton refresh={refetch} isLoading={isFetching} />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <Select
+            options={ProductModelEnumOptions}
+            placeholder="Chọn mã thùng"
+            popupMatchSelectWidth={false}
+            allowClear
+            onSelect={(value) => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[binCode]': value
+              }));
+            }}
+            onClear={() => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[binCode]': undefined
+              }));
+            }}
+          />
+          <Select
+            options={ProductModelSizeEnumOptions}
+            placeholder="Chọn kích thước khuôn"
+            popupMatchSelectWidth={false}
+            allowClear
+            onSelect={(value) => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[moldSize]': value
+              }));
+            }}
+            onClear={() => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[moldSize]': undefined
+              }));
+            }}
+          />
+          <Input.Search
+            className="col-span-1"
+            placeholder="Tìm kiếm sản phẩm"
+            allowClear
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              handleSearch(inputValue);
+            }}
+          />
+        </div>
         <Table {...tableProps} />
       </ComponentCard>
     </>
