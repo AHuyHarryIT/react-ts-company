@@ -27,11 +27,11 @@ export const AddWorkSchedule = () => {
   const [open, setOpen] = useState(false);
   const [scheduleFile, setScheduleFile] = useState<File>();
 
-  const showModal = () => {
+  const handleOpen = () => {
     setOpen(true);
   };
 
-  const onCancel = () => {
+  const handleClose = () => {
     setOpen(false);
   };
 
@@ -41,6 +41,7 @@ export const AddWorkSchedule = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workSchedules'] });
       message.success('Thêm lịch làm việc thành công');
+      handleClose();
     },
     onError: (error) => {
       message.error(error.message);
@@ -69,15 +70,14 @@ export const AddWorkSchedule = () => {
         color="green"
         variant="solid"
         icon={<FaPlus />}
-        size="large"
-        onClick={showModal}
+        onClick={handleOpen}
       >
         Thêm lịch làm việc
       </Button>
       <Modal
         title="Thêm lịch làm việc"
         open={open}
-        onCancel={onCancel}
+        onCancel={handleClose}
         destroyOnHidden
         centered
         footer={null}

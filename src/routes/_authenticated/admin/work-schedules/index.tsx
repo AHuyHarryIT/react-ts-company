@@ -35,25 +35,21 @@ function RouteComponent() {
     {
       title: 'STT',
       rowScope: 'row',
-      minWidth: 50,
       align: 'center',
       render: (_value, _record, index) =>
         index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
     },
-    {
-      title: 'Mã',
-      minWidth: 75,
-      dataIndex: 'id'
-    },
+    // {
+    //   title: 'Mã',
+    //   dataIndex: 'id'
+    // },
     {
       title: 'Tên lịch làm việc',
-      minWidth: 200,
       dataIndex: 'title'
     },
 
     {
       title: 'Ngày bắt đầu',
-      minWidth: 200,
       dataIndex: 'date',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
@@ -64,7 +60,6 @@ function RouteComponent() {
     },
     {
       title: 'Hành động',
-      minWidth: 100,
       align: 'center',
       render: (_value, _record) => {
         return (
