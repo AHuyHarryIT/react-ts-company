@@ -2,17 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
   Button,
-  Collapse,
   DatePicker,
   Input,
   Select,
-  Space,
   Table,
   TableColumnsType,
   TableProps
 } from 'antd';
-import { useState } from 'react';
 import { debounce } from 'lodash';
+import { useState } from 'react';
 
 import {
   attendanceUpdateFields,
@@ -22,7 +20,8 @@ import { AttendanceType } from '@/types/attendanceType';
 import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
-import { IconFilter, IconTable } from '@components/icons';
+import { customTableProps } from '@components/custom/TableProps.custom';
+import { IconTable } from '@components/icons';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { CreateModal } from '@components/ui/CRUD/CreateModal';
 import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
@@ -30,7 +29,6 @@ import { useCrudList } from '@hooks/useCrudList';
 import { attendanceSchema } from '@schemas/attendanceSchema.schema';
 import { attendanceService } from '@services/AttendanceService';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
-import { customTableProps } from '@components/custom/TableProps.custom';
 
 type TableColumns = AttendanceType;
 
@@ -40,7 +38,6 @@ export const History = () => {
     limit: 50,
     include: ['employees']
   });
-  const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
 
   const {
     data: attendances,
@@ -60,7 +57,7 @@ export const History = () => {
   const handleSearch = debounce((value: string, type: 'name' | 'code') => {
     setParams((prev) => ({
       ...prev,
-      'filter[employee_id]': undefined,
+      'filter[employees.id]': undefined,
       'filter[employees.name]': undefined
     }));
     if (!value) {
@@ -74,10 +71,10 @@ export const History = () => {
     } else if (type == 'code') {
       setParams((prev) => ({
         ...prev,
-        'filter[employee_id]': value ? value : undefined
+        'filter[employees.id]': value ? value : undefined
       }));
     }
-  }, 300);
+  }, 500);
 
   const categoryOptions = categories?.workScheduleCategories.map((item) => ({
     label: item.name,
@@ -88,21 +85,18 @@ export const History = () => {
     {
       title: 'STT',
       rowScope: 'row',
-      minWidth: 50,
       align: 'center',
       render: (_value, _record, index) =>
         index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
     },
     {
       title: 'Mã nhân viên',
-      dataIndex: 'employee_code',
-      minWidth: 120
+      dataIndex: 'employee_code'
     },
     {
       title: 'Tên nhân viên',
       key: 'employee_name',
       dataIndex: ['employees', 'name'],
-      minWidth: 200,
       render: (value) => {
         return value || 'Chưa có thông tin';
       }
@@ -111,7 +105,6 @@ export const History = () => {
       title: 'Thời gian chấm công',
       dataIndex: 'datetime',
       key: 'datetime',
-      minWidth: 170,
       render: (value) => {
         if (!value) return null;
         return new Date(value).toLocaleString('vi-VN', {
@@ -127,7 +120,6 @@ export const History = () => {
     {
       title: 'Danh mục làm việc',
       key: 'workScheduleCategory',
-      minWidth: 200,
       render: (_value, record) => {
         return (
           categories?.workScheduleCategories.find(
@@ -228,79 +220,51 @@ export const History = () => {
           </Button>
         </Link>
       </div>
-      <Collapse
-        style={{ marginBottom: '1.5rem' }}
-        items={[
-          {
-            key: 'filter',
-            label: (
-              <div className="flex items-center gap-1">
-                <IconFilter /> Bộ lọc
-              </div>
-            ),
-            children: (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                <DatePicker
-                  picker="month"
-                  format="YYYY-MM"
-                  placeholder="Chọn tháng"
-                  onChange={(_value, dateString) => {
-                    setParams((prev) => ({
-                      ...prev,
-                      'filter[date]': Array.isArray(dateString)
-                        ? dateString[0]
-                        : dateString || undefined
-                    }));
-                  }}
-                />
-                <Select
-                  options={categoryOptions}
-                  placeholder="Chọn danh mục"
-                  popupMatchSelectWidth={false}
-                  allowClear
-                  onSelect={(value) => {
-                    setParams((prev) => ({
-                      ...prev,
-                      'filter[employees.calendar_category_id]': value
-                    }));
-                  }}
-                  onClear={() => {
-                    setParams((prev) => ({
-                      ...prev,
-                      'filter[employees.calendar_category_id]': undefined
-                    }));
-                  }}
-                />
-                <Space.Compact className="col-span-1 sm:col-span-2">
-                  <Select
-                    defaultValue={searchOn}
-                    options={[
-                      { label: 'Tên', value: 'name' },
-                      { label: 'Mã', value: 'code' }
-                    ]}
-                    onChange={(value) => {
-                      setSearchOn(value);
-                    }}
-                  />
-                  <Input.Search
-                    placeholder="Tìm kiếm nhân viên"
-                    allowClear
-                    onChange={(e) => {
-                      const inputValue = e.target.value;
-                      if (/^\d+$/.test(inputValue)) {
-                        handleSearch(inputValue, 'code');
-                      } else {
-                        handleSearch(inputValue, 'name');
-                      }
-                    }}
-                  />
-                </Space.Compact>
-              </div>
-            ),
-            showArrow: false
-          }
-        ]}
-      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <DatePicker
+          picker="month"
+          format="YYYY-MM"
+          placeholder="Chọn tháng"
+          onChange={(_value, dateString) => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[date]': Array.isArray(dateString)
+                ? dateString[0]
+                : dateString || undefined
+            }));
+          }}
+        />
+        <Select
+          options={categoryOptions}
+          placeholder="Chọn danh mục"
+          popupMatchSelectWidth={false}
+          allowClear
+          onSelect={(value) => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[employees.calendar_category_id]': value
+            }));
+          }}
+          onClear={() => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[employees.calendar_category_id]': undefined
+            }));
+          }}
+        />
+        <Input.Search
+          placeholder="Tìm kiếm nhân viên"
+          allowClear
+          onChange={(e) => {
+            const inputValue = e.target.value;
+            if (/^\d+$/.test(inputValue)) {
+              handleSearch(inputValue, 'code');
+            } else {
+              handleSearch(inputValue, 'name');
+            }
+          }}
+        />
+      </div>
       <Table<TableColumns> {...tableProps} />
     </ComponentCard>
   );
