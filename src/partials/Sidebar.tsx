@@ -315,6 +315,7 @@ function Sidebar() {
           placement="left"
           onClose={toggleSidebar}
           open={!isSidebarClose}
+          styles={{ body: { padding: 0 } }}
         >
           <div className="flex items-center justify-center p-4">
             <Link
