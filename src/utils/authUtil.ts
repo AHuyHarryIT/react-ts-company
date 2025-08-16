@@ -18,3 +18,17 @@ export function requireRole(user: User | null, allowedRoles: string[]) {
     throw redirect({ to: '/forbidden', statusCode: 403 });
   }
 }
+
+export function disableRole(user: User | null, disallowedRoles: string[]) {
+  if (!user) {
+    throw redirect({ to: '/login' });
+  }
+
+  if (
+    disallowedRoles
+      .map((role) => role.toLowerCase())
+      .includes(user.role.name.toLowerCase())
+  ) {
+    throw redirect({ to: '/forbidden', statusCode: 403 });
+  }
+}
