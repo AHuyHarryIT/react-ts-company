@@ -33,3 +33,9 @@ export const setStampNotifications = (
     return { ...prevState, stamp_notification: updatedNotifications };
   });
 };
+
+export const clearStampNotifications = () => {
+  stampNotificationStore.setState((prevState) => {
+    return { ...prevState, stamp_notification: [] };
+  });
+};

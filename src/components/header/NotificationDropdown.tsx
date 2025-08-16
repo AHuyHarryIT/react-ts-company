@@ -1,11 +1,14 @@
+import { IconDelete } from '@components/icons';
 import { useStampNotification } from '@hooks/useStampNotification';
-import { Dropdown, Empty, MenuProps } from 'antd';
+import { Link } from '@tanstack/react-router';
+import { Button, Dropdown, List, MenuProps } from 'antd';
 import { FaRegBell } from 'react-icons/fa';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
 export default function NotificationDropdown() {
-  const { items: stampItems } = useStampNotification();
+  const { items: stampItems, handleClearNotifications } =
+    useStampNotification();
 
   const items: MenuItem[] = [
     {
@@ -22,32 +25,46 @@ export default function NotificationDropdown() {
     {
       type: 'divider'
     },
-    ...(stampItems.length > 0
-      ? stampItems.map((n, index) => ({
-          type: 'item' as const,
-          key: `noti-${index}-${n.recordId ?? index}`,
-          label: (
-            <div>
-              <span className="text-theme-sm block font-medium text-gray-800 dark:text-gray-400">
-                Yêu cầu in tem
-              </span>
-              <span className="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
-                Có yêu cầu in tem mới cho sản phẩm{' '}
-                <strong>{n.meta?.product?.name}</strong> từ nhân viên{' '}
-                <strong>{n.meta?.employee?.name}</strong>
-              </span>
-            </div>
-          )
-        }))
-      : [
-          {
-            type: 'item' as const,
-            key: 'no-notifications',
-            label: <Empty description="Không có thông báo" />,
-            disabled: true,
-            style: { cursor: 'default' }
-          }
-        ])
+    {
+      type: 'item' as const,
+      key: `stamp-notification`,
+      label: (
+        <>
+          {stampItems.length > 0 && (
+            <Button
+              icon={<IconDelete size={16} />}
+              variant="solid"
+              color="danger"
+              className="mb-2"
+              onClick={handleClearNotifications}
+            >
+              Xóa tất cả
+            </Button>
+          )}
+          <div className="max-h-96 max-w-xs overflow-y-auto">
+            <List
+              dataSource={stampItems}
+              renderItem={(n, index) => (
+                <List.Item key={`noti-${index}-${n.recordId ?? index}`}>
+                  <Link to="/admin/stamps/history">
+                    <div>
+                      <span className="text-theme-sm block font-medium text-gray-800 dark:text-gray-400">
+                        Yêu cầu in tem
+                      </span>
+                      <span className="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
+                        Có yêu cầu in tem mới cho sản phẩm{' '}
+                        <strong>{n.meta?.product?.name}</strong> từ nhân viên{' '}
+                        <strong>{n.meta?.employee?.name}</strong>
+                      </span>
+                    </div>
+                  </Link>
+                </List.Item>
+              )}
+            />
+          </div>
+        </>
+      )
+    }
   ];
 
   return (

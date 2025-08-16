@@ -1,6 +1,7 @@
 import { HistoryPrintStampType } from '@/types/stampType';
 import { Route } from '@routes/__root';
 import {
+  clearStampNotifications,
   setStampNotifications,
   stampNotificationStore
 } from '@stores/stampNotificationStore';
@@ -32,6 +33,11 @@ export function useStampNotification() {
     admin ? notifications : []
   );
 
+  const handleClearNotifications = () => {
+    setItems([]);
+    clearStampNotifications();
+  };
+
   useEffect(() => {
     const channel = echo.channel(`public.stamps.${roleId}`);
 
@@ -49,5 +55,5 @@ export function useStampNotification() {
     };
   }, [roleId]);
 
-  return { items };
+  return { items, handleClearNotifications };
 }
