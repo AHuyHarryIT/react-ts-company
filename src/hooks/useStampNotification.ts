@@ -1,6 +1,13 @@
 import { HistoryPrintStampType } from '@/types/stampType';
 import { Route } from '@routes/__root';
+import {
+  setStampNotifications,
+  stampNotificationStore
+} from '@stores/stampNotificationStore';
+import { useStore } from '@tanstack/react-store';
+import { isAdmin } from '@utils/authUtil';
 import { echo } from '@utils/lib/echo';
+import { handleNotification } from '@utils/notificationUtil';
 import { useEffect, useState } from 'react';
 
 export type StampNotificationPayload = {
@@ -11,17 +18,27 @@ export type StampNotificationPayload = {
 };
 
 export function useStampNotification() {
-  const [items, setItems] = useState<StampNotificationPayload[]>([]);
+  const { stamp_notification: notifications } = useStore(
+    stampNotificationStore
+  );
 
   const { authenticated } = Route.useRouteContext();
   const { user } = authenticated;
   const roleId = user?.role.id;
+
+  const admin = isAdmin(user?.role.name || '');
+
+  const [items, setItems] = useState<StampNotificationPayload[]>(
+    admin ? notifications : []
+  );
 
   useEffect(() => {
     const channel = echo.channel(`public.stamps.${roleId}`);
 
     const handler = (payload: StampNotificationPayload) => {
       setItems((prev) => [payload, ...prev]);
+      setStampNotifications(payload);
+      handleNotification();
     };
 
     channel.listen(`.stamp.created.${roleId}`, handler);

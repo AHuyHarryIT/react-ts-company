@@ -89,7 +89,6 @@ export const RequestStamp = () => {
     form,
     initialValues: { stamps: [{}] },
     onFinish: (values) => {
-      console.log(values);
       mutate({ stamps: values.stamps });
     }
   };
