@@ -1,6 +1,14 @@
-import { Link } from '@tanstack/react-router';
+import { authLogout } from '@services/AuthService';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { Button } from 'antd';
 
 export default function Forbidden() {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await authLogout();
+    navigate({ to: '/login' });
+  };
   return (
     <>
       <div className="relative z-1 flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
@@ -19,13 +27,17 @@ export default function Forbidden() {
           <p className="mt-10 mb-6 text-base text-gray-700 sm:text-lg dark:text-gray-400">
             You do not have permission to access this page!
           </p>
-
           <Link
             to="/"
             className="shadow-theme-xs inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
           >
             Back to Home Page
           </Link>
+          <div className="mt-2">
+            <Button variant="dashed" color="danger" onClick={handleLogout}>
+              Log out
+            </Button>
+          </div>
         </div>
       </div>
     </>
