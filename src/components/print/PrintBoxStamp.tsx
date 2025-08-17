@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { Button, message } from 'antd';
-import { useReactToPrint } from 'react-to-print';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button, message } from 'antd';
 import type { Dayjs } from 'dayjs';
+import { useCallback, useEffect, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import Barcode from 'react-barcode';
 
 import { ProductType } from '@/types/productType';
 import { saveStamp } from '@services/StampService';
 import { Shift } from '@/types/shift';
-
-import '@assets/css/barcode-1.css';
 import logo from '@assets/images/logo/vvp02.png';
 import { EmployeeType } from '@/types/employeeType';
+import '@assets/css/barcode-1.css';
+import { useStampNotification } from '@hooks/useStampNotification';
 
 interface PrintBoxStampProps {
   product: ProductType;
@@ -34,10 +34,9 @@ export const PrintBoxStamp = ({
 }: PrintBoxStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
-
   const stampList = (startStamp as string).split(',');
-
   const queryClient = useQueryClient();
+  const { handleRemoveNotification } = useStampNotification();
 
   const { mutate } = useMutation({
     mutationKey: ['savePrintLog'],
@@ -45,6 +44,7 @@ export const PrintBoxStamp = ({
     onSuccess: () => {
       message.success('Print log saved successfully');
       queryClient.invalidateQueries();
+      if (stamp_id) handleRemoveNotification(stamp_id);
     },
     onError: () => {
       console.error('Error saving print log');

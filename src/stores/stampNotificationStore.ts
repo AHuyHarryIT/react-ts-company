@@ -39,3 +39,12 @@ export const clearStampNotifications = () => {
     return { ...prevState, stamp_notification: [] };
   });
 };
+
+export const removeStampNotification = (recordId: string) => {
+  stampNotificationStore.setState((prevState) => {
+    const updatedNotifications = prevState.stamp_notification.filter(
+      (n) => n.recordId !== recordId
+    );
+    return { ...prevState, stamp_notification: updatedNotifications };
+  });
+};

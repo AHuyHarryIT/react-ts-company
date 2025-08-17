@@ -3,13 +3,14 @@ import { Route } from '@routes/__root';
 import {
   clearStampNotifications,
   setStampNotifications,
-  stampNotificationStore
+  stampNotificationStore,
+  removeStampNotification
 } from '@stores/stampNotificationStore';
 import { useStore } from '@tanstack/react-store';
 import { isAdmin } from '@utils/authUtil';
 import { echo } from '@utils/lib/echo';
 import { handleNotification } from '@utils/notificationUtil';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 export type StampNotificationPayload = {
   message: string;
@@ -26,15 +27,12 @@ export function useStampNotification() {
   const { authenticated } = Route.useRouteContext();
   const { user } = authenticated;
   const roleId = user?.role.id;
-
   const admin = isAdmin(user?.role.name || '');
 
-  const [items, setItems] = useState<StampNotificationPayload[]>(
-    admin ? notifications : []
-  );
+  // Only show notifications for admin
+  const items = admin ? notifications : [];
 
   const handleClearNotifications = () => {
-    setItems([]);
     clearStampNotifications();
   };
 
@@ -42,7 +40,6 @@ export function useStampNotification() {
     const channel = echo.channel(`public.stamps.${roleId}`);
 
     const handler = (payload: StampNotificationPayload) => {
-      setItems((prev) => [payload, ...prev]);
       setStampNotifications(payload);
       handleNotification();
     };
@@ -55,5 +52,9 @@ export function useStampNotification() {
     };
   }, [roleId]);
 
-  return { items, handleClearNotifications };
+  const handleRemoveNotification = (recordId: string) => {
+    removeStampNotification(recordId);
+  };
+
+  return { items, handleClearNotifications, handleRemoveNotification };
 }
