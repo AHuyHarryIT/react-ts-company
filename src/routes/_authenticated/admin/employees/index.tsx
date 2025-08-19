@@ -233,26 +233,16 @@ function RouteComponent() {
         <div className="flex flex-wrap gap-4">
           <RefreshButton refresh={refetch} isLoading={isFetching} />
           <Link to="/admin/employees/add">
-            <Button
-              color="green"
-              variant="solid"
-              icon={<LuUserRoundPlus />}
-              size="large"
-            >
+            <Button color="green" variant="solid" icon={<LuUserRoundPlus />}>
               Thêm nhân viên
             </Button>
           </Link>
           <Link to="/admin/employees/trash">
-            <Button
-              color="gold"
-              variant="solid"
-              icon={<BiTrash />}
-              size="large"
-            >
+            <Button color="gold" variant="solid" icon={<BiTrash />}>
               Đã xóa
             </Button>
           </Link>
-          <Button variant="solid" icon={<FaFingerprint />} size="large">
+          <Button variant="solid" icon={<FaFingerprint />}>
             Thêm chấm công
           </Button>
         </div>

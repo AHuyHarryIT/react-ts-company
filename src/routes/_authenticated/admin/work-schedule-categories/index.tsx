@@ -38,23 +38,19 @@ function RouteComponent() {
       {
         title: 'STT',
         rowScope: 'row',
-        minWidth: 50,
         align: 'center',
         render: (_value, _record, index) => index + 1 + limit * (page - 1)
       },
       {
         title: 'Tên danh mục',
-        minWidth: 200,
         dataIndex: 'name'
       },
       {
         title: 'Mã danh mục',
-        minWidth: 100,
         dataIndex: 'id'
       },
       {
         title: 'Ngày tạo',
-        minWidth: 200,
         dataIndex: 'created_at',
         render: (value) =>
           new Date(value).toLocaleString('vi-VN', {
@@ -68,7 +64,6 @@ function RouteComponent() {
       },
       {
         title: 'Ngày cập nhật',
-        minWidth: 200,
         dataIndex: 'updated_at',
         render: (value) =>
           new Date(value).toLocaleString('vi-VN', {
@@ -82,7 +77,6 @@ function RouteComponent() {
       },
       {
         title: 'Hành động',
-        minWidth: 100,
         align: 'center',
         render: (_value, _record) => {
           return (

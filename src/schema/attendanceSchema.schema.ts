@@ -18,7 +18,7 @@ export const attendanceSchema = defaultModelSchema.extend({
 export const attendanceCreateSchema = overrideSchema(attendanceSchema).omit({
   date: true,
   time: true,
-  employee: true
+  employees: true
 });
 
 export const attendanceUpdateSchema = makeUpdateSchema(attendanceSchema).omit({
@@ -26,5 +26,5 @@ export const attendanceUpdateSchema = makeUpdateSchema(attendanceSchema).omit({
   employee_code: true,
   date: true,
   time: true,
-  employee: true
+  employees: true
 });

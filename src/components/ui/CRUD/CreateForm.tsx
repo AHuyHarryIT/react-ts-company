@@ -52,7 +52,6 @@ export function CreateForm<
       onFinish={handleFinish}
       loading={isLoading}
       submitButtonText="Thêm"
-      size="large"
       resetForm={resetForm}
       zodRules={ruleMap}
       isGrid={isGrid}

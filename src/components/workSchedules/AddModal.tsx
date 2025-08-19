@@ -27,11 +27,11 @@ export const AddWorkSchedule = () => {
   const [open, setOpen] = useState(false);
   const [scheduleFile, setScheduleFile] = useState<File>();
 
-  const showModal = () => {
+  const handleOpen = () => {
     setOpen(true);
   };
 
-  const onCancel = () => {
+  const handleClose = () => {
     setOpen(false);
   };
 
@@ -41,6 +41,7 @@ export const AddWorkSchedule = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workSchedules'] });
       message.success('Thêm lịch làm việc thành công');
+      handleClose();
     },
     onError: (error) => {
       message.error(error.message);
@@ -69,15 +70,14 @@ export const AddWorkSchedule = () => {
         color="green"
         variant="solid"
         icon={<FaPlus />}
-        size="large"
-        onClick={showModal}
+        onClick={handleOpen}
       >
         Thêm lịch làm việc
       </Button>
       <Modal
         title="Thêm lịch làm việc"
         open={open}
-        onCancel={onCancel}
+        onCancel={handleClose}
         destroyOnHidden
         centered
         footer={null}
@@ -88,7 +88,7 @@ export const AddWorkSchedule = () => {
             label="Tiêu đề"
             rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
           >
-            <Input size="large" />
+            <Input />
           </Form.Item>
           <Form.Item<FormField>
             name="start_date"
@@ -96,7 +96,6 @@ export const AddWorkSchedule = () => {
             rules={[{ required: true, message: 'Vui lòng chọn chọn tháng' }]}
           >
             <DatePicker
-              size="large"
               style={{ width: '100%' }}
               format={'MM/YYYY'}
               picker="month"
@@ -110,7 +109,6 @@ export const AddWorkSchedule = () => {
           >
             <Input
               type="file"
-              size="large"
               accept=".xls*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -126,7 +124,6 @@ export const AddWorkSchedule = () => {
               variant="solid"
               htmlType="submit"
               loading={isPending}
-              size="large"
             >
               Import
             </Button>

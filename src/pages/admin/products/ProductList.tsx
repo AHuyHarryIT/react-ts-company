@@ -4,16 +4,7 @@ import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 
-import {
-  Button,
-  Collapse,
-  DatePicker,
-  Flex,
-  Input,
-  Select,
-  Tabs,
-  TabsProps
-} from 'antd';
+import { Button, DatePicker, Flex, Input, Select, Tabs, TabsProps } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import axiosPrivate from '@/api/axiosInstance';
@@ -26,7 +17,7 @@ import { ProduceTable } from '@components/products/ProduceTable';
 import { TotalTable } from '@components/products/TotalTable';
 
 import { QueryParams } from '@/types/queryParams';
-import { IconAdd, IconDelete, IconFilter } from '@components/icons';
+import { IconAdd, IconDelete } from '@components/icons';
 import { useCrudList } from '@hooks/useCrudList';
 import { ProductModelEnumOptions } from '@schemas/product/productModelEnum.enum';
 import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEnum.enum';
@@ -45,7 +36,7 @@ export default function ProductList() {
       'totalmonthquantities',
       'dailyquantities'
     ],
-    month: dayjs(month).format('YYYY-MM')
+    month: dayjs().format('YYYY-MM')
   });
 
   const { data: monthList } = useQuery<{ months: string[] }>({
@@ -63,27 +54,20 @@ export default function ProductList() {
 
   const months = useMemo(() => monthList?.months || [], [monthList]);
 
-  const handleSearch = debounce((value: string, type: 'name' | 'code') => {
+  const handleSearch = debounce((value: string) => {
     setParams((prev) => ({
       ...prev,
-      'filter[name]': undefined,
-      'filter[code]': undefined
+      'filter[search]': undefined
     }));
     if (!value) {
       return;
     }
-    if (type == 'name') {
-      setParams((prev) => ({
-        ...prev,
-        'filter[name]': value
-      }));
-    } else if (type == 'code') {
-      setParams((prev) => ({
-        ...prev,
-        'filter[code]': value
-      }));
-    }
+    setParams((prev) => ({
+      ...prev,
+      'filter[search]': value
+    }));
   }, 300);
+
   useEffect(() => {
     const total = queryResult.data?.total || 0;
     const limit = params.limit || 50;
@@ -163,45 +147,25 @@ export default function ProductList() {
         <div className="flex flex-col flex-wrap gap-2">
           <Flex gap="small" wrap>
             <Link to="/admin/products/add">
-              <Button
-                size="large"
-                variant="solid"
-                color="green"
-                icon={<IconAdd />}
-              >
+              <Button variant="solid" color="green" icon={<IconAdd />}>
                 Thêm sản phẩm
               </Button>
             </Link>
 
             <Link to="/admin/products/quantity/add">
-              <Button
-                size="large"
-                variant="solid"
-                color="blue"
-                icon={<FaIndustry />}
-              >
+              <Button variant="solid" color="blue" icon={<FaIndustry />}>
                 Thêm sản lượng sản xuất
               </Button>
             </Link>
           </Flex>
           <Flex gap="small" wrap>
             <Link to="/admin/products/quantity/update">
-              <Button
-                size="large"
-                variant="solid"
-                color="blue"
-                icon={<FaBox />}
-              >
+              <Button variant="solid" color="blue" icon={<FaBox />}>
                 Cập nhật sản lượng
               </Button>
             </Link>
             <Link to="/admin/products/trash">
-              <Button
-                size="large"
-                variant="solid"
-                color="gold"
-                icon={<IconDelete />}
-              >
+              <Button variant="solid" color="gold" icon={<IconDelete />}>
                 Sản phẩm đã xóa
               </Button>
             </Link>
@@ -210,88 +174,67 @@ export default function ProductList() {
             <ExportModal />
           </div>
         </div>
-        <Collapse
-          style={{ marginBottom: '1.5rem' }}
-          items={[
-            {
-              key: 'filter',
-              label: (
-                <div className="flex items-center gap-1">
-                  <IconFilter /> Bộ lọc
-                </div>
-              ),
-              children: (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  <DatePicker
-                    picker="month"
-                    placeholder="Chọn tháng"
-                    onChange={(date) => {
-                      setParams((prev) => ({
-                        ...prev,
-                        month: date
-                          ? date.startOf('month').format('YYYY-MM')
-                          : dayjs().startOf('month').format('YYYY-MM')
-                      }));
-                      setMonth(
-                        date ? date.startOf('month') : dayjs().startOf('month')
-                      );
-                    }}
-                  />
-                  <Select
-                    options={ProductModelEnumOptions}
-                    placeholder="Chọn mã thùng"
-                    popupMatchSelectWidth={false}
-                    allowClear
-                    onSelect={(value) => {
-                      setParams((prev) => ({
-                        ...prev,
-                        'filter[binCode]': value
-                      }));
-                    }}
-                    onClear={() => {
-                      setParams((prev) => ({
-                        ...prev,
-                        'filter[binCode]': undefined
-                      }));
-                    }}
-                  />
-                  <Select
-                    options={ProductModelSizeEnumOptions}
-                    placeholder="Chọn kích thước khuôn"
-                    popupMatchSelectWidth={false}
-                    allowClear
-                    onSelect={(value) => {
-                      setParams((prev) => ({
-                        ...prev,
-                        'filter[moldSize]': value
-                      }));
-                    }}
-                    onClear={() => {
-                      setParams((prev) => ({
-                        ...prev,
-                        'filter[moldSize]': undefined
-                      }));
-                    }}
-                  />
-                  <Input.Search
-                    className="col-span-1 sm:col-span-2"
-                    placeholder="Tìm kiếm sản phẩm"
-                    allowClear
-                    onChange={(e) => {
-                      const inputValue = e.target.value;
-                      if (/^\d+$/.test(inputValue)) {
-                        handleSearch(inputValue, 'code');
-                      } else {
-                        handleSearch(inputValue, 'name');
-                      }
-                    }}
-                  />
-                </div>
-              ),
-              showArrow: false
-            }
-          ]}
-        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <DatePicker
+            value={month}
+            picker="month"
+            placeholder="Chọn tháng"
+            onChange={(date) => {
+              setParams((prev) => ({
+                ...prev,
+                month: date
+                  ? date.startOf('month').format('YYYY-MM')
+                  : dayjs().startOf('month').format('YYYY-MM')
+              }));
+              setMonth(date ? date.startOf('month') : dayjs().startOf('month'));
+            }}
+          />
+          <Select
+            options={ProductModelEnumOptions}
+            placeholder="Chọn mã thùng"
+            popupMatchSelectWidth={false}
+            allowClear
+            onSelect={(value) => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[binCode]': value
+              }));
+            }}
+            onClear={() => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[binCode]': undefined
+              }));
+            }}
+          />
+          <Select
+            options={ProductModelSizeEnumOptions}
+            placeholder="Chọn kích thước khuôn"
+            popupMatchSelectWidth={false}
+            allowClear
+            onSelect={(value) => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[moldSize]': value
+              }));
+            }}
+            onClear={() => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[moldSize]': undefined
+              }));
+            }}
+          />
+          <Input.Search
+            className="col-span-1"
+            placeholder="Tìm kiếm sản phẩm"
+            allowClear
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              handleSearch(inputValue);
+            }}
+          />
+        </div>
         {/* Tabs */}
         <Tabs items={productTabs} type="card" />
       </ComponentCard>

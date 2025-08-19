@@ -7,9 +7,9 @@ import { useReactToPrint } from 'react-to-print';
 import { ProductType } from '@/types/productType';
 import { Shift } from '@/types/shift';
 import { saveStamp } from '@services/StampService';
-
 import { EmployeeType } from '@/types/employeeType';
 import '@assets/css/print-bag.css';
+import { useStampNotification } from '@hooks/useStampNotification';
 
 interface PrintBagStampProps {
   product: ProductType;
@@ -32,10 +32,9 @@ export const PrintBagStamp = ({
 }: PrintBagStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
-
   const stampList = (startStamp as string).split(',');
-
   const queryClient = useQueryClient();
+  const { handleRemoveNotification } = useStampNotification();
 
   const { mutate } = useMutation({
     mutationKey: ['savePrintLog'],
@@ -43,6 +42,7 @@ export const PrintBagStamp = ({
     onSuccess: () => {
       message.success('Print log saved successfully');
       queryClient.invalidateQueries();
+      if (stamp_id) handleRemoveNotification(stamp_id);
     },
     onError: () => {
       console.error('Error saving print log');
@@ -88,12 +88,7 @@ export const PrintBagStamp = ({
 
   return (
     <>
-      <Button
-        color="default"
-        variant="solid"
-        size="large"
-        onClick={handleSavePrintLog}
-      >
+      <Button color="default" variant="solid" onClick={handleSavePrintLog}>
         Print
       </Button>
       <div ref={contentRef} className="print:m-0 print:p-0 print:shadow-none">
@@ -233,12 +228,7 @@ export const PrintBagStamp = ({
             ))}
         </div>
       </div>
-      <Button
-        color="default"
-        variant="solid"
-        size="large"
-        onClick={handlePrint}
-      >
+      <Button color="default" variant="solid" onClick={handlePrint}>
         Print
       </Button>
     </>

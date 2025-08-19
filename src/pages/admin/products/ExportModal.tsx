@@ -696,7 +696,6 @@ export const ExportModal = () => {
       <Button
         color="green"
         variant="solid"
-        size="large"
         icon={<IconExport />}
         children="Xuất excel"
         onClick={handleOpen}

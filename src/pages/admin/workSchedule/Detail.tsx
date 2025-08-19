@@ -3,8 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@tanstack/react-store';
 import {
   Input,
-  Select,
-  Space,
   Spin,
   Table,
   TableColumnsType,
@@ -53,7 +51,6 @@ export default function Detail() {
   const { id } = Route.useParams();
   const { isMobile } = useStore(uiStore);
 
-  const [searchOn, setSearchOn] = useState<'name' | 'code'>('name');
   const [params, setParams] = useState<QueryParams>();
   const [maxDay, setMaxDay] = useState<number>(0);
   const [totalSaturdays, setTotalSaturdays] = useState<number>(0);
@@ -91,6 +88,28 @@ export default function Detail() {
     },
     {}
   );
+
+  const handleSearch = (value: string, type: 'name' | 'code') => {
+    setParams((prev) => ({
+      ...prev,
+      'filter[employees.id]': undefined,
+      'filter[employee.name]': undefined
+    }));
+    if (!value) {
+      return;
+    }
+    if (type === 'name') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[employee.name]': value ? value : undefined
+      }));
+    } else if (type === 'code') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[employees.id]': value ? value : undefined
+      }));
+    }
+  };
 
   useEffect(() => {
     const currentDate = dayjs(schedule?.date).startOf('month');
@@ -495,45 +514,20 @@ export default function Detail() {
               </div>
             ))}
           </div>
-          <Space.Compact
-            className="col-span-1 sm:col-span-2"
-            style={{ width: '100%' }}
-          >
-            <Select
-              defaultValue={searchOn}
-              options={[
-                { label: 'Tên', value: 'name' },
-                { label: 'Mã', value: 'code' }
-              ]}
-              onChange={(value) => {
-                setSearchOn(value);
-              }}
-            />
-            <Input.Search
-              placeholder="Tìm kiếm nhân viên"
-              allowClear
-              onSearch={(value) => {
-                setParams((prev) => ({
-                  ...prev,
-                  'filter[employee_id]': undefined,
-                  'filter[employees.name]': undefined
-                }));
-                if (searchOn === 'code') {
-                  setParams((prev) => ({
-                    ...prev,
-                    'filter[employee_id]': value ? value : undefined
-                  }));
-                } else {
-                  setParams((prev) => ({
-                    ...prev,
-                    'filter[employees.name]': value ? value : undefined
-                  }));
-                }
-              }}
-            />
-          </Space.Compact>
+          <Input.Search
+            placeholder="Tìm kiếm nhân viên"
+            allowClear
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              if (/^\d+$/.test(inputValue)) {
+                handleSearch(inputValue, 'code');
+              } else {
+                handleSearch(inputValue, 'name');
+              }
+            }}
+          />
         </div>
-        <Spin size="large" tip="Đang tải..." spinning={queryResult.isLoading}>
+        <Spin tip="Đang tải..." spinning={queryResult.isLoading}>
           {queryResult.isError ? (
             <div className="flex items-center justify-center">
               <span className="text-red-500">Không tìm thấy lịch làm việc</span>

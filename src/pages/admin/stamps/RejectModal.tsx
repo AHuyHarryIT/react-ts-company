@@ -1,8 +1,9 @@
-import { rejectStamp } from '@services/StampService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, message, Modal } from 'antd';
 import React, { useState } from 'react';
 import { FaBan } from 'react-icons/fa';
+import { rejectStamp } from '@services/StampService';
+import { useStampNotification } from '@hooks/useStampNotification';
 
 interface RejectModalProps {
   stampId: string;
@@ -13,15 +14,17 @@ export const RejectModal: React.FC<RejectModalProps> = ({ stampId }) => {
 
   const queryClient = useQueryClient();
 
+  const { handleRemoveNotification } = useStampNotification();
   const { mutate, isPending } = useMutation({
     mutationKey: ['rejectStamp'],
     mutationFn: async (id: string) => {
       await rejectStamp(id);
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       setOpen(false);
       message.success('Tem đã được từ chối thành công');
       queryClient.invalidateQueries();
+      if (id) handleRemoveNotification(id);
     },
     onError: () => {
       message.error('Lỗi khi từ chối tem');

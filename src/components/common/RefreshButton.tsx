@@ -17,7 +17,6 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({
       color="primary"
       variant="solid"
       icon={<IoReload />}
-      size="large"
       onClick={() => refresh()}
       loading={isLoading}
     >

@@ -1,27 +1,29 @@
-import { Link, useLocation } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import type { MenuProps } from 'antd';
-import { Drawer, Image, Layout, Menu } from 'antd';
+import { Drawer, Layout } from 'antd';
 
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 
-import { IconContext } from 'react-icons';
 import { BsCalendar2Check } from 'react-icons/bs';
 // import { BsCalendar2Week } from 'react-icons/bs';
 import { CiBoxes } from 'react-icons/ci';
 import { FaMoneyCheckAlt, FaRegCalendarAlt } from 'react-icons/fa';
-import { FaBriefcase, FaEnvelopesBulk, FaPrint } from 'react-icons/fa6';
+import {
+  FaBriefcase,
+  FaCamera,
+  FaEnvelopesBulk,
+  FaPrint
+} from 'react-icons/fa6';
 import { FiUsers } from 'react-icons/fi';
 import { IoCalendarNumberOutline, IoHomeOutline } from 'react-icons/io5';
 
-import logo from '@assets/images/logo/logoAsset.svg';
+import { MenuItem } from '@/types/menuItem';
+import { IconHistory } from '@components/icons';
 import { useAuth } from '@hooks/useAuth';
 import { isAdmin } from '@utils/authUtil';
-import { IconHistory } from '@components/icons';
+import { SidebarMenu } from './SidebarMenu';
 
 const { Sider: Side } = Layout;
-
-type MenuItem = Required<MenuProps>['items'][number];
 
 const adminItems: MenuItem[] = [
   {
@@ -262,10 +264,10 @@ const employeeItems: MenuItem[] = [
     ]
   },
   {
-    key: '/employee/products',
+    key: '/employee/todo/add-product',
     label: (
-      <Link to={'/employee/products'}>
-        <span className="capitalize">Sản Phẩm</span>
+      <Link to={'/employee/todo/add-product'}>
+        <span className="capitalize">Chọn sản phẩm</span>
       </Link>
     ),
     icon: <CiBoxes />
@@ -274,7 +276,7 @@ const employeeItems: MenuItem[] = [
     key: '/employee/activity-schedule',
     label: (
       <Link to={'/employee/activity-schedule'}>
-        <span className="capitalize">Lịch hoạt động / ngày</span>
+        <span className="capitalize">Lịch sử hoạt động</span>
       </Link>
     ),
     icon: <IconHistory />
@@ -287,14 +289,23 @@ const employeeItems: MenuItem[] = [
       </Link>
     ),
     icon: <FaEnvelopesBulk />
+  },
+  {
+    key: '/employee/scan',
+    label: (
+      <Link to={'/employee/scan'}>
+        <span className="capitalize">Quét sản phẩm</span>
+      </Link>
+    ),
+    icon: <FaCamera />
   }
 ];
 
 function Sidebar() {
-  const { pathname } = useLocation();
   const { isSidebarClose, theme, isMobile } = useStore(uiStore);
   const { user } = useAuth();
   const admin = isAdmin(user?.role?.name || '');
+  const items = admin ? adminItems : employeeItems;
 
   const sidebarStyle: React.CSSProperties = {
     overflow: 'auto',
@@ -315,34 +326,9 @@ function Sidebar() {
           placement="left"
           onClose={toggleSidebar}
           open={!isSidebarClose}
+          styles={{ body: { padding: 0 } }}
         >
-          <div className="flex items-center justify-center p-4">
-            <Link
-              to="/"
-              onClick={() => {
-                if (isMobile) {
-                  toggleSidebar();
-                }
-              }}
-            >
-              <Image className="w-full" src={logo} alt="Logo" preview={false} />
-            </Link>
-          </div>
-
-          <IconContext.Provider value={{ size: '1.25rem' }}>
-            <Menu
-              theme={theme}
-              mode="inline"
-              items={admin ? adminItems : employeeItems}
-              defaultSelectedKeys={['/admin']}
-              selectedKeys={[pathname]}
-              onClick={() => {
-                if (isMobile) {
-                  toggleSidebar();
-                }
-              }}
-            />
-          </IconContext.Provider>
+          <SidebarMenu items={items} />
         </Drawer>
       ) : (
         <Side
@@ -355,32 +341,7 @@ function Sidebar() {
           collapsed={isSidebarClose}
           onCollapse={toggleSidebar}
         >
-          <div className="flex items-center justify-center p-4">
-            <Link
-              to="/"
-              onClick={() => {
-                if (isMobile) {
-                  toggleSidebar();
-                }
-              }}
-            >
-              <Image className="w-full" src={logo} alt="Logo" preview={false} />
-            </Link>
-          </div>
-          <IconContext.Provider value={{ size: '1.25rem' }}>
-            <Menu
-              theme={theme}
-              mode="inline"
-              items={admin ? adminItems : employeeItems}
-              defaultSelectedKeys={['/admin']}
-              selectedKeys={[pathname]}
-              onClick={() => {
-                if (isMobile) {
-                  toggleSidebar();
-                }
-              }}
-            />
-          </IconContext.Provider>
+          <SidebarMenu items={items} />
         </Side>
       )}
     </>

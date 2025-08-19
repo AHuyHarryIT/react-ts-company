@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Avatar, Table, TableColumnsType, TableProps } from 'antd';
+import { Avatar, Input, Table, TableColumnsType, TableProps } from 'antd';
 import { useState } from 'react';
 
 import { useCrudList } from '@/hooks/useCrudList';
@@ -13,10 +13,8 @@ import { convertImageName2Url } from '@utils/convertImageName2Url';
 
 import RefreshButton from '@components/common/RefreshButton';
 import { FaUser } from 'react-icons/fa';
-
-interface EmployeeTable extends EmployeeType {
-  category_celender?: { id: string; name: string };
-}
+import { debounce } from 'lodash';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 export const Route = createFileRoute('/_authenticated/admin/employees/trash/')({
   component: RouteComponent
@@ -26,8 +24,30 @@ function RouteComponent() {
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 10,
-    include: ['role', 'category_celender']
+    include: ['role', 'calendarCategory']
   });
+
+  const handleSearch = debounce((value: string, type: 'name' | 'code') => {
+    setParams((prev) => ({
+      ...prev,
+      'filter[name]': undefined,
+      'filter[id]': undefined
+    }));
+    if (!value) {
+      return;
+    }
+    if (type == 'name') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[name]': value
+      }));
+    } else if (type == 'code') {
+      setParams((prev) => ({
+        ...prev,
+        'filter[id]': value
+      }));
+    }
+  }, 300);
 
   const {
     data: employees,
@@ -40,7 +60,7 @@ function RouteComponent() {
     isTrash: true
   });
 
-  const handleChange: TableProps<EmployeeTable>['onChange'] = (
+  const handleChange: TableProps<EmployeeType>['onChange'] = (
     pagination,
     filters,
     sorter
@@ -72,7 +92,7 @@ function RouteComponent() {
     }));
   };
 
-  const columns: TableColumnsType<EmployeeTable> = [
+  const columns: TableColumnsType<EmployeeType> = [
     {
       title: 'STT',
       rowScope: 'row',
@@ -133,13 +153,13 @@ function RouteComponent() {
       title: 'Mã nhân viên',
       minWidth: 110,
       align: 'center',
-      dataIndex: 'code'
+      dataIndex: 'id'
     },
     {
       title: 'Danh mục lịch làm việc',
       minWidth: 200,
-      dataIndex: 'category_celender',
-      render: (_, record) => record.category_celender?.name
+      dataIndex: 'calendar_category',
+      render: (_, record) => record.calendar_category?.name
     },
     {
       title: 'Hành động',
@@ -168,22 +188,17 @@ function RouteComponent() {
     }
   ];
 
-  const tableProps: TableProps<EmployeeTable> = {
+  const tableProps: TableProps<EmployeeType> = {
+    ...(customTableProps as unknown as TableProps<EmployeeType>),
     rowKey: (record) => ['employee', record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: employees,
     loading: isLoading,
-    size: 'small',
-    scroll: { x: 'max-content', y: 'calc(100vh - 300px)' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       current: params.page,
       pageSize: params.limit,
       total: pagination.total,
-      showTotal: (total) => `Tổng ${total} nhân viên`,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
           ...prev,
@@ -205,7 +220,21 @@ function RouteComponent() {
       <BackButton />
       <ComponentCard title="Danh sách nhân viên dã nghỉ việc">
         <RefreshButton refresh={refetch} isLoading={isFetching} />
-
+        <div>
+          <Input.Search
+            className="max-w-3xs"
+            placeholder="Tìm kiếm nhân viên"
+            allowClear
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              if (/^\d+$/.test(inputValue)) {
+                handleSearch(inputValue, 'code');
+              } else {
+                handleSearch(inputValue, 'name');
+              }
+            }}
+          />
+        </div>
         <Table<EmployeeType> {...tableProps} />
       </ComponentCard>
     </div>

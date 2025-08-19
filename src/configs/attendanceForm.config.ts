@@ -16,7 +16,7 @@ export const useAttendanceCreateFields = () => {
   });
 
   const employeeOptions = employees?.map((employee) => ({
-    label: `${employee.id} -${employee.name}`,
+    label: `${employee.id} - ${employee.name}`,
     value: employee.id
   }));
 

@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
   Button,
-  Collapse,
   DatePicker,
   Input,
   Select,
@@ -24,7 +23,7 @@ import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
 
-import { IconFilter, IconHistory } from '@components/icons';
+import { IconHistory } from '@components/icons';
 import { fetchAttendances } from '@services/AttendanceService';
 import { ExportModal } from './ExportModal';
 
@@ -115,20 +114,17 @@ export default function Records() {
     {
       title: 'STT',
       rowScope: 'row',
-      minWidth: 50,
       align: 'center',
       render: (_value, _record, index) =>
         index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
     },
     {
       title: 'Mã nhân viên',
-      dataIndex: 'employee_id',
-      minWidth: 120
+      dataIndex: 'employee_id'
     },
     {
       title: 'Tên nhân viên',
       key: 'name',
-      minWidth: 200,
       render: (_value, record) => {
         return record.name || 'Chưa có thông tin';
       }
@@ -137,7 +133,6 @@ export default function Records() {
       title: 'Ngày chấm công',
       dataIndex: 'date',
       key: 'date',
-      minWidth: 150,
       render: (value) => {
         if (!value) return null;
         return new Date(value).toLocaleString('vi-VN', {
@@ -151,7 +146,6 @@ export default function Records() {
       title: 'Ngày trong tuần',
       dataIndex: 'date',
       key: 'date',
-      minWidth: 150,
       render: (value) => {
         if (!value) return null;
         return new Date(value).toLocaleString('vi-VN', {
@@ -163,7 +157,6 @@ export default function Records() {
       title: 'Giờ vào',
       dataIndex: 'time_in',
       key: 'time_in',
-      minWidth: 170,
       render: (value) => {
         if (!value) return '-';
         return new Date(value).toLocaleString('vi-VN', {
@@ -180,7 +173,6 @@ export default function Records() {
       title: 'Giờ ra',
       dataIndex: 'time_out',
       key: 'time_out',
-      minWidth: 170,
       render: (value) => {
         if (!value) return '-';
         return new Date(value).toLocaleString('vi-VN', {
@@ -197,7 +189,6 @@ export default function Records() {
       title: 'Ca làm việc',
       dataIndex: 'shift',
       key: 'shift',
-      minWidth: 120,
       render: (value, record) => {
         if (record.hnhc == 'X' && record.shift)
           return <Tag color="yellow">Đổi lịch làm</Tag>;
@@ -210,7 +201,6 @@ export default function Records() {
       title: 'Tổng giờ làm việc(h)',
       dataIndex: 'total_hours',
       key: 'total_hours',
-      minWidth: 150,
       render: (value, record) => {
         if (!record.shift) return '-';
         return value ? value : <Tag color="red">Chấm công chưa đủ</Tag>;
@@ -220,7 +210,6 @@ export default function Records() {
       title: 'Giờ hành chính(h)',
       dataIndex: 'administrative_hours',
       key: 'administrative_hours',
-      minWidth: 120,
       render: (value, record) => {
         if (!record.shift) return '-';
         return value ? value : <Tag color="red">Chấm công chưa đủ</Tag>;
@@ -230,7 +219,6 @@ export default function Records() {
       title: 'Giờ tăng ca(h)',
       dataIndex: 'overtime_hours',
       key: 'overtime_hours',
-      minWidth: 120,
       render: (value) => {
         return value ? value : '-';
       }
@@ -285,85 +273,62 @@ export default function Records() {
           isLoading={isFetching}
         />
         <Link to="/admin/attendances/history">
-          <Button
-            color="green"
-            variant="solid"
-            icon={<IconHistory />}
-            size="large"
-          >
+          <Button color="green" variant="solid" icon={<IconHistory />}>
             Lịch sử chấm công
           </Button>
         </Link>
         <EmployeeListModal />
         <ExportModal />
       </div>
-      <Collapse
-        style={{ marginBottom: '1.5rem' }}
-        items={[
-          {
-            key: 'filter',
-            label: (
-              <div className="flex items-center gap-1">
-                <IconFilter /> Bộ lọc
-              </div>
-            ),
-            children: (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                <DatePicker
-                  picker="month"
-                  format="YYYY-MM"
-                  placeholder="Chọn tháng"
-                  onChange={(value, dateString) => {
-                    setMonth(
-                      value
-                        ? dayjs(value).format('MM-YYYY')
-                        : dayjs().format('MM-YYYY')
-                    );
-                    setParams((prev) => ({
-                      ...prev,
-                      'filter[date_between]':
-                        typeof dateString === 'string' && dateString
-                          ? `${dayjs(dateString, 'YYYY-MM').startOf('month').format('YYYY-MM-DD')},${dayjs(dateString, 'YYYY-MM').endOf('month').format('YYYY-MM-DD')}`
-                          : undefined
-                    }));
-                  }}
-                />
-                <Select
-                  options={categoryOptions}
-                  placeholder="Chọn danh mục"
-                  popupMatchSelectWidth={false}
-                  allowClear
-                  onSelect={(value) => {
-                    setParams((prev) => ({
-                      ...prev,
-                      'filter[employees.calendar_category_id]': value
-                    }));
-                  }}
-                  onClear={() => {
-                    setParams((prev) => ({
-                      ...prev,
-                      'filter[employees.calendar_category_id]': undefined
-                    }));
-                  }}
-                />
-                <Input.Search
-                  placeholder="Tìm kiếm nhân viên"
-                  allowClear
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    if (/^\d+$/.test(inputValue)) {
-                      handleSearch(inputValue, 'code');
-                    } else {
-                      handleSearch(inputValue, 'name');
-                    }
-                  }}
-                />
-              </div>
-            ),
-            showArrow: false
-          }
-        ]}
-      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <DatePicker
+          picker="month"
+          format="YYYY-MM"
+          placeholder="Chọn tháng"
+          onChange={(value, dateString) => {
+            setMonth(
+              value ? dayjs(value).format('MM-YYYY') : dayjs().format('MM-YYYY')
+            );
+            setParams((prev) => ({
+              ...prev,
+              'filter[date_between]':
+                typeof dateString === 'string' && dateString
+                  ? `${dayjs(dateString, 'YYYY-MM').startOf('month').format('YYYY-MM-DD')},${dayjs(dateString, 'YYYY-MM').endOf('month').format('YYYY-MM-DD')}`
+                  : undefined
+            }));
+          }}
+        />
+        <Select
+          options={categoryOptions}
+          placeholder="Chọn danh mục"
+          popupMatchSelectWidth={false}
+          allowClear
+          onSelect={(value) => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[employees.calendar_category_id]': value
+            }));
+          }}
+          onClear={() => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[employees.calendar_category_id]': undefined
+            }));
+          }}
+        />
+        <Input.Search
+          placeholder="Tìm kiếm nhân viên"
+          allowClear
+          onChange={(e) => {
+            const inputValue = e.target.value;
+            if (/^\d+$/.test(inputValue)) {
+              handleSearch(inputValue, 'code');
+            } else {
+              handleSearch(inputValue, 'name');
+            }
+          }}
+        />
+      </div>
       <div>
         <label htmlFor="forgotten-days-switch">
           Hiển thị những ngày quên chấm công

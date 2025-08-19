@@ -102,34 +102,19 @@ function RouteComponent() {
     <ComponentCard title="Danh sách PO">
       <div className="flex flex-wrap justify-between gap-2">
         <div className="flex flex-wrap gap-2">
-          <Button size="large" variant="solid" color="green" icon={<IconAdd />}>
+          <Button variant="solid" color="green" icon={<IconAdd />}>
             Thêm sản lượng
           </Button>
-          <Button size="large" variant="solid" color="blue" icon={<FaTruck />}>
+          <Button variant="solid" color="blue" icon={<FaTruck />}>
             Thêm PO xuất hàng
           </Button>
-          <Button
-            size="large"
-            variant="solid"
-            color="blue"
-            icon={<FaWarehouse />}
-          >
+          <Button variant="solid" color="blue" icon={<FaWarehouse />}>
             Thêm tồn đầu kỳ
           </Button>
-          <Button
-            size="large"
-            variant="solid"
-            color="blue"
-            icon={<IconHistory />}
-          >
+          <Button variant="solid" color="blue" icon={<IconHistory />}>
             Lịch sử nhập PO
           </Button>
-          <Button
-            size="large"
-            variant="solid"
-            color="green"
-            icon={<IconExport />}
-          >
+          <Button variant="solid" color="green" icon={<IconExport />}>
             Export
           </Button>
         </div>

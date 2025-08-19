@@ -48,7 +48,6 @@ export function CreateModal<
         color="green"
         variant="solid"
         icon={<FaPlus />}
-        size="large"
         onClick={showModal}
       >
         {title}
