@@ -199,6 +199,16 @@ function Sidebar() {
           onClose={toggleSidebar}
           open={!isSidebarClose}
           styles={{ body: { padding: 0 }, footer: { padding: 0 } }}
+          footer={
+            <Button
+              className="w-full"
+              size="large"
+              icon={<IconLogOut />}
+              onClick={handleLogout}
+            >
+              Đăng xuất
+            </Button>
+          }
         >
           {sidebarContent}
         </Drawer>
@@ -217,15 +227,14 @@ function Sidebar() {
             style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
           >
             <div style={{ flex: 1, minHeight: 0 }}>{sidebarContent}</div>
-            <div style={{ padding: 16 }}>
+            <div>
               <Button
                 className="w-full"
                 size="large"
                 icon={<IconLogOut />}
                 onClick={handleLogout}
-              >
-                Đăng xuất
-              </Button>
+                children={!isSidebarClose && 'Đăng xuất'}
+              />
             </div>
           </div>
         </Sider>
