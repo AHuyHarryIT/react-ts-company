@@ -52,7 +52,7 @@ export const UpdateQuantityError = () => {
   };
   return (
     <>
-      <ComponentCard title="Cập Nhật Sản Lượng">
+      <ComponentCard title="Cập Nhật Sản Lượng Hàng Lỗi">
         <div className="flex flex-col items-center gap-4 lg:flex-row">
           <Link to="/employee/todo/add-product">
             <Button variant="solid" color="blue" icon={<BsArrowLeft />}>

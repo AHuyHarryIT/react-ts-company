@@ -33,7 +33,7 @@ export const TodoHistory = () => {
 
   return (
     <>
-      <ComponentCard title="Cập Nhật Sản Lượng">
+      <ComponentCard title="Lịch Sử Cập Nhật Sản Lượng">
         <div className="flex flex-col items-center gap-4 lg:flex-row">
           <Link to="/employee/todo/add-product">
             <Button variant="solid" color="blue" icon={<BsArrowLeft />}>

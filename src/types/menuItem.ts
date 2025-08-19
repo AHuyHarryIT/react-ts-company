@@ -98,5 +98,9 @@ export const permissionPathMap: PermissionPathType = {
   storage_export_product: '/employee/scan/storage',
   view_team_schedule: '/work-schedules',
   view_today_activity: '/activity-schedule',
-  request_label: '/employee/stamps/request'
+  request_label: '/employee/stamps/request',
+  select_products_todo: '/employee/todo/add-product',
+  input_quantity: '/employee/todo/update-quantity',
+  input_quantity_error: '/employee/todo/update-quantity-error',
+  history_input_quantity: '/employee/todo/history'
 };
