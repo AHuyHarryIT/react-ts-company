@@ -224,7 +224,7 @@ export default function ScanProduct() {
     <>
       <BackButton to="/" />
       <ComponentCard title="Quét sản phẩm">
-        <Link to="/employee/scan/storage">
+        <Link to="/scan/storage">
           <Button type="primary" icon={<FaBox />}>
             Sản phẩm đã quét
           </Button>
