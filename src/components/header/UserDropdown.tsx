@@ -4,10 +4,10 @@ import { Avatar, Dropdown, MenuProps } from 'antd';
 import { authLogout } from '@services/AuthService';
 import { authStore } from '@stores/authStore';
 
+import { IconLogOut } from '@components/icons';
 import { useStore } from '@tanstack/react-store';
 import { FaUser, FaUserCircle } from 'react-icons/fa';
 import { GoGear } from 'react-icons/go';
-import { IoIosLogOut } from 'react-icons/io';
 import { IoInformationCircleOutline } from 'react-icons/io5';
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -57,7 +57,7 @@ export default function UserDropdown() {
     {
       key: 'log-out',
       label: 'Log out',
-      icon: <IoIosLogOut />,
+      icon: <IconLogOut />,
       onClick: handleLogout
     }
   ];

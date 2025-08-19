@@ -1,23 +1,26 @@
-import { Link } from '@tanstack/react-router';
-import { useStore } from '@tanstack/react-store';
-import { Drawer, Layout } from 'antd';
-import { toggleSidebar, uiStore } from '@stores/uiStore';
-import { useAuth } from '@hooks/useAuth';
-import { SidebarMenu } from './SidebarMenu';
-import { useMemo } from 'react';
 import type { MenuItem } from '@/types/menuItem';
 import {
   DefaultIcon,
   permissionIconMap,
   permissionPathMap
 } from '@/types/menuItem';
+import { Permission } from '@/types/permissionType';
+import { IconLogOut } from '@components/icons';
+import { useAuth } from '@hooks/useAuth';
+import { toggleSidebar, uiStore } from '@stores/uiStore';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { useStore } from '@tanstack/react-store';
+import { Button, Drawer, Layout } from 'antd';
+import { useMemo } from 'react';
 import type { IconType } from 'react-icons';
 import * as FaIcons from 'react-icons/fa';
-import { Permission } from '@/types/permissionType';
+import { SidebarMenu } from './SidebarMenu';
+import { authLogout } from '@services/AuthService';
 
 const { Sider } = Layout;
 
 function Sidebar() {
+  const navigate = useNavigate();
   const { isSidebarClose, theme, isMobile } = useStore(uiStore);
   const { user } = useAuth();
 
@@ -182,6 +185,10 @@ function Sidebar() {
 
   const sidebarContent = <SidebarMenu items={items} />;
 
+  const handleLogout = async () => {
+    await authLogout();
+    navigate({ to: '/login' });
+  };
   return (
     <>
       {isMobile ? (
@@ -191,7 +198,7 @@ function Sidebar() {
           placement="left"
           onClose={toggleSidebar}
           open={!isSidebarClose}
-          styles={{ body: { padding: 0 } }}
+          styles={{ body: { padding: 0 }, footer: { padding: 0 } }}
         >
           {sidebarContent}
         </Drawer>
@@ -206,7 +213,21 @@ function Sidebar() {
           collapsed={isSidebarClose}
           onCollapse={toggleSidebar}
         >
-          {sidebarContent}
+          <div
+            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+          >
+            <div style={{ flex: 1, minHeight: 0 }}>{sidebarContent}</div>
+            <div style={{ padding: 16 }}>
+              <Button
+                className="w-full"
+                size="large"
+                icon={<IconLogOut />}
+                onClick={handleLogout}
+              >
+                Đăng xuất
+              </Button>
+            </div>
+          </div>
         </Sider>
       )}
     </>
