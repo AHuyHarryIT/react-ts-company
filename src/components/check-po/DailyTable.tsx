@@ -1,10 +1,12 @@
 import { Table, TableColumnsType, TableProps } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
+import type { Dayjs } from 'dayjs';
 
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
 import { dateTimeToShift } from '@utils/dateTimeToShift';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 export type ProduceTableType = {
   id: string;
@@ -20,7 +22,7 @@ export type ProduceTableType = {
 };
 
 interface DailyTableProps {
-  month: string; // MM-YYYY
+  month: Dayjs;
 }
 
 export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
@@ -41,7 +43,7 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
       page: page,
       limit: limit,
       include: ['dailyquantities', 'totalmonthquantities'],
-      month: month,
+      month: month.format('YYYY-MM'),
       status: 1
     }
   });
@@ -173,21 +175,16 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
   ];
 
   const tableProps: TableProps<ProduceTableType> = {
+    ...(customTableProps as unknown as TableProps<ProduceTableType>),
     rowKey: (record) => ['produce', record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
-    size: 'small',
-    scroll: { x: 'max-content' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       pageSize: limit,
       current: page,
       total: total,
-      showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
         setLimit(size);
       },

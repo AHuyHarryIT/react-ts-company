@@ -1,9 +1,11 @@
 import { Table, TableColumnsType, TableProps } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
+import type { Dayjs } from 'dayjs';
 
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 type ErrorTableType = {
   id: string;
@@ -18,7 +20,7 @@ type ErrorTableType = {
 };
 
 interface ErrorTableProps {
-  month: string; // MM-YYYY
+  month: Dayjs;
 }
 
 export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
@@ -39,7 +41,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
       page: page,
       limit: limit,
       include: ['dailyquantities', 'totalmonthquantities'],
-      month: month,
+      month: month.format('YYYY-MM'),
       status: 6
     }
   });
@@ -148,21 +150,16 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
   ];
 
   const tableProps: TableProps<ErrorTableType> = {
+    ...(customTableProps as unknown as TableProps<ErrorTableType>),
     rowKey: (record) => ['error', record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
-    size: 'small',
-    scroll: { x: 'max-content' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       pageSize: limit,
       current: page,
       total: total,
-      showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
         setLimit(size);
       },

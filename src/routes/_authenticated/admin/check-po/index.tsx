@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Button, Select, Tabs, TabsProps } from 'antd';
+import { Button, DatePicker, Tabs, TabsProps } from 'antd';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 
-import axiosPrivate from '@/api/axiosInstance';
 import { DailyTable } from '@components/check-po/DailyTable';
 import { ErrorTable } from '@components/check-po/ErrorTable';
 import { WeekTable } from '@components/check-po/WeekTable';
@@ -13,26 +14,13 @@ import { IconAdd, IconExport, IconHistory } from '@components/icons';
 import { FaTruck, FaWarehouse } from 'react-icons/fa6';
 
 export const Route = createFileRoute('/_authenticated/admin/check-po/')({
-  component: RouteComponent,
-  loader: async () => {
-    const response: { months: string[] } = await axiosPrivate.get(
-      '/api/products/month-list'
-    );
-    const months = response.months || [];
-    return { months };
-  }
+  component: RouteComponent
 });
 
 function RouteComponent() {
-  const { months } = Route.useLoaderData();
-  const [month, setMonth] = useState(months[0] || '');
+  const [month, setMonth] = useState<Dayjs>(dayjs());
 
   const { weeksInMonth, startOfMonth, endOfMonth } = getWeeksInMonth(month);
-
-  const monthOptions = months.map((month) => ({
-    value: month,
-    label: month
-  }));
 
   const weekTabs: TabsProps['items'] = Array.from(
     { length: weeksInMonth },
@@ -76,7 +64,7 @@ function RouteComponent() {
           <div className="text-center text-lg font-semibold uppercase">
             Bảng sản lượng sản xuất hàng ngày
             <br />
-            Tháng {month}
+            Tháng {month.format('MM-YYYY')}
           </div>
           <DailyTable month={month} />
         </div>
@@ -90,7 +78,7 @@ function RouteComponent() {
           <div className="text-center text-lg font-semibold uppercase">
             Bảng sản lượng sản xuất hàng lỗi hàng ngày
             <br />
-            Tháng {month}
+            Tháng {month.format('MM-YYYY')}
           </div>
           <ErrorTable month={month} />
         </div>
@@ -118,11 +106,10 @@ function RouteComponent() {
             Export
           </Button>
         </div>
-        <Select
-          placeholder="Chọn tháng"
-          options={monthOptions}
-          defaultValue={month}
-          onChange={(value) => setMonth(value)}
+        <DatePicker
+          picker="month"
+          value={month}
+          onChange={(date) => (date ? setMonth(date) : setMonth(dayjs()))}
         />
       </div>
 
