@@ -200,7 +200,7 @@ export default function DailySchedule() {
   };
 
   return (
-    <ComponentCard title="Danh sách lịch làm việc trong ngày">
+    <ComponentCard title="Danh sách nhân viên đang làm việc">
       <div>
         <label htmlFor="admin-date-picker">Chọn ngày</label>
         <br />
