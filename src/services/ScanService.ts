@@ -3,7 +3,7 @@ import { EmployeeType } from '@/types/employeeType';
 import { ProductType } from '@/types/productType';
 import { LotModalData, StorageType } from '@/types/storageType';
 
-const EMP_ENDPOINT = '/api/employee/scan';
+const EMP_ENDPOINT = '/api/scan';
 
 export type StorageParams = {
   filter_date?: Date;

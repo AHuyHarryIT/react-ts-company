@@ -34,6 +34,7 @@
     "antd-img-crop": "^4.24.0",
     "axios": "^1.7.9",
     "exceljs": "^4.4.0",
+    "framer-motion": "^12.23.12",
     "laravel-echo": "^2.2.0",
     "lodash": "^4.17.21",
     "pusher-js": "^8.4.0",

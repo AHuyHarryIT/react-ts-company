@@ -46,7 +46,7 @@ export default function NotificationDropdown() {
               dataSource={stampItems}
               renderItem={(n, index) => (
                 <List.Item key={`noti-${index}-${n.recordId ?? index}`}>
-                  <Link to="/admin/stamps/history">
+                  <Link to="/stamps/history">
                     <div>
                       <span className="text-theme-sm block font-medium text-gray-800 dark:text-gray-400">
                         Yêu cầu in tem

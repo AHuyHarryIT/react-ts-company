@@ -1,4 +1,4 @@
-import { Route } from '@routes/_authenticated/admin/work-schedules/$id';
+import { Route } from '@routes/_authenticated/work-schedules/$id';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@tanstack/react-store';
 import {

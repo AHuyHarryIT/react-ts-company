@@ -1,311 +1,174 @@
 import { Link } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import { Drawer, Layout } from 'antd';
-
 import { toggleSidebar, uiStore } from '@stores/uiStore';
-
-import { BsCalendar2Check } from 'react-icons/bs';
-// import { BsCalendar2Week } from 'react-icons/bs';
-import { CiBoxes } from 'react-icons/ci';
-import { FaMoneyCheckAlt, FaRegCalendarAlt } from 'react-icons/fa';
-import {
-  FaBriefcase,
-  FaCamera,
-  FaEnvelopesBulk,
-  FaPrint
-} from 'react-icons/fa6';
-import { FiUsers } from 'react-icons/fi';
-import { IoCalendarNumberOutline, IoHomeOutline } from 'react-icons/io5';
-
-import { MenuItem } from '@/types/menuItem';
-import { IconHistory } from '@components/icons';
 import { useAuth } from '@hooks/useAuth';
-import { isAdmin } from '@utils/authUtil';
 import { SidebarMenu } from './SidebarMenu';
+import { useMemo } from 'react';
+import type { MenuItem } from '@/types/menuItem';
+import {
+  DefaultIcon,
+  permissionIconMap,
+  permissionPathMap
+} from '@/types/menuItem';
+import type { IconType } from 'react-icons';
+import * as FaIcons from 'react-icons/fa';
+import { Permission } from '@/types/permissionType';
 
-const { Sider: Side } = Layout;
-
-const adminItems: MenuItem[] = [
-  {
-    key: '/admin',
-    label: (
-      <Link to={'/admin'}>
-        <span className="capitalize">Trang chủ</span>
-      </Link>
-    ),
-    icon: <IoHomeOutline />
-  },
-  // {
-  //   key: '/admin/about',
-  //   label: (
-  //     <Link to={'/admin/about'}>
-  //       <span className="capitalize">about</span>
-  //     </Link>
-  //   ),
-  //   icon: <AiOutlineHome />
-  // },
-  {
-    key: 'HR',
-    label: <span className="capitalize">Nhân sự</span>,
-    icon: <FiUsers />,
-    children: [
-      {
-        key: '/admin/employees',
-        label: (
-          <Link to={'/admin/employees'}>
-            <span className="capitalize">Nhân viên</span>
-          </Link>
-        )
-      },
-      {
-        key: '/admin/roles',
-        label: (
-          <Link to={'/admin/roles'}>
-            <span className="capitalize">Chức vụ</span>
-          </Link>
-        )
-      }
-    ]
-  },
-  {
-    key: '/admin/products',
-    label: (
-      <Link to={'/admin/products'}>
-        <span className="capitalize">Sản Phẩm</span>
-      </Link>
-    ),
-    icon: <CiBoxes />
-  },
-  // {
-  //   key: '/admin/plans',
-  //   label: <span className="capitalize">Kế hoạch</span>,
-  //   icon: <BsCalendar2Week />,
-  //   children: [
-  //     {
-  //       key: '/admin/plans/production',
-  //       label: (
-  //         <Link to={'/admin/plans/production'}>
-  //           <span className="capitalize">Kế hoạch sản xuất</span>
-  //         </Link>
-  //       )
-  //     },
-  //     {
-  //       key: '/admin/plans/material',
-  //       label: (
-  //         <Link to={'/admin/plans/material'}>
-  //           <span className="capitalize">Kế hoạch nguyên liệu</span>
-  //         </Link>
-  //       )
-  //     }
-  //   ]
-  // },
-  {
-    key: 'stamp',
-    label: <span className="capitalize">Tạo Tem</span>,
-    icon: <FaPrint />,
-    children: [
-      {
-        key: '/admin/stamps/box',
-        label: (
-          <Link to={'/admin/stamps/box'}>
-            <span className="capitalize">Tem Thùng</span>
-          </Link>
-        )
-      },
-      {
-        key: '/admin/stamps/bag',
-        label: (
-          <Link to={'/admin/stamps/bag'}>
-            <span className="capitalize">Tem Bịch</span>
-          </Link>
-        )
-      },
-      {
-        key: '/admin/stamps/history',
-        label: (
-          <Link to={'/admin/stamps/history'}>
-            <span className="capitalize">Lịch Sử In Tem</span>
-          </Link>
-        )
-      }
-    ]
-  },
-  {
-    key: 'attendance',
-    label: <span className="capitalize">Chấm Công</span>,
-    icon: <BsCalendar2Check />,
-    children: [
-      {
-        key: '/admin/attendances/history',
-        label: (
-          <Link to={'/admin/attendances/history'}>
-            <span className="capitalize">Lịch Sử Chấm Công</span>
-          </Link>
-        )
-      },
-      {
-        key: '/admin/attendances/record',
-        label: (
-          <Link to={'/admin/attendances/record'}>
-            <span className="capitalize">Bảng Tính Công</span>
-          </Link>
-        )
-      }
-    ]
-  },
-  // {
-  //   key: '/admin/check-po',
-  //   label: (
-  //     <Link to={'/admin/check-po'}>
-  //       <span className="capitalize">Kiểm tra PO</span>
-  //     </Link>
-  //   ),
-  //   icon: <IoCheckboxOutline />
-  // },
-  {
-    key: '/admin/work-schedules',
-    label: (
-      <Link to={'/admin/work-schedules'}>
-        <span className="capitalize">Lịch làm việc</span>
-      </Link>
-    ),
-    icon: <FaRegCalendarAlt />
-  },
-  {
-    key: '/admin/work-schedule-categories',
-    label: (
-      <Link to={'/admin/work-schedule-categories'}>
-        <span className="capitalize">Danh mục lịch làm việc</span>
-      </Link>
-    ),
-    icon: <FaBriefcase />
-  },
-  {
-    key: '/admin/salaries',
-    label: (
-      <Link to={'/admin/salaries'}>
-        <span className="capitalize">Bảng lương</span>
-      </Link>
-    ),
-    icon: <FaMoneyCheckAlt />
-  },
-  {
-    key: '/admin/activity-schedule',
-    label: (
-      <Link to={'/admin/activity-schedule'}>
-        <span className="capitalize">Lịch hoạt động / ngày</span>
-      </Link>
-    ),
-    icon: <IoCalendarNumberOutline />
-  },
-  {
-    type: 'divider'
-  }
-  // {
-  //   key: '/admin/activity-history',
-  //   label: (
-  //     <Link to={'/admin/activity-history'}>
-  //       <span className="capitalize">Lịch sử hoạt động</span>
-  //     </Link>
-  //   ),
-  //   icon: <FaHistory />
-  // }
-];
-
-const employeeItems: MenuItem[] = [
-  {
-    key: '/employee',
-    label: (
-      <Link to={'/employee'}>
-        <span className="capitalize">Trang chủ</span>
-      </Link>
-    ),
-    icon: <IoHomeOutline />
-  },
-  {
-    key: '/employee/schedules',
-    label: (
-      <Link to={'/employee/schedules'}>
-        <span className="capitalize">Lịch làm việc</span>
-      </Link>
-    ),
-    icon: <FaRegCalendarAlt />
-  },
-  {
-    key: '/employee/salaries',
-    label: (
-      <Link to={'/employee/salaries'}>
-        <span className="capitalize">Bảng lương</span>
-      </Link>
-    ),
-    icon: <FaMoneyCheckAlt />
-  },
-  {
-    key: 'employee/attendance',
-    label: <span className="capitalize">Chấm Công</span>,
-    icon: <BsCalendar2Check />,
-    children: [
-      {
-        key: '/employee/attendances/history',
-        label: (
-          <Link to={'/employee/attendances/history'}>
-            <span className="capitalize">Lịch Sử Chấm Công</span>
-          </Link>
-        )
-      },
-      {
-        key: '/employee/attendances/calculate',
-        label: (
-          <Link to={'/employee/attendances/calculate'}>
-            <span className="capitalize">Bảng Tính Công</span>
-          </Link>
-        )
-      }
-    ]
-  },
-  {
-    key: '/employee/todo/add-product',
-    label: (
-      <Link to={'/employee/todo/add-product'}>
-        <span className="capitalize">Chọn sản phẩm</span>
-      </Link>
-    ),
-    icon: <CiBoxes />
-  },
-  {
-    key: '/employee/activity-schedule',
-    label: (
-      <Link to={'/employee/activity-schedule'}>
-        <span className="capitalize">Lịch sử hoạt động</span>
-      </Link>
-    ),
-    icon: <IconHistory />
-  },
-  {
-    key: '/employee/stamps/request',
-    label: (
-      <Link to={'/employee/stamps/request'}>
-        <span className="capitalize">Yêu Cầu In Tem</span>
-      </Link>
-    ),
-    icon: <FaEnvelopesBulk />
-  },
-  {
-    key: '/employee/scan',
-    label: (
-      <Link to={'/employee/scan'}>
-        <span className="capitalize">Quét sản phẩm</span>
-      </Link>
-    ),
-    icon: <FaCamera />
-  }
-];
+const { Sider } = Layout;
 
 function Sidebar() {
   const { isSidebarClose, theme, isMobile } = useStore(uiStore);
   const { user } = useAuth();
-  const admin = isAdmin(user?.role?.name || '');
-  const items = admin ? adminItems : employeeItems;
+
+  const permissions = useMemo(() => user?.permissions ?? [], [user]);
+
+  // 🔧 mapper: từ string FA class → react-icons component
+  // 🔧 mapper: chuyển class FA ("fas fa-xxx fa-lg") → IconType (react-icons/fa) với heuristics
+  const mapFaClassToIconType = (faClass?: string): IconType | null => {
+    if (!faClass) return null;
+
+    // Lấy token chính "fa-xxx" từ chuỗi: "fas fa-xxx fa-lg"
+    const parts = faClass.split(/\s+/).filter(Boolean);
+    const raw = parts.find(
+      (p) => p.startsWith('fa-') && !/^fa[brlsd]?$/i.test(p)
+    ); // bỏ fas/far/fal/fab/fad
+    if (!raw) return null;
+
+    // Chuẩn hoá base name: "fa-sheet-plastic" → "sheet-plastic"
+    const base = raw.replace(/^fa-/, '');
+
+    // Helper
+    const toPascal = (s: string) =>
+      s
+        .split('-')
+        .map((t) => (t ? t[0].toUpperCase() + t.slice(1) : ''))
+        .join('');
+
+    // Tạo danh sách candidate theo nhiều biến thể/heuristics để tăng khả năng khớp FA5
+    const candidates: string[] = [];
+
+    // 1) tên gốc
+    candidates.push('Fa' + toPascal(base));
+
+    // 2) một số heuristic phổ biến FA6 → FA5
+    //   - trash-can → trash
+    //   - user-group → users
+    //   - arrows-rotate → sync
+    //   - right-left → exchangeAlt
+    //   - circle-check → checkCircle
+    //   - circle-xmark → timesCircle
+    //   - circle-info → infoCircle
+    //   - sheet-plastic → file-invoice / file-alt (ưu tiên invoice)
+    //   - file-lines → file-alt
+    //   - calendar-days → calendarAlt
+    //   - arrow-rotate-right → redo
+    //   - arrow-rotate-left → undo
+    const rules: Array<(s: string) => string | null> = [
+      (s) => s.replace('trash-can', 'trash'),
+      (s) => s.replace('user-group', 'users'),
+      (s) => s.replace('arrows-rotate', 'sync'),
+      (s) => s.replace('right-left', 'exchange-alt'),
+      (s) => s.replace('circle-check', 'check-circle'),
+      (s) => s.replace('circle-xmark', 'times-circle'),
+      (s) => s.replace('circle-info', 'info-circle'),
+      (s) => (s.includes('sheet-plastic') ? 'file-invoice' : s),
+      (s) => (s.includes('sheet-plastic') ? 'file-alt' : s),
+      (s) => s.replace('file-lines', 'file-alt'),
+      (s) => s.replace('calendar-days', 'calendar-alt'),
+      (s) => s.replace('arrow-rotate-right', 'redo'),
+      (s) => s.replace('arrow-rotate-left', 'undo')
+    ];
+
+    rules.forEach((transform) => {
+      const t = transform(base);
+      if (t && t !== base) {
+        candidates.push('Fa' + toPascal(t));
+      }
+    });
+
+    // 3) thêm biến thể bỏ hậu tố thường gặp: '-alt', '-o', '-solid', '-regular'
+    if (/-alt$/.test(base)) {
+      candidates.push('Fa' + toPascal(base.replace(/-alt$/, '')));
+    }
+    if (/-o$/.test(base)) {
+      candidates.push('Fa' + toPascal(base.replace(/-o$/, '')));
+    }
+    ['-solid', '-regular', '-light', '-thin', '-duotone'].forEach((suf) => {
+      if (base.endsWith(suf))
+        candidates.push('Fa' + toPascal(base.replace(suf, '')));
+    });
+
+    // 4) thử map các ứng viên vào react-icons
+    for (const name of candidates) {
+      const IconComp = (FaIcons as Record<string, IconType>)[name];
+      if (IconComp) return IconComp;
+    }
+
+    return null;
+  };
+
+  const items: MenuItem[] = useMemo(() => {
+    const renderSidebarIcon = (icon?: string | IconType) => {
+      // 1. Nếu backend trả sẵn IconType
+      if (typeof icon !== 'string' && icon) {
+        const IconComp = icon as IconType;
+        return <IconComp className="text-xl" />;
+      }
+
+      // 2. Nếu backend trả string fa-class → map sang react-icons
+      if (typeof icon === 'string') {
+        const Mapped = mapFaClassToIconType(icon);
+        if (Mapped) return <Mapped className="text-xl" />;
+        return <i className={`${icon} text-xl`} />;
+      }
+
+      // 3. fallback
+      return <DefaultIcon className="text-xl" />;
+    };
+
+    const renderPermissionIcon = (perm: Permission) => {
+      const IconComp = permissionIconMap[perm.key];
+      if (IconComp) return <IconComp className="text-xl" />;
+
+      const first = perm.sidebar_items?.[0];
+      if (first) return renderSidebarIcon(first.icon);
+
+      return <DefaultIcon className="text-xl" />;
+    };
+
+    return permissions
+      .filter((p) => ['sidebar', 'both'].includes(p.display_area))
+      .map((perm) => {
+        console.log(perm);
+        if (perm.sidebar_items?.length > 0) {
+          return {
+            key: perm.key,
+            label: <span className="capitalize">{perm.name}</span>,
+            icon: renderPermissionIcon(perm),
+            children: perm.sidebar_items.map((item) => ({
+              key: item.key,
+              label: (
+                <Link to={permissionPathMap[item.key] || '/'}>
+                  <span className="capitalize">{item.title}</span>
+                </Link>
+              ),
+              icon: renderSidebarIcon(item.icon)
+            }))
+          };
+        }
+
+        return {
+          key: perm.key,
+          label: (
+            <Link to={permissionPathMap[perm.key] || '/'}>
+              <span className="capitalize">{perm.name}</span>
+            </Link>
+          ),
+          icon: renderPermissionIcon(perm)
+        };
+      });
+  }, [permissions]);
 
   const sidebarStyle: React.CSSProperties = {
     overflow: 'auto',
@@ -316,6 +179,8 @@ function Sidebar() {
     bottom: 0,
     scrollbarWidth: 'none'
   };
+
+  const sidebarContent = <SidebarMenu items={items} />;
 
   return (
     <>
@@ -328,11 +193,11 @@ function Sidebar() {
           open={!isSidebarClose}
           styles={{ body: { padding: 0 } }}
         >
-          <SidebarMenu items={items} />
+          {sidebarContent}
         </Drawer>
       ) : (
-        <Side
-          style={{ ...sidebarStyle }}
+        <Sider
+          style={sidebarStyle}
           width={256}
           theme={theme}
           trigger={null}
@@ -341,8 +206,8 @@ function Sidebar() {
           collapsed={isSidebarClose}
           onCollapse={toggleSidebar}
         >
-          <SidebarMenu items={items} />
-        </Side>
+          {sidebarContent}
+        </Sider>
       )}
     </>
   );

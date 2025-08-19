@@ -14,8 +14,7 @@ type AuthResponse = {
   role_name: string;
   image: string;
   token: string;
-  permissions: string[];
-  permission_titles: Record<string, string>;
+  permissions: User['permissions'];
 };
 
 type AuthLogoutResponse = {
@@ -45,8 +44,7 @@ export const authLogin = async (
       id: response.role_id.toString(),
       name: response.role_name
     },
-    permissions: response.permissions || [],
-    permission_titles: response.permission_titles || {}
+    permissions: response.permissions
   };
 
   if (response?.image && response?.role_id == 15) {
@@ -77,8 +75,7 @@ export const authCheck = async () => {
         id: response.role_id.toString(),
         name: response.role_name
       },
-      permissions: response.permissions,
-      permission_titles: response.permission_titles
+      permissions: response.permissions
     };
 
     if (response?.image) {

@@ -14,7 +14,7 @@ import { customTableProps } from '@components/custom/TableProps.custom';
 import { useCrudList } from '@hooks/useCrudList';
 import { GoInfo } from 'react-icons/go';
 
-export const Route = createFileRoute('/_authenticated/admin/work-schedules/')({
+export const Route = createFileRoute('/_authenticated/work-schedules/')({
   component: RouteComponent
 });
 
@@ -65,7 +65,7 @@ function RouteComponent() {
         return (
           <div className="flex items-center justify-center gap-2">
             <Link
-              to={'/admin/work-schedules/$id'}
+              to={'/work-schedules/$id'}
               params={{
                 id: _record.id
               }}

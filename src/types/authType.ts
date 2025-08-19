@@ -1,4 +1,5 @@
 import { Gender } from '@schemas/genderEnum.schema';
+import { Permission } from './permissionType';
 
 export interface Role {
   id: string;
@@ -11,6 +12,5 @@ export interface User {
   image_url?: string;
   role: Role;
   gender: Gender;
-  permissions: string[];
-  permission_titles: Record<string, string>;
+  permissions: Permission[];
 }
