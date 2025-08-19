@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import type { FormProps } from 'antd';
-import { Button, Checkbox, Form, Input, message } from 'antd';
+import { Button, Form, Input, message } from 'antd';
 
 import { authLogin } from '@services/AuthService';
 
@@ -55,8 +55,11 @@ function RouteComponent() {
     <div>
       <div className="mb-5 sm:mb-8">
         <h1 className="mb-2 text-3xl font-semibold text-gray-800 sm:text-4xl dark:text-white/90">
-          Sign In
+          Đăng Nhập
         </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Vui lòng nhập thông tin tài khoản để tiếp tục
+        </p>
       </div>
       <div>
         <Form
@@ -82,17 +85,17 @@ function RouteComponent() {
             />
           </Form.Item>
 
-          <Form.Item<FieldType> name="remember" valuePropName="checked">
+          {/* <Form.Item<FieldType> name="remember" valuePropName="checked">
             <Checkbox checked={false}>
               <span className="text-gray-800 dark:text-white/90">
                 Remember me
               </span>
             </Checkbox>
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item>
             <Button block type="primary" htmlType="submit" loading={isPending}>
-              Sign in
+              Đăng Nhập
             </Button>
           </Form.Item>
         </Form>
