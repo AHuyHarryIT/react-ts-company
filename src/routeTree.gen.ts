@@ -57,6 +57,7 @@ import { Route as AuthenticatedAdminProductsAddImport } from './routes/_authenti
 import { Route as AuthenticatedAdminPlansProductionImport } from './routes/_authenticated/admin/plans/production'
 import { Route as AuthenticatedAdminPlansMaterialImport } from './routes/_authenticated/admin/plans/material'
 import { Route as AuthenticatedAdminEmployeesAddImport } from './routes/_authenticated/admin/employees/add'
+import { Route as AuthenticatedAdminCheckPoAddImport } from './routes/_authenticated/admin/check-po/add'
 import { Route as AuthenticatedAdminAttendancesRecordImport } from './routes/_authenticated/admin/attendances/record'
 import { Route as AuthenticatedAdminAttendancesHistoryImport } from './routes/_authenticated/admin/attendances/history'
 import { Route as AuthenticatedEmployeeAttendancesHistoryIndexImport } from './routes/_authenticated/employee/attendances/history/index'
@@ -383,6 +384,13 @@ const AuthenticatedAdminEmployeesAddRoute =
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
+const AuthenticatedAdminCheckPoAddRoute =
+  AuthenticatedAdminCheckPoAddImport.update({
+    id: '/check-po/add',
+    path: '/check-po/add',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
 const AuthenticatedAdminAttendancesRecordRoute =
   AuthenticatedAdminAttendancesRecordImport.update({
     id: '/attendances/record',
@@ -616,6 +624,13 @@ declare module '@tanstack/react-router' {
       path: '/attendances/record'
       fullPath: '/admin/attendances/record'
       preLoaderRoute: typeof AuthenticatedAdminAttendancesRecordImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/admin/check-po/add': {
+      id: '/_authenticated/admin/check-po/add'
+      path: '/check-po/add'
+      fullPath: '/admin/check-po/add'
+      preLoaderRoute: typeof AuthenticatedAdminCheckPoAddImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
     '/_authenticated/admin/employees/add': {
@@ -893,6 +908,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminActivityHistoryRoute: typeof AuthenticatedAdminActivityHistoryRoute
   AuthenticatedAdminAttendancesHistoryRoute: typeof AuthenticatedAdminAttendancesHistoryRoute
   AuthenticatedAdminAttendancesRecordRoute: typeof AuthenticatedAdminAttendancesRecordRoute
+  AuthenticatedAdminCheckPoAddRoute: typeof AuthenticatedAdminCheckPoAddRoute
   AuthenticatedAdminEmployeesAddRoute: typeof AuthenticatedAdminEmployeesAddRoute
   AuthenticatedAdminPlansMaterialRoute: typeof AuthenticatedAdminPlansMaterialRoute
   AuthenticatedAdminPlansProductionRoute: typeof AuthenticatedAdminPlansProductionRoute
@@ -917,6 +933,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
       AuthenticatedAdminAttendancesHistoryRoute,
     AuthenticatedAdminAttendancesRecordRoute:
       AuthenticatedAdminAttendancesRecordRoute,
+    AuthenticatedAdminCheckPoAddRoute: AuthenticatedAdminCheckPoAddRoute,
     AuthenticatedAdminEmployeesAddRoute: AuthenticatedAdminEmployeesAddRoute,
     AuthenticatedAdminPlansMaterialRoute: AuthenticatedAdminPlansMaterialRoute,
     AuthenticatedAdminPlansProductionRoute:
@@ -1079,6 +1096,7 @@ export interface FileRoutesByFullPath {
   '/work-schedules/': typeof AuthenticatedWorkSchedulesIndexRoute
   '/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
   '/admin/attendances/record': typeof AuthenticatedAdminAttendancesRecordRoute
+  '/admin/check-po/add': typeof AuthenticatedAdminCheckPoAddRoute
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
@@ -1130,6 +1148,7 @@ export interface FileRoutesByTo {
   '/work-schedules': typeof AuthenticatedWorkSchedulesIndexRoute
   '/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
   '/admin/attendances/record': typeof AuthenticatedAdminAttendancesRecordRoute
+  '/admin/check-po/add': typeof AuthenticatedAdminCheckPoAddRoute
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
@@ -1188,6 +1207,7 @@ export interface FileRoutesById {
   '/_authenticated/work-schedules/': typeof AuthenticatedWorkSchedulesIndexRoute
   '/_authenticated/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
   '/_authenticated/admin/attendances/record': typeof AuthenticatedAdminAttendancesRecordRoute
+  '/_authenticated/admin/check-po/add': typeof AuthenticatedAdminCheckPoAddRoute
   '/_authenticated/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/_authenticated/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/_authenticated/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
@@ -1246,6 +1266,7 @@ export interface FileRouteTypes {
     | '/work-schedules/'
     | '/admin/attendances/history'
     | '/admin/attendances/record'
+    | '/admin/check-po/add'
     | '/admin/employees/add'
     | '/admin/plans/material'
     | '/admin/plans/production'
@@ -1296,6 +1317,7 @@ export interface FileRouteTypes {
     | '/work-schedules'
     | '/admin/attendances/history'
     | '/admin/attendances/record'
+    | '/admin/check-po/add'
     | '/admin/employees/add'
     | '/admin/plans/material'
     | '/admin/plans/production'
@@ -1352,6 +1374,7 @@ export interface FileRouteTypes {
     | '/_authenticated/work-schedules/'
     | '/_authenticated/admin/attendances/history'
     | '/_authenticated/admin/attendances/record'
+    | '/_authenticated/admin/check-po/add'
     | '/_authenticated/admin/employees/add'
     | '/_authenticated/admin/plans/material'
     | '/_authenticated/admin/plans/production'
@@ -1450,6 +1473,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/activity-history",
         "/_authenticated/admin/attendances/history",
         "/_authenticated/admin/attendances/record",
+        "/_authenticated/admin/check-po/add",
         "/_authenticated/admin/employees/add",
         "/_authenticated/admin/plans/material",
         "/_authenticated/admin/plans/production",
@@ -1570,6 +1594,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/attendances/record": {
       "filePath": "_authenticated/admin/attendances/record.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/check-po/add": {
+      "filePath": "_authenticated/admin/check-po/add.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/employees/add": {

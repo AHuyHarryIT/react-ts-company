@@ -11,6 +11,7 @@ import { getWeeksInMonth } from '@utils/weeksInMonth';
 
 import { IconAdd, IconExport, IconHistory } from '@components/icons';
 import { FaTruck, FaWarehouse } from 'react-icons/fa6';
+import { Link } from '@tanstack/react-router';
 
 export const PoList = () => {
   const [month, setMonth] = useState<Dayjs>(dayjs());
@@ -85,9 +86,11 @@ export const PoList = () => {
     <ComponentCard title="Danh sách PO">
       <div className="flex flex-wrap justify-between gap-2">
         <div className="flex flex-wrap gap-2">
-          <Button variant="solid" color="green" icon={<IconAdd />}>
-            Thêm sản lượng
-          </Button>
+          <Link to="/admin/check-po/add">
+            <Button variant="solid" color="green" icon={<IconAdd />}>
+              Thêm sản lượng
+            </Button>
+          </Link>
           <Button variant="solid" color="blue" icon={<FaTruck />}>
             Thêm PO xuất hàng
           </Button>
