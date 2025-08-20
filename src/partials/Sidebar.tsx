@@ -143,7 +143,6 @@ function Sidebar() {
     return permissions
       .filter((p) => ['sidebar', 'both'].includes(p.display_area))
       .map((perm) => {
-        console.log(perm);
         if (perm.sidebar_items?.length > 0) {
           return {
             key: perm.key,
