@@ -54,6 +54,7 @@ import { Route as AuthenticatedEmployeeSchedulesIdImport } from './routes/_authe
 import { Route as AuthenticatedEmployeeSalariesIdImport } from './routes/_authenticated/employee/salaries/$id'
 import { Route as AuthenticatedAdminProductsTrashImport } from './routes/_authenticated/admin/products/trash'
 import { Route as AuthenticatedAdminProductsAddImport } from './routes/_authenticated/admin/products/add'
+import { Route as AuthenticatedAdminProductsIdImport } from './routes/_authenticated/admin/products/$id'
 import { Route as AuthenticatedAdminPlansProductionImport } from './routes/_authenticated/admin/plans/production'
 import { Route as AuthenticatedAdminPlansMaterialImport } from './routes/_authenticated/admin/plans/material'
 import { Route as AuthenticatedAdminEmployeesAddImport } from './routes/_authenticated/admin/employees/add'
@@ -362,6 +363,13 @@ const AuthenticatedAdminProductsAddRoute =
   AuthenticatedAdminProductsAddImport.update({
     id: '/add',
     path: '/add',
+    getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
+  } as any)
+
+const AuthenticatedAdminProductsIdRoute =
+  AuthenticatedAdminProductsIdImport.update({
+    id: '/$id',
+    path: '/$id',
     getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
   } as any)
 
@@ -684,6 +692,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPlansProductionImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/admin/products/$id': {
+      id: '/_authenticated/admin/products/$id'
+      path: '/$id'
+      fullPath: '/admin/products/$id'
+      preLoaderRoute: typeof AuthenticatedAdminProductsIdImport
+      parentRoute: typeof AuthenticatedAdminProductsRouteImport
+    }
     '/_authenticated/admin/products/add': {
       id: '/_authenticated/admin/products/add'
       path: '/add'
@@ -906,6 +921,7 @@ const AuthenticatedActivityScheduleRouteRouteWithChildren =
   )
 
 interface AuthenticatedAdminProductsRouteRouteChildren {
+  AuthenticatedAdminProductsIdRoute: typeof AuthenticatedAdminProductsIdRoute
   AuthenticatedAdminProductsAddRoute: typeof AuthenticatedAdminProductsAddRoute
   AuthenticatedAdminProductsTrashRoute: typeof AuthenticatedAdminProductsTrashRoute
   AuthenticatedAdminProductsIndexRoute: typeof AuthenticatedAdminProductsIndexRoute
@@ -916,6 +932,7 @@ interface AuthenticatedAdminProductsRouteRouteChildren {
 
 const AuthenticatedAdminProductsRouteRouteChildren: AuthenticatedAdminProductsRouteRouteChildren =
   {
+    AuthenticatedAdminProductsIdRoute: AuthenticatedAdminProductsIdRoute,
     AuthenticatedAdminProductsAddRoute: AuthenticatedAdminProductsAddRoute,
     AuthenticatedAdminProductsTrashRoute: AuthenticatedAdminProductsTrashRoute,
     AuthenticatedAdminProductsIndexRoute: AuthenticatedAdminProductsIndexRoute,
@@ -1138,6 +1155,7 @@ export interface FileRoutesByFullPath {
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
   '/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
@@ -1192,6 +1210,7 @@ export interface FileRoutesByTo {
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
   '/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
@@ -1253,6 +1272,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/_authenticated/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/_authenticated/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
+  '/_authenticated/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/_authenticated/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
   '/_authenticated/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/_authenticated/employee/salaries/$id': typeof AuthenticatedEmployeeSalariesIdRoute
@@ -1314,6 +1334,7 @@ export interface FileRouteTypes {
     | '/admin/employees/add'
     | '/admin/plans/material'
     | '/admin/plans/production'
+    | '/admin/products/$id'
     | '/admin/products/add'
     | '/admin/products/trash'
     | '/employee/salaries/$id'
@@ -1367,6 +1388,7 @@ export interface FileRouteTypes {
     | '/admin/employees/add'
     | '/admin/plans/material'
     | '/admin/plans/production'
+    | '/admin/products/$id'
     | '/admin/products/add'
     | '/admin/products/trash'
     | '/employee/salaries/$id'
@@ -1426,6 +1448,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/employees/add'
     | '/_authenticated/admin/plans/material'
     | '/_authenticated/admin/plans/production'
+    | '/_authenticated/admin/products/$id'
     | '/_authenticated/admin/products/add'
     | '/_authenticated/admin/products/trash'
     | '/_authenticated/employee/salaries/$id'
@@ -1586,6 +1609,7 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/admin/products/route.tsx",
       "parent": "/_authenticated/admin",
       "children": [
+        "/_authenticated/admin/products/$id",
         "/_authenticated/admin/products/add",
         "/_authenticated/admin/products/trash",
         "/_authenticated/admin/products/",
@@ -1669,6 +1693,10 @@ export const routeTree = rootRoute
     "/_authenticated/admin/plans/production": {
       "filePath": "_authenticated/admin/plans/production.tsx",
       "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/products/$id": {
+      "filePath": "_authenticated/admin/products/$id.tsx",
+      "parent": "/_authenticated/admin/products"
     },
     "/_authenticated/admin/products/add": {
       "filePath": "_authenticated/admin/products/add.tsx",

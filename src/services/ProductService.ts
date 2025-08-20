@@ -1,5 +1,8 @@
+import axiosPrivate from '@/api/axiosInstance';
 import {
   ProductCreateType,
+  ProductHistoryDetailType,
+  ProductHistoryStatusType,
   ProductType,
   ProductUpdateType
 } from '@/types/productType';
@@ -12,3 +15,48 @@ export const productService = new CrudService<
   ProductCreateType,
   ProductUpdateType
 >(ENDPOINT);
+
+export const fetchProductHistoryDetail = async (
+  id: ProductType['id'],
+  month?: string
+) => {
+  const response = axiosPrivate.get<
+    ProductHistoryDetailType,
+    ProductHistoryDetailType
+  >(`${ENDPOINT}/detail/${id}`, { params: { month: month } });
+  return response;
+};
+
+export const updateProductHistoryDetail = async (
+  id: ProductHistoryStatusType['id'],
+  productId: ProductType['id'],
+  status: ProductHistoryStatusType['status'],
+  quantity: ProductHistoryStatusType['quantity']
+) => {
+  await axiosPrivate.put(`${ENDPOINT}/updateDetail`, {
+    dailyId: id,
+    product_id: productId,
+    status: status,
+    quantity: quantity
+  });
+};
+
+export const deleteProductHistoryDetail = async (
+  id: ProductHistoryStatusType['id']
+) => {
+  await axiosPrivate.delete(`${ENDPOINT}/detail/${id}`);
+};
+
+export const updateProductQuantity = async (
+  productId: ProductType['id'],
+  date: string,
+  quantity: ProductHistoryStatusType['quantity'],
+  status: ProductHistoryStatusType['status']
+) => {
+  await axiosPrivate.put(`${ENDPOINT}/addQuantityDetail`, {
+    product_id: productId,
+    status: status,
+    quantity: quantity,
+    date: date
+  });
+};
