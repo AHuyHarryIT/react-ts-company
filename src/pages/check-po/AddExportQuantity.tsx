@@ -31,20 +31,20 @@ export const AddExportQuantity = () => {
       return response;
     },
     onMutate: () => {
-      message.loading({ content: 'Đang cập nhật...', key: 'update-export' });
+      message.loading({ content: 'Đang Thêm...', key: 'add-inventory' });
     },
     onSuccess: () => {
       form.resetFields();
       message.success({
-        content: 'Cập nhật thành công!',
-        key: 'update-export'
+        content: 'Thêm thành công!',
+        key: 'add-inventory'
       });
     },
     onError: () => {
-      message.error({ content: 'Cập nhật thất bại!', key: 'update-export' });
+      message.error({ content: 'Thêm thất bại!', key: 'add-inventory' });
     }
   });
-  const handleFinish: FormProps['onFinish'] = async (values) => {
+  const handleFinish: FormProps<FormFields>['onFinish'] = async (values) => {
     const productQuantities = Object.entries(values)
       .filter(([key, val]) => key.startsWith('product_') && val)
       .map(([key, val]) => ({
