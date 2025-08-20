@@ -94,12 +94,12 @@ export const AddQuantity = () => {
           <Form<FormFields> {...formProps}>
             <div className="flex flex-wrap gap-2">
               <Form.Item<FormFields>
-                label="Ngày cập nhật"
+                label="Ngày"
                 name={'date'}
                 rules={[
                   {
                     required: true,
-                    message: 'Vui lòng chọn ngày cập nhật'
+                    message: 'Vui lòng chọn ngày'
                   }
                 ]}
               >
