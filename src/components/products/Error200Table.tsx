@@ -9,6 +9,7 @@ import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { RowTableActions } from './RowTableActions';
+import { Link } from '@tanstack/react-router';
 
 export type Error200TableType = {
   id: string;
@@ -120,7 +121,14 @@ export const Error200Table: React.FC<Error200TableProps> = ({
       title: <div>Tên sản phẩm</div>,
       minWidth: 100,
       fixed: 'left',
-      dataIndex: 'name'
+      dataIndex: 'name',
+      render: (value, record) => {
+        return (
+          <Link to={'/admin/products/$id'} params={{ id: record.id }}>
+            {value}
+          </Link>
+        );
+      }
     },
     {
       title: <div>Mã sản phẩm</div>,
