@@ -90,10 +90,12 @@ export const PoList = () => {
             <Button variant="solid" color="green" icon={<IconAdd />}>
               Thêm sản lượng
             </Button>
+          </Link>{' '}
+          <Link to="/admin/check-po/add-export">
+            <Button variant="solid" color="blue" icon={<FaTruck />}>
+              Thêm PO xuất hàng
+            </Button>{' '}
           </Link>
-          <Button variant="solid" color="blue" icon={<FaTruck />}>
-            Thêm PO xuất hàng
-          </Button>
           <Button variant="solid" color="blue" icon={<FaWarehouse />}>
             Thêm tồn đầu kỳ
           </Button>
