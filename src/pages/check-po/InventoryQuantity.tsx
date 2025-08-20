@@ -61,7 +61,7 @@ export const InventoryQuantity = () => {
     }
 
     mutate({
-      month: values.month.format('YYYY-MM'),
+      month: values.month.format('MM-YYYY'),
       products: productQuantities
     });
   };
