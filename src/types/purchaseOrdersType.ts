@@ -17,3 +17,8 @@ export type AddPoRequest = {
   shift?: Shift;
   products: ProductPo[];
 };
+
+export type AddPoInventoryRequest = {
+  month: string;
+  products: ProductPo[];
+};

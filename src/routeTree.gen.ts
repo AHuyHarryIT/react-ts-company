@@ -57,6 +57,7 @@ import { Route as AuthenticatedAdminProductsAddImport } from './routes/_authenti
 import { Route as AuthenticatedAdminPlansProductionImport } from './routes/_authenticated/admin/plans/production'
 import { Route as AuthenticatedAdminPlansMaterialImport } from './routes/_authenticated/admin/plans/material'
 import { Route as AuthenticatedAdminEmployeesAddImport } from './routes/_authenticated/admin/employees/add'
+import { Route as AuthenticatedAdminCheckPoAddInventoryImport } from './routes/_authenticated/admin/check-po/add-inventory'
 import { Route as AuthenticatedAdminCheckPoAddExportImport } from './routes/_authenticated/admin/check-po/add-export'
 import { Route as AuthenticatedAdminCheckPoAddImport } from './routes/_authenticated/admin/check-po/add'
 import { Route as AuthenticatedAdminAttendancesRecordImport } from './routes/_authenticated/admin/attendances/record'
@@ -385,6 +386,13 @@ const AuthenticatedAdminEmployeesAddRoute =
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
+const AuthenticatedAdminCheckPoAddInventoryRoute =
+  AuthenticatedAdminCheckPoAddInventoryImport.update({
+    id: '/check-po/add-inventory',
+    path: '/check-po/add-inventory',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
 const AuthenticatedAdminCheckPoAddExportRoute =
   AuthenticatedAdminCheckPoAddExportImport.update({
     id: '/check-po/add-export',
@@ -646,6 +654,13 @@ declare module '@tanstack/react-router' {
       path: '/check-po/add-export'
       fullPath: '/admin/check-po/add-export'
       preLoaderRoute: typeof AuthenticatedAdminCheckPoAddExportImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/admin/check-po/add-inventory': {
+      id: '/_authenticated/admin/check-po/add-inventory'
+      path: '/check-po/add-inventory'
+      fullPath: '/admin/check-po/add-inventory'
+      preLoaderRoute: typeof AuthenticatedAdminCheckPoAddInventoryImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
     '/_authenticated/admin/employees/add': {
@@ -925,6 +940,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAttendancesRecordRoute: typeof AuthenticatedAdminAttendancesRecordRoute
   AuthenticatedAdminCheckPoAddRoute: typeof AuthenticatedAdminCheckPoAddRoute
   AuthenticatedAdminCheckPoAddExportRoute: typeof AuthenticatedAdminCheckPoAddExportRoute
+  AuthenticatedAdminCheckPoAddInventoryRoute: typeof AuthenticatedAdminCheckPoAddInventoryRoute
   AuthenticatedAdminEmployeesAddRoute: typeof AuthenticatedAdminEmployeesAddRoute
   AuthenticatedAdminPlansMaterialRoute: typeof AuthenticatedAdminPlansMaterialRoute
   AuthenticatedAdminPlansProductionRoute: typeof AuthenticatedAdminPlansProductionRoute
@@ -952,6 +968,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminCheckPoAddRoute: AuthenticatedAdminCheckPoAddRoute,
     AuthenticatedAdminCheckPoAddExportRoute:
       AuthenticatedAdminCheckPoAddExportRoute,
+    AuthenticatedAdminCheckPoAddInventoryRoute:
+      AuthenticatedAdminCheckPoAddInventoryRoute,
     AuthenticatedAdminEmployeesAddRoute: AuthenticatedAdminEmployeesAddRoute,
     AuthenticatedAdminPlansMaterialRoute: AuthenticatedAdminPlansMaterialRoute,
     AuthenticatedAdminPlansProductionRoute:
@@ -1116,6 +1134,7 @@ export interface FileRoutesByFullPath {
   '/admin/attendances/record': typeof AuthenticatedAdminAttendancesRecordRoute
   '/admin/check-po/add': typeof AuthenticatedAdminCheckPoAddRoute
   '/admin/check-po/add-export': typeof AuthenticatedAdminCheckPoAddExportRoute
+  '/admin/check-po/add-inventory': typeof AuthenticatedAdminCheckPoAddInventoryRoute
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
@@ -1169,6 +1188,7 @@ export interface FileRoutesByTo {
   '/admin/attendances/record': typeof AuthenticatedAdminAttendancesRecordRoute
   '/admin/check-po/add': typeof AuthenticatedAdminCheckPoAddRoute
   '/admin/check-po/add-export': typeof AuthenticatedAdminCheckPoAddExportRoute
+  '/admin/check-po/add-inventory': typeof AuthenticatedAdminCheckPoAddInventoryRoute
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
@@ -1229,6 +1249,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/attendances/record': typeof AuthenticatedAdminAttendancesRecordRoute
   '/_authenticated/admin/check-po/add': typeof AuthenticatedAdminCheckPoAddRoute
   '/_authenticated/admin/check-po/add-export': typeof AuthenticatedAdminCheckPoAddExportRoute
+  '/_authenticated/admin/check-po/add-inventory': typeof AuthenticatedAdminCheckPoAddInventoryRoute
   '/_authenticated/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/_authenticated/admin/plans/material': typeof AuthenticatedAdminPlansMaterialRoute
   '/_authenticated/admin/plans/production': typeof AuthenticatedAdminPlansProductionRoute
@@ -1289,6 +1310,7 @@ export interface FileRouteTypes {
     | '/admin/attendances/record'
     | '/admin/check-po/add'
     | '/admin/check-po/add-export'
+    | '/admin/check-po/add-inventory'
     | '/admin/employees/add'
     | '/admin/plans/material'
     | '/admin/plans/production'
@@ -1341,6 +1363,7 @@ export interface FileRouteTypes {
     | '/admin/attendances/record'
     | '/admin/check-po/add'
     | '/admin/check-po/add-export'
+    | '/admin/check-po/add-inventory'
     | '/admin/employees/add'
     | '/admin/plans/material'
     | '/admin/plans/production'
@@ -1399,6 +1422,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/attendances/record'
     | '/_authenticated/admin/check-po/add'
     | '/_authenticated/admin/check-po/add-export'
+    | '/_authenticated/admin/check-po/add-inventory'
     | '/_authenticated/admin/employees/add'
     | '/_authenticated/admin/plans/material'
     | '/_authenticated/admin/plans/production'
@@ -1499,6 +1523,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/attendances/record",
         "/_authenticated/admin/check-po/add",
         "/_authenticated/admin/check-po/add-export",
+        "/_authenticated/admin/check-po/add-inventory",
         "/_authenticated/admin/employees/add",
         "/_authenticated/admin/plans/material",
         "/_authenticated/admin/plans/production",
@@ -1627,6 +1652,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/check-po/add-export": {
       "filePath": "_authenticated/admin/check-po/add-export.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/check-po/add-inventory": {
+      "filePath": "_authenticated/admin/check-po/add-inventory.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/employees/add": {
