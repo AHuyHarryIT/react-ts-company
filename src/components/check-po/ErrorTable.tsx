@@ -77,7 +77,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
           (item) => item.status === 6
         )?.totalQuan;
 
-        (product.totaldailyquantities || [])
+        (product.dailyquantities || [])
           .filter((item) => item.status === 6)
           .forEach((time) => {
             const dateKey = dayjs(time.date).format('DD-MM-YYYY');
@@ -85,7 +85,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
             if (!timeMap[dateKey]) {
               timeMap[dateKey] = { quantity: 0 };
             }
-            timeMap[dateKey].quantity += time.totalQuan;
+            timeMap[dateKey].quantity += time.quantity;
           });
 
         return {
