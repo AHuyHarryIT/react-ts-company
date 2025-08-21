@@ -77,7 +77,7 @@ export const permissionPathMap: PermissionPathType = {
   view_dashboard: '/',
   view_products: '/admin/products',
   view_today_employees: '/activity-schedule',
-  // view_po_list: '/admin/purchase-orders',
+  view_po_list: '/admin/check-po',
   // view_history: '/admin/activity-history',
   view_roles: '/admin/roles',
   view_employees: '/admin/employees',

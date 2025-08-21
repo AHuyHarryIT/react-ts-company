@@ -164,8 +164,8 @@ function Dashboard() {
     // Purchase Order (PO)
     view_po_list: {
       icon: <FaFileContract />,
-      value: `Tháng ${new Date().getMonth() + 1}`
-      // navLink: '/admin/purchase-orders'
+      value: `Tháng ${new Date().getMonth() + 1}`,
+      navLink: '/admin/check-po'
     },
 
     // Tổng bảng lương
