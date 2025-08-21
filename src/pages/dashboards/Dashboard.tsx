@@ -8,8 +8,10 @@ import { SalaryType } from '@/types/salaryType';
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 import { TrophyOutlined, WalletOutlined } from '@ant-design/icons';
 import { Bar, Column } from '@ant-design/plots';
+import { SlideCarousel } from '@components/SlideCarousel';
 import { useAuth } from '@hooks/useAuth';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
+import { fetchImages } from '@services/UploadService';
 import { useQuery } from '@tanstack/react-query';
 import { isAdmin } from '@utils/authUtil';
 import { Card } from 'antd';
@@ -307,78 +309,89 @@ export default function Dashboard() {
   const chartColSpan =
     showSalaryChart && showProductChart ? 'xl:col-span-6' : 'xl:col-span-12';
 
+  const { data: imageList } = useQuery({
+    queryKey: ['images'],
+    queryFn: () =>
+      fetchImages({
+        limit: 0
+      })
+  });
   return (
-    <div className="grid grid-cols-12 gap-4 md:gap-6">
-      {listWidget.length > 0 && (
-        <div className="col-span-12">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
-            {listWidget.map((widget: WidgetType, index: number) => (
-              <DashboardWidget
-                key={`dashboard-widget-${index}`}
-                title={widget.title}
-                icon={widget.icon}
-                value={widget.value}
-                navLink={widget.navLink as LinkProps['to']}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+    <>
+      <SlideCarousel images={imageList?.data || []} />
 
-      {(showSalaryChart || showProductChart) && (
-        <section className="col-span-12 grid grid-cols-12 gap-4 md:gap-6">
-          {showSalaryChart && (
-            <div className={`col-span-12 ${chartColSpan}`}>
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-                  Danh sách 10 bảng lương gần nhất
-                </h3>
-                <SalaryBarChart data={salaryTableData} />
-              </div>
-            </div>
-          )}
-
-          {showProductChart && (
-            <div className={`col-span-12 ${chartColSpan}`}>
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-                  Danh sách 10 sản phẩm sản xuất nhiều nhất
-                </h3>
-                <ProductChart data={productData || []} />
-              </div>
-            </div>
-          )}
-        </section>
-      )}
-
-      {listWidget.length === 0 && !showSalaryChart && !showProductChart && (
-        <div className="col-span-12">
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="text-gray-400 dark:text-gray-500">
-              <svg
-                className="mx-auto mb-4 h-12 w-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+      <div className="grid grid-cols-12 gap-4 md:gap-6">
+        {listWidget.length > 0 && (
+          <div className="col-span-12">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
+              {listWidget.map((widget: WidgetType, index: number) => (
+                <DashboardWidget
+                  key={`dashboard-widget-${index}`}
+                  title={widget.title}
+                  icon={widget.icon}
+                  value={widget.value}
+                  navLink={widget.navLink as LinkProps['to']}
                 />
-              </svg>
+              ))}
             </div>
-            <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
-              Chào mừng bạn đến Dashboard
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              Hệ thống đang chuẩn bị quyền truy cập cho tài khoản của bạn.
-            </p>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {(showSalaryChart || showProductChart) && (
+          <section className="col-span-12 grid grid-cols-12 gap-4 md:gap-6">
+            {showSalaryChart && (
+              <div className={`col-span-12 ${chartColSpan}`}>
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+                    Danh sách 10 bảng lương gần nhất
+                  </h3>
+                  <SalaryBarChart data={salaryTableData} />
+                </div>
+              </div>
+            )}
+
+            {showProductChart && (
+              <div className={`col-span-12 ${chartColSpan}`}>
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+                    Danh sách 10 sản phẩm sản xuất nhiều nhất
+                  </h3>
+                  <ProductChart data={productData || []} />
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {listWidget.length === 0 && !showSalaryChart && !showProductChart && (
+          <div className="col-span-12">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="text-gray-400 dark:text-gray-500">
+                <svg
+                  className="mx-auto mb-4 h-12 w-12"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+                Chào mừng bạn đến Dashboard
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                Hệ thống đang chuẩn bị quyền truy cập cho tài khoản của bạn.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 

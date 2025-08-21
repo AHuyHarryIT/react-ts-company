@@ -43,6 +43,7 @@ import { Route as AuthenticatedAdminSalariesIndexImport } from './routes/_authen
 import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authenticated/admin/roles/index'
 import { Route as AuthenticatedAdminProductsIndexImport } from './routes/_authenticated/admin/products/index'
 import { Route as AuthenticatedAdminEmployeesIndexImport } from './routes/_authenticated/admin/employees/index'
+import { Route as AuthenticatedAdminEditLayoutIndexImport } from './routes/_authenticated/admin/edit-layout/index'
 import { Route as AuthenticatedAdminCheckPoIndexImport } from './routes/_authenticated/admin/check-po/index'
 import { Route as AuthenticatedEmployeeTodoUpdateQuantityErrorImport } from './routes/_authenticated/employee/todo/update-quantity-error'
 import { Route as AuthenticatedEmployeeTodoUpdateQuantityImport } from './routes/_authenticated/employee/todo/update-quantity'
@@ -275,6 +276,13 @@ const AuthenticatedAdminEmployeesIndexRoute =
   AuthenticatedAdminEmployeesIndexImport.update({
     id: '/employees/',
     path: '/employees/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminEditLayoutIndexRoute =
+  AuthenticatedAdminEditLayoutIndexImport.update({
+    id: '/edit-layout/',
+    path: '/edit-layout/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
@@ -783,6 +791,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCheckPoIndexImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/admin/edit-layout/': {
+      id: '/_authenticated/admin/edit-layout/'
+      path: '/edit-layout'
+      fullPath: '/admin/edit-layout'
+      preLoaderRoute: typeof AuthenticatedAdminEditLayoutIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
     '/_authenticated/admin/employees/': {
       id: '/_authenticated/admin/employees/'
       path: '/employees'
@@ -963,6 +978,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminPlansProductionRoute: typeof AuthenticatedAdminPlansProductionRoute
   AuthenticatedAdminSalariesIdLazyRoute: typeof AuthenticatedAdminSalariesIdLazyRoute
   AuthenticatedAdminCheckPoIndexRoute: typeof AuthenticatedAdminCheckPoIndexRoute
+  AuthenticatedAdminEditLayoutIndexRoute: typeof AuthenticatedAdminEditLayoutIndexRoute
   AuthenticatedAdminEmployeesIndexRoute: typeof AuthenticatedAdminEmployeesIndexRoute
   AuthenticatedAdminRolesIndexRoute: typeof AuthenticatedAdminRolesIndexRoute
   AuthenticatedAdminSalariesIndexRoute: typeof AuthenticatedAdminSalariesIndexRoute
@@ -994,6 +1010,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminSalariesIdLazyRoute:
       AuthenticatedAdminSalariesIdLazyRoute,
     AuthenticatedAdminCheckPoIndexRoute: AuthenticatedAdminCheckPoIndexRoute,
+    AuthenticatedAdminEditLayoutIndexRoute:
+      AuthenticatedAdminEditLayoutIndexRoute,
     AuthenticatedAdminEmployeesIndexRoute:
       AuthenticatedAdminEmployeesIndexRoute,
     AuthenticatedAdminRolesIndexRoute: AuthenticatedAdminRolesIndexRoute,
@@ -1168,6 +1186,7 @@ export interface FileRoutesByFullPath {
   '/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
+  '/admin/edit-layout': typeof AuthenticatedAdminEditLayoutIndexRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
   '/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
@@ -1223,6 +1242,7 @@ export interface FileRoutesByTo {
   '/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
+  '/admin/edit-layout': typeof AuthenticatedAdminEditLayoutIndexRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
   '/admin/products': typeof AuthenticatedAdminProductsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
@@ -1285,6 +1305,7 @@ export interface FileRoutesById {
   '/_authenticated/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/_authenticated/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
   '/_authenticated/admin/check-po/': typeof AuthenticatedAdminCheckPoIndexRoute
+  '/_authenticated/admin/edit-layout/': typeof AuthenticatedAdminEditLayoutIndexRoute
   '/_authenticated/admin/employees/': typeof AuthenticatedAdminEmployeesIndexRoute
   '/_authenticated/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
   '/_authenticated/admin/roles/': typeof AuthenticatedAdminRolesIndexRoute
@@ -1347,6 +1368,7 @@ export interface FileRouteTypes {
     | '/employee/todo/update-quantity-error'
     | '/admin/salaries/$id'
     | '/admin/check-po'
+    | '/admin/edit-layout'
     | '/admin/employees'
     | '/admin/products/'
     | '/admin/roles'
@@ -1401,6 +1423,7 @@ export interface FileRouteTypes {
     | '/employee/todo/update-quantity-error'
     | '/admin/salaries/$id'
     | '/admin/check-po'
+    | '/admin/edit-layout'
     | '/admin/employees'
     | '/admin/products'
     | '/admin/roles'
@@ -1461,6 +1484,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employee/todo/update-quantity-error'
     | '/_authenticated/admin/salaries/$id'
     | '/_authenticated/admin/check-po/'
+    | '/_authenticated/admin/edit-layout/'
     | '/_authenticated/admin/employees/'
     | '/_authenticated/admin/products/'
     | '/_authenticated/admin/roles/'
@@ -1552,6 +1576,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/plans/production",
         "/_authenticated/admin/salaries/$id",
         "/_authenticated/admin/check-po/",
+        "/_authenticated/admin/edit-layout/",
         "/_authenticated/admin/employees/",
         "/_authenticated/admin/roles/",
         "/_authenticated/admin/salaries/",
@@ -1744,6 +1769,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/check-po/": {
       "filePath": "_authenticated/admin/check-po/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/edit-layout/": {
+      "filePath": "_authenticated/admin/edit-layout/index.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/employees/": {

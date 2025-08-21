@@ -5,17 +5,18 @@ import {
   permissionPathMap
 } from '@/types/menuItem';
 import { Permission } from '@/types/permissionType';
-import { IconLogOut } from '@components/icons';
+import { IconEdit, IconLogOut } from '@components/icons';
 import { useAuth } from '@hooks/useAuth';
+import { authLogout } from '@services/AuthService';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
+import { isAdmin } from '@utils/authUtil';
 import { Button, Drawer, Layout } from 'antd';
 import { useMemo } from 'react';
 import type { IconType } from 'react-icons';
 import * as FaIcons from 'react-icons/fa';
 import { SidebarMenu } from './SidebarMenu';
-import { authLogout } from '@services/AuthService';
 
 const { Sider } = Layout;
 
@@ -182,7 +183,18 @@ function Sidebar() {
     scrollbarWidth: 'none'
   };
 
-  const sidebarContent = <SidebarMenu items={items} />;
+  const sidebarContent = (
+    <>
+      <SidebarMenu items={items} />
+      {isAdmin(user?.role.name || '') && (
+        <Link to="/admin/edit-layout">
+          <Button className="w-full" icon={<IconEdit />}>
+            {!isSidebarClose && 'Chỉnh giao diện'}
+          </Button>
+        </Link>
+      )}
+    </>
+  );
 
   const handleLogout = async () => {
     await authLogout();
