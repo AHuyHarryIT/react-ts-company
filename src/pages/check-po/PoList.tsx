@@ -12,6 +12,7 @@ import { getWeeksInMonth } from '@utils/weeksInMonth';
 import { IconAdd, IconHistory } from '@components/icons';
 import { Link } from '@tanstack/react-router';
 import { FaTruck, FaWarehouse } from 'react-icons/fa6';
+import { ExportPoModal } from './ExportPoModal';
 
 export const PoList = () => {
   const [month, setMonth] = useState<Dayjs>(dayjs());
@@ -101,9 +102,7 @@ export const PoList = () => {
           <Button variant="solid" color="blue" icon={<IconHistory />}>
             Lịch sử nhập PO
           </Button>
-          <Button variant="solid" color="green" icon={<IconExport />}>
-            Export
-          </Button>
+          <ExportPoModal />
         </div>
         <DatePicker
           picker="month"
