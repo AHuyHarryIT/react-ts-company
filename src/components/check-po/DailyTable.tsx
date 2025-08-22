@@ -1,25 +1,13 @@
 import { Table, TableColumnsType, TableProps } from 'antd';
+import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import type { Dayjs } from 'dayjs';
 
+import { ProduceTableType } from '@/types/poTableType';
+import { customTableProps } from '@components/custom/TableProps.custom';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
-import { dateTimeToShift } from '@utils/dateTimeToShift';
-import { customTableProps } from '@components/custom/TableProps.custom';
-
-export type ProduceTableType = {
-  id: string;
-  name: string;
-  code: string;
-  totalQuantity: number;
-  times: {
-    [date: string]: {
-      shift1: number;
-      shift2: number;
-    };
-  };
-};
+import { produceDataSource } from '@utils/poDataUtil';
 
 interface DailyTableProps {
   month: Dayjs;
@@ -69,43 +57,8 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
   useEffect(() => {
     if (!tableData.length) return;
 
-    const generateDataSource = () => {
-      const newDataSource = tableData.map((product) => {
-        const timeMap: ProduceTableType['times'] = {};
-        const totalQuantity = (product.totalmonthquantities || [])
-          .filter((item) => item.status === 1)
-          .reduce((acc, item) => acc + item.totalQuan, 0);
-
-        (product.dailyquantities || [])
-          .filter((item) => item.status === 1)
-          .forEach((time) => {
-            const dateKey = dayjs(time.date).format('DD-MM-YYYY');
-            const shift = dateTimeToShift(dateKey, time.created_at);
-
-            if (!timeMap[dateKey]) {
-              timeMap[dateKey] = { shift1: 0, shift2: 0 };
-            }
-
-            if (shift === 1) {
-              timeMap[dateKey].shift1 += time.quantity;
-            } else if (shift === 2) {
-              timeMap[dateKey].shift2 += time.quantity;
-            }
-          });
-
-        return {
-          id: product.id,
-          name: product.name,
-          code: product.code,
-          totalQuantity: totalQuantity,
-          times: timeMap
-        };
-      });
-
-      setDataSource(newDataSource);
-    };
-
-    generateDataSource();
+    const data = produceDataSource(tableData);
+    setDataSource(data);
   }, [tableData]);
 
   const dateColumns: TableColumnsType<ProduceTableType> = dayList.map(

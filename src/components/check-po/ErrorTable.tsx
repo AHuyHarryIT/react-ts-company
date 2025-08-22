@@ -6,18 +6,8 @@ import type { Dayjs } from 'dayjs';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
 import { customTableProps } from '@components/custom/TableProps.custom';
-
-type ErrorTableType = {
-  id: string;
-  name: string;
-  code: string;
-  total: number;
-  times: {
-    [date: string]: {
-      quantity: number;
-    };
-  };
-};
+import { ErrorTableType } from '@/types/poTableType';
+import { errorDataSource } from '@utils/poDataUtil';
 
 interface ErrorTableProps {
   month: Dayjs;
@@ -66,41 +56,8 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
 
   useEffect(() => {
     if (!tableData.length) return;
-
-    const generateDataSource = () => {
-      const newDataSource = tableData.map((product) => {
-        const timeMap: ErrorTableType['times'] = {};
-
-        const totalMonthQuantities = product.totalmonthquantities || [];
-
-        const total = totalMonthQuantities.find(
-          (item) => item.status === 6
-        )?.totalQuan;
-
-        (product.dailyquantities || [])
-          .filter((item) => item.status === 6)
-          .forEach((time) => {
-            const dateKey = dayjs(time.date).format('DD-MM-YYYY');
-
-            if (!timeMap[dateKey]) {
-              timeMap[dateKey] = { quantity: 0 };
-            }
-            timeMap[dateKey].quantity += time.quantity;
-          });
-
-        return {
-          id: product.id,
-          name: product.name,
-          code: product.code,
-          total: total || 0,
-          times: timeMap
-        };
-      });
-
-      setDataSource(newDataSource);
-    };
-
-    generateDataSource();
+    const data = errorDataSource(tableData);
+    setDataSource(data);
   }, [tableData]);
 
   const dateColumns: TableColumnsType<ErrorTableType> = dayList.map(

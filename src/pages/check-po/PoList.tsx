@@ -9,9 +9,9 @@ import { WeekTable } from '@components/check-po/WeekTable';
 import ComponentCard from '@components/common/ComponentCard';
 import { getWeeksInMonth } from '@utils/weeksInMonth';
 
-import { IconAdd, IconExport, IconHistory } from '@components/icons';
-import { FaTruck, FaWarehouse } from 'react-icons/fa6';
+import { IconAdd, IconHistory } from '@components/icons';
 import { Link } from '@tanstack/react-router';
+import { FaTruck, FaWarehouse } from 'react-icons/fa6';
 
 export const PoList = () => {
   const [month, setMonth] = useState<Dayjs>(dayjs());
@@ -39,11 +39,7 @@ export const PoList = () => {
               <br />
               {`(${weekStart.format('DD/MM/YYYY')} - ${weekEnd.format('DD/MM/YYYY')})`}
             </div>
-            <WeekTable
-              month={month}
-              startDate={weekStart.format('YYYY-MM-DD')}
-              endDate={weekEnd.format('YYYY-MM-DD')}
-            />
+            <WeekTable month={month} startDate={weekStart} endDate={weekEnd} />
           </div>
         )
       };
@@ -101,6 +97,7 @@ export const PoList = () => {
               Thêm tồn đầu kỳ
             </Button>
           </Link>
+          {/* TODO: Add history link */}
           <Button variant="solid" color="blue" icon={<IconHistory />}>
             Lịch sử nhập PO
           </Button>

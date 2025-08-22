@@ -1,31 +1,17 @@
 import { Table, TableColumnsType, TableProps } from 'antd';
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
 import type { Dayjs } from 'dayjs';
+import React, { useEffect, useState } from 'react';
 
+import { WeekTableType } from '@/types/poTableType';
+import { customTableProps } from '@components/custom/TableProps.custom';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
-import { customTableProps } from '@components/custom/TableProps.custom';
-
-export type WeekTableType = {
-  id: string;
-  name: string;
-  code: string;
-  totalQuantity: number;
-  totalReamingOfWeek: number;
-  exportQuantity: number;
-  beginOfWeek: number;
-  times: {
-    [date: string]: {
-      exportQuantity: number;
-    };
-  };
-};
+import { weeklyDataSource } from '@utils/poDataUtil';
 
 interface WeekTableProps {
   month: Dayjs;
-  startDate: string;
-  endDate: string;
+  startDate: Dayjs;
+  endDate: Dayjs;
 }
 
 export const WeekTable: React.FC<WeekTableProps> = ({
@@ -66,12 +52,10 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   useEffect(() => {
     // set day list from startDate to endDate
     if (startDate && endDate) {
-      const start = dayjs(startDate);
-      const end = dayjs(endDate);
-      const daysInRange = end.diff(start, 'day') + 1;
+      const daysInRange = endDate.diff(startDate, 'day') + 1;
 
       const dayList = Array.from({ length: daysInRange }, (_, i) =>
-        start.add(i, 'day').format('DD-MM-YYYY')
+        startDate.add(i, 'day').format('DD-MM-YYYY')
       );
 
       setDayList(dayList);
@@ -81,109 +65,9 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   useEffect(() => {
     if (!tableData.length) return;
 
-    const generateDataSource = () => {
-      const newDataSource = tableData.map((product) => {
-        const timeMap: WeekTableType['times'] = {};
+    const data = weeklyDataSource(tableData, startDate, endDate);
 
-        const totalMonthQuantities = product.totalmonthquantities || [];
-        const totalDailyQuantities = product.totaldailyquantities || [];
-
-        const totalDailyQuantitiesPO = product.totaldailyquantitiespo || [];
-
-        const prevQuantity100 = totalDailyQuantities
-          .filter(
-            (item) =>
-              item.status === 1 &&
-              dayjs(item.date).isAfter(
-                dayjs(startDate).startOf('month').subtract(1, 'day')
-              ) &&
-              dayjs(item.date).isBefore(dayjs(endDate).add(1, 'day'))
-          )
-          .reduce((acc, item) => acc + item.totalQuan, 0);
-
-        const prevExportQuantity = totalDailyQuantitiesPO
-          .filter(
-            (item) =>
-              item.status === 8 &&
-              dayjs(item.date).isAfter(
-                dayjs(startDate).startOf('month').subtract(1, 'day')
-              ) &&
-              dayjs(item.date).isBefore(dayjs(endDate).add(1, 'day'))
-          )
-          .reduce((acc, item) => acc + item.totalQuan, 0);
-
-        const quantity100 = totalDailyQuantities
-          .filter(
-            (item) =>
-              item.status === 1 &&
-              dayjs(item.date).isAfter(dayjs(startDate).subtract(1, 'day')) &&
-              dayjs(item.date).isBefore(dayjs(endDate).add(1, 'day'))
-          )
-          .reduce((acc, item) => acc + item.totalQuan, 0);
-
-        const exportQuantity = totalDailyQuantitiesPO
-          .filter(
-            (item) =>
-              item.status === 8 &&
-              dayjs(item.date).isAfter(dayjs(startDate).subtract(1, 'day')) &&
-              dayjs(item.date).isBefore(dayjs(endDate).add(1, 'day'))
-          )
-          .reduce((acc, item) => acc + item.totalQuan, 0);
-
-        const errorQuantity =
-          totalMonthQuantities.find((item) => item.status === 6)?.totalQuan ||
-          0;
-
-        // calculate begin of week
-        let beginOfWeek = 0;
-
-        beginOfWeek =
-          totalMonthQuantities.find((item) => item.status === 4)?.totalQuan ||
-          0;
-
-        const reamingOfWeek =
-          prevQuantity100 - prevExportQuantity + beginOfWeek;
-
-        beginOfWeek =
-          prevQuantity100 -
-          quantity100 -
-          (prevExportQuantity - exportQuantity) +
-          beginOfWeek;
-
-        const totalQuantity = quantity100 + beginOfWeek;
-        const totalReamingOfWeek = reamingOfWeek - errorQuantity;
-
-        totalDailyQuantitiesPO
-          .filter(
-            (item) =>
-              item.status === 8 &&
-              dayjs(item.date).isAfter(dayjs(startDate).subtract(1, 'day')) &&
-              dayjs(item.date).isBefore(dayjs(endDate).add(1, 'day'))
-          )
-          .map((item) => {
-            const dateKey = dayjs(item.date).format('DD-MM-YYYY');
-            if (!timeMap[dateKey]) {
-              timeMap[dateKey] = { exportQuantity: 0 };
-            }
-            timeMap[dateKey].exportQuantity += item.totalQuan;
-          });
-
-        return {
-          id: product.id,
-          name: product.name,
-          code: product.code,
-          totalQuantity: totalQuantity || 0,
-          totalReamingOfWeek: totalReamingOfWeek || 0,
-          exportQuantity: exportQuantity || 0,
-          beginOfWeek: beginOfWeek || 0,
-          times: timeMap
-        };
-      });
-
-      setDataSource(newDataSource);
-    };
-
-    generateDataSource();
+    setDataSource(data);
   }, [endDate, startDate, tableData]);
 
   const dateColumns: TableColumnsType<WeekTableType> = dayList.map(
