@@ -10,6 +10,7 @@ import { PaginatedResponse } from '@/types/responseTypes';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { RowTableActions } from './RowTableActions';
 import { calculateCheck200Product } from '@utils/calculateCheck200Product';
+import { Link } from '@tanstack/react-router';
 
 export type Check200TableType = {
   id: string;
@@ -98,7 +99,14 @@ export const Check200Table: React.FC<Check200TableProps> = ({
       title: <div>Tên sản phẩm</div>,
       minWidth: 100,
       fixed: 'left',
-      dataIndex: 'name'
+      dataIndex: 'name',
+      render: (value, record) => {
+        return (
+          <Link to={'/admin/products/$id'} params={{ id: record.id }}>
+            {value}
+          </Link>
+        );
+      }
     },
     {
       title: <div>Mã sản phẩm</div>,

@@ -4,7 +4,7 @@ export const customFormProps: FormProps = {
   layout: 'vertical',
   size: 'large',
   scrollToFirstError: {
-    behavior: 'instant',
+    behavior: 'smooth',
     block: 'start',
     focus: true
   }

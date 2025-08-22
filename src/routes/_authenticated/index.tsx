@@ -1,7 +1,9 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { isAdmin } from '@utils/authUtil';
+
+import Dashboard from '@pages/dashboards/Dashboard';
 
 export const Route = createFileRoute('/_authenticated/')({
+  component: Dashboard,
   beforeLoad: async ({ context }) => {
     const { user } = context.authenticated;
     if (!user) {
@@ -11,12 +13,6 @@ export const Route = createFileRoute('/_authenticated/')({
           redirect: location.href
         }
       });
-    }
-    const admin = isAdmin(user?.role.name || '');
-    if (admin) {
-      throw redirect({ to: '/admin', replace: true });
-    } else {
-      throw redirect({ to: '/employee', replace: true });
     }
   }
 });

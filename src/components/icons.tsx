@@ -16,4 +16,6 @@ export {
   IoReload as IconReload
 } from 'react-icons/io5';
 
+export { IoIosLogOut as IconLogOut } from 'react-icons/io';
+
 export { FaHistory as IconHistory } from 'react-icons/fa';

@@ -64,7 +64,7 @@ export const ChooseProduct = () => {
     <>
       <BackButton to="/" />
       <ComponentCard title="Cập Nhật Loại Sản Phẩm Cần Kiểm Hàng Hoặc Sản Xuất">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col flex-wrap items-center gap-4 lg:flex-row">
           <Link to="/">
             <Button variant="solid" color="blue" icon={<FaHome />}>
               TRANG CHỦ

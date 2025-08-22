@@ -1,9 +1,11 @@
 import { Table, TableColumnsType, TableProps } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
+import type { Dayjs } from 'dayjs';
 
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 export type WeekTableType = {
   id: string;
@@ -21,7 +23,7 @@ export type WeekTableType = {
 };
 
 interface WeekTableProps {
-  month: string; // MM-YYYY
+  month: Dayjs;
   startDate: string;
   endDate: string;
 }
@@ -52,7 +54,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
         'totalmonthquantities',
         'totaldailyquantitiespo'
       ],
-      month: month
+      month: month.format('YYYY-MM')
     }
   });
 
@@ -270,21 +272,16 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   ];
 
   const tableProps: TableProps<WeekTableType> = {
+    ...(customTableProps as unknown as TableProps<WeekTableType>),
     rowKey: (record) => ['error', record.id].join('-'),
-    bordered: true,
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
-    size: 'small',
-    scroll: { x: 'max-content' },
-    tableLayout: 'auto',
     pagination: {
-      size: 'default',
-      showSizeChanger: true,
+      ...customTableProps.pagination,
       pageSize: limit,
       current: page,
       total: total,
-      showTotal: (total) => `Tổng ${total}`,
       onShowSizeChange: (_current, size) => {
         setLimit(size);
       },

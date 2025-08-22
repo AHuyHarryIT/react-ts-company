@@ -9,6 +9,7 @@ import { customTableProps } from '@components/custom/TableProps.custom';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
 import { calculateTotalProduct } from '@utils/calculateTotalProduct';
 import { RowTableActions } from './RowTableActions';
+import { Link } from '@tanstack/react-router';
 
 export type TotalTableType = {
   id: string;
@@ -107,7 +108,14 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       title: <div>Tên sản phẩm</div>,
       minWidth: 100,
       fixed: 'left',
-      dataIndex: 'name'
+      dataIndex: 'name',
+      render: (value, record) => {
+        return (
+          <Link to={'/admin/products/$id'} params={{ id: record.id }}>
+            {value}
+          </Link>
+        );
+      }
     },
     {
       title: <div>Mã sản phẩm</div>,

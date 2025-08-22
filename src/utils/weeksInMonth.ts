@@ -1,12 +1,13 @@
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
 
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
 
-export const getWeeksInMonth = (month: string) => {
-  const currentMonth = dayjs(month, 'MM-YYYY');
+export const getWeeksInMonth = (month: Dayjs) => {
+  const currentMonth = month;
   const startOfMonth = currentMonth.startOf('month');
   const endOfMonth = currentMonth.endOf('month');
 

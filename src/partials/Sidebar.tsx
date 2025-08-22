@@ -1,23 +1,27 @@
-import { Link } from '@tanstack/react-router';
-import { useStore } from '@tanstack/react-store';
-import { Drawer, Layout } from 'antd';
-import { toggleSidebar, uiStore } from '@stores/uiStore';
-import { useAuth } from '@hooks/useAuth';
-import { SidebarMenu } from './SidebarMenu';
-import { useMemo } from 'react';
 import type { MenuItem } from '@/types/menuItem';
 import {
   DefaultIcon,
   permissionIconMap,
   permissionPathMap
 } from '@/types/menuItem';
+import { Permission } from '@/types/permissionType';
+import { IconEdit, IconLogOut } from '@components/icons';
+import { useAuth } from '@hooks/useAuth';
+import { authLogout } from '@services/AuthService';
+import { toggleSidebar, uiStore } from '@stores/uiStore';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { useStore } from '@tanstack/react-store';
+import { isAdmin } from '@utils/authUtil';
+import { Button, Drawer, Layout } from 'antd';
+import { useMemo } from 'react';
 import type { IconType } from 'react-icons';
 import * as FaIcons from 'react-icons/fa';
-import { Permission } from '@/types/permissionType';
+import { SidebarMenu } from './SidebarMenu';
 
 const { Sider } = Layout;
 
 function Sidebar() {
+  const navigate = useNavigate();
   const { isSidebarClose, theme, isMobile } = useStore(uiStore);
   const { user } = useAuth();
 
@@ -140,7 +144,6 @@ function Sidebar() {
     return permissions
       .filter((p) => ['sidebar', 'both'].includes(p.display_area))
       .map((perm) => {
-        console.log(perm);
         if (perm.sidebar_items?.length > 0) {
           return {
             key: perm.key,
@@ -180,8 +183,23 @@ function Sidebar() {
     scrollbarWidth: 'none'
   };
 
-  const sidebarContent = <SidebarMenu items={items} />;
+  const sidebarContent = (
+    <>
+      <SidebarMenu items={items} />
+      {isAdmin(user?.role.name || '') && (
+        <Link to="/admin/edit-layout">
+          <Button className="w-full" icon={<IconEdit />}>
+            {!isSidebarClose && 'Chỉnh giao diện'}
+          </Button>
+        </Link>
+      )}
+    </>
+  );
 
+  const handleLogout = async () => {
+    await authLogout();
+    navigate({ to: '/login' });
+  };
   return (
     <>
       {isMobile ? (
@@ -191,7 +209,17 @@ function Sidebar() {
           placement="left"
           onClose={toggleSidebar}
           open={!isSidebarClose}
-          styles={{ body: { padding: 0 } }}
+          styles={{ body: { padding: 0 }, footer: { padding: 0 } }}
+          footer={
+            <Button
+              className="w-full"
+              size="large"
+              icon={<IconLogOut />}
+              onClick={handleLogout}
+            >
+              Đăng xuất
+            </Button>
+          }
         >
           {sidebarContent}
         </Drawer>
@@ -206,7 +234,20 @@ function Sidebar() {
           collapsed={isSidebarClose}
           onCollapse={toggleSidebar}
         >
-          {sidebarContent}
+          <div
+            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+          >
+            <div style={{ flex: 1, minHeight: 0 }}>{sidebarContent}</div>
+            <div>
+              <Button
+                className="w-full"
+                size="large"
+                icon={<IconLogOut />}
+                onClick={handleLogout}
+                children={!isSidebarClose && 'Đăng xuất'}
+              />
+            </div>
+          </div>
         </Sider>
       )}
     </>

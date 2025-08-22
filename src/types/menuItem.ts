@@ -77,7 +77,7 @@ export const permissionPathMap: PermissionPathType = {
   view_dashboard: '/',
   view_products: '/admin/products',
   view_today_employees: '/activity-schedule',
-  // view_po_list: '/admin/purchase-orders',
+  view_po_list: '/admin/check-po',
   // view_history: '/admin/activity-history',
   view_roles: '/admin/roles',
   view_employees: '/admin/employees',
@@ -94,9 +94,13 @@ export const permissionPathMap: PermissionPathType = {
   view_salary: '/employee/salaries',
   attendance: '/employee/attendances/history',
   attendance_calculation: '/employee/attendances/calculate',
-  scan: '/employee/scan',
-  storage_export_product: '/employee/scan/storage',
+  scan: '/scan',
+  storage_export_product: '/scan/storage',
   view_team_schedule: '/work-schedules',
   view_today_activity: '/activity-schedule',
-  request_label: '/employee/stamps/request'
+  request_label: '/employee/stamps/request',
+  select_products_todo: '/employee/todo/add-product',
+  input_quantity: '/employee/todo/update-quantity',
+  input_quantity_error: '/employee/todo/update-quantity-error',
+  history_input_quantity: '/employee/todo/history'
 };

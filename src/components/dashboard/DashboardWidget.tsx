@@ -2,7 +2,7 @@ import { Link, LinkProps } from '@tanstack/react-router';
 import React from 'react';
 export interface WidgetProps {
   title: string;
-  value: string;
+  value?: string;
   icon: React.ReactNode;
   navLink?: LinkProps['to'];
 }

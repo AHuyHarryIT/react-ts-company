@@ -10,6 +10,7 @@ import { PaginatedResponse } from '@/types/responseTypes';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { calculateProduceProduct } from '@utils/calculateProduceProduct';
 import { RowTableActions } from './RowTableActions';
+import { Link } from '@tanstack/react-router';
 
 export type ProduceTableType = {
   id: string;
@@ -118,7 +119,14 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
       key: 'name',
       dataIndex: 'name',
       minWidth: 100,
-      fixed: 'left'
+      fixed: 'left',
+      render: (value, record) => {
+        return (
+          <Link to={'/admin/products/$id'} params={{ id: record.id }}>
+            {value}
+          </Link>
+        );
+      }
     },
     {
       title: <div>Mã sản phẩm</div>,
