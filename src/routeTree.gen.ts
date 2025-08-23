@@ -25,7 +25,6 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedActivityScheduleRouteImport } from './routes/_authenticated/activity-schedule/route'
 import { Route as AuthenticatedWorkSchedulesIndexImport } from './routes/_authenticated/work-schedules/index'
 import { Route as AuthenticatedScanIndexImport } from './routes/_authenticated/scan/index'
-import { Route as AuthenticatedEmployeeIndexImport } from './routes/_authenticated/employee/index'
 import { Route as AuthenticatedActivityScheduleIndexImport } from './routes/_authenticated/activity-schedule/index'
 import { Route as AuthenticatedWorkSchedulesIdImport } from './routes/_authenticated/work-schedules/$id'
 import { Route as AuthenticatedStampsHistoryImport } from './routes/_authenticated/stamps/history'
@@ -154,14 +153,6 @@ const AuthenticatedScanIndexRoute = AuthenticatedScanIndexImport.update({
   path: '/scan/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-
-const AuthenticatedEmployeeIndexRoute = AuthenticatedEmployeeIndexImport.update(
-  {
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedEmployeeRouteRoute,
-  } as any,
-)
 
 const AuthenticatedActivityScheduleIndexRoute =
   AuthenticatedActivityScheduleIndexImport.update({
@@ -623,13 +614,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityScheduleIndexImport
       parentRoute: typeof AuthenticatedActivityScheduleRouteImport
     }
-    '/_authenticated/employee/': {
-      id: '/_authenticated/employee/'
-      path: '/'
-      fullPath: '/employee/'
-      preLoaderRoute: typeof AuthenticatedEmployeeIndexImport
-      parentRoute: typeof AuthenticatedEmployeeRouteImport
-    }
     '/_authenticated/scan/': {
       id: '/_authenticated/scan/'
       path: '/scan'
@@ -1030,7 +1014,6 @@ const AuthenticatedAdminRouteRouteWithChildren =
   )
 
 interface AuthenticatedEmployeeRouteRouteChildren {
-  AuthenticatedEmployeeIndexRoute: typeof AuthenticatedEmployeeIndexRoute
   AuthenticatedEmployeeSalariesIdRoute: typeof AuthenticatedEmployeeSalariesIdRoute
   AuthenticatedEmployeeSchedulesIdRoute: typeof AuthenticatedEmployeeSchedulesIdRoute
   AuthenticatedEmployeeStampsHistoryRoute: typeof AuthenticatedEmployeeStampsHistoryRoute
@@ -1048,7 +1031,6 @@ interface AuthenticatedEmployeeRouteRouteChildren {
 
 const AuthenticatedEmployeeRouteRouteChildren: AuthenticatedEmployeeRouteRouteChildren =
   {
-    AuthenticatedEmployeeIndexRoute: AuthenticatedEmployeeIndexRoute,
     AuthenticatedEmployeeSalariesIdRoute: AuthenticatedEmployeeSalariesIdRoute,
     AuthenticatedEmployeeSchedulesIdRoute:
       AuthenticatedEmployeeSchedulesIdRoute,
@@ -1162,7 +1144,6 @@ export interface FileRoutesByFullPath {
   '/stamps/history': typeof AuthenticatedStampsHistoryRoute
   '/work-schedules/$id': typeof AuthenticatedWorkSchedulesIdRoute
   '/activity-schedule/': typeof AuthenticatedActivityScheduleIndexRoute
-  '/employee/': typeof AuthenticatedEmployeeIndexRoute
   '/scan': typeof AuthenticatedScanIndexRoute
   '/work-schedules/': typeof AuthenticatedWorkSchedulesIndexRoute
   '/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
@@ -1208,6 +1189,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/forbidden': typeof ForbiddenRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/employee': typeof AuthenticatedEmployeeRouteRouteWithChildren
   '/stamps': typeof AuthenticatedStampsRouteRouteWithChildren
   '/login': typeof authLoginRoute
   '/admin/about': typeof AuthenticatedAdminAboutRoute
@@ -1218,7 +1200,6 @@ export interface FileRoutesByTo {
   '/stamps/history': typeof AuthenticatedStampsHistoryRoute
   '/work-schedules/$id': typeof AuthenticatedWorkSchedulesIdRoute
   '/activity-schedule': typeof AuthenticatedActivityScheduleIndexRoute
-  '/employee': typeof AuthenticatedEmployeeIndexRoute
   '/scan': typeof AuthenticatedScanIndexRoute
   '/work-schedules': typeof AuthenticatedWorkSchedulesIndexRoute
   '/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
@@ -1281,7 +1262,6 @@ export interface FileRoutesById {
   '/_authenticated/stamps/history': typeof AuthenticatedStampsHistoryRoute
   '/_authenticated/work-schedules/$id': typeof AuthenticatedWorkSchedulesIdRoute
   '/_authenticated/activity-schedule/': typeof AuthenticatedActivityScheduleIndexRoute
-  '/_authenticated/employee/': typeof AuthenticatedEmployeeIndexRoute
   '/_authenticated/scan/': typeof AuthenticatedScanIndexRoute
   '/_authenticated/work-schedules/': typeof AuthenticatedWorkSchedulesIndexRoute
   '/_authenticated/admin/attendances/history': typeof AuthenticatedAdminAttendancesHistoryRoute
@@ -1344,7 +1324,6 @@ export interface FileRouteTypes {
     | '/stamps/history'
     | '/work-schedules/$id'
     | '/activity-schedule/'
-    | '/employee/'
     | '/scan'
     | '/work-schedules/'
     | '/admin/attendances/history'
@@ -1389,6 +1368,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forbidden'
     | '/admin'
+    | '/employee'
     | '/stamps'
     | '/login'
     | '/admin/about'
@@ -1399,7 +1379,6 @@ export interface FileRouteTypes {
     | '/stamps/history'
     | '/work-schedules/$id'
     | '/activity-schedule'
-    | '/employee'
     | '/scan'
     | '/work-schedules'
     | '/admin/attendances/history'
@@ -1460,7 +1439,6 @@ export interface FileRouteTypes {
     | '/_authenticated/stamps/history'
     | '/_authenticated/work-schedules/$id'
     | '/_authenticated/activity-schedule/'
-    | '/_authenticated/employee/'
     | '/_authenticated/scan/'
     | '/_authenticated/work-schedules/'
     | '/_authenticated/admin/attendances/history'
@@ -1589,7 +1567,6 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/employee/route.tsx",
       "parent": "/_authenticated",
       "children": [
-        "/_authenticated/employee/",
         "/_authenticated/employee/salaries/$id",
         "/_authenticated/employee/schedules/$id",
         "/_authenticated/employee/stamps/history",
@@ -1674,10 +1651,6 @@ export const routeTree = rootRoute
     "/_authenticated/activity-schedule/": {
       "filePath": "_authenticated/activity-schedule/index.tsx",
       "parent": "/_authenticated/activity-schedule"
-    },
-    "/_authenticated/employee/": {
-      "filePath": "_authenticated/employee/index.tsx",
-      "parent": "/_authenticated/employee"
     },
     "/_authenticated/scan/": {
       "filePath": "_authenticated/scan/index.tsx",

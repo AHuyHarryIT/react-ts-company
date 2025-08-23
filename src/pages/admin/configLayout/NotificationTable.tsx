@@ -2,6 +2,7 @@ import {
   NotificationType,
   NotificationUpdateType
 } from '@/types/notificationType';
+import { PaginatedResponse } from '@/types/responseTypes';
 import { QueryParams } from '@/types/queryParams';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { IconDelete, IconEdit } from '@components/icons';
@@ -49,6 +50,8 @@ export const NotificationTable = () => {
     (item: NotificationType) => ({ ...item, key: String(item.id) })
   );
 
+  const total = notifications?.total || 0;
+
   const isEditing = (record: TableColumns) => record.key === editingKey;
 
   const edit = (record: TableColumns) => {
@@ -76,14 +79,30 @@ export const NotificationTable = () => {
     onMutate: () => {
       message.loading({ content: 'Đang cập nhật...', key: 'updating' });
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       message.success({
         content: 'Cập nhật thông báo thành công!',
         key: 'updating'
       });
-      queryClient.invalidateQueries();
+      // Optimistically update the cache for the current page
+      queryClient.setQueryData(
+        ['notifications', params],
+        (oldData: PaginatedResponse<NotificationType>) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            data: oldData.data.map((item: NotificationType) =>
+              String(item.id) === String(variables.id)
+                ? { ...item, ...variables.updatedNotification }
+                : item
+            )
+          };
+        }
+      );
       form.resetFields();
       setEditingKey('');
+      // Still refetch to ensure data consistency
+      queryClient.invalidateQueries();
     },
     onError: () => {
       message.error({
@@ -101,11 +120,25 @@ export const NotificationTable = () => {
     onMutate: () => {
       message.loading({ content: 'Đang xóa...', key: 'deleting' });
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       message.success({
         content: 'Xóa thông báo thành công!',
         key: 'deleting'
       });
+      // Optimistically remove the notification from the cache for the current page
+      queryClient.setQueryData(
+        ['notifications', params],
+        (oldData: PaginatedResponse<NotificationType> | undefined) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            data: oldData.data.filter(
+              (item: NotificationType) => String(item.id) !== String(id)
+            )
+          };
+        }
+      );
+      // Still refetch to ensure data consistency
       queryClient.invalidateQueries();
     },
     onError: () => {
@@ -175,6 +208,10 @@ export const NotificationTable = () => {
       title: 'Hiển thị',
       key: 'is_show',
       dataIndex: 'is_show',
+      filters: [
+        { text: 'Có', value: true },
+        { text: 'Không', value: false }
+      ],
       render: (value: boolean) => {
         return value ? 'Có' : 'Không';
       },
@@ -253,11 +290,26 @@ export const NotificationTable = () => {
     },
     pagination: {
       ...customTableProps.pagination,
+      total,
       current: params.page,
       pageSize: params.limit,
       onChange: (page, pageSize) => {
         setParams((prev) => ({ ...prev, page, limit: pageSize }));
       }
+    },
+    onChange: (_pagination, filters) => {
+      const newFilters: QueryParams = {};
+
+      if (Array.isArray(filters.is_show) && filters.is_show.length == 1) {
+        newFilters['filter[is_show]'] =
+          filters.is_show[0] == true ? 'true' : 'false';
+      } else if (!filters.is_show) {
+        newFilters['filter[is_show]'] = undefined;
+      }
+      setParams((prev) => ({
+        ...prev,
+        ...newFilters
+      }));
     }
   };
 
