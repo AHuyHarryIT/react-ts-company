@@ -91,10 +91,6 @@ export const SlideShow = () => {
     onRemove: (file) => {
       deleteImg(file.uid);
     },
-    onDownload: (file) => {
-      console.log('Downloading file:', file);
-      // Implement download logic here
-    },
     onChange: (info) => {
       setImages(info.fileList);
     },
