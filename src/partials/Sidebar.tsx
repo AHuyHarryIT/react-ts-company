@@ -11,7 +11,6 @@ import { authLogout } from '@services/AuthService';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import { isAdmin } from '@utils/authUtil';
 import { Button, Drawer, Layout } from 'antd';
 import { useMemo } from 'react';
 import type { IconType } from 'react-icons';
@@ -186,7 +185,7 @@ function Sidebar() {
   const sidebarContent = (
     <>
       <SidebarMenu items={items} />
-      {isAdmin(user?.role.name || '') && (
+      {(user?.role.name || '').toLocaleLowerCase().includes('super admin') && (
         <Link to="/admin/edit-layout">
           <Button className="w-full" icon={<IconEdit />}>
             {!isSidebarClose && 'Chỉnh giao diện'}
