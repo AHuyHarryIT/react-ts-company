@@ -3,8 +3,10 @@ import { ConfigProvider, Layout, theme as antTheme } from 'antd';
 import { useEffect } from 'react';
 
 import BirthdayModal from '@components/BirthdayModal';
+import CleaningDutyModal from '@components/CleaningDuty/CleaningDutyModal';
 import MarqueeAlert from '@components/MarqueeText';
 import { useBirthdayNotification } from '@hooks/useBirthdayNotification';
+import { useCleaningDutyNotification } from '@hooks/useCleaningDutyNotification';
 import AppFooter from '@partials/Footer';
 import Header from '@partials/Header';
 import Sidebar from '@partials/Sidebar';
@@ -32,6 +34,14 @@ function AppLayout() {
       return fetchNotifications({ 'filter[is_show]': 1 });
     }
   });
+
+  // Use cleaning duty notification hook
+  const {
+    modalOpen,
+    currentDuties: currentDuty,
+    handleClose,
+    handleDontShowAgain
+  } = useCleaningDutyNotification();
 
   // Use birthday notification hook
   const {
@@ -72,6 +82,16 @@ function AppLayout() {
           </Layout>
         </Layout>
       </ConfigProvider>
+
+      {/* Cleaning Duty Modal */}
+      {currentDuty && (
+        <CleaningDutyModal
+          open={modalOpen}
+          onClose={handleClose}
+          duties={currentDuty}
+          onDontShowAgain={handleDontShowAgain}
+        />
+      )}
 
       {/* Birthday Modal - Show when there are birthdays today and hasn't been shown yet */}
       {showBirthdayModal && todayBirthdays.length > 0 && (
