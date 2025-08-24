@@ -4,17 +4,12 @@ import DashboardWidget from '@components/dashboard/DashboardWidget';
 import { fetchDashboardData } from '@services/DashboardService';
 
 import { Permission } from '@/types/permissionType';
-import { SalaryType } from '@/types/salaryType';
-import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
-import { TrophyOutlined, WalletOutlined } from '@ant-design/icons';
-import { Bar, Column } from '@ant-design/plots';
 import { SlideCarousel } from '@components/SlideCarousel';
 import { useAuth } from '@hooks/useAuth';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
 import { fetchImages } from '@services/UploadService';
 import { useQuery } from '@tanstack/react-query';
 import { isAdmin } from '@utils/authUtil';
-import { Card } from 'antd';
 import { ReactNode, useMemo } from 'react';
 import {
   FaClipboardList,
@@ -32,6 +27,8 @@ import { FiUserCheck } from 'react-icons/fi';
 import { HiOutlineUserGroup } from 'react-icons/hi';
 import { IoCalculatorOutline } from 'react-icons/io5';
 import { LuBoxes, LuCalendarFold, LuLogOut, LuScanLine } from 'react-icons/lu';
+import { SalaryChart } from './SalaryChart';
+import { ProductChart } from './ProductChart';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -303,8 +300,8 @@ export default function Dashboard() {
   const hasPermission = (permissionKey: string) =>
     permissions.some((p) => isAdminType(p.type) && p.key === permissionKey);
 
-  const showSalaryChart = hasPermission('salaries_view');
-  const showProductChart = hasPermission('products_view');
+  const showSalaryChart = hasPermission('view_chart_salary');
+  const showProductChart = hasPermission('view_chart_product');
 
   const chartColSpan =
     showSalaryChart && showProductChart ? 'xl:col-span-6' : 'xl:col-span-12';
@@ -345,7 +342,7 @@ export default function Dashboard() {
                   <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
                     Danh sách 10 bảng lương gần nhất
                   </h3>
-                  <SalaryBarChart data={salaryTableData} />
+                  <SalaryChart data={salaryTableData} />
                 </div>
               </div>
             )}
@@ -392,112 +389,5 @@ export default function Dashboard() {
         )}
       </div>
     </>
-  );
-}
-
-// ==== Charts ====
-
-type salaryDataType = {
-  month: string;
-  total: number;
-};
-
-export function SalaryBarChart({ data }: { data: SalaryType[] }) {
-  const chartData: salaryDataType[] = data
-    .map((item) => ({
-      month: item.title.replace('Bảng Lương Tháng ', ''),
-      total: item.total
-    }))
-    .reverse();
-
-  const config = {
-    data: chartData,
-    xField: 'month',
-    yField: 'total',
-    axis: {
-      y: {
-        labelFormatter: (v: number) => v.toLocaleString('vi-VN') + ' ₫',
-        title: 'Tổng lương'
-      }
-    },
-    label: {
-      text: (d: salaryDataType) => d.total.toLocaleString('vi-VN') + ' ₫',
-      textBaseline: 'bottom'
-    },
-    tooltip: {
-      title: (d: salaryDataType) => d.month,
-      items: [
-        {
-          field: 'total',
-          name: 'Tổng lương',
-          valueFormatter: (value: number) =>
-            value.toLocaleString('vi-VN') + ' ₫'
-        }
-      ]
-    }
-  };
-
-  return (
-    <Card
-      title={
-        <>
-          <WalletOutlined /> Tổng quan bảng lương
-        </>
-      }
-    >
-      <Column {...config} />
-    </Card>
-  );
-}
-
-// Product chart
-
-type ProductDataType = {
-  product: string;
-  quantity: number;
-};
-
-export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
-  const chartData: ProductDataType[] = (data || [])
-    .map((item) => ({
-      product: `SP-${item.product_id}`,
-      quantity: item.totalQuan || 0
-    }))
-    .sort((a, b) => b.quantity - a.quantity)
-    .slice(0, 10);
-
-  const config = {
-    data: chartData,
-    isGroup: false,
-    xField: 'product',
-    yField: 'quantity',
-    legend: { position: 'top' },
-    label: {
-      position: 'top',
-      style: { fill: '#000', fontSize: 12 },
-      formatter: (d: ProductDataType) => d.quantity.toLocaleString('en-US')
-    },
-    tooltip: {
-      title: (d: ProductDataType) => d.product,
-      items: [
-        {
-          field: 'quantity',
-          name: 'Số lượng',
-          valueFormatter: (value: number) => value.toLocaleString('en-US')
-        }
-      ]
-    }
-  };
-
-  return (
-    <Card
-      title={
-        <>
-          <TrophyOutlined /> So sánh sản phẩm theo nhóm
-        </>
-      }
-    >
-      <Bar {...config} />
-    </Card>
   );
 }
