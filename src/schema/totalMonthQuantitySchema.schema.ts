@@ -9,7 +9,13 @@ export const totalMonthQuantitySchema = defaultModelSchema.extend({
   product_id: z.string(),
   status: z.number(),
   month: z.string(),
-  totalQuan: z.number()
+  totalQuan: z.number(),
+  product: z
+    .object({
+      id: z.string(),
+      name: z.string()
+    })
+    .optional()
 });
 export const totalMonthQuantityCreateSchema = overrideSchema(
   totalMonthQuantitySchema

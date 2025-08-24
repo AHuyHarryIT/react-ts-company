@@ -27,8 +27,8 @@ import { FiUserCheck } from 'react-icons/fi';
 import { HiOutlineUserGroup } from 'react-icons/hi';
 import { IoCalculatorOutline } from 'react-icons/io5';
 import { LuBoxes, LuCalendarFold, LuLogOut, LuScanLine } from 'react-icons/lu';
-import { SalaryChart } from './SalaryChart';
 import { ProductChart } from './ProductChart';
+import { SalaryChart } from './SalaryChart';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -52,7 +52,12 @@ export default function Dashboard() {
   const { data: productData } = useQuery({
     queryKey: ['productChartData', monthParam],
     queryFn: () =>
-      getMonthlyQuantities({ month: monthParam, status: 1, limit: 0 })
+      getMonthlyQuantities({
+        month: monthParam,
+        status: 1,
+        limit: 0,
+        include: ['product']
+      })
   });
 
   const isAdminType = (t: Permission['type']) => {
@@ -338,23 +343,13 @@ export default function Dashboard() {
           <section className="col-span-12 grid grid-cols-12 gap-4 md:gap-6">
             {showSalaryChart && (
               <div className={`col-span-12 ${chartColSpan}`}>
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-                  <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-                    Danh sách 10 bảng lương gần nhất
-                  </h3>
-                  <SalaryChart data={salaryTableData} />
-                </div>
+                <SalaryChart data={salaryTableData} />
               </div>
             )}
 
             {showProductChart && (
               <div className={`col-span-12 ${chartColSpan}`}>
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-                  <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-                    Danh sách 10 sản phẩm sản xuất nhiều nhất
-                  </h3>
-                  <ProductChart data={productData || []} />
-                </div>
+                <ProductChart data={productData || []} />
               </div>
             )}
           </section>
