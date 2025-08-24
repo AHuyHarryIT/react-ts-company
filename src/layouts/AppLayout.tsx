@@ -2,7 +2,9 @@ import { Outlet } from '@tanstack/react-router';
 import { ConfigProvider, Layout, theme as antTheme } from 'antd';
 import { useEffect } from 'react';
 
+import BirthdayModal from '@components/BirthdayModal';
 import MarqueeAlert from '@components/MarqueeText';
+import { useBirthdayNotification } from '@hooks/useBirthdayNotification';
 import AppFooter from '@partials/Footer';
 import Header from '@partials/Header';
 import Sidebar from '@partials/Sidebar';
@@ -30,6 +32,13 @@ function AppLayout() {
       return fetchNotifications({ 'filter[is_show]': 1 });
     }
   });
+
+  // Use birthday notification hook
+  const {
+    shouldShow: showBirthdayModal,
+    todayBirthdays,
+    markAsShown: markBirthdayAsShown
+  } = useBirthdayNotification();
 
   const messages =
     notifications?.data.map((notification) => notification.message) || [];
@@ -63,6 +72,17 @@ function AppLayout() {
           </Layout>
         </Layout>
       </ConfigProvider>
+
+      {/* Birthday Modal - Show when there are birthdays today and hasn't been shown yet */}
+      {showBirthdayModal && todayBirthdays.length > 0 && (
+        <BirthdayModal
+          open={showBirthdayModal}
+          employees={todayBirthdays.map((employee) => employee.name)}
+          companyName="Công Ty Vinh Vinh Phát"
+          onClose={markBirthdayAsShown}
+          autoCloseMs={10000} // 10 seconds auto close
+        />
+      )}
     </>
   );
 }
