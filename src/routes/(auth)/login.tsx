@@ -34,7 +34,7 @@ function RouteComponent() {
       authLogin(username, password, remember),
 
     onSuccess: () => {
-      message.success('Login success!');
+      message.success('Đăng Nhập Thành Công!');
       window.location.reload();
     },
     onError: (error) => {
@@ -70,17 +70,22 @@ function RouteComponent() {
         >
           <Form.Item<FieldType>
             name="username"
-            rules={[{ required: true, message: 'Please input your username!' }]}
+            rules={[
+              { required: true, message: 'Vui lòng nhập tên đăng nhập!' }
+            ]}
           >
-            <Input placeholder="Phone" prefix={<FaRegUser />} />
+            <Input
+              placeholder="Số điện thoại hoặc tên đăng nhập"
+              prefix={<FaRegUser />}
+            />
           </Form.Item>
 
           <Form.Item<FieldType>
             name="password"
-            rules={[{ required: true, message: 'Please input your password!' }]}
+            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
           >
             <Input.Password
-              placeholder="Password"
+              placeholder="Mật khẩu"
               prefix={<IoLockClosedOutline />}
             />
           </Form.Item>
