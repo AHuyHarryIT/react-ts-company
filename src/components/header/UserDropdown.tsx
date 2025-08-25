@@ -38,7 +38,7 @@ export default function UserDropdown() {
     },
     {
       key: 'profile',
-      label: <Link to={'/'}>Hồ Sơ</Link>,
+      label: <Link to={'/profile'}>Hồ Sơ</Link>,
       icon: <FaUserCircle />
     },
     { type: 'divider' },
