@@ -50,12 +50,14 @@ export default function DailySchedule() {
     {
       title: 'Mã lịch làm việc',
       key: 'id',
-      dataIndex: 'id'
+      dataIndex: 'id',
+      align: 'center'
     },
     {
       title: 'Mã nhân viên',
       key: 'employee_id',
-      dataIndex: 'employee_id'
+      dataIndex: 'employee_id',
+      align: 'center'
     },
     {
       title: 'Tên nhân viên',
@@ -70,12 +72,14 @@ export default function DailySchedule() {
     },
     {
       title: 'Ca làm việc',
-      dataIndex: 'shift'
+      dataIndex: 'shift',
+      align: 'center'
     },
     {
       title: 'Ngày nhập',
       key: 'date',
       dataIndex: 'date',
+      align: 'center',
       render: (value) => dayjs(value).format('DD-MM-YYYY')
     },
     {

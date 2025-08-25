@@ -61,7 +61,8 @@ export default function HistoryPrintStamp() {
       title: 'Mã nhân viên gửi',
       key: 'employee_id',
       dataIndex: 'employee_id',
-      minWidth: 120
+      minWidth: 120,
+      align: 'center'
     },
     {
       title: 'Tên nhân viên gửi',
@@ -77,6 +78,7 @@ export default function HistoryPrintStamp() {
       key: 'lot_number',
       dataIndex: ['date'],
       minWidth: 100,
+      align: 'center',
       render: (value) => {
         return dayjs(value).format('DD-MM-YYYY');
       }
@@ -111,6 +113,7 @@ export default function HistoryPrintStamp() {
       title: 'Ngày gửi',
       key: 'print_day',
       dataIndex: 'created_at',
+      align: 'center',
       render: (value) => {
         return dayjs(value).format('DD-MM-YYYY');
       }
@@ -126,12 +129,14 @@ export default function HistoryPrintStamp() {
     {
       title: 'Mã nhân viên in',
       key: 'manager_id',
-      dataIndex: 'manager_id'
+      dataIndex: 'manager_id',
+      align: 'center'
     },
     {
       title: 'Tên nhân viên in',
       key: 'name',
       dataIndex: ['manager', 'name'],
+      align: 'center',
       render: (value) => {
         return value || '-';
       }

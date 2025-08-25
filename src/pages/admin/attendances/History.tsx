@@ -91,7 +91,8 @@ export const History = () => {
     },
     {
       title: 'Mã nhân viên',
-      dataIndex: 'employee_code'
+      dataIndex: 'employee_code',
+      align: 'center'
     },
     {
       title: 'Tên nhân viên',
@@ -105,6 +106,7 @@ export const History = () => {
       title: 'Thời gian chấm công',
       dataIndex: 'datetime',
       key: 'datetime',
+      align: 'center',
       render: (value) => {
         if (!value) return null;
         return new Date(value).toLocaleString('vi-VN', {
