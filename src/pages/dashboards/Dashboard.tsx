@@ -57,7 +57,8 @@ export default function Dashboard() {
         status: 1,
         limit: 0,
         include: ['product']
-      })
+      }),
+    enabled: admin // Only fetch if the user is an admin
   });
 
   const isAdminType = (t: Permission['type']) => {
