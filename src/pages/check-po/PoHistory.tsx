@@ -217,11 +217,11 @@ export const PoHistory = () => {
         ) : (
           <Spin spinning={isLoadingProducts}>
             <Form<FormFields> {...formProps}>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
                 {filteredProductList.map((product) => (
                   <Form.Item<FormFields>
                     key={`product_${product.id}_${date?.format('YYYY-MM-DD')}`}
-                    label={product.name}
+                    label={<div className="font-semibold">{product.name}</div>}
                     name={`product_${product.id}_${date?.format('YYYY-MM-DD')}`}
                     initialValue={product.daily_quantities_po?.[0]?.quantity}
                     rules={[
