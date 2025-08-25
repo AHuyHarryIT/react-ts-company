@@ -17,7 +17,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
   const [dataSource, setDataSource] = useState<ErrorTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
   const [total, setTotal] = useState(0);
 
   const {

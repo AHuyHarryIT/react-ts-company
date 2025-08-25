@@ -17,7 +17,7 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
   const [dataSource, setDataSource] = useState<ProduceTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
   const [total, setTotal] = useState(0);
 
   const {
