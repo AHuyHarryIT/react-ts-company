@@ -98,7 +98,6 @@ export const PoList = () => {
               Thêm tồn đầu kỳ
             </Button>
           </Link>
-          {/* TODO: Add history link */}
           <Link to="/admin/check-po/history">
             <Button variant="solid" color="blue" icon={<IconHistory />}>
               Lịch sử nhập PO
