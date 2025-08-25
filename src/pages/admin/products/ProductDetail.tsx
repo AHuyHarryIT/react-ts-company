@@ -51,11 +51,13 @@ export const ProductDetail = () => {
     },
     {
       title: 'Mã nhân viên',
+      align: 'center',
       key: 'employeeCode',
       dataIndex: ['employee', 'id']
     },
     {
       title: 'Thời gian cập nhật',
+      align: 'center',
       key: 'date',
       dataIndex: ['date'],
       render: (value) => dayjs(value).format('YYYY-MM-DD')
@@ -63,11 +65,13 @@ export const ProductDetail = () => {
     {
       title: 'Thời gian cuối cùng cập nhật',
       key: 'lastUpdate',
+      align: 'center',
       dataIndex: ['updated_at'],
       render: (value) => dayjs(value).format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: 'Số lượng',
+      align: 'center',
       key: 'quantity',
       dataIndex: ['quantity'],
       render: (value) => {
@@ -80,7 +84,7 @@ export const ProductDetail = () => {
       key: 'actions',
       align: 'center',
       render: (_value, record, index) => (
-        <div className="flex gap-2">
+        <div className="flex justify-center gap-2">
           <EditModal
             id={record.id}
             quantity={record.quantity}

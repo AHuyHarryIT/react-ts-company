@@ -47,11 +47,13 @@ function RouteComponent() {
       },
       {
         title: 'Mã danh mục',
-        dataIndex: 'id'
+        dataIndex: 'id',
+        align: 'center'
       },
       {
         title: 'Ngày tạo',
         dataIndex: 'created_at',
+        align: 'center',
         render: (value) =>
           new Date(value).toLocaleString('vi-VN', {
             hour: '2-digit',
@@ -65,6 +67,7 @@ function RouteComponent() {
       {
         title: 'Ngày cập nhật',
         dataIndex: 'updated_at',
+        align: 'center',
         render: (value) =>
           new Date(value).toLocaleString('vi-VN', {
             hour: '2-digit',

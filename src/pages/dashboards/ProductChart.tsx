@@ -139,6 +139,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
                 <Badge count={chartData.length} showZero color="#6b7280" />
                 <span>
                   {chartData.length} sản phẩm hàng đầu theo số lượng sản xuất
+                  theo tháng {data[0]?.month || 'N/A'}
                 </span>
               </p>
             </div>
@@ -263,18 +264,23 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
             <h4 className="mb-3 text-sm font-medium text-gray-800">
               Báo cáo sản lượng
             </h4>
-
             <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
               <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Sản phẩm chính</span>
+                <span className="text-gray-600">Sản phẩm chính:</span>
                 <span className="font-medium text-gray-900">
                   {chartData[0]?.product || 'N/A'}
                 </span>
               </div>
               <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Sản lượng cao nhất</span>
+                <span className="text-gray-600">Sản lượng cao nhất:</span>
                 <span className="font-medium text-gray-900">
                   {formatNumber(maxQuantity)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
+                <span className="text-gray-600">Sản lượng thấp nhất:</span>
+                <span className="font-medium text-gray-900">
+                  {formatNumber(minQuantity)}
                 </span>
               </div>
             </div>

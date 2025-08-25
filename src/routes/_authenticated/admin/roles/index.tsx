@@ -52,6 +52,7 @@ function RouteComponent() {
     },
     {
       title: 'Mã chức vụ',
+      align: 'center',
       minWidth: 100,
       dataIndex: 'id'
     },
@@ -59,6 +60,7 @@ function RouteComponent() {
       title: 'Ngày tạo',
       minWidth: 200,
       dataIndex: 'created_at',
+      align: 'center',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
           hour: '2-digit',
@@ -73,6 +75,7 @@ function RouteComponent() {
       title: 'Ngày cập nhật',
       minWidth: 200,
       dataIndex: 'updated_at',
+      align: 'center',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
           hour: '2-digit',

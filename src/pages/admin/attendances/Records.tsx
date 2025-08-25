@@ -120,7 +120,8 @@ export default function Records() {
     },
     {
       title: 'Mã nhân viên',
-      dataIndex: 'employee_id'
+      dataIndex: 'employee_id',
+      align: 'center'
     },
     {
       title: 'Tên nhân viên',
@@ -133,6 +134,7 @@ export default function Records() {
       title: 'Ngày chấm công',
       dataIndex: 'date',
       key: 'date',
+      align: 'center',
       render: (value) => {
         if (!value) return null;
         return new Date(value).toLocaleString('vi-VN', {
@@ -146,6 +148,7 @@ export default function Records() {
       title: 'Ngày trong tuần',
       dataIndex: 'date',
       key: 'date',
+      align: 'center',
       render: (value) => {
         if (!value) return null;
         return new Date(value).toLocaleString('vi-VN', {
@@ -157,6 +160,7 @@ export default function Records() {
       title: 'Giờ vào',
       dataIndex: 'time_in',
       key: 'time_in',
+      align: 'center',
       render: (value) => {
         if (!value) return '-';
         return new Date(value).toLocaleString('vi-VN', {
@@ -173,6 +177,7 @@ export default function Records() {
       title: 'Giờ ra',
       dataIndex: 'time_out',
       key: 'time_out',
+      align: 'center',
       render: (value) => {
         if (!value) return '-';
         return new Date(value).toLocaleString('vi-VN', {
@@ -189,6 +194,7 @@ export default function Records() {
       title: 'Ca làm việc',
       dataIndex: 'shift',
       key: 'shift',
+      align: 'center',
       render: (value, record) => {
         if (record.hnhc == 'X' && record.shift)
           return <Tag color="yellow">Đổi lịch làm</Tag>;
@@ -201,6 +207,7 @@ export default function Records() {
       title: 'Tổng giờ làm việc(h)',
       dataIndex: 'total_hours',
       key: 'total_hours',
+      align: 'center',
       render: (value, record) => {
         if (!record.shift) return '-';
         return value ? value : <Tag color="red">Chấm công chưa đủ</Tag>;
@@ -210,6 +217,7 @@ export default function Records() {
       title: 'Giờ hành chính(h)',
       dataIndex: 'administrative_hours',
       key: 'administrative_hours',
+      align: 'center',
       render: (value, record) => {
         if (!record.shift) return '-';
         return value ? value : <Tag color="red">Chấm công chưa đủ</Tag>;
@@ -219,6 +227,7 @@ export default function Records() {
       title: 'Giờ tăng ca(h)',
       dataIndex: 'overtime_hours',
       key: 'overtime_hours',
+      align: 'center',
       render: (value) => {
         return value ? value : '-';
       }

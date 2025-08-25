@@ -51,6 +51,7 @@ function RouteComponent() {
     {
       title: 'Ngày bắt đầu',
       dataIndex: 'date',
+      align: 'center',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
           day: '2-digit',
