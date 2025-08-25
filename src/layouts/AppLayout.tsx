@@ -52,7 +52,6 @@ function AppLayout() {
 
   const messages =
     notifications?.data.map((notification) => notification.message) || [];
-
   return (
     <>
       <ConfigProvider>
@@ -84,11 +83,11 @@ function AppLayout() {
       </ConfigProvider>
 
       {/* Cleaning Duty Modal */}
-      {currentDuty && (
+      {(currentDuty ?? []).length > 0 && (
         <CleaningDutyModal
           open={modalOpen}
           onClose={handleClose}
-          duties={currentDuty}
+          duties={currentDuty ?? []}
           onDontShowAgain={handleDontShowAgain}
         />
       )}
