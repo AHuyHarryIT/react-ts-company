@@ -1,6 +1,8 @@
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
-import { Button, Form, Input } from 'antd';
+import { changesPassword } from '@services/ProfileService';
+import { useMutation } from '@tanstack/react-query';
+import { Button, Form, Input, message } from 'antd';
 import { FormProps } from 'antd/lib';
 
 interface FormField {
@@ -12,11 +14,38 @@ interface FormField {
 export const ChangePassword = () => {
   const [form] = Form.useForm<FormField>();
 
+  const { mutate } = useMutation({
+    mutationKey: ['changePassword'],
+    mutationFn: (values: FormField) =>
+      changesPassword({
+        password: values.currentPassword,
+        newPassword: values.newPassword,
+        confirmPassword: values.confirmPassword
+      }),
+    onMutate: () => {
+      message.loading({ content: 'Đang cập nhật...', key: 'changePassword' });
+    },
+    onSuccess: () => {
+      message.success({
+        content: 'Cập nhật mật khẩu thành công',
+        key: 'changePassword',
+        duration: 2
+      });
+      form.resetFields();
+    },
+    onError: () => {
+      message.error({
+        content: 'Cập nhật mật khẩu thất bại',
+        key: 'changePassword'
+      });
+    }
+  });
+
   const formProps: FormProps<FormField> = {
     ...customFormProps,
     form,
     onFinish: (values) => {
-      console.log('Form values:', values);
+      mutate(values);
     }
   };
   return (

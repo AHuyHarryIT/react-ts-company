@@ -30,7 +30,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
     if (value >= 1000) {
       return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}K`;
     }
-    return value.toString();
+    return value ? value.toString() : value;
   };
 
   const config = {
@@ -45,19 +45,6 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
       cursor: 'pointer'
     },
     legend: false,
-    label: {
-      position: 'top', // Đổi lại thành 'top'
-      offset: 12,
-      style: {
-        fill: '#374151',
-        fontSize: 11,
-        fontWeight: 500,
-        textAlign: 'center' // Đổi lại thành 'center'
-      },
-      formatter: (d: ProductDataType) => {
-        return formatNumber(d.quantity);
-      }
-    },
     axis: {
       y: {
         labelFormatter: (value: number) => {

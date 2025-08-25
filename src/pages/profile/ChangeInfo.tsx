@@ -1,50 +1,109 @@
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
-import { UploadImage } from '@components/ui/upload/UploadImage';
 import { GenderEnumOptions } from '@schemas/genderEnum.schema';
 import {
   MaritalStatus,
   MaritalStatusEnumOptions
 } from '@schemas/maritalStatusEnum.schema';
-import { fetchProfile } from '@services/ProfileService';
-import { useQuery } from '@tanstack/react-query';
-import { convertImageName2Url } from '@utils/convertImageName2Url';
-import { FileType } from '@utils/fileType';
-import { Button, DatePicker, Form, FormProps, Input, Select } from 'antd';
-import type { Dayjs } from 'dayjs';
+import { fetchProfile, updateProfile } from '@services/ProfileService';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  Button,
+  DatePicker,
+  Form,
+  FormProps,
+  Input,
+  message,
+  Select
+} from 'antd';
+import { useCallback, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import type { Dayjs } from 'dayjs';
+import { ProfileUpdateParams } from '@/types/profileType';
 
 interface FormField {
   name: string;
   phone: string;
   email?: string;
-  birthday: string;
+  birthday: Dayjs;
   address: string;
   hometown: string;
   CCCD: string;
-  gender: Dayjs;
+  gender: string;
   maritalStatus: MaritalStatus;
-  avatar: File;
-  photoCard: File;
 }
 
 export const ChangeInfo = () => {
   const [form] = Form.useForm<FormField>();
-  const [avatar] = useState<string>();
-  const [photoCard] = useState<string>();
 
-  const { data: profileData } = useQuery({
+  const { data: profileData, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: fetchProfile
+    queryFn: async () => await fetchProfile()
   });
+
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['updateProfile'],
+    mutationFn: async (values: ProfileUpdateParams) => {
+      await updateProfile(values);
+    },
+    onMutate: () => {
+      message.loading({ content: 'Đang cập nhật...', key: 'updateProfile' });
+    },
+    onSuccess: () => {
+      message.success({
+        content: 'Cập nhật thông tin thành công',
+        key: 'updateProfile',
+        duration: 2
+      });
+    },
+    onError: () => {
+      message.error({
+        content: 'Cập nhật thông tin thất bại',
+        key: 'updateProfile',
+        duration: 2
+      });
+    }
+  });
+
+  const getFormFieldsFromProfile = useCallback(
+    (data: NonNullable<typeof profileData>) => ({
+      name: data.name,
+      phone: data.phone,
+      email: data.email || undefined,
+      birthday: dayjs(data.birthday),
+      address: data.address,
+      hometown: data.home_town,
+      CCCD: data.CCCD,
+      gender: data.gender,
+      maritalStatus: data.marital_status
+    }),
+    []
+  );
+
+  // Update form values when profileData is loaded
+  useEffect(() => {
+    if (profileData) {
+      form.setFieldsValue(getFormFieldsFromProfile(profileData));
+    }
+  }, [profileData, form, getFormFieldsFromProfile]);
+
+  const handleUpdateProfile = (values: FormField) => {
+    const formatData: ProfileUpdateParams = {
+      ...values,
+      home_town: values.hometown,
+      birthday: values.birthday.format('YYYY-MM-DD'),
+      gender: values.gender,
+      marital_status: values.maritalStatus
+    };
+    mutate(formatData);
+  };
 
   const formProps: FormProps = {
     ...customFormProps,
-    initialValues: profileData,
     form,
+    disabled: isLoading || isPending,
     onFinish: (values) => {
-      console.log('Form values:', values);
+      handleUpdateProfile(values);
     }
   };
 
@@ -99,12 +158,6 @@ export const ChangeInfo = () => {
               {
                 required: true,
                 message: 'Vui lòng nhập ngày sinh'
-              },
-              {
-                validator: (_, value) =>
-                  value && dayjs().diff(value, 'year') < 18
-                    ? Promise.reject(new Error('Tuổi phải từ 18 trở lên'))
-                    : Promise.resolve()
               }
             ]}
           >
@@ -136,7 +189,7 @@ export const ChangeInfo = () => {
               }
             ]}
           >
-            <Input placeholder="Nhập địa chỉ" />
+            <Input.TextArea placeholder="Nhập địa chỉ" />
           </Form.Item>
           <Form.Item<FormField>
             label="Quê quán"
@@ -148,7 +201,7 @@ export const ChangeInfo = () => {
               }
             ]}
           >
-            <Input placeholder="Nhập quê quán" />
+            <Input.TextArea placeholder="Nhập quê quán" />
           </Form.Item>
           <Form.Item<FormField>
             label="Giới tính"
@@ -177,90 +230,25 @@ export const ChangeInfo = () => {
               placeholder="Chọn tình trạng hôn nhân"
             />
           </Form.Item>
-          <Form.Item<FormField>
-            label="Ảnh đại diện"
-            name="avatar"
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng tải lên ảnh đại diện'
-              }
-            ]}
-          >
-            <UploadImage
-              maxCount={1}
-              customRequest={({ onSuccess }) => {
-                setTimeout(() => {
-                  onSuccess?.('ok');
-                }, 0);
-              }}
-              onChange={async ({ fileList }) => {
-                if (fileList.length > 0) {
-                  form.setFieldsValue({
-                    avatar: fileList[0].originFileObj as FileType
-                  });
-                }
-              }}
-              imageList={() => {
-                if (photoCard) {
-                  return [
-                    {
-                      uid: '-1',
-                      name: 'photo.jpg',
-                      status: 'done',
-                      url: convertImageName2Url(photoCard)
-                    }
-                  ];
-                } else return [];
-              }}
-            />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="Ảnh thẻ"
-            name="photoCard"
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng tải lên ảnh thẻ'
-              }
-            ]}
-          >
-            <UploadImage
-              maxCount={1}
-              customRequest={({ onSuccess }) => {
-                setTimeout(() => {
-                  onSuccess?.('ok');
-                }, 0);
-              }}
-              onChange={async ({ fileList }) => {
-                if (fileList.length > 0) {
-                  // convert file to File
-                  form.setFieldsValue({
-                    photoCard: fileList[0].originFileObj as FileType
-                  });
-                }
-              }}
-              imageList={() => {
-                if (avatar) {
-                  return [
-                    {
-                      uid: '-1',
-                      name: 'photo.jpg',
-                      status: 'done',
-                      url: convertImageName2Url(avatar)
-                    }
-                  ];
-                } else return [];
-              }}
-            />
-          </Form.Item>
           <Form.Item>
             <div className="space-x-2">
-              <Button htmlType="submit" variant="solid" color="blue">
+              <Button
+                htmlType="submit"
+                variant="solid"
+                color="blue"
+                loading={isLoading || isPending}
+              >
                 Lưu thay đổi
               </Button>
-              <Button htmlType="reset" variant="solid">
-                Dặt lại
+              <Button
+                variant="solid"
+                onClick={() => {
+                  if (profileData) {
+                    form.setFieldsValue(getFormFieldsFromProfile(profileData));
+                  }
+                }}
+              >
+                Đặt lại
               </Button>
             </div>
           </Form.Item>
