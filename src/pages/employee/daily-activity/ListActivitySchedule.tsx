@@ -217,7 +217,7 @@ export const ListActivity = () => {
                     quantities={item.dailyQuantities?.map((quantity) => ({
                       type: quantity.status,
                       quantity: quantity.quantity,
-                      time: quantity.created_at_formatted
+                      time: quantity.created_at_formatted ?? ''
                     }))}
                   />
                 ))

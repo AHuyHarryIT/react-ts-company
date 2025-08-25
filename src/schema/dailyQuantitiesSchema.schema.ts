@@ -11,7 +11,7 @@ export const dailyQuantitiesSchema = defaultModelSchema.extend({
   date: z.string(),
   quantity: z.number(),
   employee_id: z.string(),
-  created_at_formatted: z.string().datetime()
+  created_at_formatted: z.string().datetime().optional()
 });
 
 export const dailyQuantitiesCreateSchema = overrideSchema(
