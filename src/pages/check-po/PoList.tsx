@@ -99,9 +99,11 @@ export const PoList = () => {
             </Button>
           </Link>
           {/* TODO: Add history link */}
-          <Button variant="solid" color="blue" icon={<IconHistory />}>
-            Lịch sử nhập PO
-          </Button>
+          <Link to="/admin/check-po/history">
+            <Button variant="solid" color="blue" icon={<IconHistory />}>
+              Lịch sử nhập PO
+            </Button>
+          </Link>
           <ExportPoModal />
         </div>
         <DatePicker

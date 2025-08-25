@@ -2,7 +2,6 @@ import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
 import { Button, Form, Input } from 'antd';
 import { FormProps } from 'antd/lib';
-import React from 'react';
 
 interface FormField {
   currentPassword: string;

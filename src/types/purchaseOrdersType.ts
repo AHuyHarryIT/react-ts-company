@@ -1,3 +1,4 @@
+import { DailyQuantitiesType } from './dailyQuantitiesType';
 import { ProductType } from './productType';
 import { Shift } from './shift';
 
@@ -18,7 +19,17 @@ export type AddPoRequest = {
   products: ProductPo[];
 };
 
+export type UpdatePoRequest = {
+  date: string;
+  products: ProductPo[];
+};
+
 export type AddPoInventoryRequest = {
   month: string;
   products: ProductPo[];
 };
+
+export interface PurchaseOrdersHistoryResponse {
+  dates: string[];
+  dailyQuantitiesPo: DailyQuantitiesType[];
+}

@@ -24,7 +24,8 @@ export const productSchema = defaultModelSchema.extend({
   totalmonthquantities: totalMonthQuantitySchema.array().optional(),
   totaldailyquantities: totalDayQuantitySchema.array().optional(),
   dailyquantities: dailyQuantitiesSchema.array().optional(),
-  totaldailyquantitiespo: totalDailyQuantityPoSchema.array().optional()
+  totaldailyquantitiespo: totalDailyQuantityPoSchema.array().optional(),
+  daily_quantities_po: dailyQuantitiesSchema.array().optional()
 });
 
 export const productCreateSchema = overrideSchema(productSchema, {
@@ -37,6 +38,7 @@ export const productCreateSchema = overrideSchema(productSchema, {
   totaldailyquantities: true,
   dailyquantities: true,
   totaldailyquantitiespo: true,
+  daily_quantities_Po: true,
   quantity: true,
   FAPV: true,
   FASV: true,
