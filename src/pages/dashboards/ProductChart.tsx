@@ -122,9 +122,9 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
     chartData.length > 0 ? chartData[chartData.length - 1].quantity : 0;
 
   return (
-    <div className="w-full">
+    <div className="h-full w-full">
       <Card
-        className="border-0 bg-white shadow-lg"
+        className="h-full border-0 bg-white shadow-lg"
         style={{
           borderRadius: '12px',
           overflow: 'hidden'
@@ -260,11 +260,11 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
         {/* Production Analysis */}
         {chartData.length > 0 && (
           <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <h4 className="mb-4 text-sm font-medium text-gray-800">
+            <h4 className="mb-3 text-sm font-medium text-gray-800">
               Báo cáo sản lượng
             </h4>
 
-            <div className="mb-4 grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
               <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
                 <span className="text-gray-600">Sản phẩm chính</span>
                 <span className="font-medium text-gray-900">
@@ -274,19 +274,13 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
               <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
                 <span className="text-gray-600">Sản lượng cao nhất</span>
                 <span className="font-medium text-gray-900">
-                  {formatNumber(maxQuantity)} sản phẩm
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Tỷ lệ SP chính</span>
-                <span className="font-medium text-gray-900">
-                  {((chartData[0]?.quantity / totalQuantity) * 100).toFixed(1)}%
+                  {formatNumber(maxQuantity)}
                 </span>
               </div>
             </div>
 
             {/* Simple production summary */}
-            <div className="rounded border border-gray-200 bg-white p-3">
+            <div className="mt-3 rounded border border-gray-200 bg-white p-3">
               <h5 className="mb-2 text-xs font-medium text-gray-700">
                 Tổng quan sản xuất
               </h5>
@@ -303,17 +297,6 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
                   • Chênh lệch cao-thấp:{' '}
                   <strong>{formatNumber(maxQuantity - minQuantity)}</strong> sản
                   phẩm
-                </div>
-                <div>
-                  • Có{' '}
-                  <strong>
-                    {
-                      chartData.filter((item) => item.quantity >= avgQuantity)
-                        .length
-                    }
-                    /{chartData.length}
-                  </strong>{' '}
-                  sản phẩm đạt trên mức trung bình
                 </div>
               </div>
             </div>

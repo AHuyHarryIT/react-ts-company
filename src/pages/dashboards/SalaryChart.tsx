@@ -133,9 +133,9 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
     : 0;
 
   return (
-    <div className="w-full">
+    <div className="h-full w-full">
       <Card
-        className="border-0 bg-white shadow-lg"
+        className="h-full border-0 bg-white shadow-lg"
         style={{
           borderRadius: '12px',
           overflow: 'hidden'
