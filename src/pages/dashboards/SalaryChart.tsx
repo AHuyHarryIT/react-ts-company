@@ -148,7 +148,11 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
               </h3>
               <p className="flex items-center gap-2 text-sm font-normal text-gray-500">
                 <Badge count={chartData.length} showZero color="#6b7280" />
-                <span>{chartData.length} tháng được theo dõi</span>
+                <span>
+                  {chartData.length} bảng lương được theo dõi từ tháng{' '}
+                  {chartData[0]?.month || 'N/A'} đến tháng{' '}
+                  {chartData[chartData.length - 1]?.month || 'N/A'}
+                </span>
                 {growthRate > 0 ? (
                   <span className="text-xs font-medium text-red-600">
                     +{growthRate.toFixed(1)}%
@@ -285,19 +289,21 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
             </h4>
             <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
               <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Chênh lệch cao-thấp</span>
+                <span className="text-gray-600">Chênh lệch cao-thấp:</span>
                 <span className="font-medium text-gray-900">
                   {formatCurrency(maxSalary - minSalary)}
                 </span>
               </div>
               <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Tháng trên TB</span>
+                <span className="text-gray-600">
+                  Những tháng trên trung bình:
+                </span>
                 <span className="font-medium text-gray-900">
                   {chartData.filter((item) => item.total >= avgSalary).length}
                 </span>
               </div>
               <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Xu hướng</span>
+                <span className="text-gray-600">Xu hướng (tăng/giảm):</span>
                 <span
                   className={`font-medium ${
                     growthRate > 0
