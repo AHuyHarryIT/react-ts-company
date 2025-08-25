@@ -9,9 +9,9 @@ import RefreshButton from '@components/common/RefreshButton';
 import { AddSalary } from '@components/salaries/AddModal';
 import { salariesService } from '@services/SalaryService';
 
+import { customTableProps } from '@components/custom/TableProps.custom';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { GoInfo } from 'react-icons/go';
-import { customTableProps } from '@components/custom/TableProps.custom';
 
 export const Route = createFileRoute('/_authenticated/admin/salaries/')({
   component: RouteComponent

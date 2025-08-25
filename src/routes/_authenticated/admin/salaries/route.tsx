@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { disableRole } from '@utils/authUtil';
 
-export const Route = createFileRoute('/_authenticated/employee')({
+export const Route = createFileRoute('/_authenticated/admin/salaries')({
   beforeLoad: async ({ context }) => {
     const { user } = context.authenticated;
-    disableRole(user, ['admin', 'super admin', 'co admin']);
+    disableRole(user, ['co admin']);
   }
 });

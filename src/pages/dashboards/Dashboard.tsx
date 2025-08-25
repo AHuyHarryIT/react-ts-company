@@ -228,8 +228,8 @@ export default function Dashboard() {
 
     // Thông tin tài khoản
     view_account_info: {
-      icon: <FaUserCircle />
-      // navLink: '/employee/profile'
+      icon: <FaUserCircle />,
+      navLink: '/profile'
     },
 
     // Đăng xuất

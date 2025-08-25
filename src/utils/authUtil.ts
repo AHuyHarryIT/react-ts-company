@@ -2,7 +2,7 @@ import { User } from '@/types/authType';
 import { redirect } from '@tanstack/react-router';
 
 export const isAdmin = (role: string): boolean => {
-  return role.toLowerCase() === 'admin' || role.toLowerCase() === 'super admin';
+  return ['admin', 'super admin', 'co admin'].includes(role.toLowerCase());
 };
 
 export function requireRole(user: User | null, allowedRoles: string[]) {

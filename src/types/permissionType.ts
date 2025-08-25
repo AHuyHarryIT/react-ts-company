@@ -13,6 +13,7 @@ export type PermissionKey =
   | 'view_label_management'
   | 'view_attendance'
   | 'view_employee_schedule'
+  | 'view_salary_total'
   | 'view_salary'
   | 'view_activity_history'
   | 'request_label'

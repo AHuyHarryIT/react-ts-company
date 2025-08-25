@@ -6,6 +6,6 @@ export const Route = createFileRoute('/_authenticated/scan/storage')({
   component: Storage,
   beforeLoad: async ({ context }) => {
     const { user } = context.authenticated;
-    requireRole(user, ['kho', 'super admin', 'admin']);
+    requireRole(user, ['kho', 'super admin', 'admin', 'co admin']);
   }
 });

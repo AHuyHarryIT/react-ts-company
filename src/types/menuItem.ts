@@ -48,6 +48,7 @@ export const permissionIconMap: PermissionIconType = {
   view_history: FaHistory,
   view_schedule: FaCalendarAlt,
   view_schedule_categories: FaBriefcase,
+  view_salary_total: FaMoneyCheckAlt,
   view_employee_management: FaUsersCog, // parent
   view_label_management: FaPrint, // parent
   view_attendance: FaCalendarCheck, // parent
@@ -78,6 +79,7 @@ export const permissionPathMap: PermissionPathType = {
   view_products: '/admin/products',
   view_today_employees: '/activity-schedule',
   view_po_list: '/admin/check-po',
+  view_salary_total: '/admin/salaries',
   // view_history: '/admin/activity-history',
   view_roles: '/admin/roles',
   view_employees: '/admin/employees',

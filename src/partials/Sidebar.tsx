@@ -16,6 +16,7 @@ import { useMemo } from 'react';
 import type { IconType } from 'react-icons';
 import * as FaIcons from 'react-icons/fa';
 import { SidebarMenu } from './SidebarMenu';
+import { HiOutlineHome } from 'react-icons/hi';
 
 const { Sider } = Layout;
 
@@ -111,6 +112,18 @@ function Sidebar() {
     return null;
   };
 
+  const dashboardItems: MenuItem[] = [
+    {
+      key: 'dashboard',
+      label: (
+        <Link to={'/'}>
+          <span className="capitalize">Trang chủ</span>
+        </Link>
+      ),
+      icon: <HiOutlineHome />
+    }
+  ];
+
   const items: MenuItem[] = useMemo(() => {
     const renderSidebarIcon = (icon?: string | IconType) => {
       // 1. Nếu backend trả sẵn IconType
@@ -184,7 +197,7 @@ function Sidebar() {
 
   const sidebarContent = (
     <>
-      <SidebarMenu items={items} />
+      <SidebarMenu items={[...dashboardItems, ...items]} />
       {(user?.role.name || '').toLocaleLowerCase().includes('super admin') && (
         <Link to="/admin/edit-layout">
           <Button className="w-full" icon={<IconEdit />}>

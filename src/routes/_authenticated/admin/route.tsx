@@ -4,6 +4,6 @@ import { requireRole } from '@utils/authUtil';
 export const Route = createFileRoute('/_authenticated/admin')({
   beforeLoad: async ({ context }) => {
     const { user } = context.authenticated;
-    requireRole(user, ['admin', 'super admin']);
+    requireRole(user, ['admin', 'super admin', 'co admin']);
   }
 });
