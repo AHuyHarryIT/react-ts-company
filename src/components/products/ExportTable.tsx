@@ -115,6 +115,7 @@ export const ExportTable: React.FC<ExportTableProps> = ({
       minWidth: 100,
       align: 'center',
       dataIndex: 'total',
+      fixed: 'left',
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({
