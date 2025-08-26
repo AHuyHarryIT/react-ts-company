@@ -13,6 +13,7 @@ import { uiStore } from '@stores/uiStore';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@tanstack/react-store';
 import {
+  Button,
   DatePicker,
   Empty,
   Spin,
@@ -31,6 +32,7 @@ export default function DailySchedule() {
     limit: 10,
     'filter[date]': dayjs().format('YYYY-MM-DD')
   });
+  const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
 
   const dailyScheduleUpdateFields = useDailyScheduleUpdateFields();
 
@@ -39,6 +41,24 @@ export default function DailySchedule() {
     queryFn: () => dailyScheduleService.list(params)
   });
   console.log(response);
+
+  // Functions to handle expand/collapse all
+  const isAllExpanded =
+    expandedRowKeys.length === (response?.data?.length || 0) &&
+    (response?.data?.length || 0) > 0;
+
+  const handleToggleAll = () => {
+    if (isAllExpanded) {
+      setExpandedRowKeys([]);
+    } else {
+      if (response?.data) {
+        const allKeys = response.data.map((record) =>
+          ['admin', 'daily-schedule', record.id].join('-')
+        );
+        setExpandedRowKeys(allKeys);
+      }
+    }
+  };
 
   const columns: TableColumnsType<DailyScheduleType> = [
     {
@@ -170,17 +190,42 @@ export default function DailySchedule() {
     rowKey: (record) => ['admin', 'daily-schedule', record.id].join('-'),
     columns: columns,
     expandable: {
-      expandedRowRender: (record) => (
-        <Table<DailyQuantitiesType>
-          rowKey={(record) =>
-            ['expanded', 'admin', 'daily-schedule', record.id].join('-')
-          }
-          columns={expandColumns}
-          dataSource={record.dailyQuantities || []}
-          pagination={false}
-        />
+      expandedRowRender: (record, index) => (
+        <div
+          className={`rounded-lg p-4 ${
+            index % 4 === 0
+              ? 'bg-blue-50'
+              : index % 4 === 1
+                ? 'bg-green-50'
+                : index % 4 === 2
+                  ? 'bg-yellow-50'
+                  : 'bg-purple-50'
+          }`}
+        >
+          <div className="mb-2 text-sm font-medium text-gray-700">
+            Chi tiết sản lượng của {record.employee?.name || 'nhân viên'}
+          </div>
+          <Table<DailyQuantitiesType>
+            rowKey={(record) =>
+              ['expanded', 'admin', 'daily-schedule', record.id].join('-')
+            }
+            columns={expandColumns}
+            dataSource={record.dailyQuantities || []}
+            pagination={false}
+            size="small"
+            className="shadow-sm"
+          />
+        </div>
       ),
-      defaultExpandAllRows: true
+      expandedRowKeys: expandedRowKeys,
+      onExpand: (expanded, record) => {
+        const key = ['admin', 'daily-schedule', record.id].join('-');
+        if (expanded) {
+          setExpandedRowKeys((prev) => [...prev, key]);
+        } else {
+          setExpandedRowKeys((prev) => prev.filter((k) => k !== key));
+        }
+      }
     },
     dataSource: response?.data || [],
     loading: isLoading,
@@ -206,20 +251,35 @@ export default function DailySchedule() {
 
   return (
     <ComponentCard title="Danh sách nhân viên đang làm việc">
-      <div>
-        <label htmlFor="admin-date-picker">Chọn ngày</label>
-        <br />
-        <DatePicker
-          id="admin-date-picker"
-          placeholder="Chọn ngày"
-          value={dayjs(params['filter[date]'])}
-          onChange={(date) => {
-            setParams((prev) => ({
-              ...prev,
-              'filter[date]': date ? date.format('YYYY-MM-DD') : undefined
-            }));
-          }}
-        />
+      <div className="mb-4 flex flex-wrap items-end gap-4">
+        <div>
+          <label
+            htmlFor="admin-date-picker"
+            className="mb-1 block text-sm font-medium"
+          >
+            Chọn ngày
+          </label>
+          <DatePicker
+            id="admin-date-picker"
+            placeholder="Chọn ngày"
+            value={dayjs(params['filter[date]'])}
+            onChange={(date) => {
+              setParams((prev) => ({
+                ...prev,
+                'filter[date]': date ? date.format('YYYY-MM-DD') : undefined
+              }));
+            }}
+          />
+        </div>
+        {!isMobile && (
+          <Button
+            type={isAllExpanded ? 'default' : 'primary'}
+            onClick={handleToggleAll}
+            className="min-w-[120px]"
+          >
+            {isAllExpanded ? 'Đóng tất cả' : 'Mở tất cả'}
+          </Button>
+        )}
       </div>
       {isMobile ? (
         <Spin spinning={isLoading}>

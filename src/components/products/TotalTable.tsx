@@ -98,7 +98,6 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       rowScope: 'row',
       minWidth: 50,
       align: 'center',
-      fixed: 'left',
       render: (_value, _record, index) =>
         index +
         1 +

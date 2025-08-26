@@ -104,7 +104,6 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
       rowScope: 'row',
       minWidth: 50,
       align: 'center',
-      fixed: 'left',
       render: (_value, _record, index) => index + 1 + limit * (page - 1)
     },
     {
@@ -117,6 +116,7 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
       align: 'center',
       minWidth: 100,
       dataIndex: 'totalQuantity',
+      fixed: 'left',
       render: (value) => {
         if (!value) return 0;
         return value.toLocaleString({

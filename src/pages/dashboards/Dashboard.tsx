@@ -236,7 +236,7 @@ export default function Dashboard() {
     // Đăng xuất
     logout: {
       icon: <LuLogOut />
-      // navLink: '/log'
+      // navLink: '/logout'
     }
   };
 

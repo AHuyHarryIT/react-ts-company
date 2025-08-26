@@ -84,7 +84,6 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
       rowScope: 'row',
       minWidth: 50,
       align: 'center',
-      fixed: 'left',
       render: (_value, _record, index) => index + 1 + limit * (page - 1)
     },
     {
@@ -96,6 +95,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
       title: <div>Tổng cộng</div>,
       align: 'center',
       dataIndex: 'total',
+      fixed: 'left',
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({

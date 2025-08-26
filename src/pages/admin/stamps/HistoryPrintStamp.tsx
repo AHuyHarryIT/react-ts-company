@@ -107,7 +107,12 @@ export default function HistoryPrintStamp() {
     {
       title: 'Loại tem',
       key: 'stamp_type',
-      dataIndex: 'type'
+      dataIndex: 'type',
+      render: (value) => {
+        if (value === 'bag') return 'Tem Bịch';
+        if (value === 'box') return 'Tem Thùng';
+        return value;
+      }
     },
     {
       title: 'Ngày gửi',
