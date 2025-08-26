@@ -70,7 +70,7 @@ export const ChooseProduct = () => {
               TRANG CHỦ
             </Button>
           </Link>
-          <Link to="/employee/todo/history">
+          <Link to="/employee/activity-schedule">
             <Button variant="solid" color="gold" icon={<IconHistory />}>
               LỊCH SỬ ĐÃ CHỌN
             </Button>

@@ -7,8 +7,8 @@ import {
   FaCalendarAlt,
   FaCalendarCheck,
   FaCamera,
-  FaCheckSquare,
   FaCircle,
+  FaClipboardList,
   FaEnvelope,
   FaHistory,
   FaMoneyCheckAlt,
@@ -44,7 +44,7 @@ export const permissionIconMap: PermissionIconType = {
   view_dashboard: HiOutlineHome,
   view_products: CiBoxes,
   view_today_employees: FiUserCheck,
-  view_po_list: FaCheckSquare,
+  view_po_list: FaClipboardList,
   view_history: FaHistory,
   view_schedule: FaCalendarAlt,
   view_schedule_categories: FaBriefcase,
@@ -104,5 +104,6 @@ export const permissionPathMap: PermissionPathType = {
   select_products_todo: '/employee/todo/add-product',
   input_quantity: '/employee/todo/update-quantity',
   input_quantity_error: '/employee/todo/update-quantity-error',
-  history_input_quantity: '/employee/todo/history'
+  history_input_quantity: '/employee/todo/history',
+  view_activity_history: '/employee/activity-schedule'
 };
