@@ -1,6 +1,7 @@
 import BackButton from '@components/common/BackButton';
 import { useAuth } from '@hooks/useAuth';
 import { Avatar, Card } from 'antd';
+import { FaUser } from 'react-icons/fa';
 import { ChangeInfo } from './ChangeInfo';
 import { ChangePassword } from './ChangePassword';
 
@@ -11,7 +12,12 @@ export const Profile = () => {
       <BackButton to="/" />
       <div className="mb-4 text-center">
         <Card>
-          <Avatar src={user?.image_url} alt="Profile" size={100} />
+          <Avatar
+            src={user?.image_url}
+            alt="Profile"
+            size={100}
+            icon={<FaUser />}
+          />
           <div>
             <span className="text-lg font-semibold">{user?.name}</span>-{' '}
             <span>{user?.id}</span>

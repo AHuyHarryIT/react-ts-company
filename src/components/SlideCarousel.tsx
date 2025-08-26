@@ -37,6 +37,10 @@ export const SlideCarousel: React.FC<SlideCarouselProps> = ({ images }) => {
               alt={`Slide ${index + 1}`}
               style={{ ...carouselStyle, objectFit: 'fill' }}
               preview={false}
+              onError={(e) => {
+                e.currentTarget.src =
+                  'https://placehold.co/500x200/f0f0f0/0016a2/?text=VVP';
+              }}
             />
           </div>
         ))}
