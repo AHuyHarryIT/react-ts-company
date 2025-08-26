@@ -238,5 +238,6 @@ export function calculateAttendances(
         administrative_hours: total_hours > 8 ? 8 : total_hours
       };
     })
-    .filter((item) => item.shift != 0);
+    .filter((item) => item.shift != 0)
+    .filter((item) => item.time_in !== '' || item.time_out !== '');
 }

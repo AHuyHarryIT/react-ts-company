@@ -235,28 +235,32 @@ export default function Records() {
     }
   ];
 
+  const forgetAttendance = attendances.filter((attendance) => {
+    return (
+      !attendance.time_in ||
+      !attendance.time_out ||
+      attendance.time_in === '' ||
+      attendance.time_out === ''
+    );
+  });
+  console.log(forgetAttendance);
+
   const tableProps: TableProps<TableColumns> = {
     // TODO: Fix type casting issue
     ...(customTableProps as unknown as TableProps<TableColumns>),
     rowKey: (record) =>
       ['attendances', 'sheet', record.employee_id, record.date].join('-'),
     columns: columns,
-    dataSource: forgottenDays
-      ? attendances.filter((attendance) => {
-          return (
-            !attendance.time_in ||
-            !attendance.time_out ||
-            attendance.time_in === '' ||
-            attendance.time_out === ''
-          );
-        })
-      : attendances,
+    dataSource: forgottenDays ? forgetAttendance : attendances,
     loading: isLoading,
     pagination: {
       ...customTableProps.pagination,
       current: pagination.current,
       pageSize: pagination.pageSize,
-      total: pagination.total,
+      total: forgottenDays ? forgetAttendance.length : pagination.total,
+      pageSizeOptions: forgottenDays
+        ? [forgetAttendance.length]
+        : ['10', '20', '50', '100', '200', '500'],
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
           ...prev,
