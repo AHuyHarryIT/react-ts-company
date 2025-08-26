@@ -15,6 +15,7 @@ import {
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 import { useState } from 'react';
+import type { Dayjs } from 'dayjs';
 
 import { QueryParams } from '@/types/queryParams';
 import { EmployeeListModal } from '@components/attendances/EmployeeListModal';
@@ -47,7 +48,7 @@ export default function Records() {
     sort: 'date'
   });
   const [forgottenDays, setForgottenDays] = useState<boolean>(false);
-  const [month, setMonth] = useState<string>(dayjs().format('MM-YYYY'));
+  const [month, setMonth] = useState<Dayjs>(dayjs());
 
   const { data: categories, refetch: refetchCategories } = useQuery({
     queryKey: ['workScheduleCategories', { limit: 0 }],
@@ -272,7 +273,7 @@ export default function Records() {
   };
 
   return (
-    <ComponentCard title={`Bảng tính công tháng ${month}`}>
+    <ComponentCard title={`Bảng tính công tháng ${month.format('MM-YYYY')}`}>
       <div className="flex flex-wrap gap-4">
         <RefreshButton
           refresh={() => {
@@ -294,16 +295,24 @@ export default function Records() {
           picker="month"
           format="YYYY-MM"
           placeholder="Chọn tháng"
-          onChange={(value, dateString) => {
-            setMonth(
-              value ? dayjs(value).format('MM-YYYY') : dayjs().format('MM-YYYY')
-            );
+          onChange={(value) => {
+            setMonth(value ? dayjs(value) : dayjs());
             setParams((prev) => ({
               ...prev,
-              'filter[date_between]':
-                typeof dateString === 'string' && dateString
-                  ? `${dayjs(dateString, 'YYYY-MM').startOf('month').format('YYYY-MM-DD')},${dayjs(dateString, 'YYYY-MM').endOf('month').format('YYYY-MM-DD')}`
-                  : undefined
+              'filter[date_between]': value
+                ? `${dayjs(value).startOf('month').format('YYYY-MM-DD')},${dayjs(value).endOf('month').format('YYYY-MM-DD')}`
+                : undefined
+            }));
+          }}
+        />
+        <DatePicker
+          placeholder="Chọn ngày"
+          onChange={(value) => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[date]': value
+                ? dayjs(value).format('YYYY-MM-DD')
+                : undefined
             }));
           }}
         />

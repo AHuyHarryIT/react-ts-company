@@ -11,6 +11,7 @@ import {
 } from 'antd';
 import { debounce } from 'lodash';
 import { useState } from 'react';
+import dayjs from 'dayjs';
 
 import {
   attendanceUpdateFields,
@@ -222,12 +223,27 @@ export const History = () => {
           picker="month"
           format="YYYY-MM"
           placeholder="Chọn tháng"
-          onChange={(_value, dateString) => {
+          onChange={(value) => {
             setParams((prev) => ({
               ...prev,
-              'filter[date]': Array.isArray(dateString)
-                ? dateString[0]
-                : dateString || undefined
+              'filter[date_between]': value
+                ? `${dayjs(value).startOf('month').format('YYYY-MM-DD')},${dayjs(
+                    value
+                  )
+                    .endOf('month')
+                    .format('YYYY-MM-DD')}`
+                : undefined
+            }));
+          }}
+        />
+        <DatePicker
+          placeholder="Chọn ngày"
+          onChange={(value) => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[date]': value
+                ? dayjs(value).format('YYYY-MM-DD')
+                : undefined
             }));
           }}
         />
