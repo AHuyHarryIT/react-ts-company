@@ -1,3 +1,4 @@
+import { STORAGE_URL } from '@/configs/environment.config';
 import { ImageType } from '@/types/files/imageType';
 import { Carousel, Image } from 'antd';
 import React from 'react';
@@ -32,7 +33,7 @@ export const SlideCarousel: React.FC<SlideCarouselProps> = ({ images }) => {
           <div key={index}>
             <Image
               width={'100%'}
-              src={`/storage/${image.path}`}
+              src={`${STORAGE_URL}/${image.path}`}
               alt={`Slide ${index + 1}`}
               style={{ ...carouselStyle, objectFit: 'fill' }}
               preview={false}
