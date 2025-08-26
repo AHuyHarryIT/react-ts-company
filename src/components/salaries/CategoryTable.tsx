@@ -28,6 +28,7 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading }) => {
       minWidth: 100,
       dataIndex: 'employee_id',
       align: 'center',
+      fixed: 'left',
       render: (_value, record) => {
         return record.employee_id || '-';
       }
@@ -36,6 +37,7 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading }) => {
       title: <div className="capitalize">Họ và tên</div>,
       minWidth: 200,
       dataIndex: 'employee_name',
+      fixed: 'left',
       render: (_value, record) => {
         return record.employee?.name || '-';
       }
@@ -44,6 +46,7 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading }) => {
       title: <div className="capitalize">Bộ phận</div>,
       minWidth: 200,
       dataIndex: 'role_name',
+      fixed: 'left',
       render: (_value, record) => {
         return record.employee?.role?.role_name || '-';
       }

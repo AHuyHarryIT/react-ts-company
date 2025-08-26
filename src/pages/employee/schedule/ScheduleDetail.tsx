@@ -23,7 +23,9 @@ export const ScheduleDetail = () => {
       const response = await axiosPrivate.get<
         ScheduleDetailType,
         PaginatedResponse<ScheduleDetailType>
-      >(`/api/employee/schedules/${scheduleId}`, { params: { limit: 0 } });
+      >(`/api/employee/schedules/${scheduleId}`, {
+        params: { limit: 0, sort: 'date' }
+      });
       return response;
     }
   });
@@ -64,16 +66,16 @@ export const ScheduleDetail = () => {
                 return (
                   <List.Item
                     key={`hnhc_${item.date}-${item.employee_id}-${item.schedule_id}-${item.hnhc}`}
-                    className={`${isWeekend ? 'bg-gray-400 dark:bg-gray-100' : 'bg-white dark:bg-gray-500'}`}
+                    className={`${isWeekend ? 'bg-yellow-200 dark:bg-yellow-100' : 'bg-white dark:bg-yellow-300'}`}
                   >
                     <List.Item.Meta
                       title={
                         <div
-                          className={`${isWeekend ? 'text-white dark:text-black' : 'text-black dark:text-white'}`}
+                          className={`${isWeekend ? 'dark:text-black' : 'text-black dark:text-white'}`}
                         >
                           <Tag
                             children={day}
-                            color={`${isWeekend ? '#000000' : 'default'}`}
+                            color={`${isWeekend ? 'red-inverse' : 'blue-inverse'}`}
                           />
                           {date}
                         </div>
