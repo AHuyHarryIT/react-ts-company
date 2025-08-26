@@ -212,7 +212,7 @@ export default function Dashboard() {
     // Chọn sản phẩm active
     select_active_product: {
       icon: <LuBoxes />,
-      navLink: '/employee/activity-schedule'
+      navLink: '/employee/todo/add-product'
     },
 
     // Lịch sử nhập hàng trong ngày

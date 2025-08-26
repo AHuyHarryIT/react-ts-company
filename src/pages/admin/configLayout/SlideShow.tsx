@@ -1,3 +1,4 @@
+import { STORAGE_URL } from '@/configs/environment.config';
 import { ImageType } from '@/types/files/imageType';
 import ComponentCard from '@components/common/ComponentCard';
 import { SlideCarousel } from '@components/SlideCarousel';
@@ -115,7 +116,7 @@ export const SlideShow = () => {
           uid: item.id,
           name: item.title || `image-${item.id}`,
           status: 'done',
-          url: `/storage/${item.path}` // replace 'path' with the correct property for image URL in your ImageType
+          url: `${STORAGE_URL}/${item.path}` // replace 'path' with the correct property for image URL in your ImageType
         }))
       );
     }

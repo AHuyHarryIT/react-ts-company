@@ -1,9 +1,8 @@
 import BackButton from '@components/common/BackButton';
-import { ChangePassword } from './ChangePassword';
-import { ChangeInfo } from './ChangeInfo';
-import { Avatar, Card } from 'antd';
 import { useAuth } from '@hooks/useAuth';
-import { convertImageName2Url } from '@utils/convertImageName2Url';
+import { Avatar, Card } from 'antd';
+import { ChangeInfo } from './ChangeInfo';
+import { ChangePassword } from './ChangePassword';
 
 export const Profile = () => {
   const { user } = useAuth();
@@ -12,11 +11,7 @@ export const Profile = () => {
       <BackButton to="/" />
       <div className="mb-4 text-center">
         <Card>
-          <Avatar
-            src={convertImageName2Url(user?.image_url || '')}
-            alt="Profile"
-            size={100}
-          />
+          <Avatar src={user?.image_url} alt="Profile" size={100} />
           <div>
             <span className="text-lg font-semibold">{user?.name}</span>-{' '}
             <span>{user?.id}</span>
