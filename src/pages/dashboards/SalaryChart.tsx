@@ -1,5 +1,7 @@
 import { SalaryType } from '@/types/salaryType';
 import { Column } from '@ant-design/plots';
+import { uiStore } from '@stores/uiStore';
+import { useStore } from '@tanstack/react-store';
 import { Badge, Card, Statistic } from 'antd';
 
 type salaryDataType = {
@@ -9,6 +11,8 @@ type salaryDataType = {
 };
 
 export function SalaryChart({ data }: { data: SalaryType[] }) {
+  const { isMobile } = useStore(uiStore);
+
   const chartData: salaryDataType[] = data
     .map((item) => ({
       month: item.title.replace('Bảng Lương Tháng ', ''),
@@ -63,18 +67,22 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
         }
       }
     },
-    label: {
-      text: (d: salaryDataType) => formatCurrency(d.total),
-      textBaseline: 'bottom',
-      offset: 12,
-      style: {
-        fill: '#1f2937',
-        fontSize: 12,
-        fontWeight: 600,
-        textAlign: 'center',
-        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
-      }
-    },
+    ...(!isMobile
+      ? {
+          label: {
+            text: (d: salaryDataType) => formatCurrency(d.total),
+            textBaseline: 'bottom',
+            offset: 12,
+            style: {
+              fill: '#1f2937',
+              fontSize: 12,
+              fontWeight: 600,
+              textAlign: 'center',
+              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+            }
+          }
+        }
+      : {}),
     tooltip: {
       title: (d: salaryDataType) => `Tháng ${d.month}`,
       showTitle: true,

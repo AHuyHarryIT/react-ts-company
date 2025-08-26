@@ -199,11 +199,13 @@ function Sidebar() {
     <>
       <SidebarMenu items={[...dashboardItems, ...items]} />
       {(user?.role.name || '').toLocaleLowerCase().includes('super admin') && (
-        <Link to="/admin/edit-layout">
-          <Button className="w-full" icon={<IconEdit />}>
-            {!isSidebarClose && 'Chỉnh giao diện'}
-          </Button>
-        </Link>
+        <div className="flex justify-center">
+          <Link to="/admin/edit-layout">
+            <Button size="large" icon={<IconEdit />}>
+              {!isSidebarClose && 'Chỉnh giao diện'}
+            </Button>
+          </Link>
+        </div>
       )}
     </>
   );
@@ -250,7 +252,7 @@ function Sidebar() {
             style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
           >
             <div style={{ flex: 1, minHeight: 0 }}>{sidebarContent}</div>
-            <div>
+            <div className="flex justify-center">
               <Button
                 className="w-full"
                 size="large"
