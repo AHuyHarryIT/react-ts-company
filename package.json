@@ -33,6 +33,7 @@
     "antd": "^5.26.6",
     "antd-img-crop": "^4.24.0",
     "axios": "^1.7.9",
+    "dotenv": "^17.2.1",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.23.12",
     "laravel-echo": "^2.2.0",

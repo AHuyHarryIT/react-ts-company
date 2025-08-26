@@ -3,7 +3,11 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 import viteTsConfigPaths from 'vite-tsconfig-paths';
+import dotenv from 'dotenv';
 
+// Load environment variables from .env file
+dotenv.config();
+// get env use dotenv
 const BASE_URL = process.env.VITE_BASE_API_URL;
 
 // https://vite.dev/config/
@@ -27,7 +31,7 @@ export default defineConfig({
       '.codeforfun.id.vn',
       '.onrender.com',
       '.a7atest.id.vn',
-      '.a7acompany.id.vn'
+      '.a7acompany.com'
     ]
   }
 });
