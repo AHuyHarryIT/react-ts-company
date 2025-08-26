@@ -1,6 +1,5 @@
 import { Route } from '@routes/_authenticated/work-schedules/$id';
 import { useQuery } from '@tanstack/react-query';
-import { useStore } from '@tanstack/react-store';
 import {
   Input,
   Spin,
@@ -22,7 +21,6 @@ import ComponentCard from '@components/common/ComponentCard';
 import { useCrudList } from '@hooks/useCrudList';
 import { scheduleDetailService } from '@services/ScheduleDetailService';
 import { scheduleService } from '@services/workScheduleService';
-import { uiStore } from '@stores/uiStore';
 import { countDayOfWeekInMonth } from '@utils/countDayOfWeekInMonth';
 
 interface HnhcTableType {
@@ -49,8 +47,6 @@ interface HNHCGroupedData {
 
 export default function Detail() {
   const { id } = Route.useParams();
-  const { isMobile } = useStore(uiStore);
-
   const [params, setParams] = useState<QueryParams>();
   const [maxDay, setMaxDay] = useState<number>(0);
   const [totalSaturdays, setTotalSaturdays] = useState<number>(0);
@@ -168,13 +164,13 @@ export default function Detail() {
   const columnsDefault = [
     {
       title: 'Mã NV',
-      dataIndex: 'employee_id',
-      fixed: isMobile ? undefined : 'left'
+      dataIndex: 'employee_id'
+      // fixed: 'left',
     },
     {
       title: 'Họ và tên',
       dataIndex: 'employee_name',
-      fixed: isMobile ? undefined : 'left'
+      fixed: 'left'
     }
   ];
   const columnsHNHC: TableColumnsType<HnhcTableType> = [

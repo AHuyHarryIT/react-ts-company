@@ -38,6 +38,7 @@ export default function DailySchedule() {
     queryKey: ['admin', 'daily-schedule', params],
     queryFn: () => dailyScheduleService.list(params)
   });
+  console.log(response);
 
   const columns: TableColumnsType<DailyScheduleType> = [
     {

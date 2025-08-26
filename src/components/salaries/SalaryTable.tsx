@@ -26,6 +26,7 @@ export const SalaryTable: React.FC<SalaryTableProps> = ({ data, loading }) => {
         </div>
       ),
       minWidth: 100,
+      fixed: 'left',
       dataIndex: 'employee_id',
       align: 'center',
       render: (_value, record) => {
@@ -36,6 +37,7 @@ export const SalaryTable: React.FC<SalaryTableProps> = ({ data, loading }) => {
       title: <div className="capitalize">Họ và tên</div>,
       minWidth: 200,
       dataIndex: 'employee_name',
+      fixed: 'left',
       render: (_value, record) => {
         return record.employee?.name || '-';
       }
@@ -44,6 +46,7 @@ export const SalaryTable: React.FC<SalaryTableProps> = ({ data, loading }) => {
       title: <div className="capitalize">Bộ phận</div>,
       minWidth: 200,
       dataIndex: 'role_name',
+      fixed: 'left',
       render: (_value, record) => {
         return record.employee?.role?.role_name || '-';
       }

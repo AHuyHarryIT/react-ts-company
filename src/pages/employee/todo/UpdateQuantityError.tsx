@@ -2,7 +2,7 @@ import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
 import { IconHistory } from '@components/icons';
 import { UserInfo } from '@components/UserInfo';
-import { fetchTodoList, updateTodoQuantity } from '@services/TodoService';
+import { fetchTodoList, updateTodoQuantityError } from '@services/TodoService';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { Button, Form, InputNumber, message, Select } from 'antd';
@@ -24,7 +24,7 @@ export const UpdateQuantityError = () => {
 
   const { mutate, isPending } = useMutation({
     mutationKey: ['product', 'todo', 'update-quantity'],
-    mutationFn: (data: FormValues) => updateTodoQuantity(data),
+    mutationFn: (data: FormValues) => updateTodoQuantityError(data),
     onMutate: () => {
       message.loading('Đang cập nhật sản lượng...');
     },

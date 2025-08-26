@@ -108,7 +108,6 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
       title: <div className="capitalize">STT</div>,
       minWidth: 50,
       align: 'center',
-      fixed: 'left',
       render: (_value, _record, index) =>
         index +
         1 +
