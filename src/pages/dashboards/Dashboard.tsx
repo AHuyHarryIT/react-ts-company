@@ -12,7 +12,6 @@ import { useQuery } from '@tanstack/react-query';
 import { isAdmin } from '@utils/authUtil';
 import { ReactNode, useMemo } from 'react';
 import {
-  FaClipboardList,
   FaFileContract,
   FaHistory,
   FaListAlt,
@@ -118,11 +117,11 @@ export default function Dashboard() {
     },
 
     // Kế hoạch sản xuất
-    view_production_plan: {
-      icon: <FaClipboardList />,
-      value: dashboardData?.totalSalary?.toLocaleString() || '0',
-      navLink: '/admin/salaries'
-    },
+    // view_production_plan: {
+    //   icon: <FaClipboardList />,
+    //   value: dashboardData?.totalSalary?.toLocaleString() || '0',
+    //   navLink: '/admin/salaries'
+    // },
 
     // Nhân viên hôm nay
     view_today_employees: {
@@ -146,10 +145,10 @@ export default function Dashboard() {
     },
 
     // Tổng lịch sử
-    view_total_history: {
-      icon: <FaHistory />,
-      value: dashboardData?.totalHistory?.toLocaleString() || '0'
-    },
+    // view_total_history: {
+    //   icon: <FaHistory />,
+    //   value: dashboardData?.totalHistory?.toLocaleString() || '0'
+    // },
 
     // Purchase Order (PO)
     view_po_list: {
@@ -212,7 +211,8 @@ export default function Dashboard() {
 
     // Chọn sản phẩm active
     select_active_product: {
-      icon: <LuBoxes />
+      icon: <LuBoxes />,
+      navLink: '/employee/activity-schedule'
     },
 
     // Lịch sử nhập hàng trong ngày
@@ -253,7 +253,7 @@ export default function Dashboard() {
     view_export_warehouse: {
       icon: <FaTruck />,
       value: `Tháng ${new Date().getMonth() + 1}`,
-      navLink: '/work-schedules'
+      navLink: '/scan/storage'
     }
   };
 

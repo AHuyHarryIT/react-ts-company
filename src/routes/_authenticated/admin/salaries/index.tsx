@@ -54,6 +54,7 @@ function RouteComponent() {
     {
       title: 'Tổng (VNĐ)',
       dataIndex: 'total',
+      align: 'center',
       render: (value) =>
         new Intl.NumberFormat('vi-VN', {
           minimumFractionDigits: 2,
@@ -63,6 +64,7 @@ function RouteComponent() {
     {
       title: 'Ngày bắt đầu',
       dataIndex: 'start_date',
+      align: 'center',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
           day: '2-digit',
@@ -73,6 +75,7 @@ function RouteComponent() {
     {
       title: 'Ngày kết thúc',
       dataIndex: 'end_date',
+      align: 'center',
       render: (value) =>
         new Date(value).toLocaleString('vi-VN', {
           day: '2-digit',
