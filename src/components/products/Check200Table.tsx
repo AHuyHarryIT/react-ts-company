@@ -123,6 +123,7 @@ export const Check200Table: React.FC<Check200TableProps> = ({
       minWidth: 100,
       align: 'center',
       dataIndex: 'startStock',
+      fixed: 'left',
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({
@@ -141,6 +142,7 @@ export const Check200Table: React.FC<Check200TableProps> = ({
       minWidth: 100,
       align: 'center',
       dataIndex: 'incurred',
+      fixed: 'left',
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({

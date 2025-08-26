@@ -139,6 +139,7 @@ export const Error200Table: React.FC<Error200TableProps> = ({
       minWidth: 100,
       align: 'center',
       dataIndex: 'total',
+      fixed: 'left',
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({
