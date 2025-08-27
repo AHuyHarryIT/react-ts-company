@@ -16,6 +16,7 @@ import {
   Button,
   DatePicker,
   Empty,
+  Pagination,
   Spin,
   Table,
   TableColumnsType,
@@ -249,6 +250,10 @@ export default function DailySchedule() {
     }
   };
 
+  const pagination = {
+    ...tableProps.pagination
+  };
+
   return (
     <ComponentCard title="Danh sách nhân viên đang làm việc">
       <div className="mb-4 flex flex-wrap items-end gap-4">
@@ -283,7 +288,8 @@ export default function DailySchedule() {
       </div>
       {isMobile ? (
         <Spin spinning={isLoading}>
-          <div className="flex flex-col gap-4">
+          <Pagination {...pagination} />
+          <div className="my-6 flex flex-col gap-4">
             {response?.data && response.data.length > 0 ? (
               response.data.map((item) => (
                 <div
@@ -310,9 +316,18 @@ export default function DailySchedule() {
                   </div>
                   <div>
                     <strong>Trạng thái:</strong>{' '}
-                    {(item.dailyQuantities?.length ?? 0) > 0
-                      ? 'Đã nhập'
-                      : 'Chưa nhập'}
+                    {(item.dailyQuantities?.length ?? 0) > 0 ? (
+                      <Tag
+                        color="green-inverse"
+                        className="font-bold uppercase"
+                      >
+                        Đã nhập
+                      </Tag>
+                    ) : (
+                      <Tag color="red-inverse" className="font-bold uppercase">
+                        Chưa nhập
+                      </Tag>
+                    )}
                   </div>
                   <div>
                     <strong>Sản lượng:</strong>
@@ -334,6 +349,7 @@ export default function DailySchedule() {
               <Empty />
             )}
           </div>
+          <Pagination {...pagination} />
         </Spin>
       ) : (
         <Table<DailyScheduleType> {...tableProps} />
