@@ -243,7 +243,6 @@ export default function Records() {
       attendance.time_out === ''
     );
   });
-  console.log(forgetAttendance);
 
   const tableProps: TableProps<TableColumns> = {
     // TODO: Fix type casting issue

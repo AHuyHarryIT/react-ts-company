@@ -41,7 +41,6 @@ export default function DailySchedule() {
     queryKey: ['admin', 'daily-schedule', params],
     queryFn: () => dailyScheduleService.list(params)
   });
-  console.log(response);
 
   // Functions to handle expand/collapse all
   const isAllExpanded =
