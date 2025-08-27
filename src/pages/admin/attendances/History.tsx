@@ -77,6 +77,38 @@ export const History = () => {
     }
   }, 500);
 
+  const handleChange: TableProps<TableColumns>['onChange'] = (
+    pagination,
+    filters,
+    sorter
+  ) => {
+    // Sort
+    let sortValue = undefined;
+    if (!Array.isArray(sorter) && sorter.order && sorter.field) {
+      sortValue = `${sorter.order === 'ascend' ? '' : '-'}${sorter.field}`;
+    }
+
+    // Filter
+    const newFilters: QueryParams = {};
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) {
+        newFilters[`filter[${key}]`] = Array.isArray(value)
+          ? String(value[0])
+          : typeof value === 'boolean' || typeof value === 'bigint'
+            ? String(value)
+            : value;
+      }
+    });
+
+    setParams((prev) => ({
+      ...prev,
+      page: pagination.current,
+      limit: pagination.pageSize,
+      sort: sortValue,
+      ...newFilters
+    }));
+  };
+
   const categoryOptions = categories?.workScheduleCategories.map((item) => ({
     label: item.name,
     value: item.id
@@ -92,6 +124,7 @@ export const History = () => {
     },
     {
       title: 'Mã nhân viên',
+      key: 'employee_code',
       dataIndex: 'employee_code',
       align: 'center'
     },
@@ -108,6 +141,7 @@ export const History = () => {
       dataIndex: 'datetime',
       key: 'datetime',
       align: 'center',
+      sorter: true,
       render: (value) => {
         if (!value) return null;
         return new Date(value).toLocaleString('vi-VN', {
@@ -193,7 +227,8 @@ export const History = () => {
           page: page
         }));
       }
-    }
+    },
+    onChange: handleChange
   };
 
   return (
@@ -226,23 +261,19 @@ export const History = () => {
           onChange={(value) => {
             setParams((prev) => ({
               ...prev,
-              'filter[date_between]': value
-                ? `${dayjs(value).startOf('month').format('YYYY-MM-DD')},${dayjs(
-                    value
-                  )
-                    .endOf('month')
-                    .format('YYYY-MM-DD')}`
+              'filter[date]': value
+                ? `${dayjs(value).format('YYYY-MM')}`
                 : undefined
             }));
           }}
         />
-        <DatePicker
-          placeholder="Chọn ngày"
+        <DatePicker.RangePicker
+          placeholder={['Chọn ngày bắt đầu', 'Chọn ngày kết thúc']}
           onChange={(value) => {
             setParams((prev) => ({
               ...prev,
-              'filter[date]': value
-                ? dayjs(value).format('YYYY-MM-DD')
+              'filter[date_between]': value
+                ? `${dayjs(value[0]).format('YYYY-MM-DD')},${dayjs(value[1]).format('YYYY-MM-DD')}`
                 : undefined
             }));
           }}
