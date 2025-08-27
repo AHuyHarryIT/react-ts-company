@@ -115,7 +115,7 @@ export const AddSalary = () => {
           </Form.Item>
           <Form.Item<FormField>
             name="end_date"
-            label="Ngày bắt đầu"
+            label="Ngày kết thúc"
             rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc' }]}
           >
             <DatePicker style={{ width: '100%' }} format={'YYYY-MM-DD'} />
