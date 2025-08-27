@@ -38,7 +38,7 @@ export const productCreateSchema = overrideSchema(productSchema, {
   totaldailyquantities: true,
   dailyquantities: true,
   totaldailyquantitiespo: true,
-  daily_quantities_Po: true,
+  daily_quantities_po: true,
   quantity: true,
   FAPV: true,
   FASV: true,
