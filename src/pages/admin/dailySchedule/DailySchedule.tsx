@@ -30,7 +30,7 @@ export default function DailySchedule() {
   const { isMobile } = useStore(uiStore);
   const [params, setParams] = useState<QueryParams>({
     page: 1,
-    limit: 10,
+    limit: 50,
     'filter[date]': dayjs().format('YYYY-MM-DD')
   });
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
@@ -66,7 +66,7 @@ export default function DailySchedule() {
       rowScope: 'row',
       align: 'center',
       render: (_value, _record, index) =>
-        index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
+        index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
       title: 'Mã lịch làm việc',
@@ -232,7 +232,7 @@ export default function DailySchedule() {
     pagination: {
       ...customTableProps.pagination,
       current: response?.current_page || 1,
-      pageSize: response?.per_page || 10,
+      pageSize: response?.per_page || 50,
       total: response?.total || 0,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
