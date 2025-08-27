@@ -92,141 +92,162 @@ export const PrintBagStamp = ({
         Print
       </Button>
       <div ref={contentRef} className="print:m-0 print:p-0 print:shadow-none">
-        <div className="grid grid-cols-2 grid-rows-3 gap-6 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2">
-          {product &&
-            Array.from(
-              {
-                length:
-                  stampList.length > 1
-                    ? stampList.slice(0, totalStamp).length
-                    : totalStamp
+        {product &&
+          Array.from(
+            {
+              length:
+                stampList.length > 1
+                  ? stampList.slice(0, totalStamp).length
+                  : totalStamp
+            },
+            () => product
+          )
+            .reduce(
+              (
+                pages: { item: ProductType; index: number }[][],
+                item,
+                index
+              ) => {
+                const pageIndex = Math.floor(index / 8);
+                if (!pages[pageIndex]) {
+                  pages[pageIndex] = [];
+                }
+                pages[pageIndex].push({ item, index });
+                return pages;
               },
-              () => product
-            ).map((item, index) => (
+              []
+            )
+            .map((page, pageIndex) => (
               <div
-                key={`${index}-${item.code}`}
-                className="w-auto break-inside-avoid-page not-print:flex not-print:justify-center"
+                key={`page-${pageIndex}`}
+                className="print:page-break-after-always grid grid-cols-2 grid-rows-4 gap-6 not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:min-h-screen"
               >
-                <table className="table border border-black text-center text-[7px]">
-                  <colgroup>
-                    <col className="w-[80px]" />
-                    <col className="w-[120px]" />
-                    <col className="w-[120px]" />
-                    <col className="w-[120px]" />
-                    <col className="w-[120px]" />
-                  </colgroup>
-                  <tbody>
-                    <tr>
-                      <td className="text-start">
-                        Tên sản phẩm
-                        <br />
-                        品名
-                      </td>
-                      <td colSpan={2} className="text-xs font-bold">
-                        {item.name}
-                      </td>
-                      <td>CODE</td>
-                      <td className="text-xs font-bold">{item.code}</td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Nguyên liệu
-                        <br />
-                        原材料
-                      </td>
-                      <td colSpan={2} className="text-xs">
-                        {product.material}
-                      </td>
-                      <td>
-                        Màu sắc
-                        <br />色
-                      </td>
-                      <td className="text-xs">{product.color}</td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Số lượng
-                        <br />
-                        数量
-                      </td>
-                      <td colSpan={4} className="text-xs font-bold">
-                        {item.quantity_per_package} PCS
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Lotno
-                        <br />
-                        ロット No
-                      </td>
-                      <td colSpan={4} className="text-xs font-bold">
-                        <div className="flex items-center justify-between">
-                          <p>A</p>
-                          <p>-</p>
-                          <p>{date.format('DDMMYYYY')}</p>
-                          <p>-</p>
-                          <p>{shift}</p>
-                          <p>-</p>
-                          <p>
-                            {(stampList.length > 1
-                              ? stampList[index]
-                              : index + parseInt(startStamp as string)
-                            )
-                              .toString()
-                              .padStart(3, '0')}
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Kiểm tra
-                        <br />
-                        検査
-                      </td>
-                      <td colSpan={2}>
-                        Kiểm tra 100%
-                        <br />
-                        檢查(100%)
-                      </td>
-                      <td colSpan={2}>
-                        Kiểm tra 200%
-                        <br />
-                        檢查(200%)
-                      </td>
-                    </tr>
-                    <tr className="h-16">
-                      <td className="text-start">
-                        Mộc
-                        <br />
-                        合格印
-                      </td>
-                      <td colSpan={2}></td>
-                      <td colSpan={2}></td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Người kiểm
-                        <br />
-                        検査
-                      </td>
-                      <td colSpan={2}></td>
-                      <td colSpan={2}></td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Thời gian <br /> 時間
-                      </td>
-                      <td colSpan={4}>
-                        {date.format('DD/MM/YYYY')}{' '}
-                        {shift == 1 ? '07:30' : '19:30'}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                {page.map(({ item, index }) => (
+                  <div
+                    key={`${index}-${item.code}`}
+                    className="w-auto break-inside-avoid-page not-print:flex not-print:justify-center"
+                  >
+                    <table className="table border border-black text-center text-[7px]">
+                      <colgroup>
+                        <col className="w-[80px]" />
+                        <col className="w-[120px]" />
+                        <col className="w-[120px]" />
+                        <col className="w-[120px]" />
+                        <col className="w-[120px]" />
+                      </colgroup>
+                      <tbody>
+                        <tr>
+                          <td className="text-start">
+                            Tên sản phẩm
+                            <br />
+                            品名
+                          </td>
+                          <td colSpan={2} className="text-xs font-bold">
+                            {item.name}
+                          </td>
+                          <td>CODE</td>
+                          <td className="text-xs font-bold">{item.code}</td>
+                        </tr>
+                        <tr>
+                          <td className="text-start">
+                            Nguyên liệu
+                            <br />
+                            原材料
+                          </td>
+                          <td colSpan={2} className="text-xs">
+                            {product.material}
+                          </td>
+                          <td>
+                            Màu sắc
+                            <br />色
+                          </td>
+                          <td className="text-xs">{product.color}</td>
+                        </tr>
+                        <tr>
+                          <td className="text-start">
+                            Số lượng
+                            <br />
+                            数量
+                          </td>
+                          <td colSpan={4} className="text-xs font-bold">
+                            {item.quantity_per_package} PCS
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="text-start">
+                            Lotno
+                            <br />
+                            ロット No
+                          </td>
+                          <td colSpan={4} className="text-xs font-bold">
+                            <div className="flex items-center justify-between">
+                              <p>A</p>
+                              <p>-</p>
+                              <p>{date.format('DDMMYYYY')}</p>
+                              <p>-</p>
+                              <p>{shift}</p>
+                              <p>-</p>
+                              <p>
+                                {(stampList.length > 1
+                                  ? stampList[index]
+                                  : index + parseInt(startStamp as string)
+                                )
+                                  .toString()
+                                  .padStart(3, '0')}
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="text-start">
+                            Kiểm tra
+                            <br />
+                            検査
+                          </td>
+                          <td colSpan={2}>
+                            Kiểm tra 100%
+                            <br />
+                            檢查(100%)
+                          </td>
+                          <td colSpan={2}>
+                            Kiểm tra 200%
+                            <br />
+                            檢查(200%)
+                          </td>
+                        </tr>
+                        <tr className="h-16">
+                          <td className="text-start">
+                            Mộc
+                            <br />
+                            合格印
+                          </td>
+                          <td colSpan={2}></td>
+                          <td colSpan={2}></td>
+                        </tr>
+                        <tr>
+                          <td className="text-start">
+                            Người kiểm
+                            <br />
+                            検査
+                          </td>
+                          <td colSpan={2}></td>
+                          <td colSpan={2}></td>
+                        </tr>
+                        <tr>
+                          <td className="text-start">
+                            Thời gian <br /> 時間
+                          </td>
+                          <td colSpan={4}>
+                            {date.format('DD/MM/YYYY')}{' '}
+                            {shift == 1 ? '07:30' : '19:30'}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
               </div>
             ))}
-        </div>
       </div>
       <Button color="default" variant="solid" onClick={handlePrint}>
         Print
