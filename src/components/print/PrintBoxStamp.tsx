@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, message } from 'antd';
+import { Button, Image, message } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { useCallback, useEffect, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -131,23 +131,23 @@ export const PrintBoxStamp = ({
                           <tbody>
                             <tr>
                               <td>
-                                <img
+                                <Image
                                   src={logo}
                                   alt="logo"
                                   width={90}
+                                  preview={false}
                                   title="VINH VINH PHAT ONE MEMBER CO.LTD"
                                 />
                               </td>
                               <td colSpan={5}>
                                 <div className="w-auto text-left text-[6px] break-words whitespace-normal">
-                                  VINH VINH PHAT ONE MEMBER CO.LTD
+                                  VINH VINH PHAT ONE MEMBER CO., LTD
                                   <br />
-                                  Add: 359 Ap Chien Luoc Street, Khu Pho 2, Binh
-                                  Hung Hoa A Ward, Binh Tan District, Ho Chi
-                                  Minh City
+                                  Address : 359 Ap Chien Luoc Street, Warter 2,
+                                  Binh Hung Hoa Ward, Ho Chi Minh City
                                   <br />
-                                  Fac: 2861, National Highway 1, Hamlet 3, Binh
-                                  Chanh Commune, Binh Chanh District, HCM City
+                                  Factory : No. 2861, National Highway 1, Hamlet
+                                  3, Binh Chanh Commune, Ho Chi Minh City
                                   <br />
                                   Tel: 0283.620.4978 Fax: 0283.620.4978
                                   <br />
@@ -238,6 +238,7 @@ export const PrintBoxStamp = ({
                                 <td colSpan={5}>
                                   <div className="flex items-center justify-center">
                                     <Barcode
+                                      className="max-w-[235px]"
                                       width={2}
                                       height={30}
                                       format="CODE128"
