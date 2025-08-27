@@ -94,207 +94,220 @@ export const PrintBoxStamp = ({
         Print
       </Button>
       <div ref={contentRef} className="print:m-0 print:p-0 print:shadow-none">
-        <div className="grid grid-cols-3 grid-rows-2 gap-7 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:md:grid-cols-2 not-print:xl:grid-cols-3">
-          {product &&
-            Array.from(
-              {
-                length:
-                  stampList.length > 1
-                    ? stampList.slice(0, totalStamp).length
-                    : totalStamp
-              },
-              () => product
-            ).map((item, index) => (
+        {product &&
+          Array.from(
+            {
+              length: Math.ceil(
+                (stampList.length > 1
+                  ? stampList.slice(0, totalStamp).length
+                  : totalStamp) / 6
+              )
+            },
+            (_, pageIndex) => (
               <div
-                key={`${index}-${item.code}`}
-                className="w-auto max-w-[435px] break-inside-avoid-page text-[5px] not-print:flex not-print:justify-center"
+                key={`page-${pageIndex}`}
+                className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 p-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
               >
-                <table
-                  className={`table border border-black text-center ${item.FAVV ? 'text-[6.6px]' : 'text-[8px]'}`}
-                >
-                  <tbody>
-                    <tr>
-                      <td>
-                        <img
-                          src={logo}
-                          alt="logo"
-                          width={90}
-                          title="VINH VINH PHAT ONE MEMBER CO.LTD"
-                        />
-                      </td>
-                      <td colSpan={5}>
-                        <div className="w-auto text-left text-[6px] break-words whitespace-normal">
-                          VINH VINH PHAT ONE MEMBER CO.LTD
-                          <br />
-                          Add: 359 Ap Chien Luoc Street, Khu Pho 2, Binh Hung
-                          Hoa A Ward, Binh Tan District, Ho Chi Minh City
-                          <br />
-                          Fac: 2861, National Highway 1, Hamlet 3, Binh Chanh
-                          Commune, Binh Chanh District, HCM City
-                          <br />
-                          Tel: 0283.620.4978 Fax: 0283.620.4978
-                          <br />
-                          Made in Viet Nam
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Tên khách hàng
-                        <br />
-                        外メーカー名
-                      </td>
-                      <td colSpan={5}>
-                        <p className="text-xs font-bold">
-                          FURUKAWA AUTOMOTIVE PARTS
-                          <br />
-                          (VIET NAM) INC
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Tên sản phẩm
-                        <br />
-                        品名
-                      </td>
-                      <td colSpan={2}>
-                        <p className="text-xs font-bold">{item.name}</p>
-                      </td>
-                      <td>CODE</td>
-                      <td colSpan={2}>
-                        <p className="text-xs font-bold">{item.code}</p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Nguyên liệu
-                        <br />
-                        原材料
-                      </td>
-                      <td colSpan={2} className="text-xs">
-                        <p> {product.material}</p>
-                      </td>
-                      <td>
-                        Màu sắc
-                        <br />色
-                      </td>
-                      <td colSpan={2} className="text-xs">
-                        <p> {product.color}</p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Số lượng
-                        <br />
-                        数量
-                      </td>
-                      <td colSpan={5}>
-                        <p className="text-xs font-bold">
-                          {item.quanEntityBin}PCS
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Lotno
-                        <br />
-                        ロット No
-                      </td>
-                      <td colSpan={5} className="text-xs font-bold">
-                        <div className="flex items-center justify-between">
-                          <p>A</p>
-                          <p>-</p>
-                          <p>{date.format('DDMMYYYY')}</p>
-                          <p>-</p>
-                          <p>{shift}</p>
-                          <p>-</p>
-                          <p>
-                            {(stampList.length > 1
-                              ? stampList[index]
-                              : index + parseInt(startStamp as string)
-                            )
-                              .toString()
-                              .padStart(3, '0')}
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                    {item.FAVV == true && (
-                      <tr>
-                        <td className="text-start">
-                          Mã vạch
-                          <br />
-                          バーコード
-                        </td>
-                        <td colSpan={5}>
-                          <div className="flex items-center justify-center">
-                            <Barcode
-                              width={2}
-                              height={30}
-                              format="CODE128"
-                              displayValue={false}
-                              margin={1}
-                              value={`${item.id}a${date.format('DDMMYYYY')}${shift}${(stampList.length >
-                              1
-                                ? stampList[index]
-                                : index + parseInt(startStamp as string)
-                              )
-                                .toString()
-                                .padStart(3, '0')}`}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                    <tr>
-                      <td className="text-start">
-                        Kiểm tra
-                        <br />
-                        検査
-                      </td>
-                      <td colSpan={3}>
-                        Kiểm tra 200%
-                        <br />
-                        檢查(200%)
-                      </td>
-                      <td colSpan={2}>
-                        Kiểm tra (Xuất hàng)
-                        <br />
-                        検査 (出荷)
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="h-16 text-start">
-                        Mộc
-                        <br />
-                        合格印
-                      </td>
-                      <td colSpan={3}></td>
-                      <td colSpan={2} rowSpan={2}>
-                        <div className="mx-auto h-12 w-8 border print:text-black"></div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">
-                        Người kiểm
-                        <br />
-                        検査
-                      </td>
-                      <td colSpan={3}></td>
-                    </tr>
-                    <tr>
-                      <td className="text-start">(Thời gian) 時間</td>
-                      <td colSpan={5}>
-                        {date.format('DD/MM/YYYY')}{' '}
-                        {shift == 1 ? '07:30' : '19:30'}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                {Array.from(
+                  {
+                    length: Math.min(
+                      6,
+                      (stampList.length > 1
+                        ? stampList.slice(0, totalStamp).length
+                        : totalStamp) -
+                        pageIndex * 6
+                    )
+                  },
+                  (_, itemIndex) => {
+                    const globalIndex = pageIndex * 6 + itemIndex;
+                    return (
+                      <div
+                        key={`${globalIndex}-${product.code}`}
+                        className="h-[500] w-auto max-w-[435px] break-inside-avoid-page text-[5px] not-print:flex not-print:justify-center print:flex print:h-auto print:w-auto print:max-w-none print:items-center print:justify-center"
+                      >
+                        <table
+                          className={`table border border-black text-center ${product.FAVV ? 'text-[6.6px]' : 'text-[8px]'}`}
+                        >
+                          <tbody>
+                            <tr>
+                              <td>
+                                <img
+                                  src={logo}
+                                  alt="logo"
+                                  width={90}
+                                  title="VINH VINH PHAT ONE MEMBER CO.LTD"
+                                />
+                              </td>
+                              <td colSpan={5}>
+                                <div className="w-auto text-left text-[6px] break-words whitespace-normal">
+                                  VINH VINH PHAT ONE MEMBER CO.LTD
+                                  <br />
+                                  Add: 359 Ap Chien Luoc Street, Khu Pho 2, Binh
+                                  Hung Hoa A Ward, Binh Tan District, Ho Chi
+                                  Minh City
+                                  <br />
+                                  Fac: 2861, National Highway 1, Hamlet 3, Binh
+                                  Chanh Commune, Binh Chanh District, HCM City
+                                  <br />
+                                  Tel: 0283.620.4978 Fax: 0283.620.4978
+                                  <br />
+                                  Made in Viet Nam
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-start">
+                                Tên sản phẩm
+                                <br />
+                                品名
+                              </td>
+                              <td colSpan={2}>
+                                <p className="text-xs font-bold">
+                                  {product.name}
+                                </p>
+                              </td>
+                              <td>CODE</td>
+                              <td colSpan={2}>
+                                <p className="text-xs font-bold">
+                                  {product.code}
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-start">
+                                Nguyên liệu
+                                <br />
+                                原材料
+                              </td>
+                              <td colSpan={2} className="text-xs">
+                                <p> {product.material}</p>
+                              </td>
+                              <td>
+                                Màu sắc
+                                <br />色
+                              </td>
+                              <td colSpan={2} className="text-xs">
+                                <p> {product.color}</p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-start">
+                                Số lượng
+                                <br />
+                                数量
+                              </td>
+                              <td colSpan={5}>
+                                <p className="text-xs font-bold">
+                                  {product.quanEntityBin}PCS
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-start">
+                                Lotno
+                                <br />
+                                ロット No
+                              </td>
+                              <td colSpan={5} className="text-xs font-bold">
+                                <div className="flex items-center justify-between">
+                                  <p>A</p>
+                                  <p>-</p>
+                                  <p>{date.format('DDMMYYYY')}</p>
+                                  <p>-</p>
+                                  <p>{shift}</p>
+                                  <p>-</p>
+                                  <p>
+                                    {(stampList.length > 1
+                                      ? stampList[globalIndex]
+                                      : globalIndex +
+                                        parseInt(startStamp as string)
+                                    )
+                                      .toString()
+                                      .padStart(3, '0')}
+                                  </p>
+                                </div>
+                              </td>
+                            </tr>
+                            {product.FAVV == true && (
+                              <tr>
+                                <td className="text-start">
+                                  Mã vạch
+                                  <br />
+                                  バーコード
+                                </td>
+                                <td colSpan={5}>
+                                  <div className="flex items-center justify-center">
+                                    <Barcode
+                                      width={2}
+                                      height={30}
+                                      format="CODE128"
+                                      displayValue={false}
+                                      margin={1}
+                                      value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(stampList.length >
+                                      1
+                                        ? stampList[globalIndex]
+                                        : globalIndex +
+                                          parseInt(startStamp as string)
+                                      )
+                                        .toString()
+                                        .padStart(3, '0')}`}
+                                    />
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                            <tr>
+                              <td className="text-start">
+                                Kiểm tra
+                                <br />
+                                検査
+                              </td>
+                              <td colSpan={3}>
+                                Kiểm tra 200%
+                                <br />
+                                檢查(200%)
+                              </td>
+                              <td colSpan={2}>
+                                Kiểm tra (Xuất hàng)
+                                <br />
+                                検査 (出荷)
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="h-16 text-start">
+                                Mộc
+                                <br />
+                                合格印
+                              </td>
+                              <td colSpan={3}></td>
+                              <td colSpan={2} rowSpan={2}>
+                                <div className="mx-auto h-12 w-8 border print:text-black"></div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-start">
+                                Người kiểm
+                                <br />
+                                検査
+                              </td>
+                              <td colSpan={3}></td>
+                            </tr>
+                            <tr>
+                              <td className="text-start">(Thời gian) 時間</td>
+                              <td colSpan={5}>
+                                {date.format('DD/MM/YYYY')}{' '}
+                                {shift == 1 ? '07:30' : '19:30'}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  }
+                )}
               </div>
-            ))}
-        </div>
+            )
+          )}
       </div>
       <Button color="default" variant="solid" onClick={handlePrint}>
         Print
