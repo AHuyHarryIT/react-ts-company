@@ -33,7 +33,7 @@ export const updateProductHistoryDetail = async (
   status: ProductHistoryStatusType['status'],
   quantity: ProductHistoryStatusType['quantity']
 ) => {
-  await axiosPrivate.put(`${ENDPOINT}/updateDetail`, {
+  await axiosPrivate.put(`${ENDPOINT}/detail`, {
     dailyId: id,
     product_id: productId,
     status: status,
