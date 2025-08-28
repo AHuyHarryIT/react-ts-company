@@ -120,14 +120,14 @@ export const PrintBagStamp = ({
             .map((page, pageIndex) => (
               <div
                 key={`page-${pageIndex}`}
-                className="print:page-break-after-always grid grid-cols-2 grid-rows-4 gap-6 not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:min-h-screen"
+                className="print:page-break-after-always grid grid-cols-2 grid-rows-4 gap-6 not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:mx-1 print:min-h-screen"
               >
                 {page.map(({ item, index }) => (
                   <div
                     key={`${index}-${item.code}`}
                     className="w-auto break-inside-avoid-page not-print:flex not-print:justify-center"
                   >
-                    <table className="table border border-black text-center text-[7px]">
+                    <table className="table border border-black text-center">
                       <colgroup>
                         <col className="w-[80px]" />
                         <col className="w-[120px]" />
@@ -137,49 +137,49 @@ export const PrintBagStamp = ({
                       </colgroup>
                       <tbody>
                         <tr>
-                          <td className="text-start">
+                          <td className="text-start text-[7.3px]">
                             Tên sản phẩm
                             <br />
                             品名
                           </td>
-                          <td colSpan={2} className="text-xs font-bold">
+                          <td colSpan={2} className="text-sm font-bold">
                             {item.name}
                           </td>
                           <td>CODE</td>
-                          <td className="text-xs font-bold">{item.code}</td>
+                          <td className="text-sm font-bold">{item.code}</td>
                         </tr>
                         <tr>
-                          <td className="text-start">
+                          <td className="text-start text-[7.3px]">
                             Nguyên liệu
                             <br />
                             原材料
                           </td>
-                          <td colSpan={2} className="text-xs">
+                          <td colSpan={2} className="text-sm">
                             {product.material}
                           </td>
-                          <td>
+                          <td className="text-[7.3px]">
                             Màu sắc
                             <br />色
                           </td>
-                          <td className="text-xs">{product.color}</td>
+                          <td className="text-sm">{product.color}</td>
                         </tr>
                         <tr>
-                          <td className="text-start">
+                          <td className="text-start text-[7.3px]">
                             Số lượng
                             <br />
                             数量
                           </td>
-                          <td colSpan={4} className="text-xs font-bold">
+                          <td colSpan={4} className="text-sm font-bold">
                             {item.quantity_per_package} PCS
                           </td>
                         </tr>
                         <tr>
-                          <td className="text-start">
+                          <td className="text-start text-[7.3px]">
                             Lotno
                             <br />
                             ロット No
                           </td>
-                          <td colSpan={4} className="text-xs font-bold">
+                          <td colSpan={4} className="text-sm font-bold">
                             <div className="flex items-center justify-between">
                               <p>A</p>
                               <p>-</p>
@@ -199,24 +199,24 @@ export const PrintBagStamp = ({
                           </td>
                         </tr>
                         <tr>
-                          <td className="text-start">
+                          <td className="text-start text-[7.3px]">
                             Kiểm tra
                             <br />
                             検査
                           </td>
-                          <td colSpan={2}>
+                          <td colSpan={2} className="text-[7.3px]">
                             Kiểm tra 100%
                             <br />
                             檢查(100%)
                           </td>
-                          <td colSpan={2}>
+                          <td colSpan={2} className="text-[7.3px]">
                             Kiểm tra 200%
                             <br />
                             檢查(200%)
                           </td>
                         </tr>
-                        <tr className="h-16">
-                          <td className="text-start">
+                        <tr className="h-18">
+                          <td className="text-start text-[7.3px]">
                             Mộc
                             <br />
                             合格印
@@ -225,7 +225,7 @@ export const PrintBagStamp = ({
                           <td colSpan={2}></td>
                         </tr>
                         <tr>
-                          <td className="text-start">
+                          <td className="text-start text-[7.3px]">
                             Người kiểm
                             <br />
                             検査
@@ -234,10 +234,10 @@ export const PrintBagStamp = ({
                           <td colSpan={2}></td>
                         </tr>
                         <tr>
-                          <td className="text-start">
-                            Thời gian <br /> 時間
+                          <td colSpan={3} className="text-start text-[7.3px]">
+                            Thời gian 時間
                           </td>
-                          <td colSpan={4}>
+                          <td colSpan={2} className="text-[7.3px]">
                             {date.format('DD/MM/YYYY')}{' '}
                             {shift == 1 ? '07:30' : '19:30'}
                           </td>
