@@ -106,7 +106,7 @@ export const PrintBoxStamp = ({
             (_, pageIndex) => (
               <div
                 key={`page-${pageIndex}`}
-                className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 p-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
+                className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
               >
                 {Array.from(
                   {
@@ -123,10 +123,10 @@ export const PrintBoxStamp = ({
                     return (
                       <div
                         key={`${globalIndex}-${product.code}`}
-                        className="h-[500] w-auto max-w-[435px] break-inside-avoid-page text-[5px] not-print:flex not-print:justify-center print:flex print:h-auto print:w-auto print:max-w-none print:items-center print:justify-center"
+                        className="h-[500] w-auto max-w-[470px] break-inside-avoid-page text-[7px] not-print:flex not-print:justify-center print:flex print:h-auto print:w-auto print:max-w-none print:items-center print:justify-center"
                       >
                         <table
-                          className={`table border border-black text-center ${product.FAVV ? 'text-[6.6px]' : 'text-[8px]'}`}
+                          className={`table border border-black text-center ${product.FAVV ? 'text-[8.3px]' : 'text-[10px]'}`}
                         >
                           <tbody>
                             <tr>
@@ -162,13 +162,15 @@ export const PrintBoxStamp = ({
                                 品名
                               </td>
                               <td colSpan={2}>
-                                <p className="text-xs font-bold">
+                                <p
+                                  className={`${product.name.length < 10 ? 'text-sm' : 'text-[12.5px]'} font-bold`}
+                                >
                                   {product.name}
                                 </p>
                               </td>
                               <td>CODE</td>
                               <td colSpan={2}>
-                                <p className="text-xs font-bold">
+                                <p className="text-sm font-bold">
                                   {product.code}
                                 </p>
                               </td>
@@ -179,14 +181,14 @@ export const PrintBoxStamp = ({
                                 <br />
                                 原材料
                               </td>
-                              <td colSpan={2} className="text-xs">
+                              <td colSpan={2} className="text-sm">
                                 <p> {product.material}</p>
                               </td>
                               <td>
                                 Màu sắc
                                 <br />色
                               </td>
-                              <td colSpan={2} className="text-xs">
+                              <td colSpan={2} className="text-sm">
                                 <p> {product.color}</p>
                               </td>
                             </tr>
@@ -197,7 +199,7 @@ export const PrintBoxStamp = ({
                                 数量
                               </td>
                               <td colSpan={5}>
-                                <p className="text-xs font-bold">
+                                <p className="text-sm font-bold">
                                   {product.quanEntityBin}PCS
                                 </p>
                               </td>
@@ -208,7 +210,7 @@ export const PrintBoxStamp = ({
                                 <br />
                                 ロット No
                               </td>
-                              <td colSpan={5} className="text-xs font-bold">
+                              <td colSpan={5} className="text-sm font-bold">
                                 <div className="flex items-center justify-between">
                                   <p>A</p>
                                   <p>-</p>
@@ -240,7 +242,7 @@ export const PrintBoxStamp = ({
                                     <Barcode
                                       className="max-w-[235px]"
                                       width={2}
-                                      height={30}
+                                      height={25}
                                       format="CODE128"
                                       displayValue={false}
                                       margin={1}
@@ -275,14 +277,14 @@ export const PrintBoxStamp = ({
                               </td>
                             </tr>
                             <tr>
-                              <td className="h-16 text-start">
+                              <td className="h-20 text-start">
                                 Mộc
                                 <br />
                                 合格印
                               </td>
                               <td colSpan={3}></td>
                               <td colSpan={2} rowSpan={2}>
-                                <div className="mx-auto h-12 w-8 border print:text-black"></div>
+                                <div className="mx-auto h-14 w-8 border print:text-black"></div>
                               </td>
                             </tr>
                             <tr>
