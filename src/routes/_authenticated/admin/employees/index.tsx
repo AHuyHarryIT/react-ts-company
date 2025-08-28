@@ -153,10 +153,10 @@ function RouteComponent() {
       dataIndex: ['company'],
       key: 'company',
       render: (_, record) => {
-        const company = record.company?.toLowerCase();
-        if (company == 'vvp') {
-          return 'Vinh Vinh Phát';
-        } else if (company == 'a7a') {
+        const company = record.company?.toUpperCase();
+        if (company == 'VVP') {
+          return 'VINH VINH PHÁT';
+        } else if (company == 'A7A') {
           return 'A7A';
         } else {
           return company;
