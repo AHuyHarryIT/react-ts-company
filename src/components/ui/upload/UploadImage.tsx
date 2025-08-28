@@ -18,9 +18,7 @@ export const UploadImage: React.FC<UploadImageProps> = ({
 
   useEffect(() => {
     const list = imageList?.();
-    // console.log('imageList', list);
     if ((list ?? []).length > 0) {
-      // console.log('setImages', list);
       setImages(list ?? []);
     }
   }, [setImages, imageList]);

@@ -1,4 +1,3 @@
-import { useCrudList } from '@/hooks/useCrudList';
 import { employeeCreateSchema } from '@/schema/employeeSchema.schema';
 import { GenderEnumOptions } from '@/schema/genderEnum.schema';
 import { MaritalStatusEnumOptions } from '@/schema/maritalStatusEnum.schema';
@@ -8,13 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 import { zodToFieldsWithOverride } from '@utils/zodToFieldsWithOverride ';
 
 export const useEmployeeFields = () => {
-  const { data: roleData } = useCrudList({
-    service: roleService,
-    queryKey: 'roles',
-    initialFilters: {
-      limit: 0,
-      sort: 'role_name'
-    }
+  const { data: roleData } = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => roleService.list({ limit: 0, sort: 'role_name' })
   });
 
   const { data: workScheduleCategoriesData } = useQuery({
@@ -102,10 +97,10 @@ export const useEmployeeFields = () => {
     role_id: {
       label: 'Chức vụ',
       type: 'select',
-      options: roleData.map((role) => {
+      options: roleData?.data.map((role) => {
         return {
           label: role.role_name,
-          value: role.id
+          value: Number(role.id)
         };
       })
     },
