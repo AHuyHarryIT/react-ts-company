@@ -150,8 +150,18 @@ function RouteComponent() {
     {
       title: 'Công ty ',
       minWidth: 120,
-      dataIndex: 'company'
-      // key: 'company',
+      dataIndex: ['company'],
+      key: 'company',
+      render: (_, record) => {
+        const company = record.company?.toLowerCase();
+        if (company == 'vvp') {
+          return 'Vinh Vinh Phát';
+        } else if (company == 'a7a') {
+          return 'A7A';
+        } else {
+          return company;
+        }
+      }
       // filters: [
       //   { text: 'A7A', value: 'A7A' },
       //   { text: 'Vinh Vinh Phát', value: 'Vinh Vinh Phát' }
