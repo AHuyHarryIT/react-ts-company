@@ -17,8 +17,8 @@ import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
-import { convertImageName2Url } from '@utils/convertImageName2Url';
 
+import { STORAGE_URL } from '@/configs/environment.config';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { BiTrash } from 'react-icons/bi';
 import { FaUser } from 'react-icons/fa';
@@ -116,7 +116,7 @@ function RouteComponent() {
       render: (value, record) => (
         <div className="flex items-center gap-2">
           <Avatar
-            src={convertImageName2Url(record.photo)}
+            src={`${STORAGE_URL}/${record.photo}`}
             alt="avatar"
             icon={<FaUser />}
             shape="square"

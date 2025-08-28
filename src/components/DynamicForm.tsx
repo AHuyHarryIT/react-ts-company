@@ -3,7 +3,6 @@ import { Rule } from 'antd/es/form';
 
 import { FieldConfig } from '@/types/form';
 import { UploadImage } from '@components/ui/upload/UploadImage';
-import { convertImageName2Url } from '@utils/convertImageName2Url';
 import { FileType } from '@utils/fileType';
 import {
   Button,
@@ -20,6 +19,7 @@ import {
   Upload
 } from 'antd';
 
+import { STORAGE_URL } from '@/configs/environment.config';
 import { AiOutlineUpload } from 'react-icons/ai';
 
 interface DynamicFormProps {
@@ -167,7 +167,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
                     uid: '-1',
                     name: 'photo.jpg',
                     status: 'done',
-                    url: convertImageName2Url(image)
+                    url: `${STORAGE_URL}/${image}`
                   }
                 ];
               } else return [];

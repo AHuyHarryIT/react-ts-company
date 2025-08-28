@@ -1,8 +1,8 @@
 import axiosPrivate from '@/api/axiosInstance';
+import { STORAGE_URL } from '@/configs/environment.config';
 import { User } from '@/types/authType';
 import { Gender } from '@schemas/genderEnum.schema';
 import { clearAuth, setToken, setUser } from '@stores/authStore';
-import { convertImageName2Url } from '@utils/convertImageName2Url';
 
 const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 120;
 
@@ -47,11 +47,8 @@ export const authLogin = async (
     permissions: response.permissions
   };
 
-  if (response?.image && response?.role_id == 15) {
-    userData.image_url = convertImageName2Url(response.image, 'admin');
-  } else if (response?.image) {
-    userData.image_url = convertImageName2Url(response.image);
-  }
+  userData.image_url = `${STORAGE_URL}/${response.image}`;
+
   setUser(userData);
   setToken(response.token);
 
@@ -79,14 +76,7 @@ export const authCheck = async () => {
     };
 
     if (response?.image) {
-      switch (response.role_name.toLowerCase()) {
-        case 'admin':
-        case 'super admin':
-          userData.image_url = convertImageName2Url(response.image, 'admin');
-          break;
-        default:
-          userData.image_url = convertImageName2Url(response.image);
-      }
+      userData.image_url = `${STORAGE_URL}/${response.image}`;
     }
 
     setUser(userData);

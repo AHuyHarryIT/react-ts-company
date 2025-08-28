@@ -9,12 +9,12 @@ import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
-import { convertImageName2Url } from '@utils/convertImageName2Url';
 
+import { STORAGE_URL } from '@/configs/environment.config';
 import RefreshButton from '@components/common/RefreshButton';
-import { FaUser } from 'react-icons/fa';
-import { debounce } from 'lodash';
 import { customTableProps } from '@components/custom/TableProps.custom';
+import { debounce } from 'lodash';
+import { FaUser } from 'react-icons/fa';
 
 export const Route = createFileRoute('/_authenticated/admin/employees/trash/')({
   component: RouteComponent
@@ -108,7 +108,7 @@ function RouteComponent() {
       render: (value, record) => (
         <div className="flex items-center gap-2">
           <Avatar
-            src={convertImageName2Url(record.photo)}
+            src={`${STORAGE_URL}/${record.photo}`}
             alt="avatar"
             icon={<FaUser />}
             shape="square"
