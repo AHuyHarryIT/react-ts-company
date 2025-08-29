@@ -1,13 +1,49 @@
 import { authLogout } from '@services/AuthService';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Button } from 'antd';
+import { Button, message } from 'antd';
+import { useState } from 'react';
 
 export default function Forbidden() {
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    await authLogout();
-    navigate({ to: '/login' });
+    if (isLoggingOut) return; // Prevent double-click
+
+    setIsLoggingOut(true);
+
+    try {
+      // Show immediate feedback
+      message.loading({
+        content: 'Đang đăng xuất...',
+        key: 'logout',
+        duration: 0.5
+      });
+
+      // Perform logout (now non-blocking)
+      await authLogout();
+
+      // Show success message briefly
+      message.success({
+        content: 'Đăng xuất thành công!',
+        key: 'logout',
+        duration: 1
+      });
+
+      // Navigate immediately after clearing auth
+      navigate({ to: '/login', replace: true });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if error, still navigate to login
+      message.error({
+        content: 'Đã đăng xuất',
+        key: 'logout',
+        duration: 1
+      });
+      navigate({ to: '/login', replace: true });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
   return (
     <>
@@ -34,8 +70,14 @@ export default function Forbidden() {
             Back to Home Page
           </Link>
           <div className="mt-2">
-            <Button variant="dashed" color="danger" onClick={handleLogout}>
-              Log out
+            <Button
+              variant="dashed"
+              color="danger"
+              onClick={handleLogout}
+              loading={isLoggingOut}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
             </Button>
           </div>
         </div>

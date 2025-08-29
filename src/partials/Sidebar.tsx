@@ -11,8 +11,8 @@ import { authLogout } from '@services/AuthService';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import { Button, Drawer, Layout } from 'antd';
-import { useMemo } from 'react';
+import { Button, Drawer, Layout, message } from 'antd';
+import { useMemo, useState } from 'react';
 import type { IconType } from 'react-icons';
 import * as FaIcons from 'react-icons/fa';
 import { SidebarMenu } from './SidebarMenu';
@@ -24,6 +24,7 @@ function Sidebar() {
   const navigate = useNavigate();
   const { isSidebarClose, theme, isMobile } = useStore(uiStore);
   const { user } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const permissions = useMemo(() => user?.permissions ?? [], [user]);
 
@@ -211,8 +212,42 @@ function Sidebar() {
   );
 
   const handleLogout = async () => {
-    await authLogout();
-    navigate({ to: '/login' });
+    if (isLoggingOut) return; // Prevent double-click
+
+    setIsLoggingOut(true);
+
+    try {
+      // Show immediate feedback
+      message.loading({
+        content: 'Đang đăng xuất...',
+        key: 'logout',
+        duration: 0.5
+      });
+
+      // Perform logout (now non-blocking)
+      await authLogout();
+
+      // Show success message briefly
+      message.success({
+        content: 'Đăng xuất thành công!',
+        key: 'logout',
+        duration: 1
+      });
+
+      // Navigate immediately after clearing auth
+      navigate({ to: '/login', replace: true });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if error, still navigate to login
+      message.error({
+        content: 'Đã đăng xuất',
+        key: 'logout',
+        duration: 1
+      });
+      navigate({ to: '/login', replace: true });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
   return (
     <>
@@ -230,8 +265,10 @@ function Sidebar() {
               size="large"
               icon={<IconLogOut />}
               onClick={handleLogout}
+              loading={isLoggingOut}
+              disabled={isLoggingOut}
             >
-              Đăng xuất
+              {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
             </Button>
           }
         >
@@ -258,7 +295,12 @@ function Sidebar() {
                 size="large"
                 icon={<IconLogOut />}
                 onClick={handleLogout}
-                children={!isSidebarClose && 'Đăng xuất'}
+                loading={isLoggingOut}
+                disabled={isLoggingOut}
+                children={
+                  !isSidebarClose &&
+                  (isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất')
+                }
               />
             </div>
           </div>

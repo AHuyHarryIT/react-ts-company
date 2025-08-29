@@ -48,7 +48,13 @@ export const setToken = (token: string) => {
 };
 
 export const clearAuth = () => {
+  // Clear store state
   authStore.setState((prevState) => {
     return { ...prevState, isAuthenticated: false, user: null, token: null };
   });
+
+  // Clear only auth-related localStorage
+  localStorage.removeItem('user');
+  localStorage.removeItem('isAuthenticated');
+  localStorage.removeItem('token');
 };

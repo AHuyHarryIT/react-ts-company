@@ -17,10 +17,6 @@ type AuthResponse = {
   permissions: User['permissions'];
 };
 
-type AuthLogoutResponse = {
-  message: string;
-};
-
 export const authLogin = async (
   username: string,
   password: string,
@@ -66,9 +62,27 @@ export const authLogin = async (
 };
 
 export const authLogout = async () => {
-  const response: AuthLogoutResponse = await axiosPrivate.post('/api/logout');
-  clearAuth();
-  return response;
+  try {
+    // Clear auth state immediately for smooth UX
+    clearAuth();
+
+    // Call logout API in background (non-blocking)
+    // Use setTimeout to ensure UI updates first
+    setTimeout(async () => {
+      try {
+        await axiosPrivate.post('/api/logout');
+      } catch (error) {
+        // Silent fail - user is already logged out locally
+        console.warn('Logout API call failed:', error);
+      }
+    }, 0);
+
+    return { message: 'Logged out successfully' };
+  } catch (error) {
+    // Even if logout fails, clear local state
+    clearAuth();
+    throw error;
+  }
 };
 
 export const authCheck = async () => {
