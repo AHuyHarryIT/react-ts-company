@@ -273,34 +273,30 @@ export default function Dashboard() {
     return filtered;
   }, [permissions]);
 
-  const listWidget = useMemo(() => {
-    const widgets = homePermissions
-      .map((p) => {
-        const baseWidget = admin
-          ? adminWidgetMap[p.key] || commonWidgetMap[p.key]
-          : empWidgetMap[p.key] || commonWidgetMap[p.key];
+  const listWidget = homePermissions
+    .map((p) => {
+      const baseWidget = admin
+        ? adminWidgetMap[p.key] || commonWidgetMap[p.key]
+        : empWidgetMap[p.key] || commonWidgetMap[p.key];
 
-        if (baseWidget) {
-          let widget: WidgetType = {
-            ...baseWidget,
-            title: capitalizeWords(p.name)
+      if (baseWidget) {
+        let widget: WidgetType = {
+          ...baseWidget,
+          title: capitalizeWords(p.name)
+        };
+        if (!admin && commonWidgetMap[p.key]) {
+          widget = {
+            icon: widget.icon,
+            title: widget.title,
+            navLink: widget.navLink
           };
-          if (!admin && commonWidgetMap[p.key]) {
-            widget = {
-              icon: widget.icon,
-              title: widget.title,
-              navLink: widget.navLink
-            };
-          }
-
-          return widget;
         }
-        return null;
-      })
-      .filter((w): w is WidgetType => Boolean(w));
-    // Sắp xếp widgets theo thứ tự của homePermissions (permissions đã sort)
-    return widgets;
-  }, [homePermissions, dashboardData, admin]);
+
+        return widget;
+      }
+      return null;
+    })
+    .filter((w): w is WidgetType => Boolean(w));
 
   // giữ logic cũ cho chart
   const hasPermission = (permissionKey: string) =>
