@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useSearch } from '@tanstack/react-router';
 import type { FormProps } from 'antd';
 import { Button, Form, Input, message } from 'antd';
 
@@ -14,8 +14,15 @@ type FieldType = {
   remember: boolean;
 };
 
+type LoginSearch = {
+  redirect?: string;
+};
+
 export const Route = createFileRoute('/(auth)/login')({
   component: RouteComponent,
+  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+    redirect: search.redirect as string | undefined
+  }),
   head: () => ({
     title: 'Đăng nhập',
     meta: [
@@ -29,6 +36,7 @@ export const Route = createFileRoute('/(auth)/login')({
 
 function RouteComponent() {
   const [form] = Form.useForm();
+  const search = useSearch({ from: '/(auth)/login' });
 
   const { mutate: loginMutation, isPending } = useMutation({
     mutationKey: ['authLogin'],
@@ -39,7 +47,12 @@ function RouteComponent() {
 
       // Đợi một chút để đảm bảo auth state đã được update
       setTimeout(() => {
-        window.location.href = '/';
+        // Redirect về trang trước đó hoặc về home
+        const redirectTo =
+          search.redirect && search.redirect !== '/login'
+            ? search.redirect
+            : '/';
+        window.location.href = redirectTo;
       }, 500);
     },
     onError: (error: unknown) => {

@@ -50,10 +50,23 @@ axiosPrivate.interceptors.response.use(
 
     // Central handling logic
     switch (status) {
-      case 401:
-        // Unauthenticated — chỉ clear auth, không redirect tự động
+      case 401: {
+        // Unauthenticated — clear auth và redirect ngay lập tức
         clearAuth();
+
+        // Redirect trực tiếp và ngay lập tức
+        const currentPath = window.location.pathname + window.location.search;
+        console.log(
+          '401 Unauthorized - Redirecting to login from:',
+          currentPath
+        );
+
+        // Force redirect to login page
+        window.location.replace(
+          `/login?redirect=${encodeURIComponent(currentPath)}`
+        );
         break;
+      }
 
       case 403:
         break;

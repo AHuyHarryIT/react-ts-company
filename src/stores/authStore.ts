@@ -48,13 +48,17 @@ export const setToken = (token: string) => {
 };
 
 export const clearAuth = () => {
+  console.log('clearAuth() called - clearing all auth data');
+
+  // Clear localStorage first để đảm bảo beforeLoad không thấy dữ liệu cũ
+  localStorage.removeItem('user');
+  localStorage.removeItem('isAuthenticated');
+  localStorage.removeItem('token');
+
   // Clear store state
   authStore.setState((prevState) => {
     return { ...prevState, isAuthenticated: false, user: null, token: null };
   });
 
-  // Clear only auth-related localStorage
-  localStorage.removeItem('user');
-  localStorage.removeItem('isAuthenticated');
-  localStorage.removeItem('token');
+  console.log('clearAuth() completed - state and localStorage cleared');
 };
