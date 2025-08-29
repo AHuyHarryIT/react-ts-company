@@ -4,8 +4,10 @@ import AuthLayout from '@layouts/AuthLayout';
 
 export const Route = createFileRoute('/(auth)')({
   beforeLoad: async ({ context }) => {
-    const { isLogged } = context.authenticated;
-    if (await isLogged()) {
+    const { isLogged, user } = context.authenticated;
+    const isLoggedResult = await isLogged();
+
+    if (isLoggedResult && user) {
       // Redirect to admin if already authenticated
       throw redirect({ to: '/', replace: true });
     }

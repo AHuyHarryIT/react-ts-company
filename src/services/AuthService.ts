@@ -26,33 +26,43 @@ export const authLogin = async (
   password: string,
   remember?: boolean
 ) => {
-  const data = {
-    phone: username,
-    password: password,
-    remember: remember || false,
-    expiresInMins: expiresInMins
-  };
+  try {
+    const data = {
+      phone: username,
+      password: password,
+      remember: remember || false,
+      expiresInMins: expiresInMins
+    };
 
-  // await axiosPrivate.get('/sanctum/csrf-cookie');
-  const response: AuthResponse = await axiosPrivate.post('/api/login', data);
+    const response: AuthResponse = await axiosPrivate.post('/api/login', data);
 
-  const userData: User = {
-    id: response.id,
-    name: response.name,
-    gender: response.gender,
-    role: {
-      id: response.role_id.toString(),
-      name: response.role_name
-    },
-    permissions: response.permissions
-  };
+    const userData: User = {
+      id: response.id,
+      name: response.name,
+      gender: response.gender,
+      role: {
+        id: response.role_id.toString(),
+        name: response.role_name
+      },
+      permissions: response.permissions
+    };
 
-  userData.image_url = `${STORAGE_URL}/${response.image}`;
+    if (response.image) {
+      userData.image_url = `${STORAGE_URL}/${response.image}`;
+    }
 
-  setUser(userData);
-  setToken(response.token);
+    // Set auth state
+    setUser(userData);
+    setToken(response.token);
 
-  return response;
+    return response;
+  } catch (error) {
+    // Clear auth state khi có lỗi
+    clearAuth();
+
+    // Re-throw error để component xử lý
+    throw error;
+  }
 };
 
 export const authLogout = async () => {

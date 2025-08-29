@@ -31,63 +31,44 @@ axiosPrivate.interceptors.request.use((config) => {
 
 axiosPrivate.interceptors.response.use(
   (response) => {
-    return response;
-  },
-  (error: AxiosError<ApiErrorResponse>) => {
-    if (error.response?.status === 422 && error.response.data?.error?.errors) {
-      const errorData: ValidationErrors = error.response.data.error.errors;
-
-      // Example: setting language manually
-      const mappedErrors = mapErrorCodesToMessages(errorData, 'vi');
-
-      error.response.data.error.errors = mappedErrors;
-    }
-
-    return Promise.reject(error);
-  }
-);
-
-axiosPrivate.interceptors.response.use(
-  (response) => {
+    // Trả về response.data để đơn giản hóa việc sử dụng
     return response.data;
   },
   async (error: AxiosError<ApiErrorResponse>) => {
     if (!error.response) {
-      console.error('Network/server error');
       return Promise.reject(error);
     }
 
     const { status, data } = error.response;
 
+    // Xử lý validation error
+    if (status === 422 && data?.error?.errors) {
+      const errorData: ValidationErrors = data.error.errors;
+      const mappedErrors = mapErrorCodesToMessages(errorData, 'vi');
+      error.response.data.error.errors = mappedErrors;
+    }
+
     // Central handling logic
     switch (status) {
       case 401:
-        // Unauthenticated — maybe redirect to login
-        console.warn('Unauthorized');
+        // Unauthenticated — chỉ clear auth, không redirect tự động
         clearAuth();
-        // TODO: Redirect to login page
-        window.location.href =
-          '/login/' + `?redirect=${window.location.pathname}`;
         break;
 
       case 403:
-        console.warn('Forbidden');
         break;
 
       case 404:
-        console.warn('Not found');
         break;
 
       case 422:
-        console.warn('Validation error', data.error);
         break;
 
       case 500:
-        console.error('Server error:', data.error.message);
         break;
 
       default:
-        console.error(`Unhandled error [${status}]`);
+        break;
     }
 
     // Always return the rejected error so component can catch if needed
