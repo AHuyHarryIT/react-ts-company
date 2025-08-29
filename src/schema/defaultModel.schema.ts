@@ -51,6 +51,6 @@ export const dayjsSchema = z.preprocess(
     return value;
   },
   z.custom<dayjs.Dayjs>((val) => dayjs.isDayjs(val), {
-    message: 'Invalid date'
+    message: 'Ngày không hợp lệ'
   })
 );

@@ -28,7 +28,7 @@ export const RejectModal: React.FC<RejectModalProps> = ({ stampId }) => {
     },
     onError: () => {
       message.error('Lỗi khi từ chối tem');
-      console.error('Failed to reject stamp');
+      console.error('Lỗi khi từ chối tem');
     }
   });
   return (

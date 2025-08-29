@@ -457,7 +457,7 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
           <div className="brand-sub">{companyName}</div>
         </div>
 
-        {/* Rich Birthday Effects */}
+        {/* Hiệu ứng sinh nhật phong phú */}
         <div className="decors">
           {/* Confetti */}
           {Array.from({ length: 12 }).map((_, i) => (

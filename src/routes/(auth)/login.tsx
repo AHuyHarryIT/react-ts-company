@@ -17,11 +17,11 @@ type FieldType = {
 export const Route = createFileRoute('/(auth)/login')({
   component: RouteComponent,
   head: () => ({
-    title: 'Login',
+    title: 'Đăng nhập',
     meta: [
       {
         name: 'description',
-        content: 'Login page for the application'
+        content: 'Trang đăng nhập của ứng dụng'
       }
     ]
   })

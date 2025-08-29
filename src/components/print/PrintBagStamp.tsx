@@ -45,7 +45,7 @@ export const PrintBagStamp = ({
     },
     onError: () => {
       console.error('Error saving print log');
-      message.error('Error saving print log');
+      message.error('Lỗi khi lưu nhật ký in');
     }
   });
 
