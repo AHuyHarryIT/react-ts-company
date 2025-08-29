@@ -10,6 +10,13 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { BsArrowLeft } from 'react-icons/bs';
 
+interface TodoOption {
+  key: string;
+  label: string;
+  value: string;
+  searchText: string;
+}
+
 export const TodoHistory = () => {
   const [month, setMonth] = useState<Dayjs>(dayjs());
   const [selectProduct, setSelectProduct] = useState<string | undefined>(
@@ -25,11 +32,13 @@ export const TodoHistory = () => {
       })
   });
 
-  const todoOptions = histories?.products?.map((todo) => ({
-    key: todo.id,
-    label: todo.name,
-    value: todo.id
-  }));
+  const todoOptions: TodoOption[] =
+    histories?.products?.map((todo) => ({
+      key: todo.id,
+      label: todo.name,
+      value: todo.id,
+      searchText: `${todo.code} ${todo.name}`.toLowerCase()
+    })) || [];
 
   return (
     <>
@@ -57,6 +66,11 @@ export const TodoHistory = () => {
               showSearch
               placeholder="Chọn sản phẩm"
               onChange={(value) => setSelectProduct(value)}
+              filterOption={(input, option) => {
+                if (!option?.searchText) return false;
+                return option.searchText.includes(input.toLowerCase());
+              }}
+              optionFilterProp="label"
             />
           </div>
           <div>

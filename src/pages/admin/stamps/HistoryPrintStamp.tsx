@@ -58,13 +58,6 @@ export default function HistoryPrintStamp() {
       dataIndex: ['product', 'name']
     },
     {
-      title: 'Mã nhân viên gửi',
-      key: 'employee_id',
-      dataIndex: 'employee_id',
-      minWidth: 120,
-      align: 'center'
-    },
-    {
       title: 'Tên nhân viên gửi',
       key: 'name',
       dataIndex: ['employee', 'name'],
@@ -130,12 +123,6 @@ export default function HistoryPrintStamp() {
       render: (value) => {
         return dayjs(value).format('HH:mm:ss');
       }
-    },
-    {
-      title: 'Mã nhân viên in',
-      key: 'manager_id',
-      dataIndex: 'manager_id',
-      align: 'center'
     },
     {
       title: 'Tên nhân viên in',

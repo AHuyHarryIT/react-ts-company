@@ -15,6 +15,12 @@ interface FormValues {
   shift: string;
 }
 
+interface ProductOption {
+  label: string;
+  value: string;
+  searchText: string;
+}
+
 export const ChooseProduct = () => {
   const [form] = Form.useForm();
 
@@ -42,10 +48,12 @@ export const ChooseProduct = () => {
     }
   });
 
-  const productOptions = productData?.data.map((product) => ({
-    label: product.name,
-    value: product.id
-  }));
+  const productOptions: ProductOption[] =
+    productData?.data.map((product) => ({
+      label: product.name,
+      value: product.id,
+      searchText: `${product.code} ${product.name}`.toLowerCase()
+    })) || [];
 
   const shiftOptions = [
     { label: 'Ca 1', value: 'Ca 1' },
@@ -98,6 +106,11 @@ export const ChooseProduct = () => {
                 allowClear
                 showSearch
                 placeholder="Chọn sản phẩm"
+                filterOption={(input, option) => {
+                  if (!option?.searchText) return false;
+                  return option.searchText.includes(input.toLowerCase());
+                }}
+                optionFilterProp="label"
               />
             </Form.Item>
             <Form.Item<FormValues>

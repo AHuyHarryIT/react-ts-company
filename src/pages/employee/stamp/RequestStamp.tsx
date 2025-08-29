@@ -35,6 +35,12 @@ interface FormFields {
   stamps: StampType[];
 }
 
+interface ProductOption {
+  label: string;
+  value: string;
+  searchText: string;
+}
+
 export const RequestStamp = () => {
   const [form] = Form.useForm<FormFields>();
 
@@ -68,10 +74,11 @@ export const RequestStamp = () => {
     }
   });
 
-  const productOptions =
+  const productOptions: ProductOption[] =
     productsData?.data?.map((product) => ({
       label: product.name,
-      value: product.id
+      value: product.id,
+      searchText: `${product.code} ${product.name}`.toLowerCase()
     })) || [];
 
   const shiftOptions = [
@@ -135,6 +142,13 @@ export const RequestStamp = () => {
                           placeholder="Chọn sản phẩm"
                           showSearch
                           allowClear
+                          filterOption={(input, option) => {
+                            if (!option?.searchText) return false;
+                            return option.searchText.includes(
+                              input.toLowerCase()
+                            );
+                          }}
+                          optionFilterProp="label"
                         />
                       </Form.Item>
                       <Form.Item
