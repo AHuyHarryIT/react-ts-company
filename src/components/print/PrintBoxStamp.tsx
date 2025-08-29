@@ -10,7 +10,6 @@ import { saveStamp } from '@services/StampService';
 import { Shift } from '@/types/shift';
 import logo from '@assets/images/logo/vvp02.png';
 import { EmployeeType } from '@/types/employeeType';
-import '@assets/css/barcode-1.css';
 import { useStampNotification } from '@hooks/useStampNotification';
 
 interface PrintBoxStampProps {
@@ -90,10 +89,35 @@ export const PrintBoxStamp = ({
 
   return (
     <>
+      <style>
+        {`
+          .box-print-container td {
+            border: 1px solid #232d42 !important;
+            padding: 2px !important;
+          }
+          .box-print-container table {
+            border-collapse: collapse !important;
+          }
+          @media print {
+            .box-print-container {
+              margin: 0 !important;
+              padding: 0 !important;
+              box-shadow: none !important;
+            }
+            @page {
+              size: A4 landscape !important;
+              margin: 0 !important;
+            }
+          }
+        `}
+      </style>
       <Button color="default" variant="solid" onClick={handleSavePrintLog}>
         Print
       </Button>
-      <div ref={contentRef} className="print:m-0 print:p-0 print:shadow-none">
+      <div
+        ref={contentRef}
+        className="box-print-container print:m-0 print:p-0 print:shadow-none"
+      >
         {product &&
           Array.from(
             {
@@ -106,7 +130,7 @@ export const PrintBoxStamp = ({
             (_, pageIndex) => (
               <div
                 key={`page-${pageIndex}`}
-                className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
+                className="grid grid-cols-3 grid-rows-2 place-items-center gap-6 bg-red-500 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
               >
                 {Array.from(
                   {
@@ -126,7 +150,7 @@ export const PrintBoxStamp = ({
                         className="h-[500] w-auto max-w-[470px] break-inside-avoid-page text-[7px] not-print:flex not-print:justify-center print:flex print:h-auto print:w-auto print:max-w-none print:items-center print:justify-center"
                       >
                         <table
-                          className={`table border border-black text-center ${product.FAVV ? 'text-[8.3px]' : 'text-[10px]'}`}
+                          className={`border border-black text-center ${product.FAVV ? 'text-[8.3px]' : 'text-[10px]'}`}
                         >
                           <tbody>
                             <tr>
@@ -211,7 +235,7 @@ export const PrintBoxStamp = ({
                                 ロット No
                               </td>
                               <td colSpan={5} className="text-sm font-bold">
-                                <div className="flex items-center justify-between">
+                                <div className="mx-1 flex items-center justify-between">
                                   <p>A</p>
                                   <p>-</p>
                                   <p>{date.format('DDMMYYYY')}</p>
@@ -376,7 +400,7 @@ export const PrintBoxStamp = ({
             )
           )}
       </div>
-      <Button color="default" variant="solid" onClick={handlePrint}>
+      <Button color="default" variant="solid" onClick={handleSavePrintLog}>
         Print
       </Button>
     </>

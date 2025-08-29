@@ -55,8 +55,8 @@ export const PrintStampModal: React.FC<PrintStampBoxModalProps> = ({
         onCancel={handleCancel}
         footer={null}
       >
-        {(type === 'bag' || type === 'Tem Bịch') && (
-          <PrintBagStamp
+        {(type === 'box' || type === 'Tem Thùng') && (
+          <PrintBoxStamp
             product={product}
             startStamp={startStamp}
             totalStamp={totalStamp}
@@ -66,8 +66,8 @@ export const PrintStampModal: React.FC<PrintStampBoxModalProps> = ({
             stamp_id={stamp_id}
           />
         )}
-        {(type === 'box' || type === 'Tem Thùng') && (
-          <PrintBoxStamp
+        {(type === 'bag' || type === 'Tem Bịch') && (
+          <PrintBagStamp
             product={product}
             startStamp={startStamp}
             totalStamp={totalStamp}

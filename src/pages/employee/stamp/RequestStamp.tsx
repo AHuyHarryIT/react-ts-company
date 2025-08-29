@@ -49,7 +49,7 @@ export const RequestStamp = () => {
     queryFn: () => productService.list({ limit: 0 })
   });
 
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationKey: ['request-stamp'],
     mutationFn: (data: FormFields) => {
       const formattedData = data.stamps.map((stamp) => ({
@@ -64,13 +64,22 @@ export const RequestStamp = () => {
     },
     onSuccess: () => {
       form.resetFields();
-      message.success('Yêu cầu in tem đã được gửi');
+      message.success({
+        content: 'Yêu cầu in tem đã được gửi',
+        key: 'request-stamp'
+      });
     },
     onError: () => {
-      message.error('Đã xảy ra lỗi khi gửi yêu cầu in tem');
+      message.error({
+        content: 'Đã xảy ra lỗi khi gửi yêu cầu in tem',
+        key: 'request-stamp'
+      });
     },
     onMutate: () => {
-      message.loading('Đang gửi yêu cầu in tem...');
+      message.loading({
+        content: 'Đang gửi yêu cầu in tem...',
+        key: 'request-stamp'
+      });
     }
   });
 
@@ -94,6 +103,7 @@ export const RequestStamp = () => {
   const formProps: FormProps<FormFields> = {
     ...customFormProps,
     form,
+    disabled: isPending,
     initialValues: { stamps: [{}] },
     onFinish: (values) => {
       mutate({ stamps: values.stamps });
@@ -228,7 +238,7 @@ export const RequestStamp = () => {
             <Button
               variant="solid"
               color="green"
-              // loading={isPending}
+              loading={isPending}
               htmlType="submit"
             >
               Thêm

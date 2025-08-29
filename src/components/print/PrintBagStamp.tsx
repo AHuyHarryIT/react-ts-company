@@ -8,7 +8,6 @@ import { ProductType } from '@/types/productType';
 import { Shift } from '@/types/shift';
 import { saveStamp } from '@services/StampService';
 import { EmployeeType } from '@/types/employeeType';
-import '@assets/css/print-bag.css';
 import { useStampNotification } from '@hooks/useStampNotification';
 
 interface PrintBagStampProps {
@@ -88,10 +87,35 @@ export const PrintBagStamp = ({
 
   return (
     <>
+      <style>
+        {`
+          .bag-print-container td {
+            border: 1px solid #232d42 !important;
+            padding: 2px !important;
+          }
+          .bag-print-container table {
+            border-collapse: collapse !important;
+          }
+          @media print {
+            .bag-print-container {
+              margin: 0 !important;
+              padding: 0 !important;
+              box-shadow: none !important;
+            }
+            @page {
+              size: A4 portrait !important;
+              margin: 0 !important;
+            }
+          }
+        `}
+      </style>
       <Button color="default" variant="solid" onClick={handleSavePrintLog}>
         Print
       </Button>
-      <div ref={contentRef} className="print:m-0 print:p-0 print:shadow-none">
+      <div
+        ref={contentRef}
+        className="bag-print-container print:m-0 print:p-0 print:shadow-none"
+      >
         {product &&
           Array.from(
             {
@@ -120,14 +144,14 @@ export const PrintBagStamp = ({
             .map((page, pageIndex) => (
               <div
                 key={`page-${pageIndex}`}
-                className="print:page-break-after-always grid grid-cols-2 grid-rows-4 gap-6 not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:mx-1 print:min-h-screen"
+                className="print-grid print:page-break-after-always grid grid-cols-2 grid-rows-4 gap-6 not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:mx-1 print:min-h-screen"
               >
                 {page.map(({ item, index }) => (
                   <div
                     key={`${index}-${item.code}`}
-                    className="w-auto break-inside-avoid-page not-print:flex not-print:justify-center"
+                    className="stamp-item w-auto break-inside-avoid-page not-print:flex not-print:justify-center"
                   >
-                    <table className="table border border-black text-center">
+                    <table className="text-center">
                       <colgroup>
                         <col className="w-[80px]" />
                         <col className="w-[120px]" />
@@ -180,7 +204,7 @@ export const PrintBagStamp = ({
                             ロット No
                           </td>
                           <td colSpan={4} className="text-sm font-bold">
-                            <div className="flex items-center justify-between">
+                            <div className="mx-1 flex items-center justify-between">
                               <p>A</p>
                               <p>-</p>
                               <p>{date.format('DDMMYYYY')}</p>
@@ -249,7 +273,7 @@ export const PrintBagStamp = ({
               </div>
             ))}
       </div>
-      <Button color="default" variant="solid" onClick={handlePrint}>
+      <Button color="default" variant="solid" onClick={handleSavePrintLog}>
         Print
       </Button>
     </>
