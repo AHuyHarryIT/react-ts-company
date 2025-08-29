@@ -219,13 +219,45 @@ export const PrintBoxStamp = ({
                                   <p>{shift}</p>
                                   <p>-</p>
                                   <p>
-                                    {(stampList.length > 1
-                                      ? stampList[globalIndex]
-                                      : globalIndex +
-                                        parseInt(startStamp as string)
-                                    )
-                                      .toString()
-                                      .padStart(3, '0')}
+                                    {(() => {
+                                      let stampNumber;
+                                      if (stampList.length > 1) {
+                                        stampNumber = stampList[globalIndex];
+                                      } else {
+                                        // Convert sequential to alternating pattern: 1,2,3,4,5,6 -> 1,3,5,2,4,6
+                                        const totalStampsInPage = Math.min(
+                                          6,
+                                          totalStamp -
+                                            Math.floor(globalIndex / 6) * 6
+                                        );
+                                        const positionInPage = globalIndex % 6;
+                                        const baseStamp =
+                                          Math.floor(globalIndex / 6) * 6 +
+                                          parseInt(startStamp as string);
+
+                                        if (
+                                          positionInPage <
+                                          Math.ceil(totalStampsInPage / 2)
+                                        ) {
+                                          // Odd positions: 1st, 3rd, 5th (positions 0, 2, 4)
+                                          stampNumber =
+                                            baseStamp + positionInPage * 2;
+                                        } else {
+                                          // Even positions: 2nd, 4th, 6th (positions 1, 3, 5)
+                                          stampNumber =
+                                            baseStamp +
+                                            (positionInPage -
+                                              Math.ceil(
+                                                totalStampsInPage / 2
+                                              )) *
+                                              2 +
+                                            1;
+                                        }
+                                      }
+                                      return stampNumber
+                                        .toString()
+                                        .padStart(3, '0');
+                                    })()}
                                   </p>
                                 </div>
                               </td>
@@ -246,14 +278,46 @@ export const PrintBoxStamp = ({
                                       format="CODE128"
                                       displayValue={false}
                                       margin={1}
-                                      value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(stampList.length >
-                                      1
-                                        ? stampList[globalIndex]
-                                        : globalIndex +
-                                          parseInt(startStamp as string)
-                                      )
-                                        .toString()
-                                        .padStart(3, '0')}`}
+                                      value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
+                                        let stampNumber;
+                                        if (stampList.length > 1) {
+                                          stampNumber = stampList[globalIndex];
+                                        } else {
+                                          // Convert sequential to alternating pattern: 1,2,3,4,5,6 -> 1,3,5,2,4,6
+                                          const totalStampsInPage = Math.min(
+                                            6,
+                                            totalStamp -
+                                              Math.floor(globalIndex / 6) * 6
+                                          );
+                                          const positionInPage =
+                                            globalIndex % 6;
+                                          const baseStamp =
+                                            Math.floor(globalIndex / 6) * 6 +
+                                            parseInt(startStamp as string);
+
+                                          if (
+                                            positionInPage <
+                                            Math.ceil(totalStampsInPage / 2)
+                                          ) {
+                                            // Odd positions: 1st, 3rd, 5th (positions 0, 2, 4)
+                                            stampNumber =
+                                              baseStamp + positionInPage * 2;
+                                          } else {
+                                            // Even positions: 2nd, 4th, 6th (positions 1, 3, 5)
+                                            stampNumber =
+                                              baseStamp +
+                                              (positionInPage -
+                                                Math.ceil(
+                                                  totalStampsInPage / 2
+                                                )) *
+                                                2 +
+                                              1;
+                                          }
+                                        }
+                                        return stampNumber
+                                          .toString()
+                                          .padStart(3, '0');
+                                      })()}`}
                                     />
                                   </div>
                                 </td>
