@@ -5,6 +5,7 @@ import { customTableProps } from '@components/custom/TableProps.custom';
 import { IconPrint } from '@components/icons';
 import { getStampHistory, HistoryPrintStampType } from '@services/StampService';
 import { useQuery } from '@tanstack/react-query';
+import { Route } from '@routes/_authenticated/stamps/history';
 import {
   Button,
   DatePicker,
@@ -16,7 +17,7 @@ import {
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PrintStampModal } from './PrintStampModal';
 import { RejectModal } from './RejectModal';
 
@@ -28,6 +29,9 @@ export default function HistoryPrintStamp() {
     include: ['employee', 'manager', 'product'],
     'filter[created_at]': dayjs().format('YYYY-MM-DD')
   });
+
+  // Get search params để highlight dòng cụ thể
+  const { highlightId } = Route.useSearch();
 
   const queryResult = useQuery({
     queryKey: ['historyPrintStamp', params],
@@ -42,6 +46,25 @@ export default function HistoryPrintStamp() {
     total: response?.total,
     pageSize: response?.per_page
   };
+
+  // Effect để scroll đến dòng được highlight
+  useEffect(() => {
+    if (highlightId && dataSource) {
+      const timer = setTimeout(() => {
+        const element = document.querySelector(
+          `[data-row-key*="${highlightId}"]`
+        );
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }
+      }, 500); // Delay để đảm bảo table đã render
+
+      return () => clearTimeout(timer);
+    }
+  }, [highlightId, dataSource]);
 
   const columns: TableColumnsType<HistoryPrintStampType> = [
     {
@@ -219,6 +242,12 @@ export default function HistoryPrintStamp() {
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
+    rowClassName: (record) => {
+      // Highlight dòng nếu record.id trùng với highlightId - màu vàng sáng
+      return record.id === highlightId
+        ? 'bg-yellow-100 border-l-4 border-l-yellow-500 shadow-md'
+        : '';
+    },
     pagination: {
       ...customTableProps.pagination,
       current: params.page,

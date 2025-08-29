@@ -32,3 +32,13 @@ export function disableRole(user: User | null, disallowedRoles: string[]) {
     throw redirect({ to: '/forbidden', statusCode: 403 });
   }
 }
+
+export const isAllowRole = (user: User | null, allowedRoles: string[]) => {
+  if (!user) {
+    return false;
+  }
+
+  return allowedRoles
+    .map((role) => role.toLowerCase())
+    .includes(user.role.name.toLowerCase());
+};

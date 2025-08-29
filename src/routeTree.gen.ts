@@ -32,6 +32,7 @@ import { Route as AuthenticatedStampsHistoryImport } from './routes/_authenticat
 import { Route as AuthenticatedStampsBoxImport } from './routes/_authenticated/stamps/box'
 import { Route as AuthenticatedStampsBagImport } from './routes/_authenticated/stamps/bag'
 import { Route as AuthenticatedScanStorageImport } from './routes/_authenticated/scan/storage'
+import { Route as AuthenticatedAdminNotificationDemoImport } from './routes/_authenticated/admin/notification-demo'
 import { Route as AuthenticatedAdminActivityHistoryImport } from './routes/_authenticated/admin/activity-history'
 import { Route as AuthenticatedAdminAboutImport } from './routes/_authenticated/admin/about'
 import { Route as AuthenticatedAdminSalariesRouteImport } from './routes/_authenticated/admin/salaries/route'
@@ -202,6 +203,13 @@ const AuthenticatedScanStorageRoute = AuthenticatedScanStorageImport.update({
   path: '/scan/storage',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+
+const AuthenticatedAdminNotificationDemoRoute =
+  AuthenticatedAdminNotificationDemoImport.update({
+    id: '/notification-demo',
+    path: '/notification-demo',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
 const AuthenticatedAdminActivityHistoryRoute =
   AuthenticatedAdminActivityHistoryImport.update({
@@ -600,6 +608,13 @@ declare module '@tanstack/react-router' {
       path: '/activity-history'
       fullPath: '/admin/activity-history'
       preLoaderRoute: typeof AuthenticatedAdminActivityHistoryImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
+    '/_authenticated/admin/notification-demo': {
+      id: '/_authenticated/admin/notification-demo'
+      path: '/notification-demo'
+      fullPath: '/admin/notification-demo'
+      preLoaderRoute: typeof AuthenticatedAdminNotificationDemoImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
     '/_authenticated/scan/storage': {
@@ -1014,6 +1029,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminSalariesRouteRoute: typeof AuthenticatedAdminSalariesRouteRouteWithChildren
   AuthenticatedAdminAboutRoute: typeof AuthenticatedAdminAboutRoute
   AuthenticatedAdminActivityHistoryRoute: typeof AuthenticatedAdminActivityHistoryRoute
+  AuthenticatedAdminNotificationDemoRoute: typeof AuthenticatedAdminNotificationDemoRoute
   AuthenticatedAdminAttendancesHistoryRoute: typeof AuthenticatedAdminAttendancesHistoryRoute
   AuthenticatedAdminAttendancesRecordRoute: typeof AuthenticatedAdminAttendancesRecordRoute
   AuthenticatedAdminCheckPoAddRoute: typeof AuthenticatedAdminCheckPoAddRoute
@@ -1041,6 +1057,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAboutRoute: AuthenticatedAdminAboutRoute,
     AuthenticatedAdminActivityHistoryRoute:
       AuthenticatedAdminActivityHistoryRoute,
+    AuthenticatedAdminNotificationDemoRoute:
+      AuthenticatedAdminNotificationDemoRoute,
     AuthenticatedAdminAttendancesHistoryRoute:
       AuthenticatedAdminAttendancesHistoryRoute,
     AuthenticatedAdminAttendancesRecordRoute:
@@ -1203,6 +1221,7 @@ export interface FileRoutesByFullPath {
   '/admin/salaries': typeof AuthenticatedAdminSalariesRouteRouteWithChildren
   '/admin/about': typeof AuthenticatedAdminAboutRoute
   '/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
+  '/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/scan/storage': typeof AuthenticatedScanStorageRoute
   '/stamps/bag': typeof AuthenticatedStampsBagRoute
   '/stamps/box': typeof AuthenticatedStampsBoxRoute
@@ -1261,6 +1280,7 @@ export interface FileRoutesByTo {
   '/login': typeof authLoginRoute
   '/admin/about': typeof AuthenticatedAdminAboutRoute
   '/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
+  '/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/scan/storage': typeof AuthenticatedScanStorageRoute
   '/stamps/bag': typeof AuthenticatedStampsBagRoute
   '/stamps/box': typeof AuthenticatedStampsBoxRoute
@@ -1326,6 +1346,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/salaries': typeof AuthenticatedAdminSalariesRouteRouteWithChildren
   '/_authenticated/admin/about': typeof AuthenticatedAdminAboutRoute
   '/_authenticated/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
+  '/_authenticated/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/_authenticated/scan/storage': typeof AuthenticatedScanStorageRoute
   '/_authenticated/stamps/bag': typeof AuthenticatedStampsBagRoute
   '/_authenticated/stamps/box': typeof AuthenticatedStampsBoxRoute
@@ -1391,6 +1412,7 @@ export interface FileRouteTypes {
     | '/admin/salaries'
     | '/admin/about'
     | '/admin/activity-history'
+    | '/admin/notification-demo'
     | '/scan/storage'
     | '/stamps/bag'
     | '/stamps/box'
@@ -1448,6 +1470,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/about'
     | '/admin/activity-history'
+    | '/admin/notification-demo'
     | '/scan/storage'
     | '/stamps/bag'
     | '/stamps/box'
@@ -1511,6 +1534,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/salaries'
     | '/_authenticated/admin/about'
     | '/_authenticated/admin/activity-history'
+    | '/_authenticated/admin/notification-demo'
     | '/_authenticated/scan/storage'
     | '/_authenticated/stamps/bag'
     | '/_authenticated/stamps/box'
@@ -1626,6 +1650,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/salaries",
         "/_authenticated/admin/about",
         "/_authenticated/admin/activity-history",
+        "/_authenticated/admin/notification-demo",
         "/_authenticated/admin/attendances/history",
         "/_authenticated/admin/attendances/record",
         "/_authenticated/admin/check-po/add",
@@ -1715,6 +1740,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/activity-history": {
       "filePath": "_authenticated/admin/activity-history.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/notification-demo": {
+      "filePath": "_authenticated/admin/notification-demo.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/scan/storage": {

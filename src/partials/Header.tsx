@@ -11,6 +11,8 @@ import { AiOutlineMenuFold, AiOutlineMenuUnfold } from 'react-icons/ai';
 const Header = () => {
   const { isSidebarClose } = useStore(uiStore);
 
+  // Get authenticated user context
+
   return (
     <IconContext.Provider value={{ size: '1.25rem' }}>
       <header className="sticky top-0 z-10 flex w-full border-gray-200 bg-white px-4 py-2 lg:border-b lg:px-6 dark:border-gray-800 dark:bg-gray-900">

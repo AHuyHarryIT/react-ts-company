@@ -1,18 +1,21 @@
 import { Outlet } from '@tanstack/react-router';
-import { ConfigProvider, Layout, theme as antTheme } from 'antd';
+import { ConfigProvider, Layout, theme as antTheme, message } from 'antd';
 import { useEffect } from 'react';
 
 import BirthdayModal from '@components/BirthdayModal';
 import CleaningDutyModal from '@components/CleaningDuty/CleaningDutyModal';
 import MarqueeAlert from '@components/MarqueeText';
+import { NotificationRequestModal } from '@components/common/NotificationRequestModal';
 import { useBirthdayNotification } from '@hooks/useBirthdayNotification';
 import { useCleaningDutyNotification } from '@hooks/useCleaningDutyNotification';
+import { useNotificationRequest } from '@hooks/useAdminNotificationRequest';
 import AppFooter from '@partials/Footer';
 import Header from '@partials/Header';
 import Sidebar from '@partials/Sidebar';
 import { fetchNotifications } from '@services/NotificationService';
 import { updateScreenSize } from '@stores/uiStore';
 import { useQuery } from '@tanstack/react-query';
+import { Route } from '@routes/__root';
 
 const { Content } = Layout;
 
@@ -27,6 +30,10 @@ function AppLayout() {
   const {
     token: { colorBgContainer, borderRadiusLG }
   } = antTheme.useToken();
+
+  // Get authenticated user context
+  const { authenticated } = Route.useRouteContext();
+  const { user } = authenticated;
 
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
@@ -49,6 +56,23 @@ function AppLayout() {
     todayBirthdays,
     markAsShown: markBirthdayAsShown
   } = useBirthdayNotification();
+
+  // Use admin notification request hook
+  const {
+    shouldShowModal: showNotificationModal,
+    hideModal: hideNotificationModal,
+    requestPermission,
+    isLoading: notificationLoading
+  } = useNotificationRequest(user, true);
+
+  const handleAllowNotifications = async () => {
+    const result = await requestPermission();
+    if (result === 'granted') {
+      message.success('Đã bật thông báo thành công!');
+    } else if (result === 'denied') {
+      message.warning('Quyền thông báo đã bị từ chối');
+    }
+  };
 
   const messages =
     notifications?.data.map((notification) => notification.message) || [];
@@ -100,6 +124,16 @@ function AppLayout() {
           companyName="Công Ty Vinh Vinh Phát"
           onClose={markBirthdayAsShown}
           autoCloseMs={10000} // 10 seconds auto close
+        />
+      )}
+
+      {/* Admin Notification Request Modal */}
+      {showNotificationModal && (
+        <NotificationRequestModal
+          open={showNotificationModal}
+          onAllow={handleAllowNotifications}
+          onDeny={hideNotificationModal}
+          loading={notificationLoading}
         />
       )}
     </>
