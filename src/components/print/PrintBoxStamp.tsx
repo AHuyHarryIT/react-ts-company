@@ -111,9 +111,11 @@ export const PrintBoxStamp = ({
           }
         `}
       </style>
-      <Button color="default" variant="solid" onClick={handleSavePrintLog}>
-        Print
-      </Button>
+      <div className="mb-4">
+        <Button color="default" variant="solid" onClick={handleSavePrintLog}>
+          Print
+        </Button>
+      </div>
       <div
         ref={contentRef}
         className="box-print-container print:m-0 print:p-0 print:shadow-none"
@@ -400,9 +402,6 @@ export const PrintBoxStamp = ({
             )
           )}
       </div>
-      <Button color="default" variant="solid" onClick={handleSavePrintLog}>
-        Print
-      </Button>
     </>
   );
 };

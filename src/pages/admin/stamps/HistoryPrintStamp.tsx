@@ -17,8 +17,9 @@ import {
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { useState, useEffect } from 'react';
-import { PrintStampModal } from './PrintStampModal';
+import { useState, useEffect, useRef } from 'react';
+import { PrintBagStamp } from '@components/print/PrintBagStamp';
+import { PrintBoxStamp } from '@components/print/PrintBoxStamp';
 import { RejectModal } from './RejectModal';
 
 export default function HistoryPrintStamp() {
@@ -29,6 +30,9 @@ export default function HistoryPrintStamp() {
     include: ['employee', 'manager', 'product'],
     'filter[created_at]': dayjs().format('YYYY-MM-DD')
   });
+  const [selectedRecord, setSelectedRecord] =
+    useState<HistoryPrintStampType | null>(null);
+  const printPreviewRef = useRef<HTMLDivElement>(null);
 
   // Get search params để highlight dòng cụ thể
   const { highlightId } = Route.useSearch();
@@ -45,6 +49,18 @@ export default function HistoryPrintStamp() {
     current: response?.current_page,
     total: response?.total,
     pageSize: response?.per_page
+  };
+
+  // Function to handle print button click
+  const handlePrintClick = (record: HistoryPrintStampType) => {
+    setSelectedRecord(record);
+    // Scroll to print preview section smoothly
+    setTimeout(() => {
+      printPreviewRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 100);
   };
 
   // Effect để scroll đến dòng được highlight
@@ -216,15 +232,12 @@ export default function HistoryPrintStamp() {
         }
         return (
           <div className="flex items-center justify-center gap-2">
-            <PrintStampModal
-              product={record.product}
-              startStamp={record.binStart}
-              totalStamp={record.binCount}
-              shift={record.shift}
-              date={dayjs(record.date)}
-              type={record.type as 'box' | 'bag' | 'Tem Thùng' | 'Tem Bịch'}
-              employee_id={record.employee_id}
-              stamp_id={record.id}
+            <Button
+              color="blue"
+              variant="solid"
+              icon={<IconPrint />}
+              children="IN"
+              onClick={() => handlePrintClick(record)}
             />
             <RejectModal stampId={record.id} />
           </div>
@@ -324,6 +337,68 @@ export default function HistoryPrintStamp() {
 
         <Table {...tableProps} />
       </ComponentCard>
+
+      {/* Print Preview Section */}
+      {selectedRecord && (
+        <div ref={printPreviewRef} className="mt-8">
+          <ComponentCard title="Xem trước khi in">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                <p>
+                  <strong>Sản phẩm:</strong> {selectedRecord.product.name}
+                </p>
+                <p>
+                  <strong>Nhân viên:</strong>{' '}
+                  {selectedRecord.employee?.name || 'Chưa có thông tin'}
+                </p>
+                <p>
+                  <strong>Ngày:</strong>{' '}
+                  {dayjs(selectedRecord.date).format('DD-MM-YYYY')}
+                </p>
+                <p>
+                  <strong>Ca:</strong> {selectedRecord.shift}
+                </p>
+                <p>
+                  <strong>Số lượng:</strong> {selectedRecord.binCount}
+                </p>
+              </div>
+              <Button
+                color="red"
+                variant="outlined"
+                onClick={() => setSelectedRecord(null)}
+              >
+                Đóng
+              </Button>
+            </div>
+
+            {(selectedRecord.type === 'box' ||
+              selectedRecord.type === 'Tem Thùng') && (
+              <PrintBoxStamp
+                product={selectedRecord.product}
+                startStamp={selectedRecord.binStart}
+                totalStamp={selectedRecord.binCount}
+                shift={selectedRecord.shift}
+                date={dayjs(selectedRecord.date)}
+                employee_id={selectedRecord.employee_id}
+                stamp_id={selectedRecord.id}
+              />
+            )}
+
+            {(selectedRecord.type === 'bag' ||
+              selectedRecord.type === 'Tem Bịch') && (
+              <PrintBagStamp
+                product={selectedRecord.product}
+                startStamp={selectedRecord.binStart}
+                totalStamp={selectedRecord.binCount}
+                shift={selectedRecord.shift}
+                date={dayjs(selectedRecord.date)}
+                employee_id={selectedRecord.employee_id}
+                stamp_id={selectedRecord.id}
+              />
+            )}
+          </ComponentCard>
+        </div>
+      )}
     </>
   );
 }

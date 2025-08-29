@@ -109,9 +109,11 @@ export const PrintBagStamp = ({
           }
         `}
       </style>
-      <Button color="default" variant="solid" onClick={handleSavePrintLog}>
-        Print
-      </Button>
+      <div className="mb-4">
+        <Button color="default" variant="solid" onClick={handleSavePrintLog}>
+          Print
+        </Button>
+      </div>
       <div
         ref={contentRef}
         className="bag-print-container print:m-0 print:p-0 print:shadow-none"
@@ -273,9 +275,6 @@ export const PrintBagStamp = ({
               </div>
             ))}
       </div>
-      <Button color="default" variant="solid" onClick={handleSavePrintLog}>
-        Print
-      </Button>
     </>
   );
 };
