@@ -146,7 +146,7 @@ export const PrintBagStamp = ({
             .map((page, pageIndex) => (
               <div
                 key={`page-${pageIndex}`}
-                className="print-grid print:page-break-after-always grid grid-cols-2 grid-rows-4 gap-6 not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:mx-1 print:min-h-screen"
+                className="print-grid print:page-break-after-always grid grid-cols-2 grid-rows-4 gap-4 not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:min-h-screen"
               >
                 {page.map(({ item, index }) => (
                   <div
@@ -260,7 +260,7 @@ export const PrintBagStamp = ({
                           <td colSpan={2}></td>
                         </tr>
                         <tr>
-                          <td colSpan={3} className="text-start text-[7.3px]">
+                          <td colSpan={3} className="text-center text-[7.3px]">
                             Thời gian 時間
                           </td>
                           <td colSpan={2} className="text-[7.3px]">
