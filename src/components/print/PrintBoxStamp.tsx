@@ -132,7 +132,7 @@ export const PrintBoxStamp = ({
             (_, pageIndex) => (
               <div
                 key={`page-${pageIndex}`}
-                className="grid grid-cols-3 grid-rows-2 place-items-center gap-6 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
+                className="grid grid-cols-3 grid-rows-2 place-items-center gap-5 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
               >
                 {Array.from(
                   {
