@@ -39,7 +39,7 @@ export const PrintBagStamp = ({
     mutationKey: ['savePrintLog'],
     mutationFn: saveStamp,
     onSuccess: () => {
-      message.success('Print log saved successfully');
+      message.success('In thành công');
       queryClient.invalidateQueries();
       if (stamp_id) handleRemoveNotification(stamp_id);
     },
