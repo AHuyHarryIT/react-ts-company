@@ -132,7 +132,7 @@ export const PrintBoxStamp = ({
             (_, pageIndex) => (
               <div
                 key={`page-${pageIndex}`}
-                className="grid grid-cols-3 grid-rows-2 place-items-center gap-5 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
+                className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
               >
                 {Array.from(
                   {
@@ -189,7 +189,7 @@ export const PrintBoxStamp = ({
                               </td>
                               <td colSpan={2}>
                                 <p
-                                  className={`${product.name.length < 10 ? 'text-sm' : 'text-[12.5px]'} font-bold`}
+                                  className={`${product.name.length < 10 ? 'text-sm' : 'text-[12px]'} font-bold`}
                                 >
                                   {product.name}
                                 </p>
