@@ -29,7 +29,13 @@ function App() {
 
   return (
     <>
-      <RouterProvider router={router} context={{ authenticated }} />
+      <RouterProvider
+        router={router}
+        context={{
+          user: authenticated.user,
+          authenticated
+        }}
+      />
     </>
   );
 }

@@ -22,43 +22,35 @@ export const authLogin = async (
   password: string,
   remember?: boolean
 ) => {
-  try {
-    const data = {
-      phone: username,
-      password: password,
-      remember: remember || false,
-      expiresInMins: expiresInMins
-    };
+  const data = {
+    phone: username,
+    password: password,
+    remember: remember || false,
+    expiresInMins: expiresInMins
+  };
 
-    const response: AuthResponse = await axiosPrivate.post('/api/login', data);
+  const response: AuthResponse = await axiosPrivate.post('/api/login', data);
 
-    const userData: User = {
-      id: response.id,
-      name: response.name,
-      gender: response.gender,
-      role: {
-        id: response.role_id.toString(),
-        name: response.role_name
-      },
-      permissions: response.permissions
-    };
+  const userData: User = {
+    id: response.id,
+    name: response.name,
+    gender: response.gender,
+    role: {
+      id: response.role_id.toString(),
+      name: response.role_name
+    },
+    permissions: response.permissions
+  };
 
-    if (response.image) {
-      userData.image_url = `${STORAGE_URL}/${response.image}`;
-    }
-
-    // Set auth state
-    setUser(userData);
-    setToken(response.token);
-
-    return response;
-  } catch (error) {
-    // Clear auth state khi có lỗi
-    clearAuth();
-
-    // Re-throw error để component xử lý
-    throw error;
+  if (response.image) {
+    userData.image_url = `${STORAGE_URL}/${response.image}`;
   }
+
+  // Set auth state
+  setUser(userData);
+  setToken(response.token);
+
+  return response;
 };
 
 export const authLogout = async () => {

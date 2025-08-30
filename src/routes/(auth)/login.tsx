@@ -45,37 +45,85 @@ function RouteComponent() {
     onSuccess: () => {
       message.success('Đăng nhập thành công!');
 
-      // Đợi một chút để đảm bảo auth state đã được update
+      // Determine redirect path
+      const redirectTo =
+        search.redirect && search.redirect !== '/login' ? search.redirect : '/';
+
+      // Redirect after success message
       setTimeout(() => {
-        // Redirect về trang trước đó hoặc về home
-        const redirectTo =
-          search.redirect && search.redirect !== '/login'
-            ? search.redirect
-            : '/';
         window.location.href = redirectTo;
-      }, 500);
+      }, 1000);
     },
     onError: (error: unknown) => {
       // Reset password field
       form.resetFields(['password']);
 
-      // Xử lý các loại lỗi
+      // Xử lý các loại lỗi chi tiết hơn
       let errorMessage = 'Đăng nhập thất bại! Vui lòng thử lại.';
 
-      const axiosError = error as {
-        response?: { status: number; data?: { message?: string } };
-      };
+      try {
+        const axiosError = error as {
+          response?: {
+            status: number;
+            data?: {
+              message?: string;
+              error?: {
+                message?: string;
+                errors?: Record<string, string[]>;
+              };
+            };
+          };
+        };
 
-      if (axiosError?.response?.status === 401) {
-        errorMessage = 'Tên đăng nhập hoặc mật khẩu không chính xác!';
-      } else if (axiosError?.response?.status === 422) {
-        errorMessage = 'Thông tin đăng nhập không hợp lệ!';
-      } else if (axiosError?.response?.data?.message) {
-        errorMessage = axiosError.response.data.message;
-      } else if (error instanceof Error && error.message) {
-        errorMessage = `Lỗi: ${error.message}`;
+        if (axiosError?.response) {
+          const { status, data } = axiosError.response;
+
+          switch (status) {
+            case 401:
+              errorMessage = 'Tên đăng nhập hoặc mật khẩu không chính xác!';
+              break;
+            case 422:
+              // Xử lý validation errors
+              if (data?.error?.errors) {
+                const errors = Object.values(data.error.errors).flat();
+                errorMessage =
+                  errors.length > 0
+                    ? errors[0]
+                    : 'Thông tin đăng nhập không hợp lệ!';
+              } else {
+                errorMessage =
+                  data?.error?.message ||
+                  data?.message ||
+                  'Thông tin đăng nhập không hợp lệ!';
+              }
+              break;
+            case 429:
+              errorMessage =
+                'Bạn đã thực hiện quá nhiều lần đăng nhập. Vui lòng thử lại sau.';
+              break;
+            case 500:
+              errorMessage = 'Lỗi hệ thống! Vui lòng thử lại sau.';
+              break;
+            default:
+              errorMessage =
+                data?.message ||
+                data?.error?.message ||
+                `Lỗi ${status}: Vui lòng thử lại.`;
+          }
+        } else if (error instanceof Error) {
+          // Network error hoặc lỗi khác
+          if (error.message.includes('Network Error')) {
+            errorMessage =
+              'Lỗi kết nối mạng! Vui lòng kiểm tra internet và thử lại.';
+          } else {
+            errorMessage = `Lỗi: ${error.message}`;
+          }
+        }
+      } catch {
+        errorMessage = 'Đăng nhập thất bại! Vui lòng thử lại.';
       }
 
+      // Hiển thị lỗi
       message.error(errorMessage);
     }
   });

@@ -51,16 +51,22 @@ axiosPrivate.interceptors.response.use(
     // Central handling logic
     switch (status) {
       case 401: {
-        // Unauthenticated — clear auth và redirect ngay lập tức
-        clearAuth();
+        // Kiểm tra xem có phải request login không
+        const isLoginRequest = error.config?.url?.includes('/api/login');
 
-        // Redirect trực tiếp và ngay lập tức
-        const currentPath = window.location.pathname + window.location.search;
+        if (!isLoginRequest) {
+          // Chỉ clear auth và redirect nếu KHÔNG phải login request
+          clearAuth();
 
-        // Force redirect to login page
-        window.location.replace(
-          `/login?redirect=${encodeURIComponent(currentPath)}`
-        );
+          // Redirect trực tiếp và ngay lập tức
+          const currentPath = window.location.pathname + window.location.search;
+
+          // Force redirect to login page
+          window.location.replace(
+            `/login?redirect=${encodeURIComponent(currentPath)}`
+          );
+        }
+        // Nếu là login request, để component xử lý error
         break;
       }
 
