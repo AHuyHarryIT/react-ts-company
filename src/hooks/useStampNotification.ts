@@ -2,12 +2,12 @@ import { HistoryPrintStampType } from '@/types/stampType';
 import { Route } from '@routes/__root';
 import {
   clearStampNotifications,
+  removeStampNotification,
   setStampNotifications,
-  stampNotificationStore,
-  removeStampNotification
+  stampNotificationStore
 } from '@stores/stampNotificationStore';
 import { useStore } from '@tanstack/react-store';
-import { isAdmin } from '@utils/authUtil';
+import { isAllowRole } from '@utils/authUtil';
 import { echo } from '@utils/lib/echo';
 import { handleNotification } from '@utils/notificationUtil';
 import { useEffect } from 'react';
@@ -27,10 +27,10 @@ export function useStampNotification() {
   const { authenticated } = Route.useRouteContext();
   const { user } = authenticated;
   const roleId = user?.role.id;
-  const admin = isAdmin(user?.role.name || '');
+  const allow = isAllowRole(user, ['super admin', 'qa-qc', 'qc']);
 
   // Only show notifications for admin
-  const items = admin ? notifications : [];
+  const items = allow ? notifications : [];
 
   const handleClearNotifications = () => {
     clearStampNotifications();
