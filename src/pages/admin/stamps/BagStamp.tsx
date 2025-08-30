@@ -9,7 +9,7 @@ import {
   Select
 } from 'antd';
 import { Dayjs } from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ProductType } from '@/types/productType';
 import { Shift } from '@/types/shift';
@@ -37,6 +37,7 @@ export default function BagStamp() {
     shift: Shift;
     date: Dayjs;
   }>();
+  const previewRef = useRef<HTMLDivElement>(null);
 
   // Disable shortcut for print (Ctrl + P or Cmd + P)
   useEffect(() => {
@@ -78,6 +79,14 @@ export default function BagStamp() {
         shift: values.shift,
         date: values.date
       });
+
+      // Scroll to preview section after a short delay to ensure it's rendered
+      setTimeout(() => {
+        previewRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
     },
     onReset: () => {
       setStampData(undefined);
@@ -192,15 +201,17 @@ export default function BagStamp() {
         </Form>
       </ComponentCard>
       {stampData && (
-        <ComponentCard title="Xem trước khi in">
-          <PrintBagStamp
-            product={stampData.product}
-            startStamp={stampData.startBag}
-            totalStamp={stampData.totalBag}
-            shift={stampData.shift}
-            date={stampData.date}
-          />
-        </ComponentCard>
+        <div ref={previewRef}>
+          <ComponentCard title="Xem trước khi in">
+            <PrintBagStamp
+              product={stampData.product}
+              startStamp={stampData.startBag}
+              totalStamp={stampData.totalBag}
+              shift={stampData.shift}
+              date={stampData.date}
+            />
+          </ComponentCard>
+        </div>
       )}
     </>
   );
