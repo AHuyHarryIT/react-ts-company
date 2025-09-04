@@ -105,7 +105,7 @@ export const Storage = () => {
 
   return (
     <>
-      <BackButton to="/scan" />
+      <BackButton to="/" />
       <ComponentCard title={`Kho đã xuất hàng `}>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <div className="flex flex-col space-y-2">
