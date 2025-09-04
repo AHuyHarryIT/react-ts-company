@@ -317,7 +317,9 @@ export default function Dashboard() {
   });
   return (
     <>
-      <SlideCarousel images={imageList?.data || []} />
+      {imageList?.data && imageList.data.length > 0 && (
+        <SlideCarousel images={imageList.data} />
+      )}
 
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         {listWidget.length > 0 && (
