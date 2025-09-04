@@ -33,7 +33,62 @@ export const PrintBoxStamp = ({
 }: PrintBoxStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
-  const stampList = (startStamp as string).split(',');
+
+  // Parse and arrange stamps based on odd/even rule
+  const originalStampList = (startStamp as string).split(',');
+  const stampList =
+    originalStampList.length > 1
+      ? (() => {
+          // When multiple stamps are provided with commas, arrange with odd numbers on top, even numbers on bottom
+          const stamps = originalStampList.map((stamp) =>
+            parseInt(stamp.trim())
+          );
+          const sortedStamps = stamps.sort((a, b) => a - b);
+          const arrangedStamps: string[] = [];
+
+          // Calculate how many complete pages we need
+          const totalPages = Math.ceil(sortedStamps.length / 6);
+
+          for (let page = 0; page < totalPages; page++) {
+            const pageStamps = sortedStamps.slice(page * 6, (page + 1) * 6);
+
+            // Separate odd and even numbers
+            const oddNumbers = pageStamps
+              .filter((num) => num % 2 === 1)
+              .sort((a, b) => a - b);
+            const evenNumbers = pageStamps
+              .filter((num) => num % 2 === 0)
+              .sort((a, b) => a - b);
+
+            // Create page layout: positions 0,1,2 for odd numbers, positions 3,4,5 for even numbers
+            const pageLayout = new Array(6).fill(null);
+
+            // Fill odd numbers in top row (positions 0, 1, 2)
+            oddNumbers.forEach((num, index) => {
+              if (index < 3) {
+                pageLayout[index] = num.toString();
+              }
+            });
+
+            // Fill even numbers in bottom row (positions 3, 4, 5)
+            evenNumbers.forEach((num, index) => {
+              if (index < 3) {
+                pageLayout[index + 3] = num.toString();
+              }
+            });
+
+            // Add to arranged stamps (only non-null values)
+            pageLayout.forEach((stamp) => {
+              if (stamp !== null) {
+                arrangedStamps.push(stamp);
+              }
+            });
+          }
+
+          return arrangedStamps;
+        })()
+      : originalStampList;
+
   const queryClient = useQueryClient();
   const { handleRemoveNotification } = useStampNotification();
 
@@ -58,12 +113,16 @@ export const PrintBoxStamp = ({
       date: date.format('YYYY-MM-DD'),
       shift,
       binCount: totalStamp,
-      binStart: stampList.slice(0, totalStamp).join(','),
+      binStart:
+        originalStampList.length > 1
+          ? originalStampList.slice(0, totalStamp).join(',')
+          : stampList.slice(0, totalStamp).join(','),
       type: 'box',
       employee_id: employee_id,
       stamp_id: stamp_id
     });
   }, [
+    originalStampList,
     stampList,
     date,
     handlePrint,
@@ -123,33 +182,110 @@ export const PrintBoxStamp = ({
         {product &&
           Array.from(
             {
-              length: Math.ceil(
-                (stampList.length > 1
-                  ? stampList.slice(0, totalStamp).length
-                  : totalStamp) / 6
-              )
+              length: (() => {
+                if (originalStampList.length > 1) {
+                  // For comma-separated stamps, calculate pages based on 3 odds + 3 evens per page
+                  const allStamps = (startStamp as string)
+                    .split(',')
+                    .map((stamp) => parseInt(stamp.trim()))
+                    .sort((a, b) => a - b)
+                    .slice(0, totalStamp);
+
+                  const oddCount = allStamps.filter(
+                    (num) => num % 2 === 1
+                  ).length;
+                  const evenCount = allStamps.filter(
+                    (num) => num % 2 === 0
+                  ).length;
+
+                  // Each page can hold max 3 odd + 3 even
+                  const oddPages = Math.ceil(oddCount / 3);
+                  const evenPages = Math.ceil(evenCount / 3);
+
+                  // Number of pages = max of odd pages or even pages
+                  return Math.max(oddPages, evenPages);
+                } else {
+                  return Math.ceil(totalStamp / 6);
+                }
+              })()
             },
-            (_, pageIndex) => (
-              <div
-                key={`page-${pageIndex}`}
-                className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
-              >
-                {Array.from(
-                  {
-                    length: Math.min(
-                      6,
-                      (stampList.length > 1
-                        ? stampList.slice(0, totalStamp).length
-                        : totalStamp) -
-                        pageIndex * 6
-                    )
-                  },
-                  (_, itemIndex) => {
+            (_, pageIndex) => {
+              // Calculate the actual layout for this page
+              let pageLayout: (string | null)[];
+
+              if (originalStampList.length > 1) {
+                // For comma-separated stamps, separate all odds and evens first
+                const allStamps = (startStamp as string)
+                  .split(',')
+                  .map((stamp) => parseInt(stamp.trim()))
+                  .sort((a, b) => a - b)
+                  .slice(0, totalStamp);
+
+                // Separate all odd and even numbers
+                const allOddNumbers = allStamps
+                  .filter((num) => num % 2 === 1)
+                  .sort((a, b) => a - b);
+                const allEvenNumbers = allStamps
+                  .filter((num) => num % 2 === 0)
+                  .sort((a, b) => a - b);
+
+                // Get 3 odd and 3 even numbers for this specific page
+                const pageOddNumbers = allOddNumbers.slice(
+                  pageIndex * 3,
+                  (pageIndex + 1) * 3
+                );
+                const pageEvenNumbers = allEvenNumbers.slice(
+                  pageIndex * 3,
+                  (pageIndex + 1) * 3
+                );
+
+                pageLayout = new Array(6).fill(null);
+
+                // Fill odd numbers in top row ONLY (positions 0, 1, 2)
+                pageOddNumbers.forEach((num, index) => {
+                  if (index < 3) {
+                    pageLayout[index] = num.toString();
+                  }
+                });
+
+                // Fill even numbers in bottom row ONLY (positions 3, 4, 5)
+                pageEvenNumbers.forEach((num, index) => {
+                  if (index < 3) {
+                    pageLayout[index + 3] = num.toString();
+                  }
+                });
+              } else {
+                // For sequential stamps, use existing logic
+                pageLayout = Array.from({ length: 6 }, (_, i) => {
+                  const globalIndex = pageIndex * 6 + i;
+                  if (globalIndex >= totalStamp) return null;
+                  return (
+                    globalIndex + parseInt(startStamp as string)
+                  ).toString();
+                });
+              }
+
+              return (
+                <div
+                  key={`page-${pageIndex}`}
+                  className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
+                >
+                  {pageLayout.map((stamp, itemIndex) => {
                     const globalIndex = pageIndex * 6 + itemIndex;
+
+                    // Calculate grid position (row and column)
+                    const gridRow = Math.floor(itemIndex / 3) + 1; // 1 or 2
+                    const gridCol = (itemIndex % 3) + 1; // 1, 2, or 3
+
                     return (
                       <div
-                        key={`${globalIndex}-${product.code}`}
+                        key={`${globalIndex}-${product.code}-${itemIndex}`}
                         className="h-[500] w-auto max-w-[470px] break-inside-avoid-page text-[7px] not-print:flex not-print:justify-center print:flex print:h-auto print:w-auto print:max-w-none print:items-center print:justify-center"
+                        style={{
+                          gridRow: gridRow,
+                          gridColumn: gridCol,
+                          display: stamp === null ? 'none' : 'flex'
+                        }}
                       >
                         <table
                           className={`border border-black text-center ${product.FAVV ? 'text-[8.3px]' : 'text-[10px]'}`}
@@ -246,9 +382,11 @@ export const PrintBoxStamp = ({
                                   <p>-</p>
                                   <p>
                                     {(() => {
+                                      if (stamp === null) return '';
+
                                       let stampNumber;
-                                      if (stampList.length > 1) {
-                                        stampNumber = stampList[globalIndex];
+                                      if (originalStampList.length > 1) {
+                                        stampNumber = stamp;
                                       } else {
                                         // Convert sequential to alternating pattern: 1,2,3,4,5,6 -> 1,3,5,2,4,6
                                         const totalStampsInPage = Math.min(
@@ -305,9 +443,11 @@ export const PrintBoxStamp = ({
                                       displayValue={false}
                                       margin={1}
                                       value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
+                                        if (stamp === null) return '000';
+
                                         let stampNumber;
-                                        if (stampList.length > 1) {
-                                          stampNumber = stampList[globalIndex];
+                                        if (originalStampList.length > 1) {
+                                          stampNumber = stamp;
                                         } else {
                                           // Convert sequential to alternating pattern: 1,2,3,4,5,6 -> 1,3,5,2,4,6
                                           const totalStampsInPage = Math.min(
@@ -396,10 +536,10 @@ export const PrintBoxStamp = ({
                         </table>
                       </div>
                     );
-                  }
-                )}
-              </div>
-            )
+                  })}
+                </div>
+              );
+            }
           )}
       </div>
     </>

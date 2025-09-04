@@ -37,6 +37,7 @@ export default function BagStamp() {
     shift: Shift;
     date: Dayjs;
   }>();
+  const [hasComma, setHasComma] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Disable shortcut for print (Ctrl + P or Cmd + P)
@@ -70,12 +71,17 @@ export default function BagStamp() {
     ...customFormProps,
     form: form,
     onFinish: (values) => {
+      // Auto calculate totalBag if hasComma
+      const finalTotalBag = hasComma
+        ? values.startBag.toString().split(',').length
+        : values.totalBag;
+
       setStampData({
         product: productsData.find(
           (product) => product.code === values.productCode
         )!,
         startBag: values.startBag,
-        totalBag: values.totalBag,
+        totalBag: finalTotalBag,
         shift: values.shift,
         date: values.date
       });
@@ -112,27 +118,32 @@ export default function BagStamp() {
             >
               <Select options={ShiftEnumOptions} placeholder="Chọn ca" />
             </Form.Item>
-            <Form.Item<FormFields>
-              label="Số lượng tem"
-              name="totalBag"
-              rules={[
-                { required: true, message: 'Vui lòng nhập số lượng tem' }
-              ]}
-              extra={
-                <>
-                  <p className="font-bold text-black">
-                    Lưu ý: Trường hợp nếu cần in lại nhiều tem với số tem khác
-                    nhau thì nhập số lượng tem theo các số lượng cần in, ví dụ:
-                    cần in 2 tem lẻ 3,5 thì nhập số lượng là 2
-                  </p>
-                </>
-              }
-            >
-              <InputNumber
-                placeholder="Nhập số lượng tem"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
+            {!hasComma && (
+              <Form.Item<FormFields>
+                label="Số lượng tem"
+                name="totalBag"
+                rules={[
+                  {
+                    required: !hasComma,
+                    message: 'Vui lòng nhập số lượng tem'
+                  }
+                ]}
+                extra={
+                  <>
+                    {/* <p className="font-bold text-black">
+                      Lưu ý: Trường hợp nếu cần in lại nhiều tem với số tem khác
+                      nhau thì nhập số lượng tem theo các số lượng cần in, ví dụ:
+                      cần in 2 tem lẻ 3,5 thì nhập số lượng là 2
+                    </p> */}
+                  </>
+                }
+              >
+                <InputNumber
+                  placeholder="Nhập số lượng tem"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            )}
             <Form.Item<FormFields>
               label="Tem bắt đầu"
               name="startBag"
@@ -146,14 +157,25 @@ export default function BagStamp() {
               extra={
                 <>
                   <p className="font-bold text-black">
-                    Lưu ý: Trường hợp nếu cần in lại nhiều tem với số tem khác
-                    nhau thì nhập cách mỗi số tem dấu phẩy(,). ví dụ tem 1 và 2
-                    thì nhập, ví dụ: 3,5
+                    {!hasComma &&
+                      'Lưu ý: Trường hợp nếu cần in lại nhiều tem với số tem khác nhau thì nhập cách mỗi số tem dấu phẩy(,). ví dụ tem 1 và 2 thì nhập, ví dụ: 3,5'}
                   </p>
                 </>
               }
             >
-              <Input placeholder="Nhập tem bắt đầu" />
+              <Input
+                placeholder="Nhập tem bắt đầu"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const hasCommaInValue = value.includes(',');
+                  setHasComma(hasCommaInValue);
+
+                  // If hasComma changed, reset totalBag field
+                  if (hasCommaInValue !== hasComma) {
+                    form.setFieldValue('totalBag', undefined);
+                  }
+                }}
+              />
             </Form.Item>
             <Form.Item<FormFields>
               label="Sản phẩm"

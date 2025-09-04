@@ -206,7 +206,7 @@ export const PrintBagStamp = ({
                             ロット No
                           </td>
                           <td colSpan={4} className="text-sm font-bold">
-                            <div className="mx-1 flex items-center justify-between">
+                            <div className="mx-6 flex items-center justify-between">
                               <p>A</p>
                               <p>-</p>
                               <p>{date.format('DDMMYYYY')}</p>
