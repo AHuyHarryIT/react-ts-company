@@ -141,7 +141,6 @@ export function calculateAttendances(
             startMinutes < 14 * 60 + 30
           )
             break_time += 15;
-          if (endMinutes < 17 * 60 && startMinutes < 17 * 60) break_time += 10;
         } else if (calendar_category_id == '2') {
           if (
             endMinutes > 9 * 60 + 30 &&
@@ -167,6 +166,7 @@ export function calculateAttendances(
             startMinutes < 16 * 60
           )
             break_time += 10;
+          if (endMinutes < 17 * 60 && startMinutes < 17 * 60) break_time += 10;
         } else if (shift === 1) {
           if (
             endMinutes > 9 * 60 + 30 &&

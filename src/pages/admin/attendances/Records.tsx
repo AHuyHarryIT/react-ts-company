@@ -45,7 +45,8 @@ export default function Records() {
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
-    sort: 'date'
+    sort: 'date',
+    'filter[date_between]': `${dayjs().startOf('month').format('YYYY-MM-DD')},${dayjs().endOf('month').format('YYYY-MM-DD')}`
   });
   const [forgottenDays, setForgottenDays] = useState<boolean>(false);
   const [month, setMonth] = useState<Dayjs>(dayjs());
@@ -92,6 +93,7 @@ export default function Records() {
   const handleSearch = debounce((value: string, type: 'name' | 'code') => {
     setParams((prev) => ({
       ...prev,
+      page: 1, // Reset về page 1 khi search
       'filter[employee_id]': undefined,
       'filter[employees.name]': undefined
     }));
@@ -101,11 +103,13 @@ export default function Records() {
     if (type == 'name') {
       setParams((prev) => ({
         ...prev,
+        page: 1, // Reset về page 1 khi search
         'filter[employees.name]': value ? value : undefined
       }));
     } else if (type == 'code') {
       setParams((prev) => ({
         ...prev,
+        page: 1, // Reset về page 1 khi search
         'filter[employee_id]': value ? value : undefined
       }));
     }
@@ -332,13 +336,15 @@ export default function Records() {
           picker="month"
           format="YYYY-MM"
           placeholder="Chọn tháng"
+          value={month}
           onChange={(value) => {
-            setMonth(value ? dayjs(value) : dayjs());
+            const selectedMonth = value ? dayjs(value) : dayjs();
+            setMonth(selectedMonth);
             setParams((prev) => ({
               ...prev,
-              'filter[date]': value
-                ? `${dayjs(value).format('YYYY-MM')}`
-                : undefined
+              page: 1, // Reset về page 1 khi thay đổi filter
+              'filter[date]': undefined, // Xóa filter date cũ
+              'filter[date_between]': `${selectedMonth.startOf('month').format('YYYY-MM-DD')},${selectedMonth.endOf('month').format('YYYY-MM-DD')}`
             }));
           }}
         />
@@ -347,9 +353,10 @@ export default function Records() {
           onChange={(value) => {
             setParams((prev) => ({
               ...prev,
+              page: 1, // Reset về page 1 khi thay đổi filter
               'filter[date_between]': value
                 ? `${dayjs(value[0]).format('YYYY-MM-DD')},${dayjs(value[1]).format('YYYY-MM-DD')}`
-                : undefined
+                : `${month.startOf('month').format('YYYY-MM-DD')},${month.endOf('month').format('YYYY-MM-DD')}`
             }));
           }}
         />
@@ -361,12 +368,14 @@ export default function Records() {
           onSelect={(value) => {
             setParams((prev) => ({
               ...prev,
+              page: 1, // Reset về page 1 khi thay đổi filter
               'filter[employees.calendar_category_id]': value
             }));
           }}
           onClear={() => {
             setParams((prev) => ({
               ...prev,
+              page: 1, // Reset về page 1 khi xóa filter
               'filter[employees.calendar_category_id]': undefined
             }));
           }}
