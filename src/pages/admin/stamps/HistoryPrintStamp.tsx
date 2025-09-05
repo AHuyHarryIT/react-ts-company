@@ -348,7 +348,7 @@ export default function HistoryPrintStamp() {
                   <strong>Sản phẩm:</strong> {selectedRecord.product.name}
                 </p>
                 <p>
-                  <strong>Nhân viên:</strong>{' '}
+                  <strong>Nhân viên yêu cầu:</strong>{' '}
                   {selectedRecord.employee?.name || 'Chưa có thông tin'}
                 </p>
                 <p>

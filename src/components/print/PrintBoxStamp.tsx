@@ -205,7 +205,23 @@ export const PrintBoxStamp = ({
                   // Number of pages = max of odd pages or even pages
                   return Math.max(oddPages, evenPages);
                 } else {
-                  return Math.ceil(totalStamp / 6);
+                  // For sequential stamps, also calculate based on odd/even separation
+                  const allSequentialStamps = Array.from(
+                    { length: totalStamp },
+                    (_, i) => parseInt(startStamp as string) + i
+                  );
+
+                  const oddCount = allSequentialStamps.filter(
+                    (num) => num % 2 === 1
+                  ).length;
+                  const evenCount = allSequentialStamps.filter(
+                    (num) => num % 2 === 0
+                  ).length;
+
+                  const oddPages = Math.ceil(oddCount / 3);
+                  const evenPages = Math.ceil(evenCount / 3);
+
+                  return Math.max(oddPages, evenPages);
                 }
               })()
             },
@@ -255,13 +271,34 @@ export const PrintBoxStamp = ({
                   }
                 });
               } else {
-                // For sequential stamps, use existing logic
-                pageLayout = Array.from({ length: 6 }, (_, i) => {
-                  const globalIndex = pageIndex * 6 + i;
-                  if (globalIndex >= totalStamp) return null;
-                  return (
-                    globalIndex + parseInt(startStamp as string)
-                  ).toString();
+                // For sequential stamps, also apply odd-even separation
+                const allSequentialStamps = Array.from(
+                  { length: totalStamp },
+                  (_, i) => parseInt(startStamp as string) + i
+                ).slice(pageIndex * 6, (pageIndex + 1) * 6);
+
+                // Separate odd and even numbers for this page
+                const oddNumbers = allSequentialStamps
+                  .filter((num) => num % 2 === 1)
+                  .sort((a, b) => a - b);
+                const evenNumbers = allSequentialStamps
+                  .filter((num) => num % 2 === 0)
+                  .sort((a, b) => a - b);
+
+                pageLayout = new Array(6).fill(null);
+
+                // Fill odd numbers in top row ONLY (positions 0, 1, 2)
+                oddNumbers.forEach((num, index) => {
+                  if (index < 3) {
+                    pageLayout[index] = num.toString();
+                  }
+                });
+
+                // Fill even numbers in bottom row ONLY (positions 3, 4, 5)
+                evenNumbers.forEach((num, index) => {
+                  if (index < 3) {
+                    pageLayout[index + 3] = num.toString();
+                  }
                 });
               }
 
@@ -383,44 +420,7 @@ export const PrintBoxStamp = ({
                                   <p>
                                     {(() => {
                                       if (stamp === null) return '';
-
-                                      let stampNumber;
-                                      if (originalStampList.length > 1) {
-                                        stampNumber = stamp;
-                                      } else {
-                                        // Convert sequential to alternating pattern: 1,2,3,4,5,6 -> 1,3,5,2,4,6
-                                        const totalStampsInPage = Math.min(
-                                          6,
-                                          totalStamp -
-                                            Math.floor(globalIndex / 6) * 6
-                                        );
-                                        const positionInPage = globalIndex % 6;
-                                        const baseStamp =
-                                          Math.floor(globalIndex / 6) * 6 +
-                                          parseInt(startStamp as string);
-
-                                        if (
-                                          positionInPage <
-                                          Math.ceil(totalStampsInPage / 2)
-                                        ) {
-                                          // Odd positions: 1st, 3rd, 5th (positions 0, 2, 4)
-                                          stampNumber =
-                                            baseStamp + positionInPage * 2;
-                                        } else {
-                                          // Even positions: 2nd, 4th, 6th (positions 1, 3, 5)
-                                          stampNumber =
-                                            baseStamp +
-                                            (positionInPage -
-                                              Math.ceil(
-                                                totalStampsInPage / 2
-                                              )) *
-                                              2 +
-                                            1;
-                                        }
-                                      }
-                                      return stampNumber
-                                        .toString()
-                                        .padStart(3, '0');
+                                      return stamp.toString().padStart(3, '0');
                                     })()}
                                   </p>
                                 </div>
@@ -444,43 +444,7 @@ export const PrintBoxStamp = ({
                                       margin={1}
                                       value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
                                         if (stamp === null) return '000';
-
-                                        let stampNumber;
-                                        if (originalStampList.length > 1) {
-                                          stampNumber = stamp;
-                                        } else {
-                                          // Convert sequential to alternating pattern: 1,2,3,4,5,6 -> 1,3,5,2,4,6
-                                          const totalStampsInPage = Math.min(
-                                            6,
-                                            totalStamp -
-                                              Math.floor(globalIndex / 6) * 6
-                                          );
-                                          const positionInPage =
-                                            globalIndex % 6;
-                                          const baseStamp =
-                                            Math.floor(globalIndex / 6) * 6 +
-                                            parseInt(startStamp as string);
-
-                                          if (
-                                            positionInPage <
-                                            Math.ceil(totalStampsInPage / 2)
-                                          ) {
-                                            // Odd positions: 1st, 3rd, 5th (positions 0, 2, 4)
-                                            stampNumber =
-                                              baseStamp + positionInPage * 2;
-                                          } else {
-                                            // Even positions: 2nd, 4th, 6th (positions 1, 3, 5)
-                                            stampNumber =
-                                              baseStamp +
-                                              (positionInPage -
-                                                Math.ceil(
-                                                  totalStampsInPage / 2
-                                                )) *
-                                                2 +
-                                              1;
-                                          }
-                                        }
-                                        return stampNumber
+                                        return stamp
                                           .toString()
                                           .padStart(3, '0');
                                       })()}`}
