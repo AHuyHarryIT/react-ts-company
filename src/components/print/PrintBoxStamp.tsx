@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, Image, message } from 'antd';
 import type { Dayjs } from 'dayjs';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import Barcode from 'react-barcode';
 
@@ -11,6 +11,7 @@ import { Shift } from '@/types/shift';
 import logo from '@assets/images/logo/vvp02.png';
 import { EmployeeType } from '@/types/employeeType';
 import { useStampNotification } from '@hooks/useStampNotification';
+import { usePrintShortcut } from '@hooks/usePrintShortcut';
 
 interface PrintBoxStampProps {
   product: ProductType;
@@ -134,17 +135,8 @@ export const PrintBoxStamp = ({
     stamp_id
   ]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key == 'p') {
-        e.preventDefault();
-        handleSavePrintLog();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSavePrintLog]);
+  // Use the custom hook for print shortcut
+  usePrintShortcut(handleSavePrintLog);
 
   return (
     <>
