@@ -1,59 +1,73 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Card,
   Table,
   DatePicker,
   Select,
-  Button,
   Tag,
   Avatar,
-  Typography,
-  Row,
-  Col,
-  Statistic,
-  Spin,
-  Pagination
+  TableColumnsType,
+  TableProps
 } from 'antd';
-import {
-  HistoryOutlined,
-  UserOutlined,
-  CalendarOutlined,
-  ReloadOutlined
-} from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { LoginHistoryItemType, HistoryFiltersType } from '@/types/historyType';
 import { historyService } from '@/services/HistoryService';
-
-const { Title, Text } = Typography;
+import ComponentCard from '@components/common/ComponentCard';
+import RefreshButton from '@components/common/RefreshButton';
+import { customTableProps } from '@components/custom/TableProps.custom';
 
 export default function HistoryPage() {
   const [date, setDate] = useState<Dayjs>(dayjs());
   const [activityType, setActivityType] = useState<string | undefined>(
     undefined
   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(50);
-
-  // Build params for API call - chỉ cần date, month, activity_type
-  const params: HistoryFiltersType = {
-    date: date.format('YYYY-MM-DD'),
-    month: date.format('MM-YYYY'),
-    activity_type: activityType
-  };
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['history', params],
-    queryFn: () => historyService.getHistory(params)
+  const [params, setParams] = useState({
+    page: 1,
+    limit: 50,
+    date: dayjs().format('YYYY-MM-DD'),
+    month: dayjs().format('MM-YYYY'),
+    activity_type: undefined as string | undefined
   });
 
-  // Reset to first page when filters change (date or activity type)
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [date, activityType]);
+  // Build params for API call
+  const apiParams: HistoryFiltersType = {
+    date: params.date,
+    month: params.month,
+    activity_type: params.activity_type
+  };
+
+  const queryResult = useQuery({
+    queryKey: ['history', apiParams],
+    queryFn: () => historyService.getHistory(apiParams)
+  });
+
+  const { data } = queryResult;
 
   // Lấy tất cả data từ API
   const allLoginHistory = data?.loginHistory?.data || [];
+
+  // Client-side pagination
+  const startIndex = (params.page - 1) * params.limit;
+  const endIndex = startIndex + params.limit;
+  const dataSource = allLoginHistory.slice(startIndex, endIndex);
+
+  const pagination = {
+    current: params.page,
+    total: allLoginHistory.length,
+    pageSize: params.limit
+  };
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setParams((prev) => ({
+      ...prev,
+      page: 1,
+      date: date.format('YYYY-MM-DD'),
+      month: date.format('MM-YYYY'),
+      activity_type: activityType
+    }));
+  }, [date, activityType]);
 
   // Debug: log data structure (chỉ log item đầu tiên)
   if (allLoginHistory.length > 0) {
@@ -63,10 +77,7 @@ export default function HistoryPage() {
   // Tạo danh sách activity types từ data thực tế trong ngày đó
   const availableActivityTypes = [
     ...new Set(allLoginHistory.map((item) => item.activity_type))
-  ].sort(); // Client-side pagination - chia data thành từng trang
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedData = allLoginHistory.slice(startIndex, endIndex);
+  ].sort();
 
   const getActivityTypeColor = (type: string): string => {
     // Danh sách màu mềm mại và dễ nhìn
@@ -119,17 +130,14 @@ export default function HistoryPage() {
     return colors[colorIndex];
   };
 
-  const columns = [
+  const columns: TableColumnsType<LoginHistoryItemType> = [
     {
       title: 'STT',
       key: 'index',
       width: 60,
-      align: 'center' as const,
-      render: (_: unknown, __: LoginHistoryItemType, index: number) => (
-        <Text className="font-medium text-gray-600">
-          {(currentPage - 1) * pageSize + index + 1}
-        </Text>
-      )
+      align: 'center',
+      render: (_: unknown, __: LoginHistoryItemType, index: number) =>
+        index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
     },
     {
       title: 'Nhân viên',
@@ -172,7 +180,7 @@ export default function HistoryPage() {
       title: 'Số lần đăng nhập',
       key: 'login_count',
       width: 150,
-      align: 'center' as const,
+      align: 'center',
       render: (_: unknown, record: LoginHistoryItemType) => (
         <div className="text-center">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
@@ -188,7 +196,7 @@ export default function HistoryPage() {
       title: 'Thời gian',
       key: 'time',
       width: 160,
-      align: 'center' as const,
+      align: 'center',
       render: (_: unknown, record: LoginHistoryItemType) => (
         <div className="text-center">
           <div className="font-medium text-gray-900">
@@ -202,153 +210,67 @@ export default function HistoryPage() {
     }
   ];
 
+  const tableProps: TableProps<LoginHistoryItemType> = {
+    ...(customTableProps as unknown as TableProps<LoginHistoryItemType>),
+    rowKey: 'id',
+    columns: columns,
+    dataSource: dataSource,
+    loading: queryResult.isLoading,
+    pagination: {
+      ...customTableProps.pagination,
+      current: params.page,
+      pageSize: params.limit,
+      total: pagination.total,
+      onShowSizeChange: (_current, size) => {
+        setParams((prev) => ({
+          ...prev,
+          limit: size,
+          page: 1
+        }));
+      },
+      onChange: (page) => {
+        setParams((prev) => ({
+          ...prev,
+          page: page
+        }));
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* Header */}
-      <Card className="mb-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-lg bg-blue-100 p-3">
-              <HistoryOutlined className="text-xl text-blue-600" />
-            </div>
-            <div>
-              <Title level={3} className="m-0 text-gray-800">
-                Lịch Sử Hoạt Động
-              </Title>
-              <Text className="text-gray-500">
-                Theo dõi và quản lý hoạt động của nhân viên
-              </Text>
-            </div>
-          </div>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={() => refetch()}
-            className="flex items-center"
+    <>
+      <ComponentCard title={`Lịch Sử Hoạt Động - ${date.format('DD-MM-YYYY')}`}>
+        <RefreshButton
+          isLoading={queryResult.isFetching}
+          refresh={queryResult.refetch}
+        />
+        <section className="flex flex-wrap gap-2">
+          <DatePicker
+            placeholder="Chọn ngày"
+            value={date}
+            onChange={(value) => {
+              setDate(value ? value : dayjs());
+            }}
+          />
+          <Select
+            className="min-w-64"
+            placeholder="Chọn loại hoạt động"
+            value={activityType}
+            onChange={setActivityType}
+            allowClear
           >
-            Làm mới
-          </Button>
-        </div>
-      </Card>
+            {availableActivityTypes.map((type: string) => (
+              <Select.Option key={type} value={type}>
+                <Tag color={getActivityTypeColor(type)} className="mr-2">
+                  {type}
+                </Tag>
+              </Select.Option>
+            ))}
+          </Select>
+        </section>
 
-      {/* Statistics */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={8}>
-          <Card className="text-center shadow-sm">
-            <Statistic title="Tổng số bản ghi" value={allLoginHistory.length} />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card className="text-center shadow-sm">
-            <Statistic
-              title="Trang hiện tại"
-              value={currentPage}
-              suffix={`/ ${Math.ceil(allLoginHistory.length / pageSize) || 1}`}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card className="text-center shadow-sm">
-            <Statistic
-              title="Ngày được chọn"
-              value={date.format('DD/MM/YYYY')}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Filters */}
-      <Card className="mb-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <CalendarOutlined className="text-gray-400" />
-              <DatePicker
-                value={date}
-                onChange={(value) => value && setDate(value)}
-                format="DD/MM/YYYY"
-                placeholder="Chọn ngày"
-                allowClear={false}
-                className="w-40"
-              />
-            </div>
-
-            <Select
-              placeholder="Chọn loại hoạt động"
-              value={activityType}
-              onChange={setActivityType}
-              allowClear
-              className="w-64"
-            >
-              {availableActivityTypes.map((type: string) => (
-                <Select.Option key={type} value={type}>
-                  <Tag color={getActivityTypeColor(type)} className="mr-2">
-                    {type}
-                  </Tag>
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
-
-          {/* Pagination ở bên phải - không có quick jumper */}
-          <Pagination
-            current={currentPage}
-            total={allLoginHistory.length}
-            pageSize={pageSize}
-            showSizeChanger
-            showTotal={(total, range) =>
-              `${range[0]}-${range[1]} của ${total} bản ghi`
-            }
-            pageSizeOptions={['20', '50', '100', '200']}
-            onChange={(page, size) => {
-              setCurrentPage(page);
-              if (size && size !== pageSize) {
-                setPageSize(size);
-                setCurrentPage(1);
-              }
-            }}
-            onShowSizeChange={(_current, size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-      </Card>
-
-      {/* Table */}
-      <Card className="border border-gray-200 shadow-sm">
-        <Spin spinning={isLoading}>
-          <Table
-            columns={columns}
-            dataSource={paginatedData}
-            rowKey="id"
-            pagination={{
-              current: currentPage,
-              total: allLoginHistory.length,
-              pageSize: pageSize,
-              showSizeChanger: true,
-              showTotal: (total: number, range: [number, number]) =>
-                `${range[0]}-${range[1]} của ${total} bản ghi`,
-              pageSizeOptions: ['20', '50', '100', '200'],
-              onChange: (page: number, size?: number) => {
-                setCurrentPage(page);
-                if (size && size !== pageSize) {
-                  setPageSize(size);
-                  setCurrentPage(1); // Reset to first page when page size changes
-                }
-              },
-              onShowSizeChange: (_current: number, size: number) => {
-                setPageSize(size);
-                setCurrentPage(1); // Reset to first page when page size changes
-              }
-            }}
-            className="overflow-x-auto"
-            scroll={{ x: 1200 }}
-            size="middle"
-            bordered={true}
-            rowClassName="hover:bg-gray-50"
-          />
-        </Spin>
-      </Card>
-    </div>
+        <Table {...tableProps} />
+      </ComponentCard>
+    </>
   );
 }
