@@ -16,6 +16,7 @@ import { historyService } from '@/services/HistoryService';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
+import { STORAGE_URL } from '@/configs/environment.config';
 
 export default function HistoryPage() {
   const [date, setDate] = useState<Dayjs>(dayjs());
@@ -143,11 +144,13 @@ export default function HistoryPage() {
     {
       title: 'Nhân viên',
       key: 'employee',
+      dataIndex: ['employee', 'photo'],
       width: 280,
-      render: (_: unknown, record: LoginHistoryItemType) => (
+      render: (value, record: LoginHistoryItemType) => (
         <div className="flex items-center gap-3 py-1">
           <Avatar
             icon={<UserOutlined />}
+            src={`${STORAGE_URL}/${value}`}
             size={40}
             className="flex-shrink-0"
             style={{ backgroundColor: '#1890ff' }}
