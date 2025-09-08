@@ -162,6 +162,12 @@ export default function Dashboard() {
       icon: <FaMoneyCheckAlt />,
       value: dashboardData?.totalSalary?.toLocaleString() || '0',
       navLink: '/admin/salaries'
+    },
+
+    view_history: {
+      icon: <FaHistory />,
+      value: dashboardData?.totalHistory?.toLocaleString() || '0',
+      navLink: '/admin/history'
     }
   };
 

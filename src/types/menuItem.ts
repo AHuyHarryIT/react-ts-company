@@ -80,7 +80,7 @@ export const permissionPathMap: PermissionPathType = {
   view_today_employees: '/activity-schedule',
   view_po_list: '/admin/check-po',
   view_salary_total: '/admin/salaries',
-  // view_history: '/admin/activity-history',
+  view_history: '/admin/history',
   view_roles: '/admin/roles',
   view_employees: '/admin/employees',
   create_pack_label: '/stamps/bag',

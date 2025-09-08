@@ -4,10 +4,12 @@ import ComponentCard from '@components/common/ComponentCard';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { fetchStorage, StorageParams } from '@services/ScanService';
 import { useQuery } from '@tanstack/react-query';
-import { Select, Table, TableColumnsType, TableProps } from 'antd';
+import { Select, Table, TableColumnsType, TableProps, Tabs } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { FindLotModal } from './FindLotModal';
+import { LotReport } from '@components/scan/LotReport';
+import { BarChartOutlined, TableOutlined } from '@ant-design/icons';
 
 type TableType = StorageType;
 
@@ -164,18 +166,52 @@ export const Storage = () => {
             />
           </div>
         </div>
+
         <FindLotModal productOptions={productOptions} />
-        {storageData?.storage ? (
-          Object.keys(storageData?.storage).map((key) => (
-            <Table<TableType>
-              key={key}
-              {...tableProps}
-              dataSource={storageData.storage[key]}
-            />
-          ))
-        ) : (
-          <Table<TableType> {...tableProps} dataSource={[]} />
-        )}
+
+        <Tabs
+          defaultActiveKey="list"
+          items={[
+            {
+              key: 'list',
+              label: (
+                <span>
+                  <TableOutlined />
+                  Danh sách chi tiết
+                </span>
+              ),
+              children: storageData?.storage ? (
+                Object.keys(storageData?.storage).map((key) => (
+                  <Table<TableType>
+                    key={key}
+                    {...tableProps}
+                    dataSource={storageData.storage[key]}
+                  />
+                ))
+              ) : (
+                <Table<TableType> {...tableProps} dataSource={[]} />
+              )
+            },
+            {
+              key: 'report',
+              label: (
+                <span>
+                  <BarChartOutlined />
+                  Báo cáo LOT
+                </span>
+              ),
+              children: (
+                <LotReport
+                  data={
+                    storageData?.storage
+                      ? Object.values(storageData.storage).flat()
+                      : []
+                  }
+                />
+              )
+            }
+          ]}
+        />
       </ComponentCard>
     </>
   );

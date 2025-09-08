@@ -33,7 +33,6 @@ import { Route as AuthenticatedStampsBoxImport } from './routes/_authenticated/s
 import { Route as AuthenticatedStampsBagImport } from './routes/_authenticated/stamps/bag'
 import { Route as AuthenticatedScanStorageImport } from './routes/_authenticated/scan/storage'
 import { Route as AuthenticatedAdminNotificationDemoImport } from './routes/_authenticated/admin/notification-demo'
-import { Route as AuthenticatedAdminActivityHistoryImport } from './routes/_authenticated/admin/activity-history'
 import { Route as AuthenticatedAdminAboutImport } from './routes/_authenticated/admin/about'
 import { Route as AuthenticatedAdminSalariesRouteImport } from './routes/_authenticated/admin/salaries/route'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products/route'
@@ -44,6 +43,7 @@ import { Route as AuthenticatedAdminWorkScheduleCategoriesIndexImport } from './
 import { Route as AuthenticatedAdminSalariesIndexImport } from './routes/_authenticated/admin/salaries/index'
 import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authenticated/admin/roles/index'
 import { Route as AuthenticatedAdminProductsIndexImport } from './routes/_authenticated/admin/products/index'
+import { Route as AuthenticatedAdminHistoryIndexImport } from './routes/_authenticated/admin/history/index'
 import { Route as AuthenticatedAdminEmployeesIndexImport } from './routes/_authenticated/admin/employees/index'
 import { Route as AuthenticatedAdminEditLayoutIndexImport } from './routes/_authenticated/admin/edit-layout/index'
 import { Route as AuthenticatedAdminCheckPoIndexImport } from './routes/_authenticated/admin/check-po/index'
@@ -211,13 +211,6 @@ const AuthenticatedAdminNotificationDemoRoute =
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
-const AuthenticatedAdminActivityHistoryRoute =
-  AuthenticatedAdminActivityHistoryImport.update({
-    id: '/activity-history',
-    path: '/activity-history',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-
 const AuthenticatedAdminAboutRoute = AuthenticatedAdminAboutImport.update({
   id: '/about',
   path: '/about',
@@ -285,6 +278,13 @@ const AuthenticatedAdminProductsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
+  } as any)
+
+const AuthenticatedAdminHistoryIndexRoute =
+  AuthenticatedAdminHistoryIndexImport.update({
+    id: '/history/',
+    path: '/history/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
 const AuthenticatedAdminEmployeesIndexRoute =
@@ -603,13 +603,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAboutImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
-    '/_authenticated/admin/activity-history': {
-      id: '/_authenticated/admin/activity-history'
-      path: '/activity-history'
-      fullPath: '/admin/activity-history'
-      preLoaderRoute: typeof AuthenticatedAdminActivityHistoryImport
-      parentRoute: typeof AuthenticatedAdminRouteImport
-    }
     '/_authenticated/admin/notification-demo': {
       id: '/_authenticated/admin/notification-demo'
       path: '/notification-demo'
@@ -848,6 +841,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmployeesIndexImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/admin/history/': {
+      id: '/_authenticated/admin/history/'
+      path: '/history'
+      fullPath: '/admin/history'
+      preLoaderRoute: typeof AuthenticatedAdminHistoryIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
     '/_authenticated/admin/products/': {
       id: '/_authenticated/admin/products/'
       path: '/'
@@ -1028,7 +1028,6 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminProductsRouteRoute: typeof AuthenticatedAdminProductsRouteRouteWithChildren
   AuthenticatedAdminSalariesRouteRoute: typeof AuthenticatedAdminSalariesRouteRouteWithChildren
   AuthenticatedAdminAboutRoute: typeof AuthenticatedAdminAboutRoute
-  AuthenticatedAdminActivityHistoryRoute: typeof AuthenticatedAdminActivityHistoryRoute
   AuthenticatedAdminNotificationDemoRoute: typeof AuthenticatedAdminNotificationDemoRoute
   AuthenticatedAdminAttendancesHistoryRoute: typeof AuthenticatedAdminAttendancesHistoryRoute
   AuthenticatedAdminAttendancesRecordRoute: typeof AuthenticatedAdminAttendancesRecordRoute
@@ -1042,6 +1041,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminCheckPoIndexRoute: typeof AuthenticatedAdminCheckPoIndexRoute
   AuthenticatedAdminEditLayoutIndexRoute: typeof AuthenticatedAdminEditLayoutIndexRoute
   AuthenticatedAdminEmployeesIndexRoute: typeof AuthenticatedAdminEmployeesIndexRoute
+  AuthenticatedAdminHistoryIndexRoute: typeof AuthenticatedAdminHistoryIndexRoute
   AuthenticatedAdminRolesIndexRoute: typeof AuthenticatedAdminRolesIndexRoute
   AuthenticatedAdminWorkScheduleCategoriesIndexRoute: typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   AuthenticatedAdminEmployeesEditIdRoute: typeof AuthenticatedAdminEmployeesEditIdRoute
@@ -1055,8 +1055,6 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminSalariesRouteRoute:
       AuthenticatedAdminSalariesRouteRouteWithChildren,
     AuthenticatedAdminAboutRoute: AuthenticatedAdminAboutRoute,
-    AuthenticatedAdminActivityHistoryRoute:
-      AuthenticatedAdminActivityHistoryRoute,
     AuthenticatedAdminNotificationDemoRoute:
       AuthenticatedAdminNotificationDemoRoute,
     AuthenticatedAdminAttendancesHistoryRoute:
@@ -1079,6 +1077,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
       AuthenticatedAdminEditLayoutIndexRoute,
     AuthenticatedAdminEmployeesIndexRoute:
       AuthenticatedAdminEmployeesIndexRoute,
+    AuthenticatedAdminHistoryIndexRoute: AuthenticatedAdminHistoryIndexRoute,
     AuthenticatedAdminRolesIndexRoute: AuthenticatedAdminRolesIndexRoute,
     AuthenticatedAdminWorkScheduleCategoriesIndexRoute:
       AuthenticatedAdminWorkScheduleCategoriesIndexRoute,
@@ -1220,7 +1219,6 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AuthenticatedAdminProductsRouteRouteWithChildren
   '/admin/salaries': typeof AuthenticatedAdminSalariesRouteRouteWithChildren
   '/admin/about': typeof AuthenticatedAdminAboutRoute
-  '/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
   '/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/scan/storage': typeof AuthenticatedScanStorageRoute
   '/stamps/bag': typeof AuthenticatedStampsBagRoute
@@ -1255,6 +1253,7 @@ export interface FileRoutesByFullPath {
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
   '/admin/edit-layout': typeof AuthenticatedAdminEditLayoutIndexRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/admin/history': typeof AuthenticatedAdminHistoryIndexRoute
   '/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
@@ -1279,7 +1278,6 @@ export interface FileRoutesByTo {
   '/stamps': typeof AuthenticatedStampsRouteRouteWithChildren
   '/login': typeof authLoginRoute
   '/admin/about': typeof AuthenticatedAdminAboutRoute
-  '/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
   '/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/scan/storage': typeof AuthenticatedScanStorageRoute
   '/stamps/bag': typeof AuthenticatedStampsBagRoute
@@ -1314,6 +1312,7 @@ export interface FileRoutesByTo {
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
   '/admin/edit-layout': typeof AuthenticatedAdminEditLayoutIndexRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/admin/history': typeof AuthenticatedAdminHistoryIndexRoute
   '/admin/products': typeof AuthenticatedAdminProductsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
@@ -1345,7 +1344,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRouteRouteWithChildren
   '/_authenticated/admin/salaries': typeof AuthenticatedAdminSalariesRouteRouteWithChildren
   '/_authenticated/admin/about': typeof AuthenticatedAdminAboutRoute
-  '/_authenticated/admin/activity-history': typeof AuthenticatedAdminActivityHistoryRoute
   '/_authenticated/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/_authenticated/scan/storage': typeof AuthenticatedScanStorageRoute
   '/_authenticated/stamps/bag': typeof AuthenticatedStampsBagRoute
@@ -1380,6 +1378,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/check-po/': typeof AuthenticatedAdminCheckPoIndexRoute
   '/_authenticated/admin/edit-layout/': typeof AuthenticatedAdminEditLayoutIndexRoute
   '/_authenticated/admin/employees/': typeof AuthenticatedAdminEmployeesIndexRoute
+  '/_authenticated/admin/history/': typeof AuthenticatedAdminHistoryIndexRoute
   '/_authenticated/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
   '/_authenticated/admin/roles/': typeof AuthenticatedAdminRolesIndexRoute
   '/_authenticated/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
@@ -1411,7 +1410,6 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/salaries'
     | '/admin/about'
-    | '/admin/activity-history'
     | '/admin/notification-demo'
     | '/scan/storage'
     | '/stamps/bag'
@@ -1446,6 +1444,7 @@ export interface FileRouteTypes {
     | '/admin/check-po'
     | '/admin/edit-layout'
     | '/admin/employees'
+    | '/admin/history'
     | '/admin/products/'
     | '/admin/roles'
     | '/admin/salaries/'
@@ -1469,7 +1468,6 @@ export interface FileRouteTypes {
     | '/stamps'
     | '/login'
     | '/admin/about'
-    | '/admin/activity-history'
     | '/admin/notification-demo'
     | '/scan/storage'
     | '/stamps/bag'
@@ -1504,6 +1502,7 @@ export interface FileRouteTypes {
     | '/admin/check-po'
     | '/admin/edit-layout'
     | '/admin/employees'
+    | '/admin/history'
     | '/admin/products'
     | '/admin/roles'
     | '/admin/salaries'
@@ -1533,7 +1532,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/salaries'
     | '/_authenticated/admin/about'
-    | '/_authenticated/admin/activity-history'
     | '/_authenticated/admin/notification-demo'
     | '/_authenticated/scan/storage'
     | '/_authenticated/stamps/bag'
@@ -1568,6 +1566,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/check-po/'
     | '/_authenticated/admin/edit-layout/'
     | '/_authenticated/admin/employees/'
+    | '/_authenticated/admin/history/'
     | '/_authenticated/admin/products/'
     | '/_authenticated/admin/roles/'
     | '/_authenticated/admin/salaries/'
@@ -1649,7 +1648,6 @@ export const routeTree = rootRoute
         "/_authenticated/admin/products",
         "/_authenticated/admin/salaries",
         "/_authenticated/admin/about",
-        "/_authenticated/admin/activity-history",
         "/_authenticated/admin/notification-demo",
         "/_authenticated/admin/attendances/history",
         "/_authenticated/admin/attendances/record",
@@ -1663,6 +1661,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/check-po/",
         "/_authenticated/admin/edit-layout/",
         "/_authenticated/admin/employees/",
+        "/_authenticated/admin/history/",
         "/_authenticated/admin/roles/",
         "/_authenticated/admin/work-schedule-categories/",
         "/_authenticated/admin/employees/edit/$id",
@@ -1736,10 +1735,6 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/about": {
       "filePath": "_authenticated/admin/about.tsx",
-      "parent": "/_authenticated/admin"
-    },
-    "/_authenticated/admin/activity-history": {
-      "filePath": "_authenticated/admin/activity-history.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/notification-demo": {
@@ -1876,6 +1871,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/employees/": {
       "filePath": "_authenticated/admin/employees/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/history/": {
+      "filePath": "_authenticated/admin/history/index.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/products/": {
