@@ -186,12 +186,10 @@ export default function HistoryPage() {
       align: 'center',
       render: (_: unknown, record: LoginHistoryItemType) => (
         <div className="text-center">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border bg-blue-100">
-            <span className="text-sm font-semibold text-blue-600">
-              {record.login_count}
-            </span>
-          </div>
-          <div className="mt-1 text-xs text-gray-500">lần</div>
+          <span className="text-lg font-semibold text-blue-600">
+            {record.login_count}
+          </span>
+          <div className="text-xs text-gray-500"></div>
         </div>
       )
     },
@@ -262,6 +260,34 @@ export default function HistoryPage() {
           isLoading={queryResult.isFetching}
           refresh={queryResult.refetch}
         />
+
+        {/* Thông tin tổng quan */}
+        {data && (
+          <section className="mb-4 rounded-lg border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {Number(data.totalHistoryOverall || 0).toLocaleString(
+                    'vi-VN'
+                  )}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Tổng hoạt động toàn bộ
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {filteredData
+                    .reduce((total, item) => total + item.login_count, 0)
+                    .toLocaleString('vi-VN')}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Hoạt động ngày hiện tại
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="mb-4 flex flex-wrap gap-4">
           <DatePicker
