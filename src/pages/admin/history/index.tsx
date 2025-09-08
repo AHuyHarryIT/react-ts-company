@@ -19,22 +19,20 @@ import { customTableProps } from '@components/custom/TableProps.custom';
 
 export default function HistoryPage() {
   const [date, setDate] = useState<Dayjs>(dayjs());
-  const [activityType, setActivityType] = useState<string | undefined>(
-    undefined
-  );
+  const [activityTypes, setActivityTypes] = useState<string[]>([]);
   const [params, setParams] = useState({
     page: 1,
     limit: 50,
     date: dayjs().format('YYYY-MM-DD'),
     month: dayjs().format('MM-YYYY'),
-    activity_type: undefined as string | undefined
+    activity_types: [] as string[]
   });
 
-  // Build params for API call
+  // Build params for API call - không filter activity_type ở server để lấy tất cả data
   const apiParams: HistoryFiltersType = {
     date: params.date,
-    month: params.month,
-    activity_type: params.activity_type
+    month: params.month
+    // Bỏ activity_type để lấy tất cả data, filter ở client-side
   };
 
   const queryResult = useQuery({
@@ -47,14 +45,27 @@ export default function HistoryPage() {
   // Lấy tất cả data từ API
   const allLoginHistory = data?.loginHistory?.data || [];
 
+  // Chỉ lấy activity types từ data của ngày hiện tại
+  const finalActivityTypes = [
+    ...new Set(allLoginHistory.map((item) => item.activity_type))
+  ]
+    .filter(Boolean)
+    .sort();
+  const filteredData = allLoginHistory.filter((item) => {
+    const matchActivityTypes =
+      activityTypes.length === 0 || activityTypes.includes(item.activity_type);
+
+    return matchActivityTypes;
+  });
+
   // Client-side pagination
   const startIndex = (params.page - 1) * params.limit;
   const endIndex = startIndex + params.limit;
-  const dataSource = allLoginHistory.slice(startIndex, endIndex);
+  const dataSource = filteredData.slice(startIndex, endIndex);
 
   const pagination = {
     current: params.page,
-    total: allLoginHistory.length,
+    total: filteredData.length,
     pageSize: params.limit
   };
 
@@ -65,19 +76,9 @@ export default function HistoryPage() {
       page: 1,
       date: date.format('YYYY-MM-DD'),
       month: date.format('MM-YYYY'),
-      activity_type: activityType
+      activity_types: activityTypes
     }));
-  }, [date, activityType]);
-
-  // Debug: log data structure (chỉ log item đầu tiên)
-  if (allLoginHistory.length > 0) {
-    console.log('History data sample:', allLoginHistory[0]);
-  }
-
-  // Tạo danh sách activity types từ data thực tế trong ngày đó
-  const availableActivityTypes = [
-    ...new Set(allLoginHistory.map((item) => item.activity_type))
-  ].sort();
+  }, [date, activityTypes]);
 
   const getActivityTypeColor = (type: string): string => {
     // Danh sách màu mềm mại và dễ nhìn
@@ -134,7 +135,7 @@ export default function HistoryPage() {
     {
       title: 'STT',
       key: 'index',
-      width: 60,
+      width: 80,
       align: 'center',
       render: (_: unknown, __: LoginHistoryItemType, index: number) =>
         index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
@@ -142,19 +143,20 @@ export default function HistoryPage() {
     {
       title: 'Nhân viên',
       key: 'employee',
-      width: 250,
+      width: 280,
       render: (_: unknown, record: LoginHistoryItemType) => (
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-3 py-1">
           <Avatar
             icon={<UserOutlined />}
-            size="default"
-            className="flex-shrink-0 bg-blue-500"
+            size={40}
+            className="flex-shrink-0"
+            style={{ backgroundColor: '#1890ff' }}
           />
-          <div className="mx-2 min-w-0 flex-1">
-            <div className="truncate font-medium text-gray-900">
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 truncate text-sm font-medium text-gray-900">
               {record.employee_name}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs text-gray-500">
               Mã NV: {record.employee_code || record.employee_id || 'N/A'}
             </div>
           </div>
@@ -164,31 +166,41 @@ export default function HistoryPage() {
     {
       title: 'Hoạt động',
       key: 'activity',
-      width: 120,
+      width: 140,
       render: (_: unknown, record: LoginHistoryItemType) => (
-        <div className="space-y-1">
-          <Tag
-            color={getActivityTypeColor(record.activity_type)}
-            className="font-medium"
-          >
-            {record.activity_type}
-          </Tag>
-        </div>
+        <Tag
+          color={getActivityTypeColor(record.activity_type)}
+          className="font-medium"
+        >
+          {record.activity_type}
+        </Tag>
       )
     },
     {
-      title: 'Số lần đăng nhập',
+      title: 'Số lần thao tác',
       key: 'login_count',
-      width: 150,
+      width: 140,
       align: 'center',
       render: (_: unknown, record: LoginHistoryItemType) => (
         <div className="text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-            <span className="text-lg font-bold text-blue-600">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border bg-blue-100">
+            <span className="text-sm font-semibold text-blue-600">
               {record.login_count}
             </span>
           </div>
           <div className="mt-1 text-xs text-gray-500">lần</div>
+        </div>
+      )
+    },
+    {
+      title: 'Mô tả',
+      key: 'description',
+      width: 300,
+      render: (_: unknown, record: LoginHistoryItemType) => (
+        <div className="py-1 text-sm text-gray-700">
+          {record.description || (
+            <span className="text-gray-400 italic">Không có mô tả</span>
+          )}
         </div>
       )
     },
@@ -199,10 +211,10 @@ export default function HistoryPage() {
       align: 'center',
       render: (_: unknown, record: LoginHistoryItemType) => (
         <div className="text-center">
-          <div className="font-medium text-gray-900">
+          <div className="text-sm font-medium text-gray-900">
             {dayjs(record.created_at).format('DD/MM/YYYY')}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-xs text-gray-500">
             {dayjs(record.created_at).format('HH:mm:ss')}
           </div>
         </div>
@@ -221,6 +233,9 @@ export default function HistoryPage() {
       current: params.page,
       pageSize: params.limit,
       total: pagination.total,
+      showSizeChanger: true,
+      showTotal: (total, range) =>
+        `Hiển thị ${range[0]}-${range[1]} của ${total} hoạt động`,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
           ...prev,
@@ -244,22 +259,31 @@ export default function HistoryPage() {
           isLoading={queryResult.isFetching}
           refresh={queryResult.refetch}
         />
-        <section className="flex flex-wrap gap-2">
+
+        <section className="mb-4 flex flex-wrap gap-4">
           <DatePicker
             placeholder="Chọn ngày"
             value={date}
             onChange={(value) => {
               setDate(value ? value : dayjs());
             }}
+            className="shadow-sm"
           />
           <Select
-            className="min-w-64"
-            placeholder="Chọn loại hoạt động"
-            value={activityType}
-            onChange={setActivityType}
+            mode="multiple"
+            className="shadow-sm"
+            placeholder="Chọn loại hoạt động (có thể chọn nhiều)"
+            value={activityTypes}
+            onChange={setActivityTypes}
             allowClear
+            maxTagCount={activityTypes.length >= 2 ? undefined : 1}
+            style={{
+              minWidth: '320px',
+              width: activityTypes.length >= 2 ? 'auto' : '320px',
+              maxWidth: '600px'
+            }}
           >
-            {availableActivityTypes.map((type: string) => (
+            {finalActivityTypes.map((type: string) => (
               <Select.Option key={type} value={type}>
                 <Tag color={getActivityTypeColor(type)} className="mr-2">
                   {type}
@@ -269,7 +293,9 @@ export default function HistoryPage() {
           </Select>
         </section>
 
-        <Table {...tableProps} />
+        <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+          <Table {...tableProps} />
+        </div>
       </ComponentCard>
     </>
   );

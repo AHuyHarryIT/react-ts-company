@@ -7,6 +7,7 @@ export interface LoginHistoryItemType {
   ip_address: string;
   user_agent: string;
   login_count: number;
+  description: string;
   created_at: string;
   updated_at: string;
 }
