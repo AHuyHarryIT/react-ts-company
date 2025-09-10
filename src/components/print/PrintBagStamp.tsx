@@ -32,7 +32,57 @@ export const PrintBagStamp = ({
 }: PrintBagStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
-  const stampList = (startStamp as string).split(',');
+
+  // Parse and arrange stamps based on comma separation
+  const originalStampList = (startStamp as string).split(',');
+
+  const stampList =
+    originalStampList.length > 1
+      ? (() => {
+          // Process comma-separated stamps with odd/even arrangement
+          const stamps = originalStampList.map((stamp) =>
+            parseInt(stamp.trim())
+          );
+          const sortedStamps = stamps.sort((a, b) => a - b);
+          const arrangedStamps: string[] = [];
+
+          // Calculate pages needed (6 stamps per page)
+          const totalPages = Math.ceil(sortedStamps.length / 6);
+
+          for (let page = 0; page < totalPages; page++) {
+            const pageStamps = sortedStamps.slice(page * 6, (page + 1) * 6);
+
+            // Separate odd and even numbers
+            const oddNumbers = pageStamps
+              .filter((num) => num % 2 === 1)
+              .sort((a, b) => a - b);
+            const evenNumbers = pageStamps
+              .filter((num) => num % 2 === 0)
+              .sort((a, b) => a - b);
+
+            // Create page layout: odd numbers on top, even on bottom
+            const pageLayout = new Array(6).fill(null);
+
+            // Fill odd numbers in positions 0, 1, 2
+            oddNumbers.forEach((num, index) => {
+              if (index < 3) pageLayout[index] = num.toString();
+            });
+
+            // Fill even numbers in positions 3, 4, 5
+            evenNumbers.forEach((num, index) => {
+              if (index < 3) pageLayout[index + 3] = num.toString();
+            });
+
+            // Add non-null stamps to arranged list
+            pageLayout.forEach((stamp) => {
+              if (stamp !== null) arrangedStamps.push(stamp);
+            });
+          }
+
+          return arrangedStamps;
+        })()
+      : originalStampList;
+
   const queryClient = useQueryClient();
   const { handleRemoveNotification } = useStampNotification();
 
@@ -57,19 +107,23 @@ export const PrintBagStamp = ({
       date: date.format('YYYY-MM-DD'),
       shift,
       binCount: totalStamp,
-      binStart: stampList.slice(0, totalStamp).join(','),
+      binStart:
+        originalStampList.length > 1
+          ? originalStampList.slice(0, totalStamp).join(',')
+          : stampList.slice(0, totalStamp).join(','),
       type: 'bag',
       employee_id: employee_id,
       stamp_id: stamp_id
     });
   }, [
+    originalStampList,
+    stampList,
+    date,
     handlePrint,
     mutate,
-    product.id,
-    date,
+    product,
     shift,
     totalStamp,
-    stampList,
     employee_id,
     stamp_id
   ]);
@@ -106,6 +160,7 @@ export const PrintBagStamp = ({
           Print
         </Button>
       </div>
+
       <div
         ref={contentRef}
         className="bag-print-container print:m-0 print:p-0 print:shadow-none"
@@ -127,9 +182,7 @@ export const PrintBagStamp = ({
                 index
               ) => {
                 const pageIndex = Math.floor(index / 8);
-                if (!pages[pageIndex]) {
-                  pages[pageIndex] = [];
-                }
+                if (!pages[pageIndex]) pages[pageIndex] = [];
                 pages[pageIndex].push({ item, index });
                 return pages;
               },

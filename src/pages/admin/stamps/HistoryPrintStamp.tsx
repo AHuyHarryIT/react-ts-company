@@ -376,7 +376,14 @@ export default function HistoryPrintStamp() {
               <PrintBoxStamp
                 product={selectedRecord.product}
                 startStamp={selectedRecord.binStart}
-                totalStamp={selectedRecord.binCount}
+                totalStamp={
+                  selectedRecord.binStart &&
+                  selectedRecord.binStart.includes(',')
+                    ? selectedRecord.binStart
+                        .split(',')
+                        .filter((item) => item.trim() !== '').length
+                    : selectedRecord.binCount
+                }
                 shift={selectedRecord.shift}
                 date={dayjs(selectedRecord.date)}
                 employee_id={selectedRecord.employee_id}
@@ -389,7 +396,14 @@ export default function HistoryPrintStamp() {
               <PrintBagStamp
                 product={selectedRecord.product}
                 startStamp={selectedRecord.binStart}
-                totalStamp={selectedRecord.binCount}
+                totalStamp={
+                  selectedRecord.binStart &&
+                  selectedRecord.binStart.includes(',')
+                    ? selectedRecord.binStart
+                        .split(',')
+                        .filter((item) => item.trim() !== '').length
+                    : selectedRecord.binCount
+                }
                 shift={selectedRecord.shift}
                 date={dayjs(selectedRecord.date)}
                 employee_id={selectedRecord.employee_id}

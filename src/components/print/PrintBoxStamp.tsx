@@ -37,6 +37,7 @@ export const PrintBoxStamp = ({
 
   // Parse and arrange stamps based on odd/even rule
   const originalStampList = (startStamp as string).split(',');
+
   const stampList =
     originalStampList.length > 1
       ? (() => {
@@ -44,7 +45,9 @@ export const PrintBoxStamp = ({
           const stamps = originalStampList.map((stamp) =>
             parseInt(stamp.trim())
           );
+
           const sortedStamps = stamps.sort((a, b) => a - b);
+
           const arrangedStamps: string[] = [];
 
           // Calculate how many complete pages we need

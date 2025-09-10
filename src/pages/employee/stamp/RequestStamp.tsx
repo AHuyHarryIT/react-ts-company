@@ -14,6 +14,7 @@ import {
   DatePicker,
   Form,
   FormProps,
+  Input,
   InputNumber,
   message,
   Select
@@ -52,14 +53,25 @@ export const RequestStamp = () => {
   const { mutate, isPending } = useMutation({
     mutationKey: ['request-stamp'],
     mutationFn: (data: FormFields) => {
-      const formattedData = data.stamps.map((stamp) => ({
-        productId: stamp.productId,
-        date: stamp.date.format('YYYY-MM-DD'),
-        shift: stamp.shift,
-        binCount: stamp.binCount,
-        binStart: stamp.binStart,
-        type: stamp.type
-      }));
+      const formattedData = data.stamps.map((stamp) => {
+        const hasComma = stamp.binStart && stamp.binStart.includes(',');
+
+        // Tự động tính binCount nếu có dấu phẩy
+        const finalBinCount = hasComma
+          ? stamp.binStart.split(',').filter((item) => item.trim() !== '')
+              .length
+          : stamp.binCount;
+
+        return {
+          productId: stamp.productId,
+          date: stamp.date.format('YYYY-MM-DD'),
+          shift: stamp.shift,
+          binCount: finalBinCount,
+          binStart: stamp.binStart,
+          type: stamp.type
+        };
+      });
+
       return empStampRequest({ stamps: formattedData });
     },
     onSuccess: () => {
@@ -194,20 +206,42 @@ export const RequestStamp = () => {
                         />
                       </Form.Item>
                       <Form.Item
-                        label="Số lượng tem"
-                        name={[field.name, 'binCount']}
-                        rules={[
-                          {
-                            required: true,
-                            message: 'Vui lòng nhập số lượng'
-                          }
-                        ]}
+                        noStyle
+                        shouldUpdate={(prevValues, currentValues) => {
+                          const prevBinStart =
+                            prevValues?.stamps?.[field.name]?.binStart;
+                          const currentBinStart =
+                            currentValues?.stamps?.[field.name]?.binStart;
+                          return prevBinStart !== currentBinStart;
+                        }}
                       >
-                        <InputNumber
-                          min={1}
-                          style={{ width: '100%' }}
-                          placeholder="Nhập số lượng tem"
-                        />
+                        {({ getFieldValue }) => {
+                          const binStart = getFieldValue([
+                            'stamps',
+                            field.name,
+                            'binStart'
+                          ]);
+                          const hasComma = binStart && binStart.includes(',');
+
+                          return !hasComma ? (
+                            <Form.Item
+                              label="Số lượng tem"
+                              name={[field.name, 'binCount']}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: 'Vui lòng nhập số lượng'
+                                }
+                              ]}
+                            >
+                              <InputNumber
+                                min={1}
+                                style={{ width: '100%' }}
+                                placeholder="Nhập số lượng tem"
+                              />
+                            </Form.Item>
+                          ) : null;
+                        }}
                       </Form.Item>
                       <Form.Item
                         label="Bắt đầu từ tem số"
@@ -215,14 +249,18 @@ export const RequestStamp = () => {
                         rules={[
                           {
                             required: true,
-                            message: 'Vui lòng nhập '
+                            message: 'Vui lòng nhập số tem bắt đầu'
+                          },
+                          {
+                            pattern: /^[0-9]+(,[0-9]+)*$/,
+                            message:
+                              'Vui lòng nhập số hợp lệ, cách nhau bằng dấu phẩy (VD: 7,10,11)'
                           }
                         ]}
                       >
-                        <InputNumber
-                          min={1}
+                        <Input
                           style={{ width: '100%' }}
-                          placeholder="Nhập tem bắt đầu"
+                          placeholder="Nhập tem bắt đầu (VD: 7 hoặc 7,10,11)"
                         />
                       </Form.Item>
                     </div>

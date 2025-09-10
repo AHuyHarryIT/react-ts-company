@@ -3,6 +3,7 @@ import {
   Avatar,
   Button,
   Input,
+  Modal,
   Table,
   TableColumnsType,
   TableProps
@@ -98,6 +99,18 @@ function RouteComponent() {
       sort: sortValue,
       ...newFilters
     }));
+  };
+
+  const handleAttendanceClick = () => {
+    Modal.confirm({
+      title: 'Thông báo',
+      content: 'Bạn vui lòng đổi mạng Vinh Vinh Phát để tiếp tục',
+      okText: 'Tiếp tục',
+      cancelText: 'Hủy',
+      onOk: () => {
+        window.open('http://192.168.1.200/doc/index.html#/dashboard', '_blank');
+      }
+    });
   };
 
   const columns: TableColumnsType<EmployeeType> = [
@@ -252,7 +265,11 @@ function RouteComponent() {
               Đã xóa
             </Button>
           </Link>
-          <Button variant="solid" icon={<FaFingerprint />}>
+          <Button
+            variant="solid"
+            icon={<FaFingerprint />}
+            onClick={handleAttendanceClick}
+          >
             Thêm chấm công
           </Button>
         </div>
