@@ -33,21 +33,21 @@ export const employeeSchema = defaultModelSchema.extend({
 
 export const employeeCreateSchema = overrideSchema(employeeSchema, {
   id: z.string(),
-  photo: z.instanceof(File),
   card_photo: z.instanceof(File),
   birthday: dayjsSchema,
   date_joining: dayjsSchema
 }).omit({
   calendar_category: true,
-  role: true
+  role: true,
+  photo: true
 });
 
 export const employeeUpdateSchema = overrideSchema(employeeSchema, {
-  photo: z.instanceof(Image).optional(),
   card_photo: z.instanceof(File).optional(),
   birthday: dayjsSchema,
   date_joining: dayjsSchema
 }).omit({
   calendar_category: true,
-  role: true
+  role: true,
+  photo: true
 });

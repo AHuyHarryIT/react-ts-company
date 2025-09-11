@@ -35,6 +35,19 @@ export const setUser = (user: User) => {
   });
 };
 
+export const updateUserImage = (imageUrl: string) => {
+  authStore.setState((prevState) => {
+    if (!prevState.user) return prevState;
+    return {
+      ...prevState,
+      user: {
+        ...prevState.user,
+        image_url: imageUrl
+      }
+    };
+  });
+};
+
 export const setAuth = (isAuthenticated: boolean) => {
   authStore.setState((prevState) => {
     return { ...prevState, isAuthenticated };

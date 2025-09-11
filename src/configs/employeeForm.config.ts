@@ -116,11 +116,7 @@ export const useEmployeeFields = () => {
         }
       )
     },
-    photo: {
-      label: 'Ảnh đại diện',
-      type: 'image',
-      required: true
-    },
+
     card_photo: {
       label: 'Ảnh thẻ',
       type: 'image',

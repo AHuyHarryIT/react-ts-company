@@ -30,3 +30,19 @@ export const updateProfile = async (data: ProfileUpdateParams) => {
   const response = axiosPrivate.patch(ENDPOINT, data);
   return response;
 };
+
+export const changeAvatar = async (file: File) => {
+  const formData = new FormData();
+  formData.append('photo', file);
+
+  const response = await axiosPrivate.post(
+    `${ENDPOINT}/change-avatar`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }
+  );
+  return response;
+};
