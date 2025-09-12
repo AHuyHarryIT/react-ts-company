@@ -129,7 +129,7 @@ function RouteComponent() {
       render: (value, record) => (
         <div className="flex items-center gap-2">
           <Avatar
-            src={`${STORAGE_URL}/${record.photo}`}
+            src={`${STORAGE_URL}/${record.card_photo}`}
             alt="avatar"
             icon={<FaUser />}
             shape="square"
