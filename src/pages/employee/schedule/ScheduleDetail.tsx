@@ -14,8 +14,6 @@ import { ScheduleWcListSection } from './SchemaListSection';
 
 export const ScheduleDetail = () => {
   const { id: scheduleId } = Route.useParams();
-  const { authenticated } = Route.useRouteContext();
-  const gender = authenticated.user?.gender;
 
   const { data, isLoading } = useQuery({
     queryKey: ['empScheduleDetail', scheduleId],
@@ -90,21 +88,34 @@ export const ScheduleDetail = () => {
             />
           </div>
           <section className="space-y-6">
-            <div>
-              <ScheduleWcListSection
-                header={<strong>Lịch trực phòng ăn</strong>}
-                dataSource={data?.data.filter((item) => item.is_eat_room) ?? []}
-                loading={isLoading}
-              />
-            </div>
-            <div>
-              <ScheduleWcListSection
-                header={<strong>Lịch đổ rác WC</strong>}
-                dataSource={data?.data.filter((item) => item.is_wc_trash) ?? []}
-                loading={isLoading}
-              />
-            </div>
-            {gender == 'female' && (
+            {/* Chỉ hiển thị khi có dữ liệu phòng ăn */}
+            {data?.data.some((item) => item.is_eat_room) && (
+              <div>
+                <ScheduleWcListSection
+                  header={<strong>Lịch trực phòng ăn</strong>}
+                  dataSource={
+                    data?.data.filter((item) => item.is_eat_room) ?? []
+                  }
+                  loading={isLoading}
+                />
+              </div>
+            )}
+
+            {/* Chỉ hiển thị khi có dữ liệu đổ rác WC */}
+            {data?.data.some((item) => item.is_wc_trash) && (
+              <div>
+                <ScheduleWcListSection
+                  header={<strong>Lịch đổ rác WC</strong>}
+                  dataSource={
+                    data?.data.filter((item) => item.is_wc_trash) ?? []
+                  }
+                  loading={isLoading}
+                />
+              </div>
+            )}
+
+            {/* Chỉ hiển thị khi có dữ liệu trực WC nữ */}
+            {data?.data.some((item) => item.is_wc_clean_women) && (
               <div>
                 <ScheduleWcListSection
                   header={<strong>Lịch trực WC nữ</strong>}
@@ -115,7 +126,9 @@ export const ScheduleDetail = () => {
                 />
               </div>
             )}
-            {gender == 'male' && (
+
+            {/* Chỉ hiển thị khi có dữ liệu trực WC nam */}
+            {data?.data.some((item) => item.is_wc_clean_men) && (
               <div>
                 <ScheduleWcListSection
                   header={<strong>Lịch trực WC nam</strong>}
