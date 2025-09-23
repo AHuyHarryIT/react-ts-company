@@ -6,6 +6,7 @@ import {
 } from '@/types/attendanceType';
 import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
+import { AttendanceResult } from '@/utils/attendanceUtil';
 import { CrudService } from '@utils/crudService';
 
 const ENDPOINT = '/api/attendances';
@@ -23,6 +24,8 @@ export interface AttendanceResponse {
     date: string;
     time: string;
   }[];
+  is_schedule_change?: boolean;
+  day_type?: string;
 }
 
 export const attendanceService = new CrudService<
@@ -54,6 +57,24 @@ export const fetchEmpAttendancesHistory = async (params?: QueryParams) => {
     AttendanceType,
     PaginatedResponse<AttendanceType>
   >([EMP_ENDPOINT, 'history'].join('/'), {
+    params
+  });
+};
+
+export const fetchAttendancesCalculated = async (params?: QueryParams) => {
+  return await axiosPrivate.get<
+    AttendanceResult,
+    PaginatedResponse<AttendanceResult>
+  >([ENDPOINT, 'calculate'].join('/'), {
+    params
+  });
+};
+
+export const fetchEmpAttendancesCalculated = async (params?: QueryParams) => {
+  return await axiosPrivate.get<
+    AttendanceResult,
+    PaginatedResponse<AttendanceResult>
+  >([EMP_ENDPOINT, 'calculate'].join('/'), {
     params
   });
 };

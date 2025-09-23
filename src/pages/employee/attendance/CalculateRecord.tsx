@@ -2,11 +2,10 @@ import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { Route } from '@routes/_authenticated/employee/attendances/calculate';
-import { fetchEmpAttendances } from '@services/AttendanceService';
+import { fetchEmpAttendancesCalculated } from '@services/AttendanceService';
 import { uiStore } from '@stores/uiStore';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@tanstack/react-store';
-import { calculateAttendances } from '@utils/attendanceUtil';
 import {
   Card,
   DatePicker,
@@ -29,6 +28,8 @@ interface AttendanceTableColumns {
   time_out: string;
   shift: number;
   hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
+  day_type: string;
+  is_schedule_change: boolean;
   total_hours: number | null;
   overtime_hours: number | null;
   administrative_hours: number | null;
@@ -46,7 +47,7 @@ export const CalculateRecord = () => {
   const { data: response, isLoading } = useQuery({
     queryKey: ['attendance', 'calculate', month.format('MM-YYYY')],
     queryFn: async () => {
-      const response = await fetchEmpAttendances({
+      const response = await fetchEmpAttendancesCalculated({
         limit: 0,
         'filter[date_between]':
           month.startOf('month').format('YYYY-MM-DD') +
@@ -58,9 +59,8 @@ export const CalculateRecord = () => {
     }
   });
 
-  const attendances = calculateAttendances(
-    response?.data || []
-  ) as AttendanceTableColumns[];
+  const attendances =
+    response?.data || ([] as unknown as AttendanceTableColumns[]);
 
   const columns: TableColumnsType<AttendanceTableColumns> = [
     {
@@ -120,14 +120,15 @@ export const CalculateRecord = () => {
       }
     },
     {
-      title: 'Ca làm việc',
-      dataIndex: 'shift',
-      key: 'shift',
+      title: 'Loại ngày',
+      dataIndex: 'day_type',
+      key: 'day_type',
       render: (value, record) => {
-        if (record.hnhc == 'X' && record.shift)
-          return <Tag color="yellow">Đổi lịch làm</Tag>;
-        if (value === 1) return 'Ca 1';
-        if (value === 2) return 'Ca 2';
+        if (record.is_schedule_change) {
+          return <Tag color="yellow">{value}</Tag>;
+        }
+        if (value === 'Ca ngày') return <Tag color="blue">Ca ngày</Tag>;
+        if (value === 'Ca đêm') return <Tag color="purple">Ca đêm</Tag>;
         return <Tag color="green">Nghỉ</Tag>;
       }
     },
@@ -169,7 +170,29 @@ export const CalculateRecord = () => {
     columns: columns,
     dataSource: forgottenDays
       ? attendances.filter((attendance) => {
-          return attendance.time_in == '' || attendance.time_out == '';
+          // Only show days that should have attendance but missing time_in or time_out
+          // Case 1: Normal work day (shift > 0) with incomplete attendance
+          if (
+            attendance.shift > 0 &&
+            (!attendance.time_in ||
+              !attendance.time_out ||
+              attendance.time_in === '' ||
+              attendance.time_out === '')
+          ) {
+            return true;
+          }
+          // Case 2: Schedule change day (is_schedule_change = true) with incomplete attendance
+          if (
+            attendance.is_schedule_change &&
+            attendance.shift > 0 &&
+            (!attendance.time_in ||
+              !attendance.time_out ||
+              attendance.time_in === '' ||
+              attendance.time_out === '')
+          ) {
+            return true;
+          }
+          return false;
         })
       : attendances,
     loading: isLoading,
@@ -226,9 +249,29 @@ export const CalculateRecord = () => {
                 attendances
                   .filter((attendance) => {
                     if (!forgottenDays) return true;
-                    return (
-                      attendance.time_in == '' || attendance.time_out == ''
-                    );
+                    // Only show days that should have attendance but missing time_in or time_out
+                    // Case 1: Normal work day (shift > 0) with incomplete attendance
+                    if (
+                      attendance.shift > 0 &&
+                      (!attendance.time_in ||
+                        !attendance.time_out ||
+                        attendance.time_in === '' ||
+                        attendance.time_out === '')
+                    ) {
+                      return true;
+                    }
+                    // Case 2: Schedule change day (is_schedule_change = true) with incomplete attendance
+                    if (
+                      attendance.is_schedule_change &&
+                      attendance.shift > 0 &&
+                      (!attendance.time_in ||
+                        !attendance.time_out ||
+                        attendance.time_in === '' ||
+                        attendance.time_out === '')
+                    ) {
+                      return true;
+                    }
+                    return false;
                   })
                   .map((item) => {
                     return (

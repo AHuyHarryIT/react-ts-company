@@ -1,8 +1,8 @@
 import { QueryParams } from '@/types/queryParams';
 import { IconExport } from '@components/icons';
-import { fetchAttendances } from '@services/AttendanceService';
+import { fetchAttendancesCalculated } from '@services/AttendanceService';
 import { useMutation } from '@tanstack/react-query';
-import { AttendanceResult, calculateAttendances } from '@utils/attendanceUtil';
+import { AttendanceResult } from '@utils/attendanceUtil';
 import { Button, DatePicker, message, Modal } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -55,8 +55,8 @@ export const ExportModal = () => {
 
       const totalColumns = 10 + dateHeaders.length * 3;
 
-      const response = await fetchAttendances(params);
-      const attendances = calculateAttendances(response.data);
+      const response = await fetchAttendancesCalculated(params);
+      const attendances = response.data;
 
       // flatten data to each row
       const flattenedData: DataType = {

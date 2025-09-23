@@ -1,4 +1,3 @@
-import { calculateAttendances } from '@/utils/attendanceUtil';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
@@ -25,7 +24,7 @@ import { customTableProps } from '@components/custom/TableProps.custom';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
 
 import { IconHistory } from '@components/icons';
-import { fetchAttendances } from '@services/AttendanceService';
+import { fetchAttendancesCalculated } from '@services/AttendanceService';
 import { ExportModal } from './ExportModal';
 
 interface TableColumns {
@@ -36,6 +35,8 @@ interface TableColumns {
   time_out: string;
   shift: number;
   hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
+  day_type: string;
+  is_schedule_change: boolean;
   total_hours: number | null;
   overtime_hours: number | null;
   administrative_hours: number | null;
@@ -69,10 +70,11 @@ export default function Records() {
   } = useQuery({
     queryKey: ['attendances', params],
     queryFn: async () => {
-      const response = await fetchAttendances(params);
+      const response = await fetchAttendancesCalculated(params);
       const { data, current_page, total, per_page } = response;
 
-      const attendances = calculateAttendances(data) as TableColumns[];
+      // Data is already calculated by the API, no need to calculate again
+      const attendances = data as unknown as TableColumns[];
 
       return {
         attendances,
@@ -153,7 +155,7 @@ export default function Records() {
       rowScope: 'row',
       align: 'center',
       render: (_value, _record, index) =>
-        index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
+        index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
       title: 'Mã nhân viên',
@@ -229,15 +231,16 @@ export default function Records() {
       }
     },
     {
-      title: 'Ca làm việc',
-      dataIndex: 'shift',
-      key: 'shift',
+      title: 'Loại ngày',
+      dataIndex: 'day_type',
+      key: 'day_type',
       align: 'center',
       render: (value, record) => {
-        if (record.hnhc == 'X' && record.shift)
-          return <Tag color="yellow">Đổi lịch làm</Tag>;
-        if (value === 1) return 'Ca 1';
-        if (value === 2) return 'Ca 2';
+        if (record.is_schedule_change) {
+          return <Tag color="yellow">{value}</Tag>;
+        }
+        if (value === 'Ca ngày') return <Tag color="blue">Ca 1</Tag>;
+        if (value === 'Ca đêm') return <Tag color="purple">Ca 2</Tag>;
         return <Tag color="green">Nghỉ</Tag>;
       }
     },
@@ -272,13 +275,30 @@ export default function Records() {
     }
   ];
 
-  const forgetAttendance = attendances.filter((attendance) => {
-    return (
-      !attendance.time_in ||
-      !attendance.time_out ||
-      attendance.time_in === '' ||
-      attendance.time_out === ''
-    );
+  const forgetAttendance = attendances.filter((item) => {
+    // Only show days that should have attendance but missing time_in or time_out
+    // Case 1: Normal work day (shift > 0) with incomplete attendance
+    if (
+      item.shift > 0 &&
+      (!item.time_in ||
+        !item.time_out ||
+        item.time_in === '' ||
+        item.time_out === '')
+    ) {
+      return true;
+    }
+    // Case 2: Schedule change day (is_schedule_change = true) with incomplete attendance
+    if (
+      item.is_schedule_change &&
+      item.shift > 0 &&
+      (!item.time_in ||
+        !item.time_out ||
+        item.time_in === '' ||
+        item.time_out === '')
+    ) {
+      return true;
+    }
+    return false;
   });
 
   const tableProps: TableProps<TableColumns> = {
@@ -292,10 +312,10 @@ export default function Records() {
     pagination: {
       ...customTableProps.pagination,
       current: pagination.current,
-      pageSize: pagination.pageSize,
+      pageSize: forgottenDays ? forgetAttendance.length : pagination.pageSize,
       total: forgottenDays ? forgetAttendance.length : pagination.total,
       pageSizeOptions: forgottenDays
-        ? [forgetAttendance.length]
+        ? [forgetAttendance.length.toString()]
         : ['10', '20', '50', '100', '200', '500'],
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
