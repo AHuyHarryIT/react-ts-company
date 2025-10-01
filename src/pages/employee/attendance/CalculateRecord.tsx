@@ -47,12 +47,16 @@ export const CalculateRecord = () => {
   const { data: response, isLoading } = useQuery({
     queryKey: ['attendance', 'calculate', month.format('MM-YYYY')],
     queryFn: async () => {
+      // Lấy ngày cuối là ngày hiện tại hoặc ngày cuối tháng (tùy theo cái nào nhỏ hơn)
+      const today = dayjs();
+      const endDate = month.isSame(today, 'month')
+        ? today.format('YYYY-MM-DD')
+        : month.endOf('month').format('YYYY-MM-DD');
+
       const response = await fetchEmpAttendancesCalculated({
         limit: 0,
         'filter[date_between]':
-          month.startOf('month').format('YYYY-MM-DD') +
-          ',' +
-          month.endOf('month').format('YYYY-MM-DD')
+          month.startOf('month').format('YYYY-MM-DD') + ',' + endDate
       });
 
       return response;
