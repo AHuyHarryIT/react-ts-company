@@ -22,6 +22,13 @@ export default defineConfig({
       '.onrender.com',
       '.a7atest.id.vn',
       '.a7acompany.com'
-    ]
+    ],
+    proxy: {
+      '/storage': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/storage/, '/storage')
+      }
+    }
   }
 });

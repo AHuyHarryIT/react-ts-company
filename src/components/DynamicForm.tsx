@@ -156,7 +156,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
               if (fileList.length > 0) {
                 // convert file to File
                 form.setFieldsValue({
-                  [field.name]: fileList[0].originFileObj as FileType
+                  [field.name as string]: fileList[0].originFileObj as FileType
                 });
               }
             }}
@@ -184,14 +184,16 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
   const formItemLayout = () => {
     return fields.map((field) => (
       <Form.Item
-        key={field.name}
+        key={
+          Array.isArray(field.name) ? field.name.join('_') : String(field.name)
+        }
         name={field.name}
         label={field.label}
         hidden={field.hidden}
         required={field.required}
         rules={
           field.rules ||
-          zodRules[field.name] ||
+          zodRules[String(field.name)] ||
           (field.required
             ? [{ required: true, message: `Vui lòng nhập ${field.label}` }]
             : [])

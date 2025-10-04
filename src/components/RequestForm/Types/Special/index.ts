@@ -1,0 +1,1 @@
+export { GiayUyQuyenDetail } from './GiayUyQuyenDetail';

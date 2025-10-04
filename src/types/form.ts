@@ -17,7 +17,7 @@ export type FieldType =
   | 'image';
 
 export interface FieldConfig {
-  name: string;
+  name: string | string[] | number[];
   label: string;
   type: FieldType;
   required?: boolean;

@@ -60,7 +60,7 @@ export function useDynamicCrudForm<
 
       activeForm.setFieldsValue(parsedValues);
     }
-  }, [defaultValues]);
+  }, [defaultValues, activeForm]);
 
   const mutation = useMutation({
     mutationFn: async (values: TFormData) => {
