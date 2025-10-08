@@ -11,7 +11,7 @@ interface DeleteConfirmModalProps {
   onCancel: () => void;
 }
 
-export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
+export const ConfirmDeleteModal: React.FC<DeleteConfirmModalProps> = ({
   visible,
   record,
   loading = false,

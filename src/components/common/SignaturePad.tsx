@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button, Space, message } from 'antd';
 import { ClearOutlined, DownloadOutlined } from '@ant-design/icons';
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from '@/utils/signatureUtil';
 
 interface SignaturePadProps {
   onSignatureChange?: (signatureDataURL: string | null) => void;
@@ -12,8 +13,8 @@ interface SignaturePadProps {
 
 export const SignaturePad: React.FC<SignaturePadProps> = ({
   onSignatureChange,
-  width = 400,
-  height = 200,
+  width = CANVAS_WIDTH,
+  height = CANVAS_HEIGHT,
   penColor = '#000000',
   penWidth = 2
 }) => {
@@ -113,36 +114,38 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
   };
 
   return (
-    <div className="signature-pad">
-      <div className="mb-3">
+    <div className="signature-pad flex flex-col items-center">
+      <div className="mb-3 w-full">
         <canvas
           ref={canvasRef}
           width={width}
           height={height}
-          className="cursor-crosshair rounded border border-gray-300"
-          style={{ touchAction: 'none' }}
+          className="w-full cursor-crosshair rounded border-2 border-dashed border-gray-300 bg-gray-50"
+          style={{ touchAction: 'none', maxWidth: '100%' }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
         />
       </div>
-      <Space>
-        <Button
-          icon={<ClearOutlined />}
-          onClick={clearSignature}
-          disabled={isEmpty}
-        >
-          Xóa chữ ký
-        </Button>
-        <Button
-          icon={<DownloadOutlined />}
-          onClick={downloadSignature}
-          disabled={isEmpty}
-        >
-          Tải xuống
-        </Button>
-      </Space>
+      <div className="flex justify-center">
+        <Space>
+          <Button
+            icon={<ClearOutlined />}
+            onClick={clearSignature}
+            disabled={isEmpty}
+          >
+            Xóa chữ ký
+          </Button>
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={downloadSignature}
+            disabled={isEmpty}
+          >
+            Tải xuống
+          </Button>
+        </Space>
+      </div>
       {/* <div className="text-xs text-gray-500 mt-2 text-center">
                 Vẽ chữ ký của bạn trong khung trên
             </div> */}

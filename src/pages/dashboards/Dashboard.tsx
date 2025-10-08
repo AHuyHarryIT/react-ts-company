@@ -26,6 +26,8 @@ import { FiUserCheck } from 'react-icons/fi';
 import { HiOutlineUserGroup } from 'react-icons/hi';
 import { IoCalculatorOutline } from 'react-icons/io5';
 import { LuBoxes, LuCalendarFold, LuLogOut, LuScanLine } from 'react-icons/lu';
+import { MdApproval } from 'react-icons/md';
+import { SUPERVISOR_IDS } from '@/constants/supervisors';
 import { ProductChart } from './ProductChart';
 import { SalaryChart } from './SalaryChart';
 
@@ -34,6 +36,12 @@ export default function Dashboard() {
   const admin = isAdmin(user?.role.name || '');
 
   const permissions = useMemo(() => user?.permissions ?? [], [user]);
+
+  // Check if current user is a supervisor
+  const isSupervisor = useMemo(() => {
+    if (!user?.id) return false;
+    return (SUPERVISOR_IDS as readonly string[]).includes(user.id.toString());
+  }, [user?.id]);
 
   const { data: dashboardResponse } = useQuery({
     queryKey: ['dashboardData'],
@@ -168,6 +176,11 @@ export default function Dashboard() {
       icon: <FaHistory />,
       value: dashboardData?.totalHistory?.toLocaleString() || '0',
       navLink: '/admin/history'
+    },
+    view_request_forms: {
+      icon: <MdApproval />,
+      value: dashboardData?.totalRequestForms?.toLocaleString() || '0',
+      navLink: '/request-forms'
     }
   };
 
@@ -304,6 +317,26 @@ export default function Dashboard() {
     })
     .filter((w): w is WidgetType => Boolean(w));
 
+  // Thêm widget đặc biệt cho Supervisor (không cần permission)
+  const supervisorWidget: WidgetType | null = useMemo(() => {
+    if (!isSupervisor) return null;
+
+    return {
+      title: 'Duyệt Đơn Xin Phép',
+      icon: <MdApproval />,
+      navLink: '/request-forms'
+    };
+  }, [isSupervisor]);
+
+  // Gộp widget: supervisor widget ở đầu, sau đó là các widget từ permissions
+  const finalWidgetList = useMemo(() => {
+    const widgets = [...listWidget];
+    if (supervisorWidget) {
+      widgets.unshift(supervisorWidget); // Thêm vào đầu danh sách
+    }
+    return widgets;
+  }, [listWidget, supervisorWidget]);
+
   // giữ logic cũ cho chart
   const hasPermission = (permissionKey: string) =>
     permissions.some((p) => isAdminType(p.type) && p.key === permissionKey);
@@ -328,10 +361,10 @@ export default function Dashboard() {
       )}
 
       <div className="grid grid-cols-12 gap-4 md:gap-6">
-        {listWidget.length > 0 && (
+        {finalWidgetList.length > 0 && (
           <div className="col-span-12">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
-              {listWidget.map((widget: WidgetType, index: number) => (
+              {finalWidgetList.map((widget: WidgetType, index: number) => (
                 <DashboardWidget
                   key={`dashboard-widget-${index}`}
                   title={widget.title}
@@ -360,33 +393,35 @@ export default function Dashboard() {
           </section>
         )}
 
-        {listWidget.length === 0 && !showSalaryChart && !showProductChart && (
-          <div className="col-span-12">
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="text-gray-400 dark:text-gray-500">
-                <svg
-                  className="mx-auto mb-4 h-12 w-12"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+        {finalWidgetList.length === 0 &&
+          !showSalaryChart &&
+          !showProductChart && (
+            <div className="col-span-12">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="text-gray-400 dark:text-gray-500">
+                  <svg
+                    className="mx-auto mb-4 h-12 w-12"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+                  Chào mừng bạn đến Dashboard
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Hệ thống đang chuẩn bị quyền truy cập cho tài khoản của bạn.
+                </p>
               </div>
-              <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
-                Chào mừng bạn đến Dashboard
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                Hệ thống đang chuẩn bị quyền truy cập cho tài khoản của bạn.
-              </p>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </>
   );

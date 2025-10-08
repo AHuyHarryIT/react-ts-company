@@ -17,6 +17,8 @@ import type { IconType } from 'react-icons';
 import * as FaIcons from 'react-icons/fa';
 import { SidebarMenu } from './SidebarMenu';
 import { HiOutlineHome } from 'react-icons/hi';
+import { MdApproval } from 'react-icons/md';
+import { SUPERVISOR_IDS } from '@/constants/supervisors';
 
 const { Sider } = Layout;
 
@@ -125,6 +127,29 @@ function Sidebar() {
     }
   ];
 
+  // Check if current user is a supervisor
+  const isSupervisor = useMemo(() => {
+    if (!user?.id) return false;
+    return (SUPERVISOR_IDS as readonly string[]).includes(user.id.toString());
+  }, [user?.id]);
+
+  // Supervisor-specific menu items
+  const supervisorItems: MenuItem[] = useMemo(() => {
+    if (!isSupervisor) return [];
+
+    return [
+      {
+        key: 'supervisor-approval',
+        label: (
+          <Link to={'/request-forms'}>
+            <span className="capitalize">Duyệt Đơn Xin Phép</span>
+          </Link>
+        ),
+        icon: <MdApproval />
+      }
+    ];
+  }, [isSupervisor]);
+
   const items: MenuItem[] = useMemo(() => {
     const renderSidebarIcon = (icon?: string | IconType) => {
       // 1. Nếu backend trả sẵn IconType
@@ -198,7 +223,7 @@ function Sidebar() {
 
   const sidebarContent = (
     <>
-      <SidebarMenu items={[...dashboardItems, ...items]} />
+      <SidebarMenu items={[...dashboardItems, ...supervisorItems, ...items]} />
       {(user?.role.name || '').toLocaleLowerCase().includes('super admin') && (
         <div className="flex justify-center">
           <Link to="/admin/edit-layout">

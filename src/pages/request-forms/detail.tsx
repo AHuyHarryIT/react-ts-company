@@ -2,24 +2,31 @@ import { useParams, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Card, Spin, Alert } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { RequestFormDetailView } from '@components/RequestForm';
-import { AdminActionModal } from '@components/RequestForm/AdminActionModal';
+import { DetailView, AdminActionModal } from '@components/RequestForm';
 import { adminRequestFormService } from '@services/RequestFormService';
+import { useAuth } from '@hooks/useAuth';
 import { useState } from 'react';
 
-export default function AdminRequestFormDetailPage() {
-  const { id } = useParams({ from: '/_authenticated/admin/request-forms/$id' });
+export default function RequestFormDetail() {
+  const { id } = useParams({ from: '/_authenticated/request-forms/$id' });
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [approvalModalVisible, setApprovalModalVisible] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-request-form-detail', id],
     queryFn: () => adminRequestFormService.getDetail(Number(id)),
-    enabled: !!id
+    enabled: !!id,
+    // Performance optimizations
+    staleTime: 30000, // Data fresh trong 30s
+    gcTime: 10 * 60 * 1000, // Cache trong 10 phút
+    refetchOnWindowFocus: true, // Refresh khi quay lại tab
+    // Select chỉ data cần thiết
+    select: (response) => response.data
   });
 
   const handleBack = () => {
-    navigate({ to: '/admin/request-forms' });
+    navigate({ to: '/request-forms' });
   };
 
   const handleApproval = () => {
@@ -50,7 +57,7 @@ export default function AdminRequestFormDetailPage() {
     );
   }
 
-  const requestForm = data?.data;
+  const requestForm = data;
 
   if (!requestForm) {
     return (
@@ -86,7 +93,7 @@ export default function AdminRequestFormDetailPage() {
 
       {/* Detail Content */}
       <Card>
-        <RequestFormDetailView data={requestForm} />
+        <DetailView data={requestForm} />
       </Card>
 
       {/* Approval Modal */}
@@ -94,6 +101,7 @@ export default function AdminRequestFormDetailPage() {
         visible={approvalModalVisible}
         record={requestForm}
         mode="approve"
+        currentUser={user}
         onCancel={() => setApprovalModalVisible(false)}
         onApprove={() => {
           setApprovalModalVisible(false);

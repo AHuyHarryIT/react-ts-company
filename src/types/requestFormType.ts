@@ -5,7 +5,11 @@ export type RequestFormType =
   | 'don_xin_nghi_phep'
   | 'don_xin_di_tre_ve_som';
 
-export type RequestFormStatus = 'pending' | 'approved' | 'rejected';
+export type RequestFormStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'authorized_approved';
 
 export type LeaveType = 'Nghỉ phép năm' | 'Nghỉ ốm' | 'Nghỉ việc riêng';
 
@@ -15,6 +19,8 @@ export type LateEarlyType = 'di_tre' | 've_som' | 'ca_hai';
 export interface RequestForm {
   id: number;
   employee_id: string;
+  supervisor_id?: string | null; // ID của supervisor được chọn cho đơn thường
+  authorized_employee_id?: string | null; // ID của người được ủy quyền
   type: RequestFormType;
   title: string;
   content: string;
@@ -27,78 +33,178 @@ export interface RequestForm {
   created_at: string;
   updated_at: string;
 
-  // Digital signatures - Đơn Ủy Quyền (2 chữ ký)
-  digital_signature_delegator?: string | null; // Chữ ký bên ủy quyền
-  digital_signature_authorized?: string | null; // Chữ ký bên được ủy quyền
+  // Digital signatures - Đơn Ủy Quyền (User ký)
+  digital_signature_delegator?: string | null; // Chữ ký người ủy quyền
+  digital_signature_authorized?: string | null; // Chữ ký người được ủy quyền
+  delegator_approved_by?: number | null; // Employee ID người ký delegator
+  delegator_approved_at?: string | null;
+  authorized_approved_by?: number | null; // Employee ID người ký authorized
+  authorized_approved_at?: string | null;
+  delegator_approved_by_employee?: {
+    id: number;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  authorized_approved_by_employee?: {
+    id: number;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
 
-  // Digital signatures - Các đơn khác (chỉ 1 chữ ký cá nhân)
-  digital_signature_applicant?: string | null; // Chữ ký cá nhân
+  // Digital signatures - Đơn thường (Admin ký)
+  digital_signature_applicant?: string | null; // Chữ ký người làm đơn (employee)
+  digital_signature_supervisor?: string | null; // Chữ ký supervisor
+  digital_signature_manager?: string | null; // Chữ ký manager
+  supervisor_approved_by?:
+    | number
+    | {
+        id: string;
+        name: string;
+        email?: string;
+        phone?: string;
+        [key: string]: unknown;
+      }
+    | null; // Employee ID hoặc object từ backend
+  supervisor_approved_at?: string | null;
+  manager_approved_by?:
+    | number
+    | {
+        id: string;
+        name: string;
+        email?: string;
+        phone?: string;
+        [key: string]: unknown;
+      }
+    | null; // Employee ID hoặc object từ backend
+  manager_approved_at?: string | null;
+  supervisor_approved_by_employee?: {
+    id: number;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  manager_approved_by_employee?: {
+    id: number;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
 
-  // Digital signatures - Admin approval signatures
-  digital_signature_supervisor?: string | null; // Chữ ký tổ trưởng/giám sát
-  digital_signature_manager?: string | null; // Chữ ký quản lý/phê duyệt
+  // Signature completion status
+  has_delegator_signature?: boolean;
+  has_authorized_signature?: boolean;
+  has_applicant_signature?: boolean;
+  has_supervisor_signature?: boolean;
+  has_manager_signature?: boolean;
+  delegation_signatures_complete?: boolean;
+  signatures_complete?: boolean;
+
+  // ✅ NEW: camelCase objects từ BE (với full info)
+  delegatorApprovedBy?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  authorizedApprovedBy?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  supervisorApprovedBy?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  managerApprovedBy?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  approvedBy?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  authorizedEmployee?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  supervisor?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
 
   employee: {
-    id: string;
+    id: number;
     name: string;
   };
   approved_by_employee?: {
-    id: string;
+    id: number;
     name: string;
   } | null;
 }
 
 // Form data interfaces for each type
 export interface GiayUyQuyenFormData {
-  ma_nhan_vien_duoc_uy_quyen: string; // Mã nhân viên được ủy quyền
-  ten_nguoi_duoc_uy_quyen: string; // Tên được auto-fill từ mã NV
-  gioi_tinh_nguoi_duoc_uy_quyen: string; // Giới tính người được ủy quyền
-  chuc_vu_nguoi_duoc_uy_quyen: string; // Chức vụ người được ủy quyền
-  noi_dung_uy_quyen: string; // Nội dung ủy quyền
+  authorized_employee_id: string; // ID nhân viên được ủy quyền (required by API)
+  authorization_scope: string; // Nội dung ủy quyền (required by API)
+  valid_from: string; // Có hiệu lực từ ngày (required by API) - YYYY-MM-DD format
+  valid_to: string; // Có hiệu lực đến ngày (required by API) - YYYY-MM-DD format
 }
 
 export interface DonXinTuChucFormData {
-  ngay_nop_don: string;
-  ngay_nghi_viec_mong_muon: string;
-  ly_do_tu_chuc: string;
-  cong_viec_ban_giao: string;
-  dia_chi_lien_lac: string;
-  so_dien_thoai: string;
+  ngay_nop_don: string; // Ngày nộp đơn
+  ngay_nghi_viec_mong_muon: string; // Ngày nghỉ việc mong muốn
+  ly_do_tu_chuc: string; // Lý do từ chức
+  cong_viec_ban_giao: string; // Công việc bàn giao
+  dia_chi_lien_lac: string; // Địa chỉ liên lạc
+  so_dien_thoai: string; // Số điện thoại
 }
 
 export interface DonXinNghiViecFormData {
-  ngay_bat_dau_nghi: string;
-  ngay_du_kien_tro_lai: string;
-  so_ngay_nghi: number;
-  ly_do_nghi_viec: string;
-  dia_chi_trong_thoi_gian_nghi: string;
-  nguoi_lien_lac_khan_cap: string;
-  ghi_chu?: string;
+  ngay_bat_dau_nghi: string; // Ngày bắt đầu nghỉ
+  ngay_du_kien_tro_lai: string; // Ngày dự kiến trở lại
+  so_ngay_nghi: number; // Số ngày nghỉ
+  ly_do_nghi_viec: string; // Lý do nghỉ việc
+  dia_chi_trong_thoi_gian_nghi: string; // Địa chỉ trong thời gian nghỉ
+  nguoi_lien_lac_khan_cap: string; // Người liên lạc khẩn cấp
+  ghi_chu?: string; // Ghi chú (optional)
 }
 
 export interface DonXinNghiPhepFormData {
-  ngay_nghi_tu: string;
-  ngay_nghi_den: string;
-  so_ngay_nghi: number;
-  loai_nghi_phep: LeaveType;
-  ly_do: string;
-  dia_chi_lien_lac: string;
-  so_dien_thoai_lien_lac: string;
-  nguoi_thay_the: string;
-  cong_viec_can_ban_giao: string;
+  ngay_nghi_tu: string; // Ngày nghỉ từ
+  ngay_nghi_den: string; // Ngày nghỉ đến
+  so_ngay_nghi: number; // Số ngày nghỉ
+  loai_nghi_phep: LeaveType; // Loại nghỉ phép
+  ly_do: string; // Lý do
+  dia_chi_lien_lac: string; // Địa chỉ liên lạc
+  so_dien_thoai_lien_lac: string; // Số điện thoại liên lạc
+  nguoi_thay_the: string; // Người thay thế
+  cong_viec_can_ban_giao: string; // Công việc cần bàn giao
 }
 
 export interface DonXinDiTreVeSomFormData {
-  ngay_ap_dung: string;
-  loai_don: LateEarlyType;
-  gio_vao_binh_thuong: string;
-  gio_vao_mong_muon: string;
-  gio_ra_binh_thuong: string;
-  gio_ra_mong_muon: string;
-  so_gio_lam_bu: number;
-  cach_lam_bu: string;
-  ly_do: string;
-  ghi_chu?: string;
+  ngay_ap_dung: string; // Ngày áp dụng
+  loai_don: LateEarlyType; // Loại đơn (di_tre, ve_som, ca_hai)
+  gio_vao_binh_thuong: string; // Giờ vào bình thường
+  gio_vao_mong_muon: string; // Giờ vào mong muốn
+  gio_ra_binh_thuong: string; // Giờ ra bình thường
+  gio_ra_mong_muon: string; // Giờ ra mong muốn
+  so_gio_lam_bu: number; // Số giờ làm bù
+  cach_lam_bu: string; // Cách làm bù
+  ly_do: string; // Lý do
+  ghi_chu?: string; // Ghi chú (optional)
 }
 
 // Union type for all form data
@@ -115,12 +221,14 @@ export interface CreateRequestFormDto {
   title: string;
   content: string;
   form_data: RequestFormData;
+  supervisor_id?: string; // ID supervisor cho đơn thường
 }
 
 export interface UpdateRequestFormDto {
   title?: string;
   content?: string;
   form_data?: Partial<RequestFormData>;
+  supervisor_id?: string; // Có thể đổi supervisor khi cập nhật
 }
 
 // Filter/Query params
@@ -161,6 +269,37 @@ export interface RequestFormTypesResponse {
   };
 }
 
+export interface AuthorizableEmployeesResponse {
+  success: boolean;
+  data: Array<{
+    id: number;
+    name: string;
+    employee_code?: string;
+    role_name?: string;
+  }>;
+}
+
+// Response for signature fields endpoint
+export interface SignatureFieldsResponse {
+  success: boolean;
+  data: {
+    type: string;
+    required_signatures: string[];
+    signature_order: string[];
+    description: string;
+  };
+}
+
+// Response for authorized-to-me endpoint (different structure)
+export interface AuthorizedToMeResponse {
+  success: boolean;
+  data: RequestForm[];
+  total: number;
+  page: number;
+  limit: number;
+  last_page: number;
+}
+
 export interface RequestFormStatisticsResponse {
   success: boolean;
   data: {
@@ -185,6 +324,30 @@ export interface ApproveRequestFormDto {
   rejection_reason?: string;
 }
 
+// Delegation signature DTO
+export interface SignDelegationDto {
+  digital_signature_delegator?: File;
+  digital_signature_authorized?: File;
+}
+
+// Admin approval with signatures DTO
+export interface AdminApprovalDto {
+  action: 'approve' | 'reject';
+  digital_signature_applicant?: File; // Employee ký khi tạo đơn
+  digital_signature_supervisor?: File;
+  digital_signature_manager?: File;
+  rejection_reason?: string;
+}
+
+// Employee response for delegation
+export interface AuthorizableEmployee {
+  id: number;
+  name: string;
+  employee_code?: string;
+  gender?: string;
+  role_name?: string;
+}
+
 // Constants
 export const REQUEST_FORM_TYPES: Record<RequestFormType, string> = {
   giay_uy_quyen: 'Giấy ủy quyền',
@@ -197,7 +360,8 @@ export const REQUEST_FORM_TYPES: Record<RequestFormType, string> = {
 export const REQUEST_FORM_STATUSES: Record<RequestFormStatus, string> = {
   pending: 'Chờ duyệt',
   approved: 'Đã duyệt',
-  rejected: 'Từ chối'
+  rejected: 'Từ chối',
+  authorized_approved: 'Người được ủy quyền đã ký'
 };
 
 export const LEAVE_TYPES: Record<LeaveType, string> = {

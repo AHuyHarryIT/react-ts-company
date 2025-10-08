@@ -1,0 +1,302 @@
+﻿import React, { useEffect, useState } from 'react';
+import { Form, Input, DatePicker, Select, TimePicker, message } from 'antd';
+import dayjs, { Dayjs } from 'dayjs';
+import { employeeRequestFormService } from '@/services/RequestFormService';
+import { useEmployeeSelection } from './Utilities';
+
+interface Employee {
+  id: number;
+  name: string;
+  employee_code?: string;
+  gender?: string;
+  role_name?: string;
+}
+
+// Hàm để disable các ngày trong quá khứ
+const disabledDate = (current: Dayjs | null): boolean => {
+  // Disable tất cả ngày trước hôm nay
+  return current ? current < dayjs().startOf('day') : false;
+};
+
+export const GiayUyQuyenForm: React.FC = () => {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { setSelectedEmployee } = useEmployeeSelection();
+
+  // Fetch employees when component mounts
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        setLoading(true);
+        const response =
+          await employeeRequestFormService.getAuthorizableEmployees();
+        if (response.success) {
+          setEmployees(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+        message.error('Không thể tải danh sách nhân viên');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+
+  // Handle employee selection
+  const handleEmployeeSelect = (employeeId: string) => {
+    const selectedEmployee = employees.find(
+      (emp) => emp.id.toString() === employeeId
+    );
+    if (selectedEmployee) {
+      setSelectedEmployee({
+        id: selectedEmployee.id.toString(),
+        name: selectedEmployee.name,
+        employee_code: selectedEmployee.employee_code || ''
+      });
+    }
+  };
+
+  return (
+    <>
+      {/* Chọn nhân viên được ủy quyền */}
+      <Form.Item
+        name={['form_data', 'authorized_employee_id']}
+        label={<span className="font-medium">Chọn người được ủy quyền</span>}
+        rules={[
+          {
+            required: true,
+            message: 'Vui lòng chọn người được ủy quyền'
+          }
+        ]}
+      >
+        <Select
+          placeholder="-- Chọn người được ủy quyền --"
+          size="large"
+          loading={loading}
+          showSearch
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          onChange={handleEmployeeSelect}
+          options={employees.map((emp) => ({
+            label: emp.employee_code
+              ? `${emp.name} (${emp.employee_code})`
+              : emp.name,
+            value: emp.id.toString()
+          }))}
+        />
+      </Form.Item>
+
+      {/* Lưu ý trách nhiệm */}
+      <div className="mb-6">
+        <p className="text-sm text-gray-800">
+          <span className="font-semibold text-red-600">Lưu ý:</span> Người ủy
+          quyền và người được ủy quyền tự chịu trách nhiệm dân sự với nhau về
+          mọi vấn đề phát sinh từ việc ủy quyền này. Công ty không chịu trách
+          nhiệm pháp lý đối với các tranh chấp giữa hai bên.
+        </p>
+      </div>
+
+      {/* Nội dung ủy quyền */}
+      <Form.Item
+        name={['form_data', 'authorization_scope']}
+        label={<span className="font-medium">Nội dung ủy quyền</span>}
+        rules={[
+          { required: true, message: 'Vui lòng nhập nội dung ủy quyền' },
+          { min: 10, message: 'Nội dung ủy quyền phải có ít nhất 10 ký tự' }
+        ]}
+      >
+        <Input.TextArea
+          rows={4}
+          placeholder="Nhập nội dung ủy quyền..."
+          showCount
+          maxLength={255}
+          size="large"
+        />
+      </Form.Item>
+    </>
+  );
+};
+
+export const DonXinTuChucForm: React.FC = () => {
+  return (
+    <>
+      <Form.Item
+        name={['form_data', 'ngay_tu_chuc']}
+        label={<span className="font-medium">Ngày từ chức</span>}
+        rules={[{ required: true, message: 'Vui lòng chọn ngày từ chức' }]}
+      >
+        <DatePicker
+          format="DD/MM/YYYY"
+          style={{ width: '100%' }}
+          size="large"
+          disabledDate={disabledDate}
+          placeholder="Chọn ngày từ chức"
+        />
+      </Form.Item>
+      <Form.Item
+        name={['form_data', 'ly_do_tu_chuc']}
+        label={<span className="font-medium">Lý do từ chức</span>}
+        rules={[{ required: true, message: 'Vui lòng nhập lý do từ chức' }]}
+      >
+        <Input.TextArea
+          rows={3}
+          placeholder="Nhập lý do từ chức..."
+          showCount
+          maxLength={200}
+          size="large"
+        />
+      </Form.Item>
+    </>
+  );
+};
+
+export const DonXinNghiViecForm: React.FC = () => {
+  return (
+    <>
+      <Form.Item
+        name={['form_data', 'ngay_nghi_viec']}
+        label={<span className="font-medium">Ngày nghỉ việc</span>}
+        rules={[{ required: true, message: 'Vui lòng chọn ngày nghỉ việc' }]}
+      >
+        <DatePicker
+          format="DD/MM/YYYY"
+          style={{ width: '100%' }}
+          size="large"
+          disabledDate={disabledDate}
+          placeholder="Chọn ngày nghỉ việc"
+        />
+      </Form.Item>
+      <Form.Item
+        name={['form_data', 'ly_do_nghi_viec']}
+        label={<span className="font-medium">Lý do nghỉ việc</span>}
+        rules={[{ required: true, message: 'Vui lòng nhập lý do nghỉ việc' }]}
+      >
+        <Input.TextArea
+          rows={3}
+          placeholder="Nhập lý do nghỉ việc..."
+          showCount
+          maxLength={200}
+          size="large"
+        />
+      </Form.Item>
+    </>
+  );
+};
+
+export const DonXinNghiPhepForm: React.FC = () => {
+  return (
+    <>
+      <Form.Item
+        name={['form_data', 'ngay_nghi_phep']}
+        label={<span className="font-medium">Ngày nghỉ phép</span>}
+        rules={[{ required: true, message: 'Vui lòng chọn ngày nghỉ phép' }]}
+      >
+        <DatePicker
+          format="DD/MM/YYYY"
+          style={{ width: '100%' }}
+          size="large"
+          disabledDate={disabledDate}
+          placeholder="Chọn ngày nghỉ phép"
+        />
+      </Form.Item>
+      <Form.Item
+        name={['form_data', 'ly_do_nghi_phep']}
+        label={<span className="font-medium">Lý do nghỉ phép</span>}
+        rules={[{ required: true, message: 'Vui lòng nhập lý do nghỉ phép' }]}
+      >
+        <Input.TextArea
+          rows={3}
+          placeholder="Nhập lý do nghỉ phép..."
+          showCount
+          maxLength={200}
+          size="large"
+        />
+      </Form.Item>
+    </>
+  );
+};
+
+export const DonXinDiTreVeSomForm: React.FC = () => {
+  return (
+    <>
+      {/* Ngày đi trễ-về sớm, Giờ vào, Giờ ra trên 1 hàng */}
+      <div className="flex items-end gap-4">
+        <Form.Item
+          name={['form_data', 'ngay_ap_dung']}
+          label={<span className="font-medium">Ngày đi trễ-về sớm</span>}
+          rules={[{ required: true, message: 'Vui lòng chọn ngày' }]}
+          className="flex-1"
+        >
+          <DatePicker
+            format="DD/MM/YYYY"
+            style={{ width: '100%' }}
+            size="large"
+            disabledDate={disabledDate}
+            placeholder="Chọn ngày"
+          />
+        </Form.Item>
+        <Form.Item
+          name={['form_data', 'gio_vao_tre']}
+          label={<span className="font-medium">Giờ vào</span>}
+          className="flex-1"
+        >
+          <TimePicker
+            format="HH:mm"
+            style={{ width: '100%' }}
+            size="large"
+            placeholder="Chọn giờ vào"
+          />
+        </Form.Item>
+        <Form.Item
+          name={['form_data', 'gio_ve_som']}
+          label={<span className="font-medium">Giờ ra</span>}
+          className="flex-1"
+        >
+          <TimePicker
+            format="HH:mm"
+            style={{ width: '100%' }}
+            size="large"
+            placeholder="Chọn giờ ra"
+          />
+        </Form.Item>
+      </div>
+
+      {/* Lý do */}
+      <Form.Item
+        name={['form_data', 'ly_do_di_tre_ve_som']}
+        label={<span className="font-medium">Lý do</span>}
+        rules={[{ required: true, message: 'Vui lòng nhập lý do' }]}
+      >
+        <Input.TextArea
+          rows={3}
+          placeholder="Nhập lý do..."
+          showCount
+          maxLength={200}
+          size="large"
+        />
+      </Form.Item>
+    </>
+  );
+};
+
+export const FormFieldsRenderer: React.FC<{ formType: string }> = ({
+  formType
+}) => {
+  switch (formType) {
+    case 'giay_uy_quyen':
+      return <GiayUyQuyenForm />;
+    case 'don_xin_tu_chuc':
+      return <DonXinTuChucForm />;
+    case 'don_xin_nghi_viec':
+      return <DonXinNghiViecForm />;
+    case 'don_xin_nghi_phep':
+      return <DonXinNghiPhepForm />;
+    case 'don_xin_di_tre_ve_som':
+      return <DonXinDiTreVeSomForm />;
+    default:
+      return null;
+  }
+};

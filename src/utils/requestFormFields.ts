@@ -124,28 +124,28 @@ const getFormDataFields = (type: RequestFormType): FieldConfig[] => {
     case 'don_xin_di_tre_ve_som':
       return [
         {
-          name: 'ngay_di_tre_ve_som',
+          name: 'ngay_ap_dung',
           label: 'Ngày đi trễ - về sớm',
           type: 'date',
           required: true,
           placeholder: 'Chọn ngày'
         },
         {
-          name: 'gio_vao',
+          name: 'gio_vao_tre',
           label: 'Giờ vào',
           type: 'time',
           required: true,
           placeholder: 'Chọn giờ vào'
         },
         {
-          name: 'gio_ra',
+          name: 'gio_ve_som',
           label: 'Giờ ra',
           type: 'time',
           required: true,
           placeholder: 'Chọn giờ ra'
         },
         {
-          name: 'ly_do',
+          name: 'ly_do_di_tre_ve_som',
           label: 'Lý do đi trễ - về sớm',
           type: 'textarea',
           required: true,

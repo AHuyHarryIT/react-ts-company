@@ -7,7 +7,7 @@ import { authStore } from '@stores/authStore';
 
 import { IconLogOut } from '@components/icons';
 import { useStore } from '@tanstack/react-store';
-import { FaUser, FaUserCircle } from 'react-icons/fa';
+import { FaUser, FaUserCircle, FaFileAlt } from 'react-icons/fa';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -77,6 +77,23 @@ export default function UserDropdown() {
       label: <Link to={'/profile'}>Hồ Sơ</Link>,
       icon: <FaUserCircle />
     },
+    // Chỉ hiển thị menu "Đơn Yêu Cầu" cho non-admin roles
+    ...(() => {
+      const roleName = user?.role?.name?.toLowerCase() || '';
+      const isAdminRole = ['super admin', 'admin', 'co admin'].includes(
+        roleName
+      );
+
+      return !isAdminRole
+        ? [
+            {
+              key: 'request-forms',
+              label: <Link to={'/employee/request-forms'}>Đơn Yêu Cầu</Link>,
+              icon: <FaFileAlt />
+            }
+          ]
+        : [];
+    })(),
     { type: 'divider' },
     {
       key: 'log-out',

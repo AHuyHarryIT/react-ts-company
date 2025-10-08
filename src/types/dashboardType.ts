@@ -10,6 +10,7 @@ export interface DashboardDataType {
   totalPlan: number;
   totalRecord: number;
   totalCheckEmployee: number;
+  totalRequestForms: number;
 }
 
 export type SalaryTableType = TableType & {

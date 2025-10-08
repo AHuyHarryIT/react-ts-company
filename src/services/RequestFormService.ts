@@ -7,7 +7,9 @@ import {
   RequestFormDetailResponse,
   RequestFormTypesResponse,
   RequestFormStatisticsResponse,
-  ApproveRequestFormDto
+  ApproveRequestFormDto,
+  AuthorizableEmployeesResponse,
+  AuthorizedToMeResponse
 } from '@/types/requestFormType';
 
 // Employee RequestForm Service
@@ -39,6 +41,31 @@ export const employeeRequestFormService = {
     return await axiosPrivate.get('/api/employee/request-forms/types');
   },
 
+  // Get authorizable employees for delegation forms
+  getAuthorizableEmployees:
+    async (): Promise<AuthorizableEmployeesResponse> => {
+      return await axiosPrivate.get(
+        '/api/employee/request-forms/authorizable-employees'
+      );
+    },
+
+  // Get signature fields information by form type
+  getSignatureFields: async (
+    type: string
+  ): Promise<{
+    success: boolean;
+    data: {
+      type: string;
+      required_signatures: string[];
+      signature_order: string[];
+      description: string;
+    };
+  }> => {
+    return await axiosPrivate.get(
+      `/api/employee/request-forms/signature-fields?type=${type}`
+    );
+  },
+
   // Get detail of specific request form
   getDetail: async (id: number): Promise<RequestFormDetailResponse> => {
     return await axiosPrivate.get(`/api/employee/request-forms/${id}`);
@@ -52,7 +79,7 @@ export const employeeRequestFormService = {
       data instanceof FormData
         ? {
             headers: {
-              'Content-Type': 'multipart/form-data'
+              'Content-Type': undefined // Let axios auto-set with boundary
             }
           }
         : {};
@@ -69,7 +96,7 @@ export const employeeRequestFormService = {
       data instanceof FormData
         ? {
             headers: {
-              'Content-Type': 'multipart/form-data'
+              'Content-Type': undefined // Let axios auto-set with boundary
             }
           }
         : {};
@@ -86,6 +113,92 @@ export const employeeRequestFormService = {
     id: number
   ): Promise<{ success: boolean; message: string }> => {
     return await axiosPrivate.delete(`/api/employee/request-forms/${id}`);
+  },
+
+  // Sign delegation form (user signs delegator or authorized signature)
+  signDelegation: async (
+    id: number,
+    data: {
+      digital_signature_delegator?: File;
+      digital_signature_authorized?: File;
+    }
+  ): Promise<RequestFormDetailResponse> => {
+    const formData = new FormData();
+
+    if (data.digital_signature_delegator) {
+      formData.append(
+        'digital_signature_delegator',
+        data.digital_signature_delegator
+      );
+    }
+
+    if (data.digital_signature_authorized) {
+      formData.append(
+        'digital_signature_authorized',
+        data.digital_signature_authorized
+      );
+    }
+
+    return await axiosPrivate.post(
+      `/api/employee/request-forms/${id}/sign-delegation`,
+      formData,
+      {
+        headers: {
+          'Content-Type': undefined // Let axios auto-set with boundary
+        }
+      }
+    );
+  },
+
+  // Get authorized request forms (forms delegated to current user)
+  getAuthorizedToMe: async (filters?: {
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<AuthorizedToMeResponse> => {
+    const params = new URLSearchParams();
+
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.page) params.append('page', filters.page.toString());
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+
+    const queryString = params.toString();
+    const url = queryString
+      ? `/api/employee/request-forms/authorized-to-me?${queryString}`
+      : '/api/employee/request-forms/authorized-to-me';
+
+    return await axiosPrivate.get(url);
+  },
+
+  // Approve request as authorized person (with digital signature file)
+  approveAsAuthorized: async (
+    id: number,
+    digitalSignatureFile: File
+  ): Promise<RequestFormDetailResponse> => {
+    const formData = new FormData();
+    formData.append('digital_signature_authorized', digitalSignatureFile);
+
+    // Let axios auto-set Content-Type with boundary
+    return await axiosPrivate.post(
+      `/api/employee/request-forms/${id}/approve-as-authorized`,
+      formData,
+      {
+        headers: {
+          'Content-Type': undefined
+        }
+      }
+    );
+  },
+
+  // Reject request as authorized person (with reason)
+  rejectAsAuthorized: async (
+    id: number,
+    rejectionReason: string
+  ): Promise<RequestFormDetailResponse> => {
+    return await axiosPrivate.post(
+      `/api/employee/request-forms/${id}/reject-as-authorized`,
+      { rejection_reason: rejectionReason }
+    );
   }
 };
 
@@ -124,7 +237,7 @@ export const adminRequestFormService = {
     return await axiosPrivate.get(`/api/request-forms/${id}`);
   },
 
-  // Approve or reject request form
+  // Approve or reject request form (delegation forms - simple approval)
   approveOrReject: async (
     id: number,
     data: ApproveRequestFormDto
@@ -132,21 +245,21 @@ export const adminRequestFormService = {
     return await axiosPrivate.post(`/api/request-forms/${id}/approve`, data);
   },
 
-  // Approve or reject request form with signatures (multipart/form-data)
+  // Approve regular forms with supervisor/manager signatures
   approveOrRejectWithSignatures: async (
     id: number,
     data: {
       action: 'approve' | 'reject';
       digital_signature_supervisor?: File;
       digital_signature_manager?: File;
-      reject_reason?: string;
+      rejection_reason?: string;
     }
   ): Promise<RequestFormDetailResponse> => {
     const formData = new FormData();
     formData.append('action', data.action);
 
-    if (data.reject_reason) {
-      formData.append('rejection_reason', data.reject_reason);
+    if (data.rejection_reason) {
+      formData.append('rejection_reason', data.rejection_reason);
     }
 
     if (data.digital_signature_supervisor) {
@@ -168,7 +281,7 @@ export const adminRequestFormService = {
       formData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': undefined // Let axios auto-set with boundary
         }
       }
     );

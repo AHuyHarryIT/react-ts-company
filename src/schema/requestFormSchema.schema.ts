@@ -37,35 +37,27 @@ export const baseRequestFormSchema = z.object({
 
 // Giấy ủy quyền schema
 export const giayUyQuyenFormDataSchema = z.object({
-  ma_nhan_vien_duoc_uy_quyen: z
-    .string({
-      required_error: vi.REQUIRED_FIELD
-    })
-    .min(1, vi.REQUIRED_FIELD)
-    .max(20, vi.TOO_LONG.replace('{max}', '20')),
-  ten_nguoi_duoc_uy_quyen: z
-    .string({
-      required_error: vi.REQUIRED_FIELD
-    })
-    .min(1, vi.REQUIRED_FIELD)
-    .max(100, vi.TOO_LONG.replace('{max}', '100')),
-  gioi_tinh_nguoi_duoc_uy_quyen: z
+  authorized_employee_id: z
     .string({
       required_error: vi.REQUIRED_FIELD
     })
     .min(1, vi.REQUIRED_FIELD),
-  chuc_vu_nguoi_duoc_uy_quyen: z
+  authorization_scope: z
     .string({
       required_error: vi.REQUIRED_FIELD
     })
     .min(1, vi.REQUIRED_FIELD)
-    .max(100, vi.TOO_LONG.replace('{max}', '100')),
-  noi_dung_uy_quyen: z
+    .max(255, vi.TOO_LONG.replace('{max}', '255')),
+  valid_from: z
     .string({
       required_error: vi.REQUIRED_FIELD
     })
-    .min(1, vi.REQUIRED_FIELD)
-    .max(500, vi.TOO_LONG.replace('{max}', '500'))
+    .regex(datePattern, vi.INVALID_DATE),
+  valid_to: z
+    .string({
+      required_error: vi.REQUIRED_FIELD
+    })
+    .regex(datePattern, vi.INVALID_DATE)
 });
 
 export const giayUyQuyenSchema = baseRequestFormSchema.extend({
