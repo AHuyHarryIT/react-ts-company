@@ -264,7 +264,7 @@ export const PrintBagStamp = ({
               box-shadow: none !important;
             }
             @page {
-              size: ${printLayout === 'single' ? '100mm 100mm' : 'A4 portrait'} !important;
+              size: ${printLayout === 'single' ? '100mm 70mm' : 'A4 portrait'} !important;
               margin: 0 !important;
             }
             ${
@@ -272,15 +272,18 @@ export const PrintBagStamp = ({
                 ? `
             .stamp-item-single {
               width: 100mm !important;
-              height: 100mm !important;
+              height: 70mm !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
               page-break-after: always !important;
+              box-sizing: border-box !important;
+              margin: 0 auto !important;
             }
             .stamp-item-single table {
               width: 95mm !important;
               height: auto !important;
+              margin: 0 auto !important;
             }
             `
                 : ''
@@ -299,7 +302,7 @@ export const PrintBagStamp = ({
         className="bag-print-container print:m-0 print:p-0 print:shadow-none"
       >
         {product && printLayout === 'single'
-          ? // Single layout: 1 stamp per page (100mm x 100mm)
+          ? // Single layout: 1 stamp per page (100mm x 70mm)
             (() => {
               // Generate all stamps based on the input
               let allStamps: number[];
