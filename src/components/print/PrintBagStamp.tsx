@@ -264,26 +264,62 @@ export const PrintBagStamp = ({
               box-shadow: none !important;
             }
             @page {
-              size: ${printLayout === 'single' ? '100mm 70mm' : 'A4 portrait'} !important;
+              size: ${printLayout === 'single' ? '100mm 50mm' : 'letter portrait'} !important;
               margin: 0 !important;
             }
             ${
               printLayout === 'single'
                 ? `
+            body {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
             .stamp-item-single {
               width: 100mm !important;
-              height: 70mm !important;
+              height: 50mm !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
               page-break-after: always !important;
               box-sizing: border-box !important;
-              margin: 0 auto !important;
+              margin: 0 !important;
+              padding: 2mm !important;
             }
             .stamp-item-single table {
-              width: 95mm !important;
+              width: 96mm !important;
               height: auto !important;
+              max-height: 46mm !important;
               margin: 0 auto !important;
+              font-size: 7px !important;
+            }
+            .stamp-item-single td {
+              padding: 1.5px 2px !important;
+              line-height: 1.2 !important;
+              vertical-align: middle !important;
+            }
+            .stamp-item-single tr {
+              height: auto !important;
+              min-height: 3mm !important;
+            }
+            .stamp-item-single .text-sm {
+              font-size: 9px !important;
+            }
+            .stamp-item-single .font-bold {
+              font-size: 9px !important;
+            }
+            .stamp-item-single .text-sm.font-bold {
+              font-size: 10px !important;
+            }
+            .stamp-item-single .text-[7.2px] {
+              font-size: 6px !important;
+              line-height: 1.1 !important;
+            }
+            .stamp-item-single .h-18 {
+              height: 10mm !important;
+            }
+            .stamp-item-single .mx-6 {
+              margin-left: 1rem !important;
+              margin-right: 1rem !important;
             }
             `
                 : ''
@@ -302,7 +338,7 @@ export const PrintBagStamp = ({
         className="bag-print-container print:m-0 print:p-0 print:shadow-none"
       >
         {product && printLayout === 'single'
-          ? // Single layout: 1 stamp per page (100mm x 70mm)
+          ? // Single layout: 1 stamp per page (100mm x 50mm)
             (() => {
               // Generate all stamps based on the input
               let allStamps: number[];

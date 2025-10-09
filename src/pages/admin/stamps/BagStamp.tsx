@@ -226,7 +226,7 @@ export default function BagStamp() {
                   In theo lưới (6 tem/trang - A4 ngang)
                 </Radio>
                 <Radio value="single">
-                  In đơn lẻ (1 tem/trang - 100mm x 100mm)
+                  In đơn lẻ (1 tem/trang - 100mm x 50mm)
                 </Radio>
               </Radio.Group>
             </Form.Item>
