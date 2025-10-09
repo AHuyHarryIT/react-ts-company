@@ -53,10 +53,6 @@ export const permissionIconMap: PermissionIconType = {
   view_label_management: FaPrint, // parent
   view_attendance: FaCalendarCheck, // parent
 
-  // Request Forms
-  view_request_forms: FaClipboardList,
-  approve_request_forms: FaClipboardList,
-
   // Employee
   view_employee_schedule: FaCalendarAlt,
   view_salary: FaMoneyCheckAlt,
@@ -96,8 +92,6 @@ export const permissionPathMap: PermissionPathType = {
   view_attendance_calculation: '/admin/attendances/record',
   view_schedule: '/work-schedules',
   view_schedule_categories: '/admin/work-schedule-categories',
-
-  // Request Forms - cho phép admin và special users
   view_request_forms: '/request-forms',
 
   //Employee
@@ -114,6 +108,5 @@ export const permissionPathMap: PermissionPathType = {
   input_quantity: '/employee/todo/update-quantity',
   input_quantity_error: '/employee/todo/update-quantity-error',
   history_input_quantity: '/employee/todo/history',
-  view_activity_history: '/employee/activity-schedule',
-  create_request_forms: '/employee/request-forms'
+  view_activity_history: '/employee/activity-schedule'
 };
