@@ -225,21 +225,27 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
     const hasManagerSignature =
       record.has_manager_signature || !!record.digital_signature_manager;
 
-    // ❌ Nếu đã có cả 2 chữ ký thì không cho phép thao tác nữa
+    // ❌ Nếu đã có cả 2 chữ ký thì không cho phép thao tác nữa (đơn đã hoàn thành)
     if (hasSupervisorSignature && hasManagerSignature) return false;
 
-    // ❌ LOGIC QUAN TRỌNG: Nếu supervisor đã ký rồi → KHÔNG CHO PHÉP TỪ CHỐI
-    // (chỉ cho phép duyệt tiếp bởi manager/admin)
-    if (hasSupervisorSignature) {
-      // Bất kể ai (supervisor khác hay admin) cũng không được từ chối nữa
-      return false;
+    // ✅ LOGIC MỚI: Admin/Manager luôn có quyền từ chối
+    // - Nếu chỉ có chữ ký supervisor → Admin/Manager vẫn có thể từ chối
+    // - Nếu chỉ có chữ ký manager → Admin khác vẫn có thể từ chối
+    // - Nếu chưa có chữ ký nào → Admin vẫn có thể từ chối
+    if (userType === 'admin') {
+      return true; // Admin luôn có quyền từ chối (trừ khi đã có cả 2 chữ ký)
     }
 
-    // ❌ Nếu manager đã ký rồi → KHÔNG CHO PHÉP TỪ CHỐI
-    if (hasManagerSignature) {
-      return false;
+    // ✅ Supervisor chỉ có thể từ chối khi chưa có chữ ký nào
+    if (userType === 'supervisor') {
+      // Nếu supervisor đã ký rồi → không cho supervisor khác từ chối
+      if (hasSupervisorSignature) return false;
+      // Nếu manager đã ký rồi → không cho supervisor từ chối
+      if (hasManagerSignature) return false;
+      return true;
     }
 
+    // Default: cho phép từ chối nếu chưa có đủ 2 chữ ký
     return true;
   };
 
@@ -547,7 +553,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
         return (
           <div className="text-center">
             <div className="mb-1 text-xs font-medium text-gray-800">
-              Quản lý
+              Quản lý nhà máy
             </div>
             {hasManagerSignature ? (
               <div>
@@ -582,9 +588,9 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       title: 'Ngày nộp đơn',
       dataIndex: 'submitted_at',
       key: 'submitted_at',
-      width: 120,
+      width: 140,
       render: (date: string) => (
-        <span className="text-gray-600">
+        <span className="whitespace-nowrap text-gray-600">
           {dayjs(date).format('DD/MM/YYYY HH:mm')}
         </span>
       )
@@ -604,7 +610,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
             return (
               <div>
                 {/* <div className="text-xs text-gray-500 mb-0.5">Người được uỷ quyền</div> */}
-                <span className="text-sm text-cyan-600">
+                <span className="whitespace-nowrap text-gray-600">
                   {dayjs(record.authorized_approved_at).format(
                     'DD/MM/YYYY HH:mm'
                   )}
@@ -623,7 +629,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
             return (
               <div>
                 <div className="mb-0.5 text-xs text-gray-500">Admin duyệt:</div>
-                <span className="text-sm text-green-600">
+                <span className="whitespace-nowrap text-gray-600">
                   {dayjs(date).format('DD/MM/YYYY HH:mm')}
                 </span>
                 {approverName && (
@@ -644,7 +650,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
 
             return (
               <div>
-                <span className="text-sm text-red-500">
+                <span className="whitespace-nowrap text-gray-600">
                   {dayjs(date).format('DD/MM/YYYY HH:mm')}
                 </span>
                 {approverName && (
@@ -669,7 +675,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
 
           return (
             <div>
-              <span className="text-sm text-green-600">
+              <span className="whitespace-nowrap text-gray-600">
                 {dayjs(date).format('DD/MM/YYYY HH:mm')}
               </span>
               {approverName && (
@@ -690,7 +696,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
 
           return (
             <div>
-              <span className="text-sm text-red-500">
+              <span className="whitespace-nowrap text-gray-600">
                 {dayjs(date).format('DD/MM/YYYY HH:mm')}
               </span>
               {approverName && (

@@ -255,9 +255,9 @@ Tôi xin chân thành cảm ơn!
 
 TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${dayjs().year()}
 
-                    Người làm đơn                                Tổ trưởng                                Quản lý
+                    Người làm đơn                                Tổ trưởng                                Quản lý nhà máy
            
-           [Vùng chữ ký điện tử]                     ${getSupervisorName()}                     [Quản lý cần ký tại đây]
+           [Vùng chữ ký điện tử]                     ${getSupervisorName()}                     [Quản lý nhà máy cần ký tại đây]
            
            ${cleanName(userInfo?.name)}`;
       }
@@ -280,9 +280,9 @@ Tôi xin chân thành cảm ơn!
 
 TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${dayjs().year()}
 
-                    Người làm đơn                                Tổ trưởng                                Quản lý
+                    Người làm đơn                                Tổ trưởng                                Quản lý nhà máy
            
-           [Vùng chữ ký điện tử]                     ${getSupervisorName()}                     [Quản lý cần ký tại đây]
+           [Vùng chữ ký điện tử]                     ${getSupervisorName()}                     [Quản lý nhà máy cần ký tại đây]
            
            ${cleanName(userInfo?.name)}`;
       }
@@ -307,9 +307,9 @@ Tôi xin chân thành cảm ơn!
 
 TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${dayjs().year()}
 
-                    Người làm đơn                                Tổ trưởng                                Quản lý
+                    Người làm đơn                                Tổ trưởng                                Quản lý nhà máy
            
-           [Vùng chữ ký điện tử]                     ${getSupervisorName()}                     [Quản lý cần ký tại đây]
+           [Vùng chữ ký điện tử]                     ${getSupervisorName()}                     [Quản lý nhà máy cần ký tại đây]
            
            ${cleanName(userInfo?.name)}`;
       }
@@ -348,9 +348,9 @@ Tôi xin chân thành cảm ơn!
 
 TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${dayjs().year()}
 
-                    Người làm đơn                                Tổ trưởng                                Quản lý
+                    Người làm đơn                                Tổ trưởng                                Quản lý nhà máy
            
-           [Vùng chữ ký điện tử]                     ${getSupervisorName()}                     [Quản lý cần ký tại đây]
+           [Vùng chữ ký điện tử]                     ${getSupervisorName()}                     [Quản lý nhà máy cần ký tại đây]
            
            ${cleanName(userInfo?.name)}`;
       }

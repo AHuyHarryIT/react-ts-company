@@ -283,11 +283,11 @@ export const AdminActionModal: React.FC<AdminActionModalProps> = ({
             message={
               userType === 'supervisor'
                 ? 'Ký chữ ký Tổ Trưởng'
-                : 'Ký chữ ký Quản Lý và Phê duyệt'
+                : 'Ký chữ ký Quản Lý Nhà Máy và Phê duyệt'
             }
             description={
               userType === 'supervisor'
-                ? 'Sau khi bạn ký, đơn sẽ vẫn ở trạng thái "Chờ duyệt" và chờ Quản Lý ký để hoàn tất.'
+                ? 'Sau khi bạn ký, đơn sẽ vẫn ở trạng thái "Chờ duyệt" và chờ Quản Lý Nhà Máy ký để hoàn tất.'
                 : 'Sau khi bạn ký, đơn sẽ được phê duyệt và chuyển sang trạng thái "Đã duyệt".'
             }
             type="info"
@@ -485,7 +485,7 @@ export const AdminActionModal: React.FC<AdminActionModalProps> = ({
                   ? 'Phê duyệt đơn ủy quyền'
                   : userType === 'supervisor'
                     ? 'Ký chữ ký Tổ Trưởng'
-                    : 'Ký chữ ký Quản Lý và Phê duyệt'}
+                    : 'Ký chữ ký Quản Lý Nhà Máy và Phê duyệt'}
               </span>
             </>
           ) : (

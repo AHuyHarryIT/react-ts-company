@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, message, Modal, Alert, Spin } from 'antd';
+import { Button, message, Modal, Alert, Spin, Tabs } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,17 +11,34 @@ import {
   ConfirmDeleteModal,
   DetailView,
   CreateEditModal,
-  DelegationSignModal
+  DelegationSignModal,
+  RequestFormDetailView
 } from '@components/RequestForm';
-import { employeeRequestFormService } from '@services/RequestFormService';
+import AdminActionModal from '@components/RequestForm/AdminModals';
+import {
+  employeeRequestFormService,
+  adminRequestFormService,
+  requestFormService
+} from '@services/RequestFormService';
 import {
   RequestForm,
   RequestFormFilters as RequestFormFiltersType
 } from '@/types/requestFormType';
+import { SUPERVISOR_IDS } from '@/constants/supervisors';
+import { getUserApprovalType } from '@utils/authUtil';
 
 export default function RequestFormList() {
   const { user } = useAuth();
   const prefetchEmployees = usePrefetchAuthorizableEmployees();
+
+  // Check if user is supervisor
+  const isSupervisor =
+    user?.id &&
+    (SUPERVISOR_IDS as readonly string[]).includes(user.id.toString());
+  const userType = getUserApprovalType(user, [...SUPERVISOR_IDS]);
+
+  // Active tab state
+  const [activeTab, setActiveTab] = useState('my-requests');
 
   const [filters, setFilters] = useState<RequestFormFiltersType>({
     per_page: 15,
@@ -40,6 +57,12 @@ export default function RequestFormList() {
   const [delegationSignModalVisible, setDelegationSignModalVisible] =
     useState(false);
 
+  // Admin/Supervisor approval states
+  const [approvalModalVisible, setApprovalModalVisible] = useState(false);
+  const [approvalMode, setApprovalMode] = useState<'approve' | 'reject'>(
+    'approve'
+  );
+
   const queryClient = useQueryClient();
 
   // Prefetch employees list when component mounts for faster detail view loading
@@ -52,6 +75,19 @@ export default function RequestFormList() {
     queryClient.invalidateQueries({
       queryKey: ['employee-request-forms']
     });
+    // Also invalidate admin queries if supervisor
+    if (isSupervisor) {
+      queryClient.invalidateQueries({
+        queryKey: ['admin-request-forms']
+      });
+    }
+  };
+
+  const closeModals = () => {
+    setApprovalModalVisible(false);
+    setDelegationSignModalVisible(false);
+    setDetailModalVisible(false);
+    setSelectedRecord(null);
   };
 
   // Fetch request forms với filters và optimizations
@@ -156,8 +192,7 @@ export default function RequestFormList() {
     onSuccess: () => {
       message.success('Đã ký đơn ủy quyền thành công');
       invalidateRequestForms();
-      setDelegationSignModalVisible(false);
-      setSelectedRecord(null);
+      closeModals();
     },
     onError: (
       error: { response?: { data?: { message?: string } } },
@@ -176,10 +211,182 @@ export default function RequestFormList() {
     }
   });
 
+  // ============================================
+  // ADMIN/SUPERVISOR TAB QUERIES & MUTATIONS
+  // ============================================
+
+  // Fetch admin request forms for supervisor tab
+  const {
+    data: adminData,
+    isLoading: adminIsLoading,
+    isFetching: adminIsFetching,
+    error: adminError,
+    refetch: adminRefetch
+  } = useQuery({
+    queryKey: ['admin-request-forms', filters],
+    queryFn: () => adminRequestFormService.getList(filters),
+    enabled: !!(isSupervisor && activeTab === 'approval'), // Only fetch when supervisor and on approval tab
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: activeTab === 'approval' ? 5000 : false, // Only poll when on approval tab
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    placeholderData: (previousData) => previousData,
+    select: (response) => {
+      const allData = response.data?.data || [];
+      // Filter for supervisor: only show requests assigned to them
+      const filteredData = allData.filter(
+        (form: RequestForm) =>
+          form.supervisor_id?.toString() === user?.id?.toString() &&
+          form.type !== 'giay_uy_quyen' // Exclude delegation requests
+      );
+
+      return {
+        data: filteredData,
+        total: filteredData.length,
+        current_page: response.data?.current_page || 1,
+        per_page: response.data?.per_page || 15,
+        last_page: Math.ceil(
+          filteredData.length / (response.data?.per_page || 15)
+        )
+      };
+    }
+  });
+
+  // Approval mutation for admin/supervisor
+  const approveRejectMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data
+    }: {
+      id: number;
+      data: {
+        action: 'approve' | 'reject';
+        rejection_reason?: string;
+        digital_signature_supervisor?: File;
+        digital_signature_manager?: File;
+      };
+    }) => {
+      const {
+        action,
+        digital_signature_supervisor,
+        digital_signature_manager,
+        rejection_reason
+      } = data;
+
+      if (action === 'reject') {
+        return await requestFormService.admin.approveOrReject(id, {
+          action,
+          rejection_reason
+        });
+      }
+
+      // For approve action
+      const hasSignatures =
+        digital_signature_supervisor || digital_signature_manager;
+      return hasSignatures
+        ? await requestFormService.admin.approveOrRejectWithSignatures(id, {
+            action,
+            digital_signature_supervisor,
+            digital_signature_manager
+          })
+        : await requestFormService.admin.approveOrReject(id, { action });
+    },
+    onMutate: async ({ id, data: actionData }) => {
+      await queryClient.cancelQueries({ queryKey: ['admin-request-forms'] });
+      const previousData = queryClient.getQueryData([
+        'admin-request-forms',
+        filters
+      ]);
+
+      queryClient.setQueryData(
+        ['admin-request-forms', filters],
+        (old: unknown) => {
+          if (
+            !old ||
+            typeof old !== 'object' ||
+            !('data' in old) ||
+            !Array.isArray(old.data)
+          )
+            return old;
+          return {
+            ...old,
+            data: old.data.map((form: RequestForm) =>
+              form.id === id
+                ? {
+                    ...form,
+                    status:
+                      actionData.action === 'reject' ? 'rejected' : form.status
+                  }
+                : form
+            )
+          };
+        }
+      );
+
+      return { previousData };
+    },
+    onSuccess: (_, { data }) => {
+      if (data.action === 'reject') {
+        message.success('Từ chối đơn yêu cầu thành công!');
+      } else {
+        const hasSupervisorSig = !!data.digital_signature_supervisor;
+        message.success(
+          hasSupervisorSig
+            ? 'Đã ký chữ ký tổ trưởng thành công! Đơn đang chờ chữ ký quản lý.'
+            : 'Ký chữ ký thành công!'
+        );
+      }
+      invalidateRequestForms();
+      closeModals();
+    },
+    onError: (
+      error: Error & { response?: { data?: { message?: string } } },
+      _,
+      context
+    ) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ['admin-request-forms', filters],
+          context.previousData
+        );
+      }
+      console.error('Approve/Reject error:', error);
+      message.error(
+        `Có lỗi xảy ra: ${error.response?.data?.message || error.message}`
+      );
+    }
+  });
+
+  // Mutation để duyệt trực tiếp đơn Giấy Ủy Quyền (should not happen in supervisor view)
+  const { mutate: approveDirectly } = useMutation({
+    mutationFn: (id: number) =>
+      requestFormService.admin.approveOrReject(id, { action: 'approve' }),
+    onSuccess: () => {
+      message.destroy();
+      message.success('Đơn ủy quyền đã được duyệt thành công!');
+      invalidateRequestForms();
+    },
+    onError: (error: { response?: { data?: { message?: string } } }) => {
+      message.destroy();
+      message.error(
+        error?.response?.data?.message || 'Có lỗi xảy ra khi duyệt đơn'
+      );
+    }
+  });
+
+  // ============================================
+  // EVENT HANDLERS
+  // ============================================
+
   const handleView = async (record: RequestForm) => {
     // Fetch full detail từ API để có content đầy đủ
     try {
-      const response = await employeeRequestFormService.getDetail(record.id);
+      const service =
+        activeTab === 'approval'
+          ? adminRequestFormService
+          : employeeRequestFormService;
+      const response = await service.getDetail(record.id);
       const fullData = response.data;
       setSelectedRecord(fullData);
       setDetailModalVisible(true);
@@ -202,6 +409,23 @@ export default function RequestFormList() {
   const handleSignDelegation = (record: RequestForm) => {
     setSelectedRecord(record);
     setDelegationSignModalVisible(true);
+  };
+
+  const handleApprove = (record: RequestForm) => {
+    if (record.type === 'giay_uy_quyen') {
+      message.loading('Đang duyệt đơn ủy quyền...', 0);
+      approveDirectly(record.id);
+    } else {
+      setSelectedRecord(record);
+      setApprovalMode('approve');
+      setApprovalModalVisible(true);
+    }
+  };
+
+  const handleReject = (record: RequestForm) => {
+    setSelectedRecord(record);
+    setApprovalMode('reject');
+    setApprovalModalVisible(true);
   };
 
   const confirmDelete = () => {
@@ -243,51 +467,129 @@ export default function RequestFormList() {
       }
     : undefined;
 
+  // Admin data and pagination for supervisor approval tab
+  const adminRequestForms = adminData?.data || [];
+  const adminPagination = adminData
+    ? {
+        current: adminData.current_page,
+        total: adminData.total,
+        pageSize: adminData.per_page,
+        showSizeChanger: true,
+        showQuickJumper: true,
+        showTotal: (total: number, range: [number, number]) =>
+          `${range[0]}-${range[1]} của ${total} đơn`,
+        onChange: handleTableChange
+      }
+    : undefined;
+
+  // Define tabs
+  const tabItems = [
+    {
+      key: 'my-requests',
+      label: 'Đơn của tôi',
+      children: (
+        <>
+          <div className="mb-4 flex flex-wrap gap-4">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setCreateModalVisible(true)}
+            >
+              Tạo đơn mới
+            </Button>
+            <RefreshButton isLoading={isFetching} refresh={refetch} />
+          </div>
+
+          <FilterPanel
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            onClearFilters={handleClearFilters}
+            isAdmin={false}
+          />
+
+          {error && (
+            <Alert
+              message="Đã có lỗi xảy ra vui lòng thử lại sau"
+              type="error"
+              className="mb-4"
+            />
+          )}
+
+          <Spin spinning={isLoading}>
+            <DataTable
+              data={requestForms}
+              loading={isLoading}
+              pagination={pagination}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onSignDelegation={handleSignDelegation}
+              isAdmin={false}
+              hideSignDelegation={true}
+            />
+          </Spin>
+        </>
+      )
+    },
+    ...(isSupervisor
+      ? [
+          {
+            key: 'approval',
+            label: 'Duyệt đơn',
+            children: (
+              <>
+                <div className="mb-4 flex items-center justify-between">
+                  <RefreshButton
+                    isLoading={adminIsFetching}
+                    refresh={adminRefetch}
+                  />
+                </div>
+
+                <FilterPanel
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  onClearFilters={handleClearFilters}
+                  isAdmin={true}
+                />
+
+                {adminError && (
+                  <Alert
+                    message="Đã có lỗi xảy ra vui lòng thử lại sau"
+                    type="error"
+                    className="mb-4"
+                  />
+                )}
+
+                <Spin spinning={adminIsLoading}>
+                  <DataTable
+                    data={adminRequestForms}
+                    loading={adminIsLoading}
+                    pagination={adminPagination}
+                    onView={handleView}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                    onSignDelegation={handleSignDelegation}
+                    isAdmin={true}
+                    currentUserId={user?.id}
+                    userType={userType || undefined}
+                  />
+                </Spin>
+              </>
+            )
+          }
+        ]
+      : [])
+  ];
+
   return (
     <>
       <div>
-        <div className="mb-4 flex flex-wrap gap-4">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setCreateModalVisible(true)}
-          >
-            Tạo đơn mới
-          </Button>
-          <RefreshButton isLoading={isFetching} refresh={refetch} />
-        </div>
-
-        {/* Filters */}
-        <FilterPanel
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onClearFilters={handleClearFilters}
-          isAdmin={false}
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={tabItems}
+          type="card"
         />
-
-        {/* Error Alert */}
-        {error && (
-          <Alert
-            message="Đã có lỗi xảy ra vui lòng thử lại sau"
-            type="error"
-            className="mb-4"
-          />
-        )}
-
-        {/* Table wrapped with Spin */}
-        <Spin spinning={isLoading}>
-          <DataTable
-            data={requestForms}
-            loading={isLoading}
-            pagination={pagination}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onSignDelegation={handleSignDelegation}
-            isAdmin={false}
-            hideSignDelegation={true}
-          />
-        </Spin>
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -306,10 +608,7 @@ export default function RequestFormList() {
       <Modal
         title="Chi tiết đơn yêu cầu"
         open={detailModalVisible}
-        onCancel={() => {
-          setDetailModalVisible(false);
-          setSelectedRecord(null);
-        }}
+        onCancel={closeModals}
         footer={null}
         width="min(960px, 95vw)"
         styles={{
@@ -322,8 +621,52 @@ export default function RequestFormList() {
         }}
         className="[&_.ant-modal-body::-webkit-scrollbar]:hidden"
       >
-        {selectedRecord && <DetailView data={selectedRecord} />}
+        {selectedRecord &&
+          (activeTab === 'approval' ? (
+            <RequestFormDetailView data={selectedRecord} />
+          ) : (
+            <DetailView data={selectedRecord} />
+          ))}
       </Modal>
+
+      {/* Approval Modal - Only for supervisor */}
+      {isSupervisor && (
+        <AdminActionModal
+          visible={approvalModalVisible}
+          record={selectedRecord}
+          mode={approvalMode}
+          loading={approveRejectMutation.isPending}
+          currentUser={user}
+          onCancel={closeModals}
+          onApprove={(data: {
+            digital_signature_supervisor?: File;
+            digital_signature_manager?: File;
+          }) => {
+            if (selectedRecord) {
+              approveRejectMutation.mutate({
+                id: selectedRecord.id,
+                data: {
+                  action: 'approve',
+                  digital_signature_supervisor:
+                    data.digital_signature_supervisor,
+                  digital_signature_manager: data.digital_signature_manager
+                }
+              });
+            }
+          }}
+          onReject={(data: { action: 'reject'; rejection_reason: string }) => {
+            if (selectedRecord) {
+              approveRejectMutation.mutate({
+                id: selectedRecord.id,
+                data: {
+                  action: 'reject',
+                  rejection_reason: data.rejection_reason
+                }
+              });
+            }
+          }}
+        />
+      )}
 
       {/* Delegation Sign Modal */}
       <DelegationSignModal
@@ -331,10 +674,7 @@ export default function RequestFormList() {
         record={selectedRecord}
         loading={isSigning}
         currentUserId={user?.id}
-        onCancel={() => {
-          setDelegationSignModalVisible(false);
-          setSelectedRecord(null);
-        }}
+        onCancel={closeModals}
         onSign={(data) => {
           if (selectedRecord) {
             signDelegation({ id: selectedRecord.id, data });

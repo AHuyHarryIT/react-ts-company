@@ -383,9 +383,9 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
       return null;
     }
 
-    // Tìm pattern: [Vùng chữ ký điện tử]     SUPERVISOR_NAME     [Quản lý cần ký tại đây]
+    // Tìm pattern: [Vùng chữ ký điện tử]     SUPERVISOR_NAME     [Quản lý nhà máy cần ký tại đây]
     const signatureLineMatch = data.content.match(
-      /\[Vùng chữ ký điện tử\]\s+(.+?)\s+(?:\[Quản lý|Quản lý)/
+      /\[Vùng chữ ký điện tử\]\s+(.+?)\s+(?:\[Quản lý nhà máy|Quản lý)/
     );
 
     if (signatureLineMatch && signatureLineMatch[1]) {
@@ -841,14 +841,14 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
           <div className="text-center">
             <div className="mb-2 sm:mb-3">
               <Text strong className="text-xs sm:text-base">
-                Quản lý
+                Quản lý nhà máy
               </Text>
             </div>
             <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
               {data.digital_signature_manager ? (
                 <img
                   src={`${STORAGE_URL}/${data.digital_signature_manager}`}
-                  alt="Chữ ký quản lý"
+                  alt="Chữ ký quản lý nhà máy"
                   style={{
                     maxWidth: '100%',
                     maxHeight: '100%',
@@ -864,7 +864,7 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
                 />
               ) : (
                 <Text className="text-xs text-gray-400 sm:text-sm">
-                  [Quản lý ký]
+                  [Quản lý nhà máy ký]
                 </Text>
               )}
             </div>
