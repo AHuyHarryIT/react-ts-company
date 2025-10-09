@@ -6,6 +6,7 @@ import {
   FormProps,
   Input,
   InputNumber,
+  Radio,
   Select
 } from 'antd';
 import { Dayjs } from 'dayjs';
@@ -26,6 +27,7 @@ interface FormFields {
   totalBag: number;
   startBag: number;
   productCode: ProductType['code'];
+  printLayout: 'grid' | 'single';
 }
 
 export default function BagStamp() {
@@ -36,6 +38,7 @@ export default function BagStamp() {
     totalBag: number;
     shift: Shift;
     date: Dayjs;
+    printLayout: 'grid' | 'single';
   }>();
   const [hasComma, setHasComma] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -83,7 +86,8 @@ export default function BagStamp() {
         startBag: values.startBag,
         totalBag: finalTotalBag,
         shift: values.shift,
-        date: values.date
+        date: values.date,
+        printLayout: values.printLayout || 'grid'
       });
 
       // Scroll to preview section after a short delay to ensure it's rendered
@@ -210,6 +214,23 @@ export default function BagStamp() {
               />
             </Form.Item>
           </div>
+          <div className="mb-4">
+            <Form.Item<FormFields>
+              label="Kiểu in"
+              name="printLayout"
+              initialValue="grid"
+              rules={[{ required: true, message: 'Vui lòng chọn kiểu in' }]}
+            >
+              <Radio.Group>
+                <Radio value="grid">
+                  In theo lưới (6 tem/trang - A4 ngang)
+                </Radio>
+                <Radio value="single">
+                  In đơn lẻ (1 tem/trang - 100mm x 100mm)
+                </Radio>
+              </Radio.Group>
+            </Form.Item>
+          </div>
           <Form.Item>
             <Flex gap={8}>
               <Button color="green" variant="solid" htmlType="submit">
@@ -231,6 +252,7 @@ export default function BagStamp() {
               totalStamp={stampData.totalBag}
               shift={stampData.shift}
               date={stampData.date}
+              printLayout={stampData.printLayout}
             />
           </ComponentCard>
         </div>
