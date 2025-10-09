@@ -19,57 +19,112 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
   penWidth = 2
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isEmpty, setIsEmpty] = useState(true);
 
+  // Setup canvas with proper scaling and responsive sizing
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const setupCanvas = () => {
+      // Set canvas internal resolution (high quality)
+      canvas.width = width;
+      canvas.height = height;
 
-    // Set canvas background to white
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    // Set drawing style
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = penColor;
-    ctx.lineWidth = penWidth;
-  }, [penColor, penWidth]);
+      // Set canvas background to white
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+      // Set drawing style
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = penColor;
+      ctx.lineWidth = penWidth;
+    };
+
+    setupCanvas();
+
+    // Re-setup on window resize
+    window.addEventListener('resize', setupCanvas);
+    return () => window.removeEventListener('resize', setupCanvas);
+  }, [width, height, penColor, penWidth]);
+
+  // Helper function to get coordinates from both mouse and touch events
+  // with proper scaling for canvas resolution vs display size
+  const getCoordinates = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ): { x: number; y: number } | null => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    let clientX: number;
+    let clientY: number;
+
+    if ('touches' in e) {
+      // Touch event
+      if (e.touches.length === 0) return null;
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      // Mouse event
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    // Calculate scale ratio between canvas resolution and display size
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    // Get coordinates relative to canvas and scale to match canvas resolution
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+
+    return { x, y };
+  };
+
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
+    e.preventDefault(); // Prevent scrolling on touch devices
+
+    const coords = getCoordinates(e);
+    if (!coords) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     setIsDrawing(true);
     ctx.beginPath();
-    ctx.moveTo(x, y);
+    ctx.moveTo(coords.x, coords.y);
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
+    e.preventDefault(); // Prevent scrolling on touch devices
+
     if (!isDrawing) return;
+
+    const coords = getCoordinates(e);
+    if (!coords) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.lineTo(x, y);
+    ctx.lineTo(coords.x, coords.y);
     ctx.stroke();
 
     setIsEmpty(false);
@@ -115,17 +170,25 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
 
   return (
     <div className="signature-pad flex flex-col items-center">
-      <div className="mb-3 w-full">
+      <div ref={containerRef} className="mb-3 w-full">
         <canvas
           ref={canvasRef}
-          width={width}
-          height={height}
           className="w-full cursor-crosshair rounded border-2 border-dashed border-gray-300 bg-gray-50"
-          style={{ touchAction: 'none', maxWidth: '100%' }}
+          style={{
+            touchAction: 'none',
+            display: 'block',
+            height: 'auto' // Maintain aspect ratio
+          }}
+          // Mouse events
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
+          // Touch events for mobile
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+          onTouchCancel={stopDrawing}
         />
       </div>
       <div className="flex justify-center">

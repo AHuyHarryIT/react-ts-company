@@ -13,6 +13,7 @@ interface LotReportData {
   fromBin: number;
   toBin: number;
   totalBins: number;
+  binNumbers: number[]; // Danh sách số thùng thực tế đã import
   date: string;
   employeeName: string;
   employeeId: string;
@@ -100,6 +101,7 @@ export const LotReport: React.FC<LotReportProps> = ({ data }) => {
         fromBin: sortedBins[0],
         toBin: sortedBins[sortedBins.length - 1],
         totalBins: sortedBins.length,
+        binNumbers: sortedBins, // Lưu danh sách số thùng thực tế
         date: group.date,
         employeeName: group.employee.name,
         employeeId: group.employee.id
@@ -165,13 +167,26 @@ export const LotReport: React.FC<LotReportProps> = ({ data }) => {
       )
     },
     {
-      title: 'Bắt đầu - Kết thúc thùng',
-      key: 'binRange',
-      align: 'center',
+      title: 'Danh sách thùng đã import',
+      key: 'binNumbers',
+      align: 'left',
       render: (_, record) => (
-        <span className="rounded-md border border-yellow-300 bg-yellow-100 px-3 py-1.5 font-mono text-sm font-semibold text-yellow-800">
-          {record.fromBin} → {record.toBin}
-        </span>
+        <div className="max-w-md">
+          <div className="mb-1 text-xs text-gray-500">
+            Từ thùng {record.fromBin} → {record.toBin} ({record.totalBins}{' '}
+            thùng)
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {record.binNumbers.map((binNumber, index) => (
+              <span
+                key={index}
+                className="inline-block rounded border border-blue-300 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700"
+              >
+                {binNumber}
+              </span>
+            ))}
+          </div>
+        </div>
       )
     },
     {
@@ -179,6 +194,7 @@ export const LotReport: React.FC<LotReportProps> = ({ data }) => {
       dataIndex: 'totalBins',
       key: 'totalBins',
       align: 'center',
+      width: 100,
       render: (value) => (
         <span className="rounded bg-blue-50 px-2 py-1 text-sm font-semibold text-blue-600">
           {value}
@@ -190,12 +206,14 @@ export const LotReport: React.FC<LotReportProps> = ({ data }) => {
       dataIndex: 'date',
       key: 'date',
       align: 'center',
+      width: 100,
       render: (text) => text
     },
     {
       title: 'Nhân viên nhập',
       key: 'employee',
       align: 'center',
+      width: 150,
       render: (_, record) => (
         <div>
           <div className="font-bold">{record.employeeName}</div>
