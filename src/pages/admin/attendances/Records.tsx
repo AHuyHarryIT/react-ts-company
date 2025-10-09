@@ -51,6 +51,8 @@ export default function Records() {
   });
   const [forgottenDays, setForgottenDays] = useState<boolean>(false);
   const [month, setMonth] = useState<Dayjs>(dayjs());
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
+  const [filterType, setFilterType] = useState<'month' | 'range'>('month');
 
   const { data: categories, refetch: refetchCategories } = useQuery({
     queryKey: ['workScheduleCategories', { limit: 0 }],
@@ -333,8 +335,15 @@ export default function Records() {
     onChange: handleChange
   };
 
+  const getTitle = () => {
+    if (filterType === 'range' && dateRange) {
+      return `Bảng tính công từ ${dateRange[0].format('DD/MM/YYYY')} đến ${dateRange[1].format('DD/MM/YYYY')}`;
+    }
+    return `Bảng tính công tháng ${month.format('MM-YYYY')}`;
+  };
+
   return (
-    <ComponentCard title={`Bảng tính công tháng ${month.format('MM-YYYY')}`}>
+    <ComponentCard title={getTitle()}>
       <div className="flex flex-wrap gap-4">
         <RefreshButton
           refresh={() => {
@@ -356,10 +365,12 @@ export default function Records() {
           picker="month"
           format="YYYY-MM"
           placeholder="Chọn tháng"
-          value={month}
+          value={filterType === 'month' ? month : null}
           onChange={(value) => {
             const selectedMonth = value ? dayjs(value) : dayjs();
             setMonth(selectedMonth);
+            setDateRange(null); // Reset date range khi chọn month
+            setFilterType('month');
             setParams((prev) => ({
               ...prev,
               page: 1, // Reset về page 1 khi thay đổi filter
@@ -370,14 +381,29 @@ export default function Records() {
         />
         <DatePicker.RangePicker
           placeholder={['Chọn ngày bắt đầu', 'Chọn ngày kết thúc']}
+          value={filterType === 'range' ? dateRange : null}
           onChange={(value) => {
-            setParams((prev) => ({
-              ...prev,
-              page: 1, // Reset về page 1 khi thay đổi filter
-              'filter[date_between]': value
-                ? `${dayjs(value[0]).format('YYYY-MM-DD')},${dayjs(value[1]).format('YYYY-MM-DD')}`
-                : `${month.startOf('month').format('YYYY-MM-DD')},${month.endOf('month').format('YYYY-MM-DD')}`
-            }));
+            if (value && value[0] && value[1]) {
+              // Nếu có chọn date range thì set filter type là range
+              const startDate = dayjs(value[0]);
+              const endDate = dayjs(value[1]);
+              setDateRange([startDate, endDate]);
+              setFilterType('range');
+              setParams((prev) => ({
+                ...prev,
+                page: 1, // Reset về page 1 khi thay đổi filter
+                'filter[date_between]': `${startDate.format('YYYY-MM-DD')},${endDate.format('YYYY-MM-DD')}`
+              }));
+            } else {
+              // Nếu clear date range thì reset về month filter
+              setDateRange(null);
+              setFilterType('month');
+              setParams((prev) => ({
+                ...prev,
+                page: 1, // Reset về page 1 khi thay đổi filter
+                'filter[date_between]': `${month.startOf('month').format('YYYY-MM-DD')},${month.endOf('month').format('YYYY-MM-DD')}`
+              }));
+            }
           }}
         />
         <Select
