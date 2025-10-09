@@ -286,10 +286,10 @@ export default function RequestFormList() {
         digital_signature_supervisor || digital_signature_manager;
       return hasSignatures
         ? await requestFormService.admin.approveOrRejectWithSignatures(id, {
-            action,
-            digital_signature_supervisor,
-            digital_signature_manager
-          })
+          action,
+          digital_signature_supervisor,
+          digital_signature_manager
+        })
         : await requestFormService.admin.approveOrReject(id, { action });
     },
     onMutate: async ({ id, data: actionData }) => {
@@ -314,10 +314,10 @@ export default function RequestFormList() {
             data: old.data.map((form: RequestForm) =>
               form.id === id
                 ? {
-                    ...form,
-                    status:
-                      actionData.action === 'reject' ? 'rejected' : form.status
-                  }
+                  ...form,
+                  status:
+                    actionData.action === 'reject' ? 'rejected' : form.status
+                }
                 : form
             )
           };
@@ -456,30 +456,30 @@ export default function RequestFormList() {
   const requestForms = data?.data || [];
   const pagination = data
     ? {
-        current: data.current_page,
-        total: data.total,
-        pageSize: data.per_page,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total: number, range: [number, number]) =>
-          `${range[0]}-${range[1]} của ${total} đơn`,
-        onChange: handleTableChange
-      }
+      current: data.current_page,
+      total: data.total,
+      pageSize: data.per_page,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      showTotal: (total: number, range: [number, number]) =>
+        `${range[0]}-${range[1]} của ${total} đơn`,
+      onChange: handleTableChange
+    }
     : undefined;
 
   // Admin data and pagination for supervisor approval tab
   const adminRequestForms = adminData?.data || [];
   const adminPagination = adminData
     ? {
-        current: adminData.current_page,
-        total: adminData.total,
-        pageSize: adminData.per_page,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total: number, range: [number, number]) =>
-          `${range[0]}-${range[1]} của ${total} đơn`,
-        onChange: handleTableChange
-      }
+      current: adminData.current_page,
+      total: adminData.total,
+      pageSize: adminData.per_page,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      showTotal: (total: number, range: [number, number]) =>
+        `${range[0]}-${range[1]} của ${total} đơn`,
+      onChange: handleTableChange
+    }
     : undefined;
 
   // Define tabs
@@ -533,51 +533,51 @@ export default function RequestFormList() {
     },
     ...(isSupervisor
       ? [
-          {
-            key: 'approval',
-            label: 'Duyệt đơn',
-            children: (
-              <>
-                <div className="mb-4 flex items-center justify-between">
-                  <RefreshButton
-                    isLoading={adminIsFetching}
-                    refresh={adminRefetch}
-                  />
-                </div>
-
-                <FilterPanel
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  onClearFilters={handleClearFilters}
-                  isAdmin={true}
+        {
+          key: 'approval',
+          label: 'Duyệt đơn',
+          children: (
+            <>
+              <div className="mb-4 flex items-center justify-between">
+                <RefreshButton
+                  isLoading={adminIsFetching}
+                  refresh={adminRefetch}
                 />
+              </div>
 
-                {adminError && (
-                  <Alert
-                    message="Đã có lỗi xảy ra vui lòng thử lại sau"
-                    type="error"
-                    className="mb-4"
-                  />
-                )}
+              <FilterPanel
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                onClearFilters={handleClearFilters}
+                isAdmin={true}
+              />
 
-                <Spin spinning={adminIsLoading}>
-                  <DataTable
-                    data={adminRequestForms}
-                    loading={adminIsLoading}
-                    pagination={adminPagination}
-                    onView={handleView}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                    onSignDelegation={handleSignDelegation}
-                    isAdmin={true}
-                    currentUserId={user?.id}
-                    userType={userType || undefined}
-                  />
-                </Spin>
-              </>
-            )
-          }
-        ]
+              {adminError && (
+                <Alert
+                  message="Đã có lỗi xảy ra vui lòng thử lại sau"
+                  type="error"
+                  className="mb-4"
+                />
+              )}
+
+              <Spin spinning={adminIsLoading}>
+                <DataTable
+                  data={adminRequestForms}
+                  loading={adminIsLoading}
+                  pagination={adminPagination}
+                  onView={handleView}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onSignDelegation={handleSignDelegation}
+                  isAdmin={true}
+                  currentUserId={user?.id}
+                  userType={userType || undefined}
+                />
+              </Spin>
+            </>
+          )
+        }
+      ]
       : [])
   ];
 
