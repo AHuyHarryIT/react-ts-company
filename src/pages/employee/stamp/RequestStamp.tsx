@@ -30,6 +30,7 @@ interface StampType {
   binCount: number;
   binStart: string;
   type: 'box' | 'bag' | string;
+  purpose?: string;
 }
 
 interface FormFields {
@@ -68,7 +69,8 @@ export const RequestStamp = () => {
           shift: stamp.shift,
           binCount: finalBinCount,
           binStart: stamp.binStart,
-          type: stamp.type
+          type: stamp.type,
+          purpose: stamp.purpose
         };
       });
 
@@ -112,6 +114,12 @@ export const RequestStamp = () => {
     { label: 'Tem bịch', value: 'bag' }
   ];
 
+  const purposeOptions = [
+    { label: 'In mới', value: 'new' },
+    { label: 'In thêm', value: 'additional' },
+    { label: 'In lại', value: 'reprint' }
+  ];
+
   const formProps: FormProps<FormFields> = {
     ...customFormProps,
     form,
@@ -148,7 +156,7 @@ export const RequestStamp = () => {
                       <IoCloseOutline onClick={() => remove(field.name)} />
                     }
                   >
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                       <Form.Item
                         label="Sản phẩm"
                         name={[field.name, 'productId']}
@@ -203,6 +211,18 @@ export const RequestStamp = () => {
                         <Select
                           options={stampTypeOptions}
                           placeholder="Chọn loại tem"
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        label="Mục đích"
+                        name={[field.name, 'purpose']}
+                        rules={[
+                          { required: true, message: 'Vui lòng chọn mục đích' }
+                        ]}
+                      >
+                        <Select
+                          options={purposeOptions}
+                          placeholder="Chọn mục đích"
                         />
                       </Form.Item>
                       <Form.Item

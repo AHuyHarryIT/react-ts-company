@@ -107,6 +107,14 @@ const CreateEditModalContent: React.FC<CreateRequestFormProps> = ({
   // Use auth user directly (JWT already contains accurate gender info)
   const currentUser: User | null = authUser;
 
+  // Check if current user is supervisor
+  const isCurrentUserSupervisor = React.useMemo(() => {
+    if (!currentUser?.id) return false;
+    return (SUPERVISOR_IDS as readonly string[]).includes(
+      currentUser.id.toString()
+    );
+  }, [currentUser?.id]);
+
   // Populate form data when editing
   React.useEffect(() => {
     if (editData) {
@@ -452,9 +460,13 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
       }
     }
 
-    // Validate supervisor_id cho đơn thường (không phải ủy quyền)
-    if (values.type !== 'giay_uy_quyen' && !supervisorId) {
-      message.warning('Vui lòng chọn supervisor để duyệt đơn');
+    // Validate supervisor_id cho đơn thường (không phải ủy quyền và không phải supervisor)
+    if (
+      values.type !== 'giay_uy_quyen' &&
+      !isCurrentUserSupervisor &&
+      !supervisorId
+    ) {
+      message.warning('Vui lòng chọn tổ trưởng để duyệt đơn');
       return;
     }
 
@@ -506,8 +518,14 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
     formData.append('form_data', JSON.stringify(values.form_data));
 
     // Thêm supervisor_id cho đơn thường (không phải đơn ủy quyền)
-    if (values.type !== 'giay_uy_quyen' && supervisorId) {
-      formData.append('supervisor_id', supervisorId);
+    if (values.type !== 'giay_uy_quyen') {
+      if (isCurrentUserSupervisor) {
+        // Nếu user là supervisor, set supervisor_id = chính user đó
+        formData.append('supervisor_id', currentUser!.id.toString());
+      } else if (supervisorId) {
+        // Nếu user không phải supervisor, dùng supervisorId đã chọn
+        formData.append('supervisor_id', supervisorId);
+      }
     }
 
     // Xử lý chữ ký: Chỉ cập nhật nếu user thay đổi (có file hoặc canvas mới)
@@ -733,53 +751,71 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
           </Card>
         )}
 
-        {/* Supervisor Selection - Chỉ hiển thị cho đơn thường */}
-        {selectedType && selectedType !== 'giay_uy_quyen' && (
-          <Card>
-            <Form.Item
-              label="Tổ trưởng"
-              required
-              tooltip="Chọn tổ trưởng sẽ duyệt và ký đơn của bạn"
-              help={
-                !supervisorId && 'Vui lòng chọn tổ trưởng trước khi gửi đơn'
-              }
-              validateStatus={!supervisorId ? 'warning' : 'success'}
-            >
-              <Select
-                placeholder="Chọn tổ trưởng..."
-                value={supervisorId}
-                onChange={setSupervisorId}
-                style={{ width: '100%' }}
-                size="large"
-                showSearch
-                optionFilterProp="label"
-                filterOption={(input, option) =>
-                  String(option?.label || '')
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
+        {/* Supervisor Selection - Chỉ hiển thị cho đơn thường và user không phải supervisor */}
+        {selectedType &&
+          selectedType !== 'giay_uy_quyen' &&
+          !isCurrentUserSupervisor && (
+            <Card>
+              <Form.Item
+                label="Tổ trưởng"
+                required
+                tooltip="Chọn tổ trưởng sẽ duyệt và ký đơn của bạn"
+                help={
+                  !supervisorId && 'Vui lòng chọn tổ trưởng trước khi gửi đơn'
                 }
-                loading={isLoadingSupervisors}
-                notFoundContent={
-                  isLoadingSupervisors
-                    ? 'Đang tải danh sách tổ trưởng...'
-                    : supervisors.length === 0
-                      ? 'Không tìm thấy tổ trưởng'
-                      : null
-                }
-                options={supervisors.map((sup) => ({
-                  value: sup.id?.toString(),
-                  label: sup.name
-                }))}
-              />
-            </Form.Item>
-            <div className="mt-2 mb-4 text-xs text-gray-600">
-              <p>
-                <span className="font-semibold text-red-500">Lưu ý:</span> Vui
-                lòng chọn đúng tổ trưởng mà bạn đang làm việc cùng.
-              </p>
-            </div>
-          </Card>
-        )}
+                validateStatus={!supervisorId ? 'warning' : 'success'}
+              >
+                <Select
+                  placeholder="Chọn tổ trưởng..."
+                  value={supervisorId}
+                  onChange={setSupervisorId}
+                  style={{ width: '100%' }}
+                  size="large"
+                  showSearch
+                  optionFilterProp="label"
+                  filterOption={(input, option) =>
+                    String(option?.label || '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                  loading={isLoadingSupervisors}
+                  notFoundContent={
+                    isLoadingSupervisors
+                      ? 'Đang tải danh sách tổ trưởng...'
+                      : supervisors.length === 0
+                        ? 'Không tìm thấy tổ trưởng'
+                        : null
+                  }
+                  options={supervisors.map((sup) => ({
+                    value: sup.id?.toString(),
+                    label: sup.name
+                  }))}
+                />
+              </Form.Item>
+              <div className="mt-2 mb-4 text-xs text-gray-600">
+                <p>
+                  <span className="font-semibold text-red-500">Lưu ý:</span> Vui
+                  lòng chọn đúng tổ trưởng mà bạn đang làm việc cùng.
+                </p>
+              </div>
+            </Card>
+          )}
+
+        {/* Thông báo cho supervisor */}
+        {selectedType &&
+          selectedType !== 'giay_uy_quyen' &&
+          isCurrentUserSupervisor && (
+            <Card className="border-blue-200 bg-blue-50">
+              <div className="text-center text-blue-700">
+                <p className="text-sm font-medium">
+                  🎯 Bạn là Tổ trưởng - Không cần chọn người duyệt
+                </p>
+                <p className="mt-1 text-xs">
+                  Đơn của bạn sẽ được gửi trực tiếp đến Quản lý nhà máy để duyệt
+                </p>
+              </div>
+            </Card>
+          )}
 
         {selectedType && (
           <>

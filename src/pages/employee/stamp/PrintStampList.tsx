@@ -98,6 +98,20 @@ export const PrintStampList = () => {
       }
     },
     {
+      title: 'Mục đích in',
+      key: 'purpose',
+      dataIndex: 'purpose',
+      render: (value) => {
+        if (!value) return '-';
+        const purposeMap: Record<string, string> = {
+          new: 'In mới',
+          additional: 'In thêm',
+          reprint: 'In lại'
+        };
+        return purposeMap[value] || value;
+      }
+    },
+    {
       title: 'Ngày tạo',
       key: 'print_day',
       dataIndex: 'created_at',

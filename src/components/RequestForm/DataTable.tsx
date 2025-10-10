@@ -18,6 +18,10 @@ import {
   REQUEST_FORM_TYPES,
   REQUEST_FORM_STATUSES
 } from '@/types/requestFormType';
+import {
+  isRequestCreatedBySupervisor,
+  getEffectiveStatus
+} from '@/utils/requestFormUtil';
 
 interface RequestFormTableProps {
   data?: RequestForm[];
@@ -179,11 +183,25 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       return false;
     }
 
+    // Check if signatures are effectively complete
+    const effectiveStatus = getEffectiveStatus(record);
+    if (effectiveStatus === 'approved') {
+      return false; // Already complete
+    }
+
     // Logic bình thường cho các đơn khác
     const hasSupervisorSignature =
       record.has_supervisor_signature || !!record.digital_signature_supervisor;
     const hasManagerSignature =
       record.has_manager_signature || !!record.digital_signature_manager;
+
+    // Check if this request was created by a supervisor
+    const createdBySupervisor = isRequestCreatedBySupervisor(record);
+
+    // If supervisor created the request, only manager signature is needed for completion
+    if (createdBySupervisor) {
+      return !hasManagerSignature;
+    }
 
     // ❌ Nếu đã có cả 2 chữ ký thì TUYỆT ĐỐI không cho phép duyệt nữa
     if (hasSupervisorSignature && hasManagerSignature) return false;
@@ -224,6 +242,17 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       record.has_supervisor_signature || !!record.digital_signature_supervisor;
     const hasManagerSignature =
       record.has_manager_signature || !!record.digital_signature_manager;
+
+    // Check if this request was created by a supervisor
+    const createdBySupervisor = isRequestCreatedBySupervisor(record);
+
+    // If supervisor created the request, only manager signature matters for rejection logic
+    if (createdBySupervisor) {
+      // If manager already signed, cannot reject
+      if (hasManagerSignature) return false;
+      // Otherwise, admin/manager can reject
+      return userType === 'admin';
+    }
 
     // ❌ Nếu đã có cả 2 chữ ký thì không cho phép thao tác nữa (đơn đã hoàn thành)
     if (hasSupervisorSignature && hasManagerSignature) return false;
@@ -324,11 +353,15 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       dataIndex: 'status',
       key: 'status',
       width: 140,
-      render: (status: RequestFormStatus) => (
-        <Tag color={getStatusColor(status)} className="font-medium">
-          {REQUEST_FORM_STATUSES[status]}
-        </Tag>
-      )
+      render: (_, record: RequestForm) => {
+        // Use effective status to show correct status based on signatures
+        const effectiveStatus = getEffectiveStatus(record);
+        return (
+          <Tag color={getStatusColor(effectiveStatus)} className="font-medium">
+            {REQUEST_FORM_STATUSES[effectiveStatus]}
+          </Tag>
+        );
+      }
     },
     {
       title: (
@@ -392,6 +425,9 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
           record.has_supervisor_signature ||
           !!record.digital_signature_supervisor;
 
+        // Check if this request was created by a supervisor (employee_id === supervisor_id)
+        const createdBySupervisor = isRequestCreatedBySupervisor(record);
+
         // Ưu tiên dùng supervisorApprovedBy (camelCase) từ BE mới
         const supervisorApprovedBy =
           record.supervisorApprovedBy ||
@@ -408,7 +444,13 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
             <div className="mb-1 text-xs font-medium text-gray-800">
               Tổ trưởng
             </div>
-            {hasSupervisorSignature ? (
+            {createdBySupervisor ? (
+              // If supervisor created the request, show "N/A" as they don't need to sign their own request
+              <div className="flex items-center justify-center text-xs text-blue-600">
+                {/* <span className="mr-1">N/A</span> */}
+                <span>Tự tạo đơn</span>
+              </div>
+            ) : hasSupervisorSignature ? (
               <div>
                 <div className="mb-1 flex items-center justify-center text-xs">
                   <span className="mr-1 text-green-600">✓</span>
@@ -601,6 +643,9 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       key: 'approved_at',
       width: 140,
       render: (date: string, record: RequestForm) => {
+        const effectiveStatus = getEffectiveStatus(record);
+        const createdBySupervisor = isRequestCreatedBySupervisor(record);
+
         // Đơn Ủy Quyền: Hiển thị ngày người được ủy quyền duyệt
         if (record.type === 'giay_uy_quyen') {
           if (
@@ -661,6 +706,28 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
               </div>
             );
           }
+        }
+
+        // For supervisor-created forms that are effectively approved by manager signature
+        if (
+          createdBySupervisor &&
+          effectiveStatus === 'approved' &&
+          record.manager_approved_at
+        ) {
+          const managerApprovedBy =
+            record.managerApprovedBy || record.manager_approved_by_employee;
+          return (
+            <div>
+              <span className="whitespace-nowrap text-gray-600">
+                {dayjs(record.manager_approved_at).format('DD/MM/YYYY HH:mm')}
+              </span>
+              {managerApprovedBy && (
+                <div className="mt-0.5 text-xs text-gray-500">
+                  Duyệt bởi: {managerApprovedBy.name}
+                </div>
+              )}
+            </div>
+          );
         }
 
         // 4 đơn thường: Hiển thị ngày admin duyệt

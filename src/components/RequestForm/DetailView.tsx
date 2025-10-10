@@ -363,6 +363,12 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
 };
 
 const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
+  // Check if employee is the same as supervisor (supervisor creates their own request)
+  const isEmployeeSupervisor = React.useMemo(() => {
+    if (!data.supervisor_id || !data.employee_id) return false;
+    return data.supervisor_id.toString() === data.employee_id.toString();
+  }, [data.supervisor_id, data.employee_id]);
+
   const parsedFormData = React.useMemo(() => {
     if (data.form_data) {
       if (typeof data.form_data === 'object') return data.form_data;
@@ -762,12 +768,14 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
           </Text>
         </div>
 
-        {/* Mobile & Desktop Layout - Always 3 columns */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-8">
+        {/* Mobile & Desktop Layout - Conditional columns based on supervisor */}
+        <div
+          className={`grid gap-2 sm:gap-8 ${isEmployeeSupervisor ? 'grid-cols-2' : 'grid-cols-3'}`}
+        >
           <div className="text-center">
             <div className="mb-2 sm:mb-3">
               <Text strong className="text-xs sm:text-base">
-                Người làm đơn
+                {isEmployeeSupervisor ? 'Tổ trưởng làm đơn' : 'Người làm đơn'}
               </Text>
             </div>
             <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
@@ -801,42 +809,45 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
             </div>
           </div>
 
-          <div className="text-center">
-            <div className="mb-2 sm:mb-3">
-              <Text strong className="text-xs sm:text-base">
-                Tổ trưởng
-              </Text>
-            </div>
-            <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
-              {data.digital_signature_supervisor ? (
-                <img
-                  src={`${STORAGE_URL}/${data.digital_signature_supervisor}`}
-                  alt="Chữ ký tổ trưởng"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
-                    display: 'block'
-                  }}
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    target.style.display = 'none';
-                    target.parentElement!.innerHTML =
-                      '<span class="text-gray-400 text-xs">[Lỗi]</span>';
-                  }}
-                />
-              ) : (
-                <Text className="text-xs text-gray-400 sm:text-sm">
-                  [Tổ trưởng ký]
+          {/* Only show supervisor column if employee is not supervisor */}
+          {!isEmployeeSupervisor && (
+            <div className="text-center">
+              <div className="mb-2 sm:mb-3">
+                <Text strong className="text-xs sm:text-base">
+                  Tổ trưởng
                 </Text>
-              )}
+              </div>
+              <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
+                {data.digital_signature_supervisor ? (
+                  <img
+                    src={`${STORAGE_URL}/${data.digital_signature_supervisor}`}
+                    alt="Chữ ký tổ trưởng"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                      display: 'block'
+                    }}
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      target.style.display = 'none';
+                      target.parentElement!.innerHTML =
+                        '<span class="text-gray-400 text-xs">[Lỗi]</span>';
+                    }}
+                  />
+                ) : (
+                  <Text className="text-xs text-gray-400 sm:text-sm">
+                    [Tổ trưởng ký]
+                  </Text>
+                )}
+              </div>
+              <div className="border-t border-gray-400 pt-1 sm:pt-2">
+                <Text className="text-xs font-medium sm:text-base">
+                  {supervisorName || '__________'}
+                </Text>
+              </div>
             </div>
-            <div className="border-t border-gray-400 pt-1 sm:pt-2">
-              <Text className="text-xs font-medium sm:text-base">
-                {supervisorName || '__________'}
-              </Text>
-            </div>
-          </div>
+          )}
 
           <div className="text-center">
             <div className="mb-2 sm:mb-3">

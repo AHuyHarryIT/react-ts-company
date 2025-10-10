@@ -19,8 +19,6 @@ import {
   RequestFormFilters as RequestFormFiltersType
 } from '@/types/requestFormType';
 import { useAuth } from '@hooks/useAuth';
-import { getUserApprovalType } from '@utils/authUtil';
-import { SUPERVISOR_IDS } from '@/constants/supervisors';
 
 export default function RequestFormList() {
   const { user } = useAuth();
@@ -50,8 +48,8 @@ export default function RequestFormList() {
   const [delegationSignModalVisible, setDelegationSignModalVisible] =
     useState(false);
 
-  // Xác định loại user để hiển thị signature phù hợp
-  const userType = getUserApprovalType(user, [...SUPERVISOR_IDS]);
+  // Xác định loại user - chỉ còn admin access trang này
+  const userType = 'admin'; // Simplified since only admins can access this page
 
   // Helper functions
   const invalidateAdminRequestForms = () => {
@@ -148,23 +146,14 @@ export default function RequestFormList() {
       if (data.action === 'reject') {
         message.success('Từ chối đơn yêu cầu thành công!');
       } else {
-        const hasSupervisorSig = !!data.digital_signature_supervisor;
         const hasManagerSig = !!data.digital_signature_manager;
 
         const successMessages = {
-          supervisor:
-            'Đã ký chữ ký tổ trưởng thành công! Đơn đang chờ chữ ký quản lý.',
-          admin:
-            'Đã ký chữ ký quản lý thành công! Đơn đang chờ chữ ký tổ trưởng.',
+          admin: 'Đã ký chữ ký quản lý thành công!',
           default: 'Ký chữ ký thành công!'
         };
 
-        const messageKey =
-          userType === 'supervisor' && hasSupervisorSig
-            ? 'supervisor'
-            : userType === 'admin' && hasManagerSig
-              ? 'admin'
-              : 'default';
+        const messageKey = hasManagerSig ? 'admin' : 'default';
 
         message.success(successMessages[messageKey]);
       }
@@ -205,24 +194,13 @@ export default function RequestFormList() {
     // Chỉ select data cần thiết để giảm re-render
     select: (response) => {
       const allData = response.data?.data || [];
-
-      // Nếu là supervisor, chỉ lấy đơn được assign cho mình
-      const filteredData =
-        userType === 'supervisor'
-          ? allData.filter(
-              (form: RequestForm) =>
-                form.supervisor_id?.toString() === user?.id?.toString()
-            )
-          : allData;
-
+      // Admin thấy tất cả đơn
       return {
-        data: filteredData,
-        total: filteredData.length,
+        data: allData,
+        total: allData.length,
         current_page: response.data?.current_page || 1,
         per_page: response.data?.per_page || 15,
-        last_page: Math.ceil(
-          filteredData.length / (response.data?.per_page || 15)
-        )
+        last_page: Math.ceil(allData.length / (response.data?.per_page || 15))
       };
     }
   });
@@ -290,21 +268,9 @@ export default function RequestFormList() {
 
   const requestForms = data?.data || [];
 
-  // Filter đơn cho supervisor: Không hiển thị đơn Ủy Quyền
-  const filteredRequestForms =
-    userType === 'supervisor'
-      ? requestForms.filter(
-          (form: RequestForm) => form.type !== 'giay_uy_quyen'
-        )
-      : requestForms;
-
   // Tính toán lại total cho pagination khi có filter
   const getFilteredTotal = () => {
-    if (userType !== 'supervisor' || !data) return data?.total || 0;
-    const delegationCount = requestForms.filter(
-      (form: RequestForm) => form.type === 'giay_uy_quyen'
-    ).length;
-    return data.total - delegationCount;
+    return data?.total || 0;
   };
 
   // Event handlers
@@ -395,7 +361,7 @@ export default function RequestFormList() {
         {/* Table wrapped with Spin */}
         <Spin spinning={isLoading}>
           <DataTable
-            data={filteredRequestForms}
+            data={requestForms}
             loading={isLoading}
             pagination={pagination}
             onView={handlers.view}

@@ -15,6 +15,7 @@ interface StampLogRequest {
   binCount: number;
   binStart: string;
   type: 'box' | 'bag' | string;
+  purpose?: string;
   employee_id?: EmployeeType['id'];
   stamp_id?: string;
 }
@@ -26,6 +27,7 @@ export interface RequestStampType {
   binCount: number;
   binStart: string;
   type: 'box' | 'bag' | string;
+  purpose?: string;
 }
 
 export interface HistoryPrintStampType {
@@ -38,6 +40,7 @@ export interface HistoryPrintStampType {
   binCount: number;
   binStart: string;
   type: string;
+  purpose?: string;
   status: string;
   manager_time: string;
   created_at: string;

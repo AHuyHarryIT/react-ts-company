@@ -1,4 +1,4 @@
-import { RequestForm } from '@/types/requestFormType';
+import { RequestForm, RequestFormStatus } from '@/types/requestFormType';
 import { SUPERVISOR_IDS } from '@/constants/supervisors';
 
 /**
@@ -63,8 +63,15 @@ export function getUserSignatureType(
     return null;
   }
 
-  // Supervisor can sign if not signed yet (no need to wait for manager)
-  if (userType === 'supervisor' && !record.has_supervisor_signature) {
+  // Check if the request was created by a supervisor
+  const createdBySupervisor = isRequestCreatedBySupervisor(record);
+
+  // Supervisor can sign if not signed yet AND they didn't create the request
+  if (
+    userType === 'supervisor' &&
+    !record.has_supervisor_signature &&
+    !createdBySupervisor
+  ) {
     return 'supervisor';
   }
 
@@ -131,8 +138,19 @@ export function canUserApproveReject(
   }
 
   // For regular forms
+  const createdBySupervisor = isRequestCreatedBySupervisor(record);
+
   // Supervisor can sign/reject
   if (userType === 'supervisor') {
+    // If supervisor created the request, they cannot sign it
+    if (createdBySupervisor) {
+      return {
+        canApprove: false,
+        canReject: false,
+        reason: 'Bạn không thể ký đơn do chính mình tạo ra'
+      };
+    }
+
     if (record.has_supervisor_signature) {
       return {
         canApprove: false,
@@ -206,6 +224,53 @@ export function areSignaturesComplete(record: RequestForm): boolean {
     return true;
   }
 
+  // Check if request was created by supervisor (employee_id === supervisor_id)
+  const createdBySupervisor = isRequestCreatedBySupervisor(record);
+
+  if (createdBySupervisor) {
+    // If supervisor created the request, only manager signature is needed
+    return !!record.has_manager_signature;
+  }
+
   // Regular forms need both signatures
   return !!record.has_supervisor_signature && !!record.has_manager_signature;
+}
+
+/**
+ * Check if request form was created by a supervisor
+ * @param record - Request form record
+ * @returns boolean
+ */
+export function isRequestCreatedBySupervisor(record: RequestForm): boolean {
+  if (!record.employee_id || !record.supervisor_id) {
+    return false;
+  }
+
+  // Compare employee_id and supervisor_id (both as strings)
+  return record.employee_id.toString() === record.supervisor_id.toString();
+}
+
+/**
+ * Get effective status based on signatures (for display purposes)
+ * This helps show the "real" status when backend hasn't updated yet
+ * @param record - Request form record
+ * @returns Effective status for display
+ */
+export function getEffectiveStatus(record: RequestForm): RequestFormStatus {
+  // If already approved/rejected, use that status
+  if (
+    record.status === 'approved' ||
+    record.status === 'rejected' ||
+    record.status === 'authorized_approved'
+  ) {
+    return record.status;
+  }
+
+  // For pending requests, check if signatures are actually complete
+  if (record.status === 'pending' && areSignaturesComplete(record)) {
+    return 'approved';
+  }
+
+  // Default to original status
+  return record.status;
 }

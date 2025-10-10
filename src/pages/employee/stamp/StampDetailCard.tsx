@@ -57,6 +57,18 @@ export const StampDetailCard: React.FC<StampDetailCardProps> = ({ data }) => {
               </div>
             </Card.Grid>
             <Card.Grid hoverable={false} style={gridStyle}>
+              <div className="font-bold">Mục đích in</div>
+              <div>
+                {{
+                  new: 'In mới',
+                  additional: 'In thêm',
+                  reprint: 'In lại'
+                }[item.purpose as string] ||
+                  item.purpose ||
+                  '-'}
+              </div>
+            </Card.Grid>
+            <Card.Grid hoverable={false} style={gridStyle}>
               <div className="font-bold">Ngày tạo</div>
               <div>{dayjs(item.created_at).format('DD/MM/YYYY')}</div>
             </Card.Grid>
