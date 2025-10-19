@@ -76,7 +76,7 @@ export const ProductDetail = () => {
       dataIndex: ['quantity'],
       render: (value) => {
         if (!value) return '-';
-        return value.toLocaleString();
+        return (value || 0).toLocaleString();
       }
     },
     {

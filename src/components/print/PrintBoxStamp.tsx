@@ -258,7 +258,11 @@ export const PrintBoxStamp = ({
                   height={25}
                   format="CODE128"
                   displayValue={false}
-                  margin={1}
+                  margin={10}
+                  fontSize={0}
+                  textMargin={0}
+                  background="#FFFFFF"
+                  lineColor="#000000"
                   value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
                     if (stamp === null) return '000';
                     return stamp.toString().padStart(3, '0');
@@ -662,7 +666,11 @@ export const PrintBoxStamp = ({
                                           height={25}
                                           format="CODE128"
                                           displayValue={false}
-                                          margin={1}
+                                          margin={10}
+                                          fontSize={0}
+                                          textMargin={0}
+                                          background="#FFFFFF"
+                                          lineColor="#000000"
                                           value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
                                             if (stamp === null) return '000';
                                             return stamp
