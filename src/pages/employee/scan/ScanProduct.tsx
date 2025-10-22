@@ -33,6 +33,7 @@ export default function ScanProduct() {
   const alertTimeout = useRef<NodeJS.Timeout | null>(null);
   // Remove manual timeout, use debounce instead
   const inputRef = useRef<InputRef>(null);
+  const alertRef = useRef<HTMLDivElement>(null);
   // Track input focus/blur times for QR and Barcode
   const [qrInputProcessedTime, setQrInputProcessedTime] = useState<
     number | null
@@ -100,6 +101,15 @@ export default function ScanProduct() {
 
   useEffect(() => {
     keepFocus();
+    // Auto scroll to input on page load
+    setTimeout(() => {
+      inputRef.current?.input?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+      });
+    }, 200);
+
     window.addEventListener('load', keepFocus);
     return () => {
       window.removeEventListener('load', keepFocus);
@@ -116,6 +126,16 @@ export default function ScanProduct() {
     (type: 'success' | 'info' | 'warning' | 'danger', message: string) => {
       if (alertTimeout.current) clearTimeout(alertTimeout.current);
       setAlert({ type, message, visible: true });
+
+      // Auto scroll to alert for all notification types
+      setTimeout(() => {
+        alertRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        });
+      }, 100);
+
       const delay = 5000;
       alertTimeout.current = setTimeout(
         () => setAlert((a) => ({ ...a, visible: false })),
@@ -230,79 +250,118 @@ export default function ScanProduct() {
           </Button>
         </Link>
         <div className="space-y-6 text-center">
-          <h1 className="text-xl font-semibold">
-            Vui lòng dùng máy quét để quét sản phẩm
+          <h1 className="text-2xl font-bold text-blue-600">
+            Quét sản phẩm nhanh
           </h1>
-          <div>
-            <Input
-              ref={inputRef}
-              placeholder="Quét mã tại đây..."
-              autoFocus
-              style={{ textAlign: 'center' }}
-              value={inputValue}
-              onChange={handleInputChange}
-              onBlur={() => {
-                setTimeout(keepFocus, 100);
-              }}
-            />
-          </div>
-          <div className="mt-2 text-sm text-gray-500">
-            <div>
-              Thời gian nhập QR:{' '}
-              <b>
-                {qrInputProcessedTime !== null
-                  ? (qrInputProcessedTime / 1000).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    }) + ' s'
-                  : '--'}
-              </b>
-            </div>
-            <div>
-              Thời gian nhập Barcode:{' '}
-              <b>
-                {barcodeInputProcessedTime !== null
-                  ? (barcodeInputProcessedTime / 1000).toLocaleString(
-                      undefined,
-                      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                    ) + ' s'
-                  : '--'}
-              </b>
-            </div>
-            <div>
-              Thời gian xử lý:{' '}
-              <b>
-                {processingTime !== null
-                  ? (processingTime / 1000).toLocaleString() + ' s'
-                  : '--'}
-              </b>
-            </div>
-            <div>
-              Tổng thời gian quét:{' '}
-              <b>
-                {qrInputProcessedTime !== null &&
-                barcodeInputProcessedTime !== null &&
-                processingTime !== null
-                  ? (
-                      (qrInputProcessedTime +
-                        barcodeInputProcessedTime +
-                        processingTime) /
-                      1000
-                    ).toLocaleString() + ' s'
-                  : '--'}
-              </b>
+
+          <div className="rounded-lg border-2 border-dashed border-blue-300 bg-gray-50 p-6">
+            <div className="mb-4">
+              <div className="mb-2 text-lg font-semibold text-gray-700">
+                Vùng quét mã
+              </div>
+              <Input
+                ref={inputRef}
+                placeholder="Sẵn sàng quét..."
+                autoFocus
+                size="large"
+                style={{
+                  textAlign: 'center',
+                  fontSize: '18px',
+                  padding: '12px',
+                  fontWeight: 'bold'
+                }}
+                value={inputValue}
+                onChange={handleInputChange}
+                onBlur={() => {
+                  setTimeout(keepFocus, 100);
+                }}
+                onFocus={(e) => {
+                  // Prevent virtual keyboard on mobile while allowing barcode scanner input
+                  (e.target as HTMLInputElement).setAttribute(
+                    'readonly',
+                    'readonly'
+                  );
+                  setTimeout(() => {
+                    (e.target as HTMLInputElement).removeAttribute('readonly');
+                  }, 100);
+                }}
+                onTouchStart={(e) => {
+                  // Additional prevention for mobile touch
+                  (e.target as HTMLInputElement).setAttribute(
+                    'readonly',
+                    'readonly'
+                  );
+                  setTimeout(() => {
+                    (e.target as HTMLInputElement).removeAttribute('readonly');
+                  }, 100);
+                }}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                // Additional attributes to prevent virtual keyboard
+                inputMode="text"
+                enterKeyHint="done"
+              />
             </div>
           </div>
-          {alert.visible && (
-            <Alert
-              className="text-center"
-              type={alert.type === 'danger' ? 'error' : alert.type}
-              message={
-                <span dangerouslySetInnerHTML={{ __html: alert.message }} />
-              }
-              showIcon
-            />
+
+          {/* Single unified notification area */}
+          {(alert.visible || lastQrScanned) && (
+            <div ref={alertRef}>
+              {alert.visible ? (
+                <Alert
+                  className="text-center text-lg"
+                  type={alert.type === 'danger' ? 'error' : alert.type}
+                  message={
+                    <span
+                      dangerouslySetInnerHTML={{ __html: alert.message }}
+                      style={{ fontSize: '16px', fontWeight: '500' }}
+                    />
+                  }
+                  showIcon
+                />
+              ) : lastQrScanned ? (
+                <Alert
+                  className="text-center text-lg"
+                  type="info"
+                  message={
+                    <span style={{ fontSize: '16px', fontWeight: '500' }}>
+                      Sản phẩm: <strong>{lastQrScanned.name}</strong> - Tiếp
+                      theo: Quét mã Barcode
+                    </span>
+                  }
+                  showIcon
+                />
+              ) : null}
+            </div>
           )}
+
+          <details className="text-left">
+            <summary className="cursor-pointer text-center text-gray-500 hover:text-gray-700">
+              Thống kê hiệu suất
+            </summary>
+            <div className="mt-2 text-center text-sm text-gray-500">
+              <div>
+                Tổng thời gian quét:{' '}
+                <b>
+                  {qrInputProcessedTime !== null &&
+                  barcodeInputProcessedTime !== null &&
+                  processingTime !== null
+                    ? (
+                        (qrInputProcessedTime +
+                          barcodeInputProcessedTime +
+                          processingTime) /
+                        1000
+                      ).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }) + ' giây'
+                    : 'Chưa có dữ liệu'}
+                </b>
+              </div>
+            </div>
+          </details>
         </div>
       </ComponentCard>
     </>
