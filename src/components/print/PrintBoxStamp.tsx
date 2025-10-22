@@ -21,6 +21,7 @@ interface PrintBoxStampProps {
   shift: Shift;
   employee_id?: EmployeeType['id'];
   stamp_id?: string;
+  printLayout?: 'grid' | 'single';
 }
 
 export const PrintBoxStamp = ({
@@ -30,7 +31,8 @@ export const PrintBoxStamp = ({
   date,
   shift,
   employee_id,
-  stamp_id
+  stamp_id,
+  printLayout = 'grid'
 }: PrintBoxStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
@@ -141,6 +143,181 @@ export const PrintBoxStamp = ({
   // Use the custom hook for print shortcut
   usePrintShortcut(handleSavePrintLog);
 
+  // Helper function to render stamp table
+  const renderStampTable = (stamp: number | null) => (
+    <table
+      className={`border border-black text-center ${product.FAVV ? 'text-[8.3px]' : 'text-[10px]'}`}
+    >
+      <tbody>
+        <tr>
+          <td>
+            <Image
+              src={logo}
+              alt="logo"
+              width={90}
+              preview={false}
+              title="VINH VINH PHAT ONE MEMBER CO.LTD"
+            />
+          </td>
+          <td colSpan={5}>
+            <div className="w-auto text-left text-[6px] break-words whitespace-normal">
+              VINH VINH PHAT ONE MEMBER CO., LTD
+              <br />
+              Address : 359 Ap Chien Luoc Street, Warter 2, Binh Hung Hoa Ward,
+              Ho Chi Minh City
+              <br />
+              Factory : No. 2861, National Highway 1, Hamlet 3, Binh Chanh
+              Commune, Ho Chi Minh City
+              <br />
+              Tel: 0283.620.4978 Fax: 0283.620.4978
+              <br />
+              Made in Viet Nam
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-start">
+            Tên sản phẩm
+            <br />
+            品名
+          </td>
+          <td colSpan={2}>
+            <p
+              className={`${product.name.length < 10 ? 'text-sm' : 'text-[12px]'} font-bold`}
+            >
+              {product.name}
+            </p>
+          </td>
+          <td>CODE</td>
+          <td colSpan={2}>
+            <p className="text-sm font-bold">{product.code}</p>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-start">
+            Nguyên liệu
+            <br />
+            原材料
+          </td>
+          <td colSpan={2} className="text-sm">
+            <p> {product.material}</p>
+          </td>
+          <td>
+            Màu sắc
+            <br />色
+          </td>
+          <td colSpan={2} className="text-sm">
+            <p> {product.color}</p>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-start">
+            Số lượng
+            <br />
+            数量
+          </td>
+          <td colSpan={5}>
+            <p className="text-sm font-bold">{product.quanEntityBin}PCS</p>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-start">
+            Lotno
+            <br />
+            ロット No
+          </td>
+          <td colSpan={5} className="text-sm font-bold">
+            <div className="mx-1 flex items-center justify-between">
+              <p>A</p>
+              <p>-</p>
+              <p>{date.format('DDMMYYYY')}</p>
+              <p>-</p>
+              <p>{shift}</p>
+              <p>-</p>
+              <p>
+                {(() => {
+                  if (stamp === null) return '';
+                  return stamp.toString().padStart(3, '0');
+                })()}
+              </p>
+            </div>
+          </td>
+        </tr>
+        {product.FAVV == true && (
+          <tr className="h-8">
+            <td className="py-0 text-start text-[8px] leading-tight">
+              Mã vạch
+              <br />
+              バーコード
+            </td>
+            <td colSpan={5} className="px-0 py-0">
+              <div className="flex items-center justify-center px-0 py-0">
+                <Barcode
+                  className="max-w-[180px]"
+                  width={1.5}
+                  height={30}
+                  format="CODE128"
+                  displayValue={false}
+                  margin={2}
+                  fontSize={0}
+                  textMargin={0}
+                  background="#FFFFFF"
+                  lineColor="#000000"
+                  value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
+                    if (stamp === null) return '000';
+                    return stamp.toString().padStart(3, '0');
+                  })()}`}
+                />
+              </div>
+            </td>
+          </tr>
+        )}
+        <tr>
+          <td className="text-start">
+            Kiểm tra
+            <br />
+            検査
+          </td>
+          <td colSpan={3}>
+            Kiểm tra 200%
+            <br />
+            檢查(200%)
+          </td>
+          <td colSpan={2}>
+            Kiểm tra (Xuất hàng)
+            <br />
+            検査 (出荷)
+          </td>
+        </tr>
+        <tr>
+          <td className="h-20 text-start">
+            Mộc
+            <br />
+            合格印
+          </td>
+          <td colSpan={3}></td>
+          <td colSpan={2} rowSpan={2}>
+            <div className="mx-auto h-14 w-8 border print:text-black"></div>
+          </td>
+        </tr>
+        <tr>
+          <td className="text-start">
+            Người kiểm
+            <br />
+            検査
+          </td>
+          <td colSpan={3}></td>
+        </tr>
+        <tr>
+          <td className="text-start">(Thời gian) 時間</td>
+          <td colSpan={5}>
+            {date.format('DD/MM/YYYY')} {shift == 1 ? '07:30' : '19:30'}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+
   return (
     <>
       <style>
@@ -151,6 +328,8 @@ export const PrintBoxStamp = ({
           }
           .box-print-container table {
             border-collapse: collapse !important;
+            transform: scale(0.95) !important;
+            transform-origin: center !important;
           }
           @media print {
             .box-print-container {
@@ -159,8 +338,26 @@ export const PrintBoxStamp = ({
               box-shadow: none !important;
             }
             @page {
-              size: A4 landscape !important;
+              size: ${printLayout === 'single' ? '100mm 100mm' : 'A4 landscape'} !important;
               margin: 0 !important;
+            }
+            ${
+              printLayout === 'single'
+                ? `
+            .stamp-item {
+              width: 100mm !important;
+              height: 100mm !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              page-break-after: always !important;
+            }
+            .stamp-item table {
+              width: 95mm !important;
+              height: auto !important;
+            }
+            `
+                : ''
             }
           }
         `}
@@ -174,332 +371,374 @@ export const PrintBoxStamp = ({
         ref={contentRef}
         className="box-print-container print:m-0 print:p-0 print:shadow-none"
       >
-        {product &&
-          Array.from(
-            {
-              length: (() => {
-                if (originalStampList.length > 1) {
-                  // For comma-separated stamps, calculate pages based on 3 odds + 3 evens per page
-                  const allStamps = (startStamp as string)
-                    .split(',')
-                    .map((stamp) => parseInt(stamp.trim()))
-                    .sort((a, b) => a - b)
-                    .slice(0, totalStamp);
-
-                  const oddCount = allStamps.filter(
-                    (num) => num % 2 === 1
-                  ).length;
-                  const evenCount = allStamps.filter(
-                    (num) => num % 2 === 0
-                  ).length;
-
-                  // Each page can hold max 3 odd + 3 even
-                  const oddPages = Math.ceil(oddCount / 3);
-                  const evenPages = Math.ceil(evenCount / 3);
-
-                  // Number of pages = max of odd pages or even pages
-                  return Math.max(oddPages, evenPages);
-                } else {
-                  // For sequential stamps, also calculate based on odd/even separation
-                  const allSequentialStamps = Array.from(
-                    { length: totalStamp },
-                    (_, i) => parseInt(startStamp as string) + i
-                  );
-
-                  const oddCount = allSequentialStamps.filter(
-                    (num) => num % 2 === 1
-                  ).length;
-                  const evenCount = allSequentialStamps.filter(
-                    (num) => num % 2 === 0
-                  ).length;
-
-                  const oddPages = Math.ceil(oddCount / 3);
-                  const evenPages = Math.ceil(evenCount / 3);
-
-                  return Math.max(oddPages, evenPages);
-                }
-              })()
-            },
-            (_, pageIndex) => {
-              // Calculate the actual layout for this page
-              let pageLayout: (string | null)[];
+        {product && printLayout === 'single'
+          ? // Single layout: 1 stamp per page (100mm x 100mm)
+            (() => {
+              // Generate all stamps based on the input
+              let allStamps: number[];
 
               if (originalStampList.length > 1) {
-                // For comma-separated stamps, separate all odds and evens first
-                const allStamps = (startStamp as string)
+                // For comma-separated stamps
+                allStamps = (startStamp as string)
                   .split(',')
                   .map((stamp) => parseInt(stamp.trim()))
                   .sort((a, b) => a - b)
                   .slice(0, totalStamp);
-
-                // Separate all odd and even numbers
-                const allOddNumbers = allStamps
-                  .filter((num) => num % 2 === 1)
-                  .sort((a, b) => a - b);
-                const allEvenNumbers = allStamps
-                  .filter((num) => num % 2 === 0)
-                  .sort((a, b) => a - b);
-
-                // Get 3 odd and 3 even numbers for this specific page
-                const pageOddNumbers = allOddNumbers.slice(
-                  pageIndex * 3,
-                  (pageIndex + 1) * 3
-                );
-                const pageEvenNumbers = allEvenNumbers.slice(
-                  pageIndex * 3,
-                  (pageIndex + 1) * 3
-                );
-
-                pageLayout = new Array(6).fill(null);
-
-                // Fill odd numbers in top row ONLY (positions 0, 1, 2)
-                pageOddNumbers.forEach((num, index) => {
-                  if (index < 3) {
-                    pageLayout[index] = num.toString();
-                  }
-                });
-
-                // Fill even numbers in bottom row ONLY (positions 3, 4, 5)
-                pageEvenNumbers.forEach((num, index) => {
-                  if (index < 3) {
-                    pageLayout[index + 3] = num.toString();
-                  }
-                });
               } else {
-                // For sequential stamps, also apply odd-even separation
-                const allSequentialStamps = Array.from(
+                // For sequential stamps
+                allStamps = Array.from(
                   { length: totalStamp },
                   (_, i) => parseInt(startStamp as string) + i
-                ).slice(pageIndex * 6, (pageIndex + 1) * 6);
-
-                // Separate odd and even numbers for this page
-                const oddNumbers = allSequentialStamps
-                  .filter((num) => num % 2 === 1)
-                  .sort((a, b) => a - b);
-                const evenNumbers = allSequentialStamps
-                  .filter((num) => num % 2 === 0)
-                  .sort((a, b) => a - b);
-
-                pageLayout = new Array(6).fill(null);
-
-                // Fill odd numbers in top row ONLY (positions 0, 1, 2)
-                oddNumbers.forEach((num, index) => {
-                  if (index < 3) {
-                    pageLayout[index] = num.toString();
-                  }
-                });
-
-                // Fill even numbers in bottom row ONLY (positions 3, 4, 5)
-                evenNumbers.forEach((num, index) => {
-                  if (index < 3) {
-                    pageLayout[index + 3] = num.toString();
-                  }
-                });
+                );
               }
 
-              return (
+              // Render each stamp on its own page
+              return allStamps.map((stamp, index) => (
                 <div
-                  key={`page-${pageIndex}`}
-                  className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
+                  key={`stamp-${index}-${product.code}-${stamp}`}
+                  className="stamp-item not-print:mb-8 not-print:border not-print:border-green-500 not-print:p-4 print:flex print:items-center print:justify-center"
                 >
-                  {pageLayout.map((stamp, itemIndex) => {
-                    const globalIndex = pageIndex * 6 + itemIndex;
-
-                    // Calculate grid position (row and column)
-                    const gridRow = Math.floor(itemIndex / 3) + 1; // 1 or 2
-                    const gridCol = (itemIndex % 3) + 1; // 1, 2, or 3
-
-                    return (
-                      <div
-                        key={`${globalIndex}-${product.code}-${itemIndex}`}
-                        className="h-[500] w-auto max-w-[470px] break-inside-avoid-page text-[7px] not-print:flex not-print:justify-center print:flex print:h-auto print:w-auto print:max-w-none print:items-center print:justify-center"
-                        style={{
-                          gridRow: gridRow,
-                          gridColumn: gridCol,
-                          display: stamp === null ? 'none' : 'flex'
-                        }}
-                      >
-                        <table
-                          className={`border border-black text-center ${product.FAVV ? 'text-[8.3px]' : 'text-[10px]'}`}
-                        >
-                          <tbody>
-                            <tr>
-                              <td>
-                                <Image
-                                  src={logo}
-                                  alt="logo"
-                                  width={90}
-                                  preview={false}
-                                  title="VINH VINH PHAT ONE MEMBER CO.LTD"
-                                />
-                              </td>
-                              <td colSpan={5}>
-                                <div className="w-auto text-left text-[6px] break-words whitespace-normal">
-                                  VINH VINH PHAT ONE MEMBER CO., LTD
-                                  <br />
-                                  Address : 359 Ap Chien Luoc Street, Warter 2,
-                                  Binh Hung Hoa Ward, Ho Chi Minh City
-                                  <br />
-                                  Factory : No. 2861, National Highway 1, Hamlet
-                                  3, Binh Chanh Commune, Ho Chi Minh City
-                                  <br />
-                                  Tel: 0283.620.4978 Fax: 0283.620.4978
-                                  <br />
-                                  Made in Viet Nam
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="text-start">
-                                Tên sản phẩm
-                                <br />
-                                品名
-                              </td>
-                              <td colSpan={2}>
-                                <p
-                                  className={`${product.name.length < 10 ? 'text-sm' : 'text-[12px]'} font-bold`}
-                                >
-                                  {product.name}
-                                </p>
-                              </td>
-                              <td>CODE</td>
-                              <td colSpan={2}>
-                                <p className="text-sm font-bold">
-                                  {product.code}
-                                </p>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="text-start">
-                                Nguyên liệu
-                                <br />
-                                原材料
-                              </td>
-                              <td colSpan={2} className="text-sm">
-                                <p> {product.material}</p>
-                              </td>
-                              <td>
-                                Màu sắc
-                                <br />色
-                              </td>
-                              <td colSpan={2} className="text-sm">
-                                <p> {product.color}</p>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="text-start">
-                                Số lượng
-                                <br />
-                                数量
-                              </td>
-                              <td colSpan={5}>
-                                <p className="text-sm font-bold">
-                                  {product.quanEntityBin}PCS
-                                </p>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="text-start">
-                                Lotno
-                                <br />
-                                ロット No
-                              </td>
-                              <td colSpan={5} className="text-sm font-bold">
-                                <div className="mx-1 flex items-center justify-between">
-                                  <p>A</p>
-                                  <p>-</p>
-                                  <p>{date.format('DDMMYYYY')}</p>
-                                  <p>-</p>
-                                  <p>{shift}</p>
-                                  <p>-</p>
-                                  <p>
-                                    {(() => {
-                                      if (stamp === null) return '';
-                                      return stamp.toString().padStart(3, '0');
-                                    })()}
-                                  </p>
-                                </div>
-                              </td>
-                            </tr>
-                            {product.FAVV == true && (
-                              <tr>
-                                <td className="text-start">
-                                  Mã vạch
-                                  <br />
-                                  バーコード
-                                </td>
-                                <td colSpan={5}>
-                                  <div className="flex items-center justify-center">
-                                    <Barcode
-                                      className="max-w-[235px]"
-                                      width={2}
-                                      height={25}
-                                      format="CODE128"
-                                      displayValue={false}
-                                      margin={1}
-                                      value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
-                                        if (stamp === null) return '000';
-                                        return stamp
-                                          .toString()
-                                          .padStart(3, '0');
-                                      })()}`}
-                                    />
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                            <tr>
-                              <td className="text-start">
-                                Kiểm tra
-                                <br />
-                                検査
-                              </td>
-                              <td colSpan={3}>
-                                Kiểm tra 200%
-                                <br />
-                                檢查(200%)
-                              </td>
-                              <td colSpan={2}>
-                                Kiểm tra (Xuất hàng)
-                                <br />
-                                検査 (出荷)
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="h-20 text-start">
-                                Mộc
-                                <br />
-                                合格印
-                              </td>
-                              <td colSpan={3}></td>
-                              <td colSpan={2} rowSpan={2}>
-                                <div className="mx-auto h-14 w-8 border print:text-black"></div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="text-start">
-                                Người kiểm
-                                <br />
-                                検査
-                              </td>
-                              <td colSpan={3}></td>
-                            </tr>
-                            <tr>
-                              <td className="text-start">(Thời gian) 時間</td>
-                              <td colSpan={5}>
-                                {date.format('DD/MM/YYYY')}{' '}
-                                {shift == 1 ? '07:30' : '19:30'}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
+                  {renderStampTable(stamp)}
                 </div>
-              );
-            }
-          )}
+              ));
+            })()
+          : product
+            ? // Grid layout: 6 stamps per page (A4 landscape)
+              Array.from(
+                {
+                  length: (() => {
+                    if (originalStampList.length > 1) {
+                      // For comma-separated stamps, calculate pages based on 3 odds + 3 evens per page
+                      const allStamps = (startStamp as string)
+                        .split(',')
+                        .map((stamp) => parseInt(stamp.trim()))
+                        .sort((a, b) => a - b)
+                        .slice(0, totalStamp);
+
+                      const oddCount = allStamps.filter(
+                        (num) => num % 2 === 1
+                      ).length;
+                      const evenCount = allStamps.filter(
+                        (num) => num % 2 === 0
+                      ).length;
+
+                      // Each page can hold max 3 odd + 3 even
+                      const oddPages = Math.ceil(oddCount / 3);
+                      const evenPages = Math.ceil(evenCount / 3);
+
+                      // Number of pages = max of odd pages or even pages
+                      return Math.max(oddPages, evenPages);
+                    } else {
+                      // For sequential stamps, also calculate based on odd/even separation
+                      const allSequentialStamps = Array.from(
+                        { length: totalStamp },
+                        (_, i) => parseInt(startStamp as string) + i
+                      );
+
+                      const oddCount = allSequentialStamps.filter(
+                        (num) => num % 2 === 1
+                      ).length;
+                      const evenCount = allSequentialStamps.filter(
+                        (num) => num % 2 === 0
+                      ).length;
+
+                      const oddPages = Math.ceil(oddCount / 3);
+                      const evenPages = Math.ceil(evenCount / 3);
+
+                      return Math.max(oddPages, evenPages);
+                    }
+                  })()
+                },
+                (_, pageIndex) => {
+                  // Calculate the actual layout for this page
+                  let pageLayout: (string | null)[];
+
+                  if (originalStampList.length > 1) {
+                    // For comma-separated stamps, separate all odds and evens first
+                    const allStamps = (startStamp as string)
+                      .split(',')
+                      .map((stamp) => parseInt(stamp.trim()))
+                      .sort((a, b) => a - b)
+                      .slice(0, totalStamp);
+
+                    // Separate all odd and even numbers
+                    const allOddNumbers = allStamps
+                      .filter((num) => num % 2 === 1)
+                      .sort((a, b) => a - b);
+                    const allEvenNumbers = allStamps
+                      .filter((num) => num % 2 === 0)
+                      .sort((a, b) => a - b);
+
+                    // Get 3 odd and 3 even numbers for this specific page
+                    const pageOddNumbers = allOddNumbers.slice(
+                      pageIndex * 3,
+                      (pageIndex + 1) * 3
+                    );
+                    const pageEvenNumbers = allEvenNumbers.slice(
+                      pageIndex * 3,
+                      (pageIndex + 1) * 3
+                    );
+
+                    pageLayout = new Array(6).fill(null);
+
+                    // Fill odd numbers in top row ONLY (positions 0, 1, 2)
+                    pageOddNumbers.forEach((num, index) => {
+                      if (index < 3) {
+                        pageLayout[index] = num.toString();
+                      }
+                    });
+
+                    // Fill even numbers in bottom row ONLY (positions 3, 4, 5)
+                    pageEvenNumbers.forEach((num, index) => {
+                      if (index < 3) {
+                        pageLayout[index + 3] = num.toString();
+                      }
+                    });
+                  } else {
+                    // For sequential stamps, also apply odd-even separation
+                    const allSequentialStamps = Array.from(
+                      { length: totalStamp },
+                      (_, i) => parseInt(startStamp as string) + i
+                    ).slice(pageIndex * 6, (pageIndex + 1) * 6);
+
+                    // Separate odd and even numbers for this page
+                    const oddNumbers = allSequentialStamps
+                      .filter((num) => num % 2 === 1)
+                      .sort((a, b) => a - b);
+                    const evenNumbers = allSequentialStamps
+                      .filter((num) => num % 2 === 0)
+                      .sort((a, b) => a - b);
+
+                    pageLayout = new Array(6).fill(null);
+
+                    // Fill odd numbers in top row ONLY (positions 0, 1, 2)
+                    oddNumbers.forEach((num, index) => {
+                      if (index < 3) {
+                        pageLayout[index] = num.toString();
+                      }
+                    });
+
+                    // Fill even numbers in bottom row ONLY (positions 3, 4, 5)
+                    evenNumbers.forEach((num, index) => {
+                      if (index < 3) {
+                        pageLayout[index + 3] = num.toString();
+                      }
+                    });
+                  }
+
+                  return (
+                    <div
+                      key={`page-${pageIndex}`}
+                      className="grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mb-8 not-print:border not-print:border-green-500 print:h-screen print:w-full print:break-after-page"
+                    >
+                      {pageLayout.map((stamp, itemIndex) => {
+                        const globalIndex = pageIndex * 6 + itemIndex;
+
+                        // Calculate grid position (row and column)
+                        const gridRow = Math.floor(itemIndex / 3) + 1; // 1 or 2
+                        const gridCol = (itemIndex % 3) + 1; // 1, 2, or 3
+
+                        return (
+                          <div
+                            key={`${globalIndex}-${product.code}-${itemIndex}`}
+                            className="h-[500] w-auto max-w-[470px] break-inside-avoid-page text-[7px] not-print:flex not-print:justify-center print:flex print:h-auto print:w-auto print:max-w-none print:items-center print:justify-center"
+                            style={{
+                              gridRow: gridRow,
+                              gridColumn: gridCol,
+                              display: stamp === null ? 'none' : 'flex'
+                            }}
+                          >
+                            <table
+                              className={`border border-black text-center ${product.FAVV ? 'text-[8.3px]' : 'text-[10px]'}`}
+                            >
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    <Image
+                                      src={logo}
+                                      alt="logo"
+                                      width={90}
+                                      preview={false}
+                                      title="VINH VINH PHAT ONE MEMBER CO.LTD"
+                                    />
+                                  </td>
+                                  <td colSpan={5}>
+                                    <div className="w-auto text-left text-[6px] break-words whitespace-normal">
+                                      VINH VINH PHAT ONE MEMBER CO., LTD
+                                      <br />
+                                      Address : 359 Ap Chien Luoc Street, Warter
+                                      2, Binh Hung Hoa Ward, Ho Chi Minh City
+                                      <br />
+                                      Factory : No. 2861, National Highway 1,
+                                      Hamlet 3, Binh Chanh Commune, Ho Chi Minh
+                                      City
+                                      <br />
+                                      Tel: 0283.620.4978 Fax: 0283.620.4978
+                                      <br />
+                                      Made in Viet Nam
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="text-start">
+                                    Tên sản phẩm
+                                    <br />
+                                    品名
+                                  </td>
+                                  <td colSpan={2}>
+                                    <p
+                                      className={`${product.name.length < 10 ? 'text-sm' : 'text-[12px]'} font-bold`}
+                                    >
+                                      {product.name}
+                                    </p>
+                                  </td>
+                                  <td>CODE</td>
+                                  <td colSpan={2}>
+                                    <p className="text-sm font-bold">
+                                      {product.code}
+                                    </p>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="text-start">
+                                    Nguyên liệu
+                                    <br />
+                                    原材料
+                                  </td>
+                                  <td colSpan={2} className="text-sm">
+                                    <p> {product.material}</p>
+                                  </td>
+                                  <td>
+                                    Màu sắc
+                                    <br />色
+                                  </td>
+                                  <td colSpan={2} className="text-sm">
+                                    <p> {product.color}</p>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="text-start">
+                                    Số lượng
+                                    <br />
+                                    数量
+                                  </td>
+                                  <td colSpan={5}>
+                                    <p className="text-sm font-bold">
+                                      {product.quanEntityBin}PCS
+                                    </p>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="text-start">
+                                    Lotno
+                                    <br />
+                                    ロット No
+                                  </td>
+                                  <td colSpan={5} className="text-sm font-bold">
+                                    <div className="mx-1 flex items-center justify-between">
+                                      <p>A</p>
+                                      <p>-</p>
+                                      <p>{date.format('DDMMYYYY')}</p>
+                                      <p>-</p>
+                                      <p>{shift}</p>
+                                      <p>-</p>
+                                      <p>
+                                        {(() => {
+                                          if (stamp === null) return '';
+                                          return stamp
+                                            .toString()
+                                            .padStart(3, '0');
+                                        })()}
+                                      </p>
+                                    </div>
+                                  </td>
+                                </tr>
+                                {product.FAVV == true && (
+                                  <tr className="h-8">
+                                    <td className="py-0 text-start text-[8px] leading-tight">
+                                      Mã vạch
+                                      <br />
+                                      バーコード
+                                    </td>
+                                    <td colSpan={5} className="px-0 py-0">
+                                      <div className="flex items-center justify-center px-0 py-0">
+                                        <Barcode
+                                          className="max-w-[180px]"
+                                          width={1.5}
+                                          height={30}
+                                          format="CODE128"
+                                          displayValue={false}
+                                          margin={2}
+                                          fontSize={0}
+                                          textMargin={0}
+                                          background="#FFFFFF"
+                                          lineColor="#000000"
+                                          value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
+                                            if (stamp === null) return '000';
+                                            return stamp
+                                              .toString()
+                                              .padStart(3, '0');
+                                          })()}`}
+                                        />
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                                <tr>
+                                  <td className="text-start">
+                                    Kiểm tra
+                                    <br />
+                                    検査
+                                  </td>
+                                  <td colSpan={3}>
+                                    Kiểm tra 200%
+                                    <br />
+                                    檢查(200%)
+                                  </td>
+                                  <td colSpan={2}>
+                                    Kiểm tra (Xuất hàng)
+                                    <br />
+                                    検査 (出荷)
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="h-20 text-start">
+                                    Mộc
+                                    <br />
+                                    合格印
+                                  </td>
+                                  <td colSpan={3}></td>
+                                  <td colSpan={2} rowSpan={2}>
+                                    <div className="mx-auto h-14 w-8 border print:text-black"></div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="text-start">
+                                    Người kiểm
+                                    <br />
+                                    検査
+                                  </td>
+                                  <td colSpan={3}></td>
+                                </tr>
+                                <tr>
+                                  <td className="text-start">
+                                    (Thời gian) 時間
+                                  </td>
+                                  <td colSpan={5}>
+                                    {date.format('DD/MM/YYYY')}{' '}
+                                    {shift == 1 ? '07:30' : '19:30'}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+              )
+            : null}
       </div>
     </>
   );
