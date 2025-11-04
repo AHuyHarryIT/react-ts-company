@@ -11,6 +11,9 @@ import { useAuthorizedEmployee } from '@/hooks/useAuthorizedEmployee';
 
 const { Title, Text } = Typography;
 
+// Danh sách nhân viên nộp đơn thẳng cho quản lý, bỏ qua tổ trưởng
+const DIRECT_TO_MANAGER_IDS = ['20122900', '23030100', '17031400'] as const;
+
 interface RequestFormDetailProps {
   data: RequestForm;
 }
@@ -369,6 +372,14 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
     return data.supervisor_id.toString() === data.employee_id.toString();
   }, [data.supervisor_id, data.employee_id]);
 
+  // Check if employee can submit directly to manager (bypass supervisor)
+  const canSubmitDirectToManager = React.useMemo(() => {
+    if (!data.employee_id) return false;
+    return (DIRECT_TO_MANAGER_IDS as readonly string[]).includes(
+      data.employee_id.toString()
+    );
+  }, [data.employee_id]);
+
   const parsedFormData = React.useMemo(() => {
     if (data.form_data) {
       if (typeof data.form_data === 'object') return data.form_data;
@@ -678,9 +689,53 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
                     </div>
                   );
                 } else {
+                  // Parse HTML tags like <b> for bold text and <small> for small text
+                  const parseHTMLContent = (text: string) => {
+                    const parts: React.ReactNode[] = [];
+                    // Parse cả <b> và <small> tags
+                    const regex =
+                      /<b><small>(.*?)<\/small><\/b>|<b>(.*?)<\/b>|<small>(.*?)<\/small>/g;
+                    let lastIndex = 0;
+                    let match;
+
+                    while ((match = regex.exec(text)) !== null) {
+                      // Add text before the tag
+                      if (match.index > lastIndex) {
+                        parts.push(text.substring(lastIndex, match.index));
+                      }
+
+                      // Check which pattern matched
+                      if (match[1]) {
+                        // <b><small>content</small></b>
+                        parts.push(
+                          <strong key={match.index}>
+                            <small>{match[1]}</small>
+                          </strong>
+                        );
+                      } else if (match[2]) {
+                        // <b>content</b>
+                        parts.push(
+                          <strong key={match.index}>{match[2]}</strong>
+                        );
+                      } else if (match[3]) {
+                        // <small>content</small>
+                        parts.push(<small key={match.index}>{match[3]}</small>);
+                      }
+
+                      lastIndex = regex.lastIndex;
+                    }
+
+                    // Add remaining text
+                    if (lastIndex < text.length) {
+                      parts.push(text.substring(lastIndex));
+                    }
+
+                    return parts.length > 0 ? parts : text;
+                  };
+
                   processedElements.push(
                     <div key={i} className="mb-0.5">
-                      <Text>{cleanLine}</Text>
+                      <Text>{parseHTMLContent(cleanLine)}</Text>
                     </div>
                   );
                 }
@@ -768,9 +823,9 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
           </Text>
         </div>
 
-        {/* Mobile & Desktop Layout - Conditional columns based on supervisor */}
+        {/* Mobile & Desktop Layout - Conditional columns based on supervisor and direct-to-manager */}
         <div
-          className={`grid gap-2 sm:gap-8 ${isEmployeeSupervisor ? 'grid-cols-2' : 'grid-cols-3'}`}
+          className={`grid gap-2 sm:gap-8 ${isEmployeeSupervisor || canSubmitDirectToManager ? 'grid-cols-2' : 'grid-cols-3'}`}
         >
           <div className="text-center">
             <div className="mb-2 sm:mb-3">
@@ -809,8 +864,8 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
             </div>
           </div>
 
-          {/* Only show supervisor column if employee is not supervisor */}
-          {!isEmployeeSupervisor && (
+          {/* Only show supervisor column if employee is not supervisor AND not direct-to-manager */}
+          {!isEmployeeSupervisor && !canSubmitDirectToManager && (
             <div className="text-center">
               <div className="mb-2 sm:mb-3">
                 <Text strong className="text-xs sm:text-base">

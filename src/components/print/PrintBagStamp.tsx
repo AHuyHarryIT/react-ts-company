@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, message } from 'antd';
+import { Button, message, Radio } from 'antd';
 import type { Dayjs } from 'dayjs';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 import { ProductType } from '@/types/productType';
@@ -32,6 +32,9 @@ export const PrintBagStamp = ({
 }: PrintBagStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
+
+  // State for print layout mode
+  const [printMode, setPrintMode] = useState<'grid' | 'single'>('single');
 
   // Parse and arrange stamps based on comma separation
   const originalStampList = (startStamp as string).split(',');
@@ -141,7 +144,9 @@ export const PrintBagStamp = ({
           }
           .bag-print-container table {
             border-collapse: collapse !important;
+            ${printMode === 'single' ? 'width: 94mm !important; height: 76mm !important;' : ''}
           }
+
           @media print {
             .bag-print-container {
               margin: 0 !important;
@@ -149,54 +154,235 @@ export const PrintBagStamp = ({
               box-shadow: none !important;
             }
             @page {
-              size: A4 portrait !important;
+              size: ${printMode === 'single' ? '100mm 80mm' : 'A4 portrait'} !important;
               margin: 0 !important;
+            }
+            ${
+              printMode === 'single'
+                ? `
+            .stamp-item {
+              width: 100vw !important;
+              height: 100vh !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              page-break-after: always !important;
+              position: relative !important;
+            }
+            .stamp-item table {
+              width: 94mm !important;
+              height: 76mm !important;
+              margin: 0 auto !important;
+            }
+            `
+                : ''
             }
           }
         `}
       </style>
-      <div className="mb-4">
-        <Button color="default" variant="solid" onClick={handleSavePrintLog}>
-          Print
-        </Button>
+      <div className="mb-4 space-y-3">
+        <div>
+          <label className="mb-2 block text-sm font-medium">Chế độ in:</label>
+          <Radio.Group
+            value={printMode}
+            onChange={(e) => setPrintMode(e.target.value)}
+            className="flex gap-4"
+          >
+            <Radio value="single">In (100 x 80)</Radio>
+            <Radio value="grid">In (A4)</Radio>
+          </Radio.Group>
+        </div>
+        <div>
+          <Button color="default" variant="solid" onClick={handleSavePrintLog}>
+            Print
+          </Button>
+        </div>
       </div>
 
       <div
         ref={contentRef}
         className="bag-print-container print:m-0 print:p-0 print:shadow-none"
       >
-        {product &&
-          Array.from(
-            {
-              length:
-                stampList.length > 1
-                  ? stampList.slice(0, totalStamp).length
-                  : totalStamp
-            },
-            () => product
-          )
-            .reduce(
-              (
-                pages: { item: ProductType; index: number }[][],
-                item,
-                index
-              ) => {
-                const pageIndex = Math.floor(index / 8);
-                if (!pages[pageIndex]) pages[pageIndex] = [];
-                pages[pageIndex].push({ item, index });
-                return pages;
+        {product && printMode === 'grid'
+          ? // Grid layout: 8 stamps per page
+            Array.from(
+              {
+                length:
+                  stampList.length > 1
+                    ? stampList.slice(0, totalStamp).length
+                    : totalStamp
               },
-              []
+              () => product
             )
-            .map((page, pageIndex) => (
-              <div
-                key={`page-${pageIndex}`}
-                className="print-grid print:page-break-after-always mr-2 grid grid-cols-2 grid-rows-4 gap-4 not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:min-h-screen"
-              >
-                {page.map(({ item, index }) => (
+              .reduce(
+                (
+                  pages: { item: ProductType; index: number }[][],
+                  item,
+                  index
+                ) => {
+                  const pageIndex = Math.floor(index / 8);
+                  if (!pages[pageIndex]) pages[pageIndex] = [];
+                  pages[pageIndex].push({ item, index });
+                  return pages;
+                },
+                []
+              )
+              .map((page, pageIndex) => (
+                <div
+                  key={`page-${pageIndex}`}
+                  className="print-grid print:page-break-after-always mr-2 grid grid-cols-2 grid-rows-4 gap-4 not-print:mx-auto not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:min-h-screen"
+                >
+                  {page.map(({ item, index }) => (
+                    <div
+                      key={`${index}-${item.code}`}
+                      className="stamp-item w-auto break-inside-avoid-page not-print:flex not-print:justify-center"
+                    >
+                      <table className="text-center">
+                        <colgroup>
+                          <col className="w-[80px]" />
+                          <col className="w-[120px]" />
+                          <col className="w-[120px]" />
+                          <col className="w-[120px]" />
+                          <col className="w-[120px]" />
+                        </colgroup>
+                        <tbody>
+                          <tr>
+                            <td className="text-start text-[7.2px]">
+                              Tên sản phẩm
+                              <br />
+                              品名
+                            </td>
+                            <td colSpan={2} className="text-sm font-bold">
+                              {item.name}
+                            </td>
+                            <td>CODE</td>
+                            <td className="text-sm font-bold">{item.code}</td>
+                          </tr>
+                          <tr>
+                            <td className="text-start text-[7.2px]">
+                              Nguyên liệu
+                              <br />
+                              原材料
+                            </td>
+                            <td colSpan={2} className="text-sm">
+                              {product.material}
+                            </td>
+                            <td className="text-[7.2px]">
+                              Màu sắc
+                              <br />色
+                            </td>
+                            <td className="text-sm">{product.color}</td>
+                          </tr>
+                          <tr>
+                            <td className="text-start text-[7.2px]">
+                              Số lượng
+                              <br />
+                              数量
+                            </td>
+                            <td colSpan={4} className="text-sm font-bold">
+                              {item.quantity_per_package} PCS
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-start text-[7.2px]">
+                              Lotno
+                              <br />
+                              ロット No
+                            </td>
+                            <td colSpan={4} className="text-sm font-bold">
+                              <div className="mx-6 flex items-center justify-between">
+                                <p>A</p>
+                                <p>-</p>
+                                <p>{date.format('DDMMYYYY')}</p>
+                                <p>-</p>
+                                <p>{shift}</p>
+                                <p>-</p>
+                                <p>
+                                  {(stampList.length > 1
+                                    ? stampList[index]
+                                    : index + parseInt(startStamp as string)
+                                  )
+                                    .toString()
+                                    .padStart(3, '0')}
+                                </p>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-start text-[7.2px]">
+                              Kiểm tra
+                              <br />
+                              検査
+                            </td>
+                            <td colSpan={2} className="text-[7.2px]">
+                              Kiểm tra 100%
+                              <br />
+                              檢查(100%)
+                            </td>
+                            <td colSpan={2} className="text-[7.2px]">
+                              Kiểm tra 200%
+                              <br />
+                              檢查(200%)
+                            </td>
+                          </tr>
+                          <tr className="h-18">
+                            <td className="text-start text-[7.2px]">
+                              Mộc
+                              <br />
+                              合格印
+                            </td>
+                            <td colSpan={2}></td>
+                            <td colSpan={2}></td>
+                          </tr>
+                          <tr>
+                            <td className="text-start text-[7.2px]">
+                              Người kiểm
+                              <br />
+                              検査
+                            </td>
+                            <td colSpan={2}></td>
+                            <td colSpan={2}></td>
+                          </tr>
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="text-center text-[7.2px]"
+                            >
+                              Thời gian 時間
+                            </td>
+                            <td colSpan={2} className="text-[7.2px]">
+                              {date.format('DD/MM/YYYY')}{' '}
+                              {shift == 1 ? '07:30' : '19:30'}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              ))
+          : product
+            ? // Single layout: 1 stamp per page for all stamps
+              (() => {
+                // Generate all stamps based on the input
+                let allStamps: (string | number)[];
+
+                if (stampList.length > 1) {
+                  // For comma-separated stamps
+                  allStamps = stampList.slice(0, totalStamp);
+                } else {
+                  // For sequential stamps
+                  allStamps = Array.from(
+                    { length: totalStamp },
+                    (_, i) => parseInt(startStamp as string) + i
+                  );
+                }
+
+                // Render each stamp on its own page
+                return allStamps.map((stamp, index) => (
                   <div
-                    key={`${index}-${item.code}`}
-                    className="stamp-item w-auto break-inside-avoid-page not-print:flex not-print:justify-center"
+                    key={`stamp-${index}-${product.code}-${stamp}`}
+                    className="stamp-item not-print:mx-auto not-print:mb-8 not-print:max-w-fit not-print:border not-print:border-green-400 not-print:p-4 print:flex print:items-center print:justify-center"
                   >
                     <table className="text-center">
                       <colgroup>
@@ -214,10 +400,10 @@ export const PrintBagStamp = ({
                             品名
                           </td>
                           <td colSpan={2} className="text-sm font-bold">
-                            {item.name}
+                            {product.name}
                           </td>
                           <td>CODE</td>
-                          <td className="text-sm font-bold">{item.code}</td>
+                          <td className="text-sm font-bold">{product.code}</td>
                         </tr>
                         <tr>
                           <td className="text-start text-[7.2px]">
@@ -241,7 +427,7 @@ export const PrintBagStamp = ({
                             数量
                           </td>
                           <td colSpan={4} className="text-sm font-bold">
-                            {item.quantity_per_package} PCS
+                            {product.quantity_per_package} PCS
                           </td>
                         </tr>
                         <tr>
@@ -259,9 +445,9 @@ export const PrintBagStamp = ({
                               <p>{shift}</p>
                               <p>-</p>
                               <p>
-                                {(stampList.length > 1
-                                  ? stampList[index]
-                                  : index + parseInt(startStamp as string)
+                                {(typeof stamp === 'string'
+                                  ? parseInt(stamp)
+                                  : stamp
                                 )
                                   .toString()
                                   .padStart(3, '0')}
@@ -316,9 +502,9 @@ export const PrintBagStamp = ({
                       </tbody>
                     </table>
                   </div>
-                ))}
-              </div>
-            ))}
+                ));
+              })()
+            : null}
       </div>
     </>
   );

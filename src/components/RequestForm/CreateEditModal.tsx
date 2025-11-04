@@ -35,6 +35,9 @@ import {
 } from '@/types/requestFormType';
 import { User } from '@/types/authType';
 
+// Danh sách nhân viên nộp đơn thẳng cho quản lý, bỏ qua tổ trưởng
+const DIRECT_TO_MANAGER_IDS = ['20122900', '23030100', '17031400'] as const;
+
 interface CreateRequestFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -115,6 +118,14 @@ const CreateEditModalContent: React.FC<CreateRequestFormProps> = ({
     );
   }, [currentUser?.id]);
 
+  // Check if current user can submit directly to manager (bypass supervisor)
+  const canSubmitDirectToManager = React.useMemo(() => {
+    if (!currentUser?.id) return false;
+    return (DIRECT_TO_MANAGER_IDS as readonly string[]).includes(
+      currentUser.id.toString()
+    );
+  }, [currentUser?.id]);
+
   // Populate form data when editing
   React.useEffect(() => {
     if (editData) {
@@ -134,6 +145,8 @@ const CreateEditModalContent: React.FC<CreateRequestFormProps> = ({
         'ngay_tu_chuc',
         'ngay_thoi_viec',
         'ngay_nghi_phep',
+        'ngay_nghi_phep_tu',
+        'ngay_nghi_phep_den',
         'ngay_nghi',
         'ngay_ap_dung',
         'gio_vao_tre',
@@ -208,6 +221,11 @@ const CreateEditModalContent: React.FC<CreateRequestFormProps> = ({
 
     // Get supervisor name from selected supervisor ID
     const getSupervisorName = (): string => {
+      // Nếu user có thể nộp thẳng cho quản lý, không cần tổ trưởng
+      if (canSubmitDirectToManager) {
+        return '[Không cần tổ trưởng ký]';
+      }
+
       if (!selectedSupervisorId) {
         return '[Tổ trưởng cần ký tại đây]';
       }
@@ -297,12 +315,26 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
       case 'don_xin_nghi_phep': {
         const data = formData as Record<string, unknown>;
         const genderText = getGenderText(userInfo?.gender);
-        const ngayNghiPhep = data.ngay_nghi_phep
-          ? dayjs(data.ngay_nghi_phep as string)
-          : null;
-        const ngayText = ngayNghiPhep
-          ? `kể từ ngày ${ngayNghiPhep.date()} tháng ${ngayNghiPhep.month() + 1} năm ${ngayNghiPhep.year()}`
-          : 'kể từ ngày ....... tháng ....... năm ........';
+
+        // Xử lý cho cả 2 trường hợp: nghỉ 1 ngày hoặc nhiều ngày
+        let ngayText = '';
+        if (data.ngay_nghi_phep) {
+          // Nghỉ 1 ngày
+          const ngayNghiPhep = dayjs(data.ngay_nghi_phep as string);
+          ngayText = `<b>ngày ${ngayNghiPhep.date()} tháng ${ngayNghiPhep.month() + 1} năm ${ngayNghiPhep.year()}</b>`;
+        } else if (data.ngay_nghi_phep_tu && data.ngay_nghi_phep_den) {
+          // Nghỉ nhiều ngày
+          const ngayTu = dayjs(data.ngay_nghi_phep_tu as string);
+          const ngayDen = dayjs(data.ngay_nghi_phep_den as string);
+          ngayText = `từ <b>ngày ${ngayTu.date()} tháng ${ngayTu.month() + 1} năm ${ngayTu.year()}</b> đến <b>ngày ${ngayDen.date()} tháng ${ngayDen.month() + 1} năm ${ngayDen.year()}</b>`;
+        } else {
+          ngayText = 'kể từ ngày ....... tháng ....... năm ........';
+        }
+
+        // Thêm ghi chú nếu có (sẽ hiển thị ở cuối đơn, nhỏ và tô đậm)
+        const ghiChuText = data.ghi_chu
+          ? `<b><small>Ghi chú: ${data.ghi_chu}</small></b>`
+          : '';
 
         return `Họ và tên: ${cleanName(userInfo?.name)}     Giới tính: ${genderText}     Chức vụ: ${getRoleName()}
 
@@ -312,6 +344,7 @@ Lý do: ${data.ly_do_nghi_phep || '.............................................
 Kính trình Ban giám đốc Công ty, phòng nhân sự xem xét và giải quyết cho tôi được nghỉ phép theo nguyện vọng trên.
 Tôi xin đảm bảo đi làm lại bình thường sau ngày nghỉ phép đã ghi trong đơn.
 Tôi xin chân thành cảm ơn!
+${ghiChuText}
 
 TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${dayjs().year()}
 
@@ -460,10 +493,12 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
       }
     }
 
-    // Validate supervisor_id cho đơn thường (không phải ủy quyền và không phải supervisor)
+    // Validate supervisor_id cho đơn thường
+    // (không phải ủy quyền, không phải supervisor, và không phải người nộp thẳng cho quản lý)
     if (
       values.type !== 'giay_uy_quyen' &&
       !isCurrentUserSupervisor &&
+      !canSubmitDirectToManager &&
       !supervisorId
     ) {
       message.warning('Vui lòng chọn tổ trưởng để duyệt đơn');
@@ -751,10 +786,11 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
           </Card>
         )}
 
-        {/* Supervisor Selection - Chỉ hiển thị cho đơn thường và user không phải supervisor */}
+        {/* Supervisor Selection - Chỉ hiển thị cho đơn thường và user không phải supervisor và không phải direct to manager */}
         {selectedType &&
           selectedType !== 'giay_uy_quyen' &&
-          !isCurrentUserSupervisor && (
+          !isCurrentUserSupervisor &&
+          !canSubmitDirectToManager && (
             <Card>
               <Form.Item
                 label="Tổ trưởng"
@@ -808,9 +844,20 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
             <Card className="border-blue-200 bg-blue-50">
               <div className="text-center text-blue-700">
                 <p className="text-sm font-medium">
-                  🎯 Bạn là Tổ trưởng - Không cần chọn người duyệt
+                  Đơn của bạn sẽ được gửi trực tiếp đến Quản lý nhà máy để duyệt
                 </p>
-                <p className="mt-1 text-xs">
+              </div>
+            </Card>
+          )}
+
+        {/* Thông báo cho người nộp thẳng quản lý */}
+        {selectedType &&
+          selectedType !== 'giay_uy_quyen' &&
+          !isCurrentUserSupervisor &&
+          canSubmitDirectToManager && (
+            <Card className="border-green-200 bg-green-50">
+              <div className="text-center text-green-700">
+                <p className="text-sm font-medium">
                   Đơn của bạn sẽ được gửi trực tiếp đến Quản lý nhà máy để duyệt
                 </p>
               </div>

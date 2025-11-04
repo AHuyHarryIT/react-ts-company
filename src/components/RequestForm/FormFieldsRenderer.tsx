@@ -12,10 +12,10 @@ interface Employee {
   role_name?: string;
 }
 
-// Hàm để disable các ngày trong quá khứ
+// Hàm để disable các ngày trong quá khứ (không bao gồm hôm nay)
 const disabledDate = (current: Dayjs | null): boolean => {
-  // Disable tất cả ngày trước hôm nay
-  return current ? current < dayjs().startOf('day') : false;
+  // Disable tất cả ngày trước hôm nay (cho phép chọn từ hôm nay trở đi)
+  return current ? current.isBefore(dayjs().startOf('day')) : false;
 };
 
 export const GiayUyQuyenForm: React.FC = () => {
@@ -187,21 +187,129 @@ export const DonXinNghiViecForm: React.FC = () => {
 };
 
 export const DonXinNghiPhepForm: React.FC = () => {
+  const form = Form.useFormInstance();
+  const [isMultipleDays, setIsMultipleDays] = useState(false);
+
   return (
     <>
+      {/* Chọn loại nghỉ: 1 ngày hoặc nhiều ngày */}
       <Form.Item
-        name={['form_data', 'ngay_nghi_phep']}
-        label={<span className="font-medium">Ngày nghỉ phép</span>}
-        rules={[{ required: true, message: 'Vui lòng chọn ngày nghỉ phép' }]}
+        label={<span className="font-medium">Số ngày nghỉ</span>}
+        required
       >
-        <DatePicker
-          format="DD/MM/YYYY"
-          style={{ width: '100%' }}
+        <Select
           size="large"
-          disabledDate={disabledDate}
-          placeholder="Chọn ngày nghỉ phép"
+          placeholder="Chọn số ngày nghỉ"
+          value={isMultipleDays ? 'multiple' : 'single'}
+          onChange={(value) => {
+            const isMultiple = value === 'multiple';
+            setIsMultipleDays(isMultiple);
+            // Reset các trường ngày khi thay đổi
+            form.setFieldValue(['form_data', 'ngay_nghi_phep'], undefined);
+            form.setFieldValue(['form_data', 'ngay_nghi_phep_tu'], undefined);
+            form.setFieldValue(['form_data', 'ngay_nghi_phep_den'], undefined);
+          }}
+          options={[
+            { value: 'single', label: 'Nghỉ 1 ngày' },
+            { value: 'multiple', label: 'Nghỉ từ 2 ngày trở lên' }
+          ]}
         />
       </Form.Item>
+
+      {/* Nếu nghỉ 1 ngày */}
+      {!isMultipleDays && (
+        <Form.Item
+          name={['form_data', 'ngay_nghi_phep']}
+          label={<span className="font-medium">Ngày nghỉ</span>}
+          rules={[{ required: true, message: 'Vui lòng chọn ngày nghỉ' }]}
+        >
+          <DatePicker
+            format="DD/MM/YYYY"
+            style={{ width: '100%' }}
+            size="large"
+            disabledDate={disabledDate}
+            placeholder="Chọn ngày nghỉ"
+          />
+        </Form.Item>
+      )}
+
+      {/* Nếu nghỉ nhiều ngày */}
+      {isMultipleDays && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Form.Item
+            name={['form_data', 'ngay_nghi_phep_tu']}
+            label={<span className="font-medium">Từ ngày</span>}
+            rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu' }]}
+          >
+            <DatePicker
+              format="DD/MM/YYYY"
+              style={{ width: '100%' }}
+              size="large"
+              disabledDate={disabledDate}
+              placeholder="Chọn ngày bắt đầu"
+              onChange={(date) => {
+                // Nếu ngày kết thúc đã được chọn và nhỏ hơn ngày bắt đầu, reset nó
+                const endDate = form.getFieldValue([
+                  'form_data',
+                  'ngay_nghi_phep_den'
+                ]);
+                if (endDate && date && endDate.isBefore(date)) {
+                  form.setFieldValue(
+                    ['form_data', 'ngay_nghi_phep_den'],
+                    undefined
+                  );
+                }
+              }}
+            />
+          </Form.Item>
+          <Form.Item
+            name={['form_data', 'ngay_nghi_phep_den']}
+            label={<span className="font-medium">Đến ngày</span>}
+            rules={[
+              { required: true, message: 'Vui lòng chọn ngày kết thúc' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const startDate = getFieldValue([
+                    'form_data',
+                    'ngay_nghi_phep_tu'
+                  ]);
+                  if (!value || !startDate) {
+                    return Promise.resolve();
+                  }
+                  // Cho phép đến ngày >= từ ngày (có thể bằng nhau nếu nghỉ 1 ngày trong option "Nghỉ từ 2 ngày trở lên")
+                  if (value.isBefore(startDate, 'day')) {
+                    return Promise.reject(
+                      new Error('Ngày kết thúc không được trước ngày bắt đầu')
+                    );
+                  }
+                  return Promise.resolve();
+                }
+              })
+            ]}
+          >
+            <DatePicker
+              format="DD/MM/YYYY"
+              style={{ width: '100%' }}
+              size="large"
+              disabledDate={(current) => {
+                // Disable ngày trước hôm nay
+                if (disabledDate(current)) return true;
+                // Disable ngày trước ngày bắt đầu
+                const startDate = form.getFieldValue([
+                  'form_data',
+                  'ngay_nghi_phep_tu'
+                ]);
+                if (startDate && current) {
+                  return current.isBefore(startDate, 'day');
+                }
+                return false;
+              }}
+              placeholder="Chọn ngày kết thúc"
+            />
+          </Form.Item>
+        </div>
+      )}
+
       <Form.Item
         name={['form_data', 'ly_do_nghi_phep']}
         label={<span className="font-medium">Lý do nghỉ phép</span>}
@@ -212,6 +320,19 @@ export const DonXinNghiPhepForm: React.FC = () => {
           placeholder="Nhập lý do nghỉ phép..."
           showCount
           maxLength={200}
+          size="large"
+        />
+      </Form.Item>
+
+      <Form.Item
+        name={['form_data', 'ghi_chu']}
+        label={<span className="font-medium">Ghi chú</span>}
+      >
+        <Input.TextArea
+          rows={2}
+          placeholder="Nhập ghi chú (không bắt buộc)..."
+          showCount
+          maxLength={300}
           size="large"
         />
       </Form.Item>

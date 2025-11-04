@@ -23,6 +23,9 @@ import {
   getEffectiveStatus
 } from '@/utils/requestFormUtil';
 
+// Danh sách nhân viên nộp đơn thẳng cho quản lý, bỏ qua tổ trưởng
+const DIRECT_TO_MANAGER_IDS = ['20122900', '23030100', '17031400'] as const;
+
 interface RequestFormTableProps {
   data?: RequestForm[];
   loading?: boolean;
@@ -59,6 +62,8 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
   userType,
   hideSignDelegation = false
 }) => {
+  // Danh sách user ID được phép duyệt đơn (Admin2 và Super Admin)
+  const ALLOWED_APPROVER_IDS = ['Admin2', 'Super Admin'] as const;
   const getStatusColor = (status: RequestFormStatus): string => {
     switch (status) {
       case 'pending':
@@ -177,6 +182,14 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
     // ❌ Không cho phép duyệt nếu không phải admin hoặc status không phải pending
     if (!isAdmin || record.status !== 'pending') return false;
 
+    // ❌ Kiểm tra user ID: chỉ Admin2 và Super Admin mới được duyệt đơn
+    if (
+      currentUserId &&
+      !(ALLOWED_APPROVER_IDS as readonly string[]).includes(currentUserId)
+    ) {
+      return false;
+    }
+
     // ❌ ĐẶC BIỆT: Đơn Ủy Quyền - Admin KHÔNG được duyệt
     // Chỉ có người được ủy quyền mới ký duyệt đơn ủy quyền
     if (record.type === 'giay_uy_quyen') {
@@ -224,6 +237,14 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
   const canReject = (record: RequestForm): boolean => {
     // ❌ Không cho phép từ chối nếu không phải admin hoặc status không phải pending
     if (!isAdmin || record.status !== 'pending') return false;
+
+    // ❌ Kiểm tra user ID: chỉ Admin2 và Super Admin mới được từ chối đơn
+    if (
+      currentUserId &&
+      !(ALLOWED_APPROVER_IDS as readonly string[]).includes(currentUserId)
+    ) {
+      return false;
+    }
 
     // ✅ ĐẶC BIỆT: Đơn Ủy Quyền - Admin CHỈ được từ chối (không được duyệt)
     if (record.type === 'giay_uy_quyen') {
@@ -428,6 +449,13 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
         // Check if this request was created by a supervisor (employee_id === supervisor_id)
         const createdBySupervisor = isRequestCreatedBySupervisor(record);
 
+        // Check if employee can submit directly to manager (bypass supervisor)
+        const canSubmitDirectToManager = record.employee_id
+          ? (DIRECT_TO_MANAGER_IDS as readonly string[]).includes(
+              record.employee_id.toString()
+            )
+          : false;
+
         // Ưu tiên dùng supervisorApprovedBy (camelCase) từ BE mới
         const supervisorApprovedBy =
           record.supervisorApprovedBy ||
@@ -442,13 +470,47 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
         return (
           <div className="text-center">
             <div className="mb-1 text-xs font-medium text-gray-800">
-              Tổ trưởng
+              {createdBySupervisor
+                ? 'Tổ trưởng tạo đơn'
+                : canSubmitDirectToManager
+                  ? 'Người gửi'
+                  : 'Tổ trưởng'}
             </div>
             {createdBySupervisor ? (
-              // If supervisor created the request, show "N/A" as they don't need to sign their own request
-              <div className="flex items-center justify-center text-xs text-blue-600">
-                {/* <span className="mr-1">N/A</span> */}
-                <span>Tự tạo đơn</span>
+              // If supervisor created the request, show as signed by supervisor (same as applicant)
+              <div>
+                <div className="mb-1 flex items-center justify-center text-xs">
+                  <span className="mr-1 text-green-600">✓</span>
+                  <span className="font-medium text-gray-800">Đã ký</span>
+                </div>
+                <div className="space-y-0.5 text-xs">
+                  <div className="truncate font-medium text-gray-800">
+                    {record.employee?.name || 'Tổ trưởng'}
+                  </div>
+                  {record.created_at && (
+                    <div className="text-blue-600">
+                      {dayjs(record.created_at).format('DD/MM HH:mm')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : canSubmitDirectToManager ? (
+              // If employee can submit directly to manager, show as signed by applicant
+              <div>
+                <div className="mb-1 flex items-center justify-center text-xs">
+                  <span className="mr-1 text-green-600">✓</span>
+                  <span className="font-medium text-gray-800">Đã ký</span>
+                </div>
+                <div className="space-y-0.5 text-xs">
+                  <div className="truncate font-medium text-gray-800">
+                    {record.employee?.name || 'Người gửi'}
+                  </div>
+                  {record.created_at && (
+                    <div className="text-blue-600">
+                      {dayjs(record.created_at).format('DD/MM HH:mm')}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : hasSupervisorSignature ? (
               <div>
