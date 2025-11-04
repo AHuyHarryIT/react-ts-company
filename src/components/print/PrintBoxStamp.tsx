@@ -150,6 +150,14 @@ export const PrintBoxStamp = ({
     <table
       className={`border border-black text-center ${product.FAVV ? 'has-barcode text-[8.3px]' : 'text-[10px]'}`}
     >
+      <colgroup>
+        <col className="w-[80px]" />
+        <col className="w-[140px]" />
+        <col className="w-[80px]" />
+        <col className="w-[50px]" />
+        <col className="w-[100px]" />
+        <col className="w-[20px]" />
+      </colgroup>
       <tbody>
         <tr>
           <td>
@@ -186,15 +194,15 @@ export const PrintBoxStamp = ({
             <br />
             品名
           </td>
-          <td colSpan={2}>
+          <td colSpan={3}>
             <p
-              className={`${product.name.length < 10 ? 'text-sm' : 'text-[10px]'} font-bold`}
+              className={`${product.name.length < 10 ? 'text-base' : 'text-sm'} font-bold`}
             >
               {product.name}
             </p>
           </td>
           <td>CODE</td>
-          <td colSpan={2}>
+          <td>
             <p className="text-sm font-bold">{product.code}</p>
           </td>
         </tr>
@@ -204,11 +212,11 @@ export const PrintBoxStamp = ({
             <br />
             原材料
           </td>
-          <td colSpan={2} className="text-sm">
+          <td colSpan={3} className="text-sm">
             <p> {product.material}</p>
           </td>
           <td>Màu sắc 色</td>
-          <td colSpan={2} className="text-sm">
+          <td className="text-sm">
             <p> {product.color}</p>
           </td>
         </tr>
@@ -338,8 +346,8 @@ export const PrintBoxStamp = ({
               position: relative !important;
             }
             .stamp-item table {
-              width: 94mm !important;
-              height: 76mm !important;
+              width: 98mm !important;
+              height: 78mm !important;
               margin: 0 auto !important;
             }
             `
