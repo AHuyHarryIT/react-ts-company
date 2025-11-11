@@ -14,6 +14,12 @@ const { Title, Text } = Typography;
 // Danh sách nhân viên nộp đơn thẳng cho quản lý, bỏ qua tổ trưởng
 const DIRECT_TO_MANAGER_IDS = ['20122900', '23030100', '17031400'] as const;
 
+// Helper function to create cache-busting signature URL
+const getSignatureUrl = (signaturePath: string, updatedAt?: string): string => {
+  const timestamp = updatedAt ? new Date(updatedAt).getTime() : Date.now();
+  return `${STORAGE_URL}/${signaturePath}?t=${timestamp}`;
+};
+
 interface RequestFormDetailProps {
   data: RequestForm;
 }
@@ -295,7 +301,10 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
             <div className="mb-2 flex h-[80px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-2 sm:h-[100px]">
               {data.digital_signature_authorized ? (
                 <img
-                  src={`${STORAGE_URL}/${data.digital_signature_authorized}`}
+                  src={getSignatureUrl(
+                    data.digital_signature_authorized,
+                    data.updated_at
+                  )}
                   alt="Chữ ký bên được ủy quyền"
                   style={{
                     maxWidth: '100%',
@@ -332,7 +341,10 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
             <div className="mb-2 flex h-[80px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-2 sm:h-[100px]">
               {data.digital_signature_delegator ? (
                 <img
-                  src={`${STORAGE_URL}/${data.digital_signature_delegator}`}
+                  src={getSignatureUrl(
+                    data.digital_signature_delegator,
+                    data.updated_at
+                  )}
                   alt="Chữ ký bên ủy quyền"
                   style={{
                     maxWidth: '100%',
@@ -836,7 +848,10 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
             <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
               {data.digital_signature_applicant ? (
                 <img
-                  src={`${STORAGE_URL}/${data.digital_signature_applicant}`}
+                  src={getSignatureUrl(
+                    data.digital_signature_applicant,
+                    data.updated_at
+                  )}
                   alt="Chữ ký người làm đơn"
                   style={{
                     maxWidth: '100%',
@@ -875,7 +890,10 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
               <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
                 {data.digital_signature_supervisor ? (
                   <img
-                    src={`${STORAGE_URL}/${data.digital_signature_supervisor}`}
+                    src={getSignatureUrl(
+                      data.digital_signature_supervisor,
+                      data.updated_at
+                    )}
                     alt="Chữ ký tổ trưởng"
                     style={{
                       maxWidth: '100%',
@@ -913,7 +931,10 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
             <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
               {data.digital_signature_manager ? (
                 <img
-                  src={`${STORAGE_URL}/${data.digital_signature_manager}`}
+                  src={getSignatureUrl(
+                    data.digital_signature_manager,
+                    data.updated_at
+                  )}
                   alt="Chữ ký quản lý nhà máy"
                   style={{
                     maxWidth: '100%',

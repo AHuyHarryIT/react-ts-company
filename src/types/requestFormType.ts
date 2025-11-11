@@ -220,8 +220,14 @@ export interface CreateRequestFormDto {
   type: RequestFormType;
   title: string;
   content: string;
-  form_data: RequestFormData;
+  form_data: RequestFormData | Record<string, unknown>;
   supervisor_id?: string; // ID supervisor cho đơn thường
+  // Base64 encoded signatures (same field names as backend expects)
+  digital_signature_applicant?: string;
+  digital_signature_supervisor?: string;
+  digital_signature_manager?: string;
+  digital_signature_delegator?: string;
+  digital_signature_authorized?: string;
 }
 
 export interface UpdateRequestFormDto {

@@ -324,7 +324,7 @@ export default function Dashboard() {
     return {
       title: 'Duyệt Đơn Xin Phép',
       icon: <MdApproval />,
-      navLink: '/request-forms'
+      navLink: '/employee/request-forms'
     };
   }, [isSupervisor]);
 

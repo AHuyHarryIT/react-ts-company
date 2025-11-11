@@ -181,9 +181,22 @@ const CreateEditModalContent: React.FC<CreateRequestFormProps> = ({
         setSupervisorId(editData.supervisor_id);
       }
 
-      // ✅ Set existing signature để hiển thị (không force user phải ký lại)
-      // User có thể giữ chữ ký cũ hoặc thay đổi nếu muốn
-      // Chữ ký cũ sẽ được hiển thị như preview
+      // ✅ Reset signature state khi edit để không giữ chữ ký cũ từ lần trước
+      setSignature({
+        signatureType: 'upload',
+        file: undefined,
+        canvasSignature: undefined
+      });
+    } else {
+      // Khi tạo mới, cũng reset signature
+      setSignature({
+        signatureType: 'upload',
+        file: undefined,
+        canvasSignature: undefined
+      });
+      setSelectedType(null);
+      setSupervisorId(undefined);
+      form.resetFields();
     }
   }, [editData, form]);
 
@@ -509,8 +522,9 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
     if (editData) {
       const hasFormDataChanged =
         JSON.stringify(values.form_data) !== JSON.stringify(editData.form_data);
+      const hasNewSignature = signature.file || signature.canvasSignature;
 
-      if (!hasFormDataChanged) {
+      if (!hasFormDataChanged && !hasNewSignature) {
         message.info('Không có thay đổi nào để cập nhật');
         return;
       }
@@ -526,40 +540,32 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
       supervisorId
     );
 
-    // Helper function to convert canvas signature to File with standard dimensions
-    const canvasToFile = async (
-      canvasSignature: string,
-      filename: string
-    ): Promise<File> => {
-      // Validate canvasSignature trước khi xử lý
-      if (!canvasSignature || typeof canvasSignature !== 'string') {
-        throw new Error('Invalid canvas signature data');
-      }
-
-      // Kiểm tra format base64 data URL
-      if (!canvasSignature.includes(',')) {
-        throw new Error('Invalid base64 data URL format');
-      }
-
-      // Resize to standard dimensions
-      return await dataURLToStandardFile(canvasSignature, filename);
+    // Helper function to convert File to base64 string
+    const fileToBase64 = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+      });
     };
 
-    // Tạo FormData để hỗ trợ multipart/form-data với digital signature
-    const formData = new FormData();
-    formData.append('type', values.type);
-    formData.append('title', autoTitle);
-    formData.append('content', autoContent);
-    formData.append('form_data', JSON.stringify(values.form_data));
+    // Prepare JSON payload
+    const payload: CreateRequestFormDto = {
+      type: values.type,
+      title: autoTitle,
+      content: autoContent,
+      form_data: values.form_data
+    };
 
     // Thêm supervisor_id cho đơn thường (không phải đơn ủy quyền)
     if (values.type !== 'giay_uy_quyen') {
       if (isCurrentUserSupervisor) {
         // Nếu user là supervisor, set supervisor_id = chính user đó
-        formData.append('supervisor_id', currentUser!.id.toString());
+        payload.supervisor_id = currentUser!.id.toString();
       } else if (supervisorId) {
         // Nếu user không phải supervisor, dùng supervisorId đã chọn
-        formData.append('supervisor_id', supervisorId);
+        payload.supervisor_id = supervisorId;
       }
     }
 
@@ -568,69 +574,44 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
     const hasNewSignature = signature.file || signature.canvasSignature;
 
     if (hasNewSignature) {
-      // Thêm chữ ký mới cho TẤT CẢ đơn
-      if (values.type === 'giay_uy_quyen') {
-        // Đơn ủy quyền: Chữ ký người ủy quyền (delegator)
+      try {
+        let base64Signature: string;
+
+        // Convert signature to base64
         if (signature.signatureType === 'upload' && signature.file) {
-          try {
-            const resizedFile = await resizeSignatureImage(signature.file);
-            formData.append('digital_signature_delegator', resizedFile);
-          } catch (error) {
-            console.error('Error resizing signature:', error);
-            message.error('Có lỗi khi xử lý chữ ký. Vui lòng thử lại.');
-            return;
-          }
+          // Upload file: resize first, then convert to base64
+          const resizedFile = await resizeSignatureImage(signature.file);
+          base64Signature = await fileToBase64(resizedFile);
         } else if (
           signature.signatureType === 'draw' &&
           signature.canvasSignature
         ) {
-          try {
-            const file = await canvasToFile(
-              signature.canvasSignature,
-              `delegator_signature_${Date.now()}.png`
-            );
-            formData.append('digital_signature_delegator', file);
-          } catch (error) {
-            console.error('Error converting canvas signature:', error);
-            message.error(
-              'Có lỗi khi xử lý chữ ký. Vui lòng vẽ lại hoặc tải file ảnh.'
-            );
-            return;
-          }
+          // Canvas: already base64, but need to resize
+          const file = await dataURLToStandardFile(
+            signature.canvasSignature,
+            `signature_${Date.now()}.png`
+          );
+          base64Signature = await fileToBase64(file);
+        } else {
+          message.error('Có lỗi khi xử lý chữ ký. Vui lòng thử lại.');
+          return;
         }
-      } else {
-        // Các đơn khác: Chữ ký người làm đơn (applicant)
-        if (signature.signatureType === 'upload' && signature.file) {
-          try {
-            const resizedFile = await resizeSignatureImage(signature.file);
-            formData.append('digital_signature_applicant', resizedFile);
-          } catch (error) {
-            console.error('Error resizing signature:', error);
-            message.error('Có lỗi khi xử lý chữ ký. Vui lòng thử lại.');
-            return;
-          }
-        } else if (
-          signature.signatureType === 'draw' &&
-          signature.canvasSignature
-        ) {
-          try {
-            const file = await canvasToFile(
-              signature.canvasSignature,
-              `applicant_signature_${Date.now()}.png`
-            );
-            formData.append('digital_signature_applicant', file);
-          } catch (error) {
-            console.error('Error converting canvas signature:', error);
-            message.error(
-              'Có lỗi khi xử lý chữ ký. Vui lòng vẽ lại hoặc tải file ảnh.'
-            );
-            return;
-          }
+
+        // Add base64 signature to payload based on form type
+        if (values.type === 'giay_uy_quyen') {
+          // Đơn ủy quyền: Chữ ký người ủy quyền (delegator)
+          payload.digital_signature_delegator = base64Signature;
+        } else {
+          // Các đơn khác: Chữ ký người làm đơn (applicant)
+          payload.digital_signature_applicant = base64Signature;
         }
+      } catch (error) {
+        console.error('Error processing signature:', error);
+        message.error('Có lỗi khi xử lý chữ ký. Vui lòng thử lại.');
+        return;
       }
     } else if (editData) {
-      // Khi edit và không có chữ ký mới, thông báo sẽ giữ nguyên chữ ký cũ
-      console.log('📝 Keeping existing signature for edit mode');
+      // Khi edit và không có chữ ký mới, backend sẽ giữ nguyên chữ ký cũ
     } else {
       // Khi tạo mới nhưng không có chữ ký, yêu cầu user phải có chữ ký
       message.error('Vui lòng tải lên hoặc vẽ chữ ký của bạn');
@@ -639,9 +620,12 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
 
     try {
       if (editData) {
-        await updateMutation.mutateAsync({ id: editData.id, data: formData });
+        await updateMutation.mutateAsync({
+          id: editData.id,
+          data: payload
+        });
       } else {
-        await createMutation.mutateAsync(formData);
+        await createMutation.mutateAsync(payload);
       }
     } catch (error) {
       console.error('Submit error:', error);

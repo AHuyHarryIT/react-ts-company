@@ -756,14 +756,31 @@ export default function RequestFormList() {
         {selectedRecord && (
           <CreateEditModal
             editData={selectedRecord}
-            onSuccess={() => {
+            onSuccess={async () => {
               setEditModalVisible(false);
-              setSelectedRecord(null);
               invalidateRequestForms();
+
+              // Nếu DetailView đang mở, refetch detail để hiển thị chữ ký mới
+              if (detailModalVisible && selectedRecord) {
+                try {
+                  const service =
+                    activeTab === 'approval'
+                      ? adminRequestFormService
+                      : employeeRequestFormService;
+                  const response = await service.getDetail(selectedRecord.id);
+                  const updatedData = response.data;
+                  setSelectedRecord(updatedData);
+                } catch (error) {
+                  console.error('Error refreshing detail:', error);
+                }
+              } else {
+                // Nếu DetailView không mở, clear selectedRecord
+                setSelectedRecord(null);
+              }
             }}
             onCancel={() => {
               setEditModalVisible(false);
-              setSelectedRecord(null);
+              // Không clear selectedRecord khi cancel để DetailView vẫn hiển thị
             }}
           />
         )}

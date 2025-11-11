@@ -42,7 +42,7 @@ interface RequestFormTableProps {
   onReject?: (record: RequestForm) => void;
   onSignDelegation?: (record: RequestForm) => void; // Thêm cho ký đơn ủy quyền
   isAdmin?: boolean;
-  currentUserId?: string; // Thêm để check user đã ký chưa
+  currentUserId?: string; // Có thể là user.id hoặc user.role.id tùy context
   userType?: 'admin' | 'supervisor'; // Thêm để biết loại user
   hideSignDelegation?: boolean; // Thêm để ẩn button ký đơn ủy quyền
 }
@@ -179,16 +179,8 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
   };
 
   const canApprove = (record: RequestForm): boolean => {
-    // ❌ Không cho phép duyệt nếu không phải admin hoặc status không phải pending
-    if (!isAdmin || record.status !== 'pending') return false;
-
-    // ❌ Kiểm tra user ID: chỉ Admin2 và Super Admin mới được duyệt đơn
-    if (
-      currentUserId &&
-      !(ALLOWED_APPROVER_IDS as readonly string[]).includes(currentUserId)
-    ) {
-      return false;
-    }
+    // ❌ Status phải là pending
+    if (record.status !== 'pending') return false;
 
     // ❌ ĐẶC BIỆT: Đơn Ủy Quyền - Admin KHÔNG được duyệt
     // Chỉ có người được ủy quyền mới ký duyệt đơn ủy quyền
@@ -211,42 +203,53 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
     // Check if this request was created by a supervisor
     const createdBySupervisor = isRequestCreatedBySupervisor(record);
 
-    // If supervisor created the request, only manager signature is needed for completion
-    if (createdBySupervisor) {
-      return !hasManagerSignature;
-    }
-
     // ❌ Nếu đã có cả 2 chữ ký thì TUYỆT ĐỐI không cho phép duyệt nữa
     if (hasSupervisorSignature && hasManagerSignature) return false;
 
-    // ❌ Nếu là SUPERVISOR và đã có chữ ký supervisor → không cho duyệt nữa
-    if (userType === 'supervisor' && hasSupervisorSignature) {
-      // Bất kể supervisor nào đã ký, supervisor khác cũng không được ký tiếp
-      return false;
+    // ✅ SUPERVISOR: Có thể duyệt nếu chưa có chữ ký supervisor
+    if (userType === 'supervisor') {
+      // Nếu supervisor tạo đơn thì không cần ký supervisor nữa, chỉ cần manager
+      if (createdBySupervisor) {
+        return false; // Supervisor tự tạo thì không tự duyệt
+      }
+      // Nếu đã có chữ ký supervisor rồi thì không cho duyệt nữa
+      if (hasSupervisorSignature) {
+        return false;
+      }
+      return true; // Supervisor có thể duyệt khi chưa có chữ ký supervisor
     }
 
-    // ❌ Nếu là ADMIN/MANAGER và đã có chữ ký manager → không cho duyệt nữa
-    if (userType === 'admin' && hasManagerSignature) {
-      // Bất kể admin/manager nào đã ký, admin/manager khác cũng không được ký tiếp
-      return false;
+    // ✅ ADMIN/MANAGER: Kiểm tra quyền dựa trên role.id
+    if (isAdmin) {
+      // Kiểm tra role.id: chỉ Admin2 và Super Admin mới được duyệt đơn
+      if (
+        currentUserId &&
+        !(ALLOWED_APPROVER_IDS as readonly string[]).includes(currentUserId)
+      ) {
+        return false;
+      }
+
+      // If supervisor created the request, only manager signature is needed
+      if (createdBySupervisor) {
+        return !hasManagerSignature;
+      }
+
+      // Nếu đã có chữ ký manager rồi thì không cho duyệt nữa
+      if (hasManagerSignature) {
+        return false;
+      }
+
+      return true; // Admin/Manager có thể duyệt
     }
 
-    return true;
+    return false;
   };
 
   const canReject = (record: RequestForm): boolean => {
-    // ❌ Không cho phép từ chối nếu không phải admin hoặc status không phải pending
-    if (!isAdmin || record.status !== 'pending') return false;
+    // ❌ Status phải là pending
+    if (record.status !== 'pending') return false;
 
-    // ❌ Kiểm tra user ID: chỉ Admin2 và Super Admin mới được từ chối đơn
-    if (
-      currentUserId &&
-      !(ALLOWED_APPROVER_IDS as readonly string[]).includes(currentUserId)
-    ) {
-      return false;
-    }
-
-    // ✅ ĐẶC BIỆT: Đơn Ủy Quyền - Admin CHỈ được từ chối (không được duyệt)
+    // ✅ ĐẶC BIỆT: Đơn Ủy Quyền
     if (record.type === 'giay_uy_quyen') {
       const hasDelegatorSignature =
         record.has_delegator_signature || !!record.digital_signature_delegator;
@@ -255,7 +258,18 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
         !!record.digital_signature_authorized;
 
       // Admin có thể từ chối khi có ít nhất 1 chữ ký
-      return hasDelegatorSignature || hasAuthorizedSignature;
+      if (isAdmin) {
+        // Kiểm tra role.id: chỉ Admin2 và Super Admin mới được từ chối
+        if (
+          currentUserId &&
+          !(ALLOWED_APPROVER_IDS as readonly string[]).includes(currentUserId)
+        ) {
+          return false;
+        }
+        return hasDelegatorSignature || hasAuthorizedSignature;
+      }
+
+      return false; // Supervisor không được từ chối đơn ủy quyền
     }
 
     // Logic bình thường cho các đơn khác
@@ -267,27 +281,13 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
     // Check if this request was created by a supervisor
     const createdBySupervisor = isRequestCreatedBySupervisor(record);
 
-    // If supervisor created the request, only manager signature matters for rejection logic
-    if (createdBySupervisor) {
-      // If manager already signed, cannot reject
-      if (hasManagerSignature) return false;
-      // Otherwise, admin/manager can reject
-      return userType === 'admin';
-    }
-
     // ❌ Nếu đã có cả 2 chữ ký thì không cho phép thao tác nữa (đơn đã hoàn thành)
     if (hasSupervisorSignature && hasManagerSignature) return false;
 
-    // ✅ LOGIC MỚI: Admin/Manager luôn có quyền từ chối
-    // - Nếu chỉ có chữ ký supervisor → Admin/Manager vẫn có thể từ chối
-    // - Nếu chỉ có chữ ký manager → Admin khác vẫn có thể từ chối
-    // - Nếu chưa có chữ ký nào → Admin vẫn có thể từ chối
-    if (userType === 'admin') {
-      return true; // Admin luôn có quyền từ chối (trừ khi đã có cả 2 chữ ký)
-    }
-
-    // ✅ Supervisor chỉ có thể từ chối khi chưa có chữ ký nào
+    // ✅ SUPERVISOR: Có thể từ chối khi chưa có chữ ký nào
     if (userType === 'supervisor') {
+      // Nếu supervisor tạo đơn thì không tự từ chối
+      if (createdBySupervisor) return false;
       // Nếu supervisor đã ký rồi → không cho supervisor khác từ chối
       if (hasSupervisorSignature) return false;
       // Nếu manager đã ký rồi → không cho supervisor từ chối
@@ -295,8 +295,27 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       return true;
     }
 
-    // Default: cho phép từ chối nếu chưa có đủ 2 chữ ký
-    return true;
+    // ✅ ADMIN/MANAGER: Luôn có quyền từ chối (trừ khi đã có cả 2 chữ ký)
+    if (isAdmin) {
+      // Kiểm tra role.id: chỉ Admin2 và Super Admin mới được từ chối
+      if (
+        currentUserId &&
+        !(ALLOWED_APPROVER_IDS as readonly string[]).includes(currentUserId)
+      ) {
+        return false;
+      }
+
+      // If supervisor created the request, only manager signature matters
+      if (createdBySupervisor) {
+        // If manager already signed, cannot reject
+        if (hasManagerSignature) return false;
+        return true;
+      }
+
+      return true; // Admin luôn có quyền từ chối (trừ khi đã có cả 2 chữ ký)
+    }
+
+    return false;
   };
 
   const columns: ColumnsType<RequestForm> = [
@@ -690,12 +709,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
     },
     {
       title: 'Ngày nộp đơn',
-      dataIndex: 'submitted_at',
-      key: 'submitted_at',
+      dataIndex: 'created_at',
+      key: 'created_at',
       width: 140,
       render: (date: string) => (
         <span className="whitespace-nowrap text-gray-600">
-          {dayjs(date).format('DD/MM/YYYY HH:mm')}
+          {date ? dayjs(date).format('DD/MM/YYYY HH:mm') : '-'}
         </span>
       )
     },

@@ -346,8 +346,17 @@ export const PrintBoxStamp = ({
               position: relative !important;
             }
             .stamp-item table {
+              width: 97mm !important;
+              height: 77mm !important;
+              transform: scale(0.98) !important;
+              transform-origin: center center !important;
+              margin: 0 auto !important;
+            }
+            .stamp-item table.has-barcode {
               width: 98mm !important;
               height: 78mm !important;
+              transform: scale(0.96) !important;
+              transform-origin: center center !important;
               margin: 0 auto !important;
             }
             `
