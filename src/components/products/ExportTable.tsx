@@ -27,27 +27,21 @@ export type ExportTableType = {
 interface ExportTableProps {
   month: Dayjs | null;
   queryResult: UseQueryResult<PaginatedResponse<ProductType>>;
+  params: QueryParams;
   setParams: React.Dispatch<React.SetStateAction<QueryParams>>;
 }
 
 export const ExportTable: React.FC<ExportTableProps> = ({
   month,
   queryResult,
+  params,
   setParams
 }) => {
   const [dataSource, setDataSource] = useState<ExportTableType[]>([]);
 
   const { data: response } = queryResult;
-  const { tableData, pagination } = useMemo(() => {
-    return {
-      tableData: response?.data || [],
-      pagination: {
-        current: response?.current_page,
-        total: response?.total,
-        pageSize: response?.per_page
-      }
-    };
-  }, [response]);
+  const tableData = useMemo(() => response?.data || [], [response?.data]);
+  const total = response?.total || 0;
 
   useEffect(() => {
     if (!tableData.length) return;
@@ -88,9 +82,7 @@ export const ExportTable: React.FC<ExportTableProps> = ({
       minWidth: 50,
       align: 'center',
       render: (_value, _record, index) =>
-        index +
-        1 +
-        (pagination.pageSize ?? 50) * ((pagination.current ?? 1) - 1)
+        index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
@@ -139,16 +131,26 @@ export const ExportTable: React.FC<ExportTableProps> = ({
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
+    scroll: {
+      x: 'max-content',
+      scrollToFirstRowOnChange: false
+    },
     pagination: {
       ...customTableProps.pagination,
-      pageSize: pagination.pageSize,
-      current: pagination.current,
-      total: pagination.total,
+      pageSize: params.limit,
+      current: params.page,
+      total: total,
       onShowSizeChange: (_current, size) => {
-        setParams((prev) => ({ ...prev, limit: size }));
+        setParams((prev) => ({
+          ...prev,
+          limit: size
+        }));
       },
       onChange: (page) => {
-        setParams((prev) => ({ ...prev, page }));
+        setParams((prev) => ({
+          ...prev,
+          page: page
+        }));
       }
     }
   };

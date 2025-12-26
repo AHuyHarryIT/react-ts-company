@@ -973,7 +973,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
         loading={loading}
         rowKey="id"
         pagination={pagination}
-        scroll={{ x: 'max-content' }}
+        scroll={{ x: 'max-content', scrollToFirstRowOnChange: false }}
         size="middle"
         className="request-forms-table"
       />

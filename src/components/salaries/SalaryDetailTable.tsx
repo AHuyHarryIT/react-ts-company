@@ -860,7 +860,7 @@ export const SalaryDetailTable: React.FC<SalaryDetailTableProps> = ({
     dataSource: data,
     loading: loading,
     size: 'small',
-    scroll: { x: 'max-content' },
+    scroll: { x: 'max-content', scrollToFirstRowOnChange: false },
     tableLayout: 'auto',
     pagination: false
   };

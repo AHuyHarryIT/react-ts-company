@@ -42,45 +42,29 @@ export const PrintBagStamp = ({
   const stampList =
     originalStampList.length > 1
       ? (() => {
-          // Process comma-separated stamps with odd/even arrangement
+          // Process comma-separated stamps - arrange odd/even for entire list
           const stamps = originalStampList.map((stamp) =>
             parseInt(stamp.trim())
           );
-          const sortedStamps = stamps.sort((a, b) => a - b);
-          const arrangedStamps: string[] = [];
 
-          // Calculate pages needed (6 stamps per page)
-          const totalPages = Math.ceil(sortedStamps.length / 6);
+          // Separate all odd and even numbers first
+          const oddNumbers = stamps
+            .filter((num) => num % 2 === 1)
+            .sort((a, b) => a - b);
+          const evenNumbers = stamps
+            .filter((num) => num % 2 === 0)
+            .sort((a, b) => a - b);
 
-          for (let page = 0; page < totalPages; page++) {
-            const pageStamps = sortedStamps.slice(page * 6, (page + 1) * 6);
+          // Arrange with odd numbers first, then even numbers
+          const arrangedStamps = [
+            ...oddNumbers.map((n) => n.toString()),
+            ...evenNumbers.map((n) => n.toString())
+          ];
 
-            // Separate odd and even numbers
-            const oddNumbers = pageStamps
-              .filter((num) => num % 2 === 1)
-              .sort((a, b) => a - b);
-            const evenNumbers = pageStamps
-              .filter((num) => num % 2 === 0)
-              .sort((a, b) => a - b);
-
-            // Create page layout: odd numbers on top, even on bottom
-            const pageLayout = new Array(6).fill(null);
-
-            // Fill odd numbers in positions 0, 1, 2
-            oddNumbers.forEach((num, index) => {
-              if (index < 3) pageLayout[index] = num.toString();
-            });
-
-            // Fill even numbers in positions 3, 4, 5
-            evenNumbers.forEach((num, index) => {
-              if (index < 3) pageLayout[index + 3] = num.toString();
-            });
-
-            // Add non-null stamps to arranged list
-            pageLayout.forEach((stamp) => {
-              if (stamp !== null) arrangedStamps.push(stamp);
-            });
-          }
+          console.log('Input stamps:', stamps);
+          console.log('Odd numbers:', oddNumbers);
+          console.log('Even numbers:', evenNumbers);
+          console.log('Arranged stamps:', arrangedStamps);
 
           return arrangedStamps;
         })()

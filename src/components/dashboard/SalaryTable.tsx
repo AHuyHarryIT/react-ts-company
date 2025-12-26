@@ -9,11 +9,11 @@ const columns: TableProps<SalaryTableType>['columns'] = [
   {
     title: 'STT',
     rowScope: 'row',
-    render: (_value, _record, index) => index + 1,
+    render: (_value, _record, index) => index + 1
   },
   {
     title: 'Tiêu đề',
-    dataIndex: 'title',
+    dataIndex: 'title'
   },
   {
     title: 'Tổng (VNĐ)',
@@ -21,9 +21,9 @@ const columns: TableProps<SalaryTableType>['columns'] = [
     render: (value: number) =>
       value.toLocaleString('vi-VN', {
         style: 'decimal',
-        currency: 'VND',
+        currency: 'VND'
       }),
-    className: 'text-right',
+    className: 'text-right'
   },
   {
     title: 'Ngày bắt đầu',
@@ -32,8 +32,8 @@ const columns: TableProps<SalaryTableType>['columns'] = [
       new Date(value).toLocaleDateString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
-        year: 'numeric',
-      }),
+        year: 'numeric'
+      })
   },
   {
     title: 'Ngày kết thúc',
@@ -42,13 +42,13 @@ const columns: TableProps<SalaryTableType>['columns'] = [
       new Date(value).toLocaleDateString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
-        year: 'numeric',
-      }),
-  },
+        year: 'numeric'
+      })
+  }
 ];
 
 export const SalaryTable: React.FC<SalaryTableProps> = ({
-  data,
+  data
 }: SalaryTableProps) => {
   const dataTable: SalaryTableType[] = data;
 
@@ -60,7 +60,7 @@ export const SalaryTable: React.FC<SalaryTableProps> = ({
       bordered
       size="small"
       pagination={false}
-      scroll={{ x: 768 }}
+      scroll={{ x: 768, scrollToFirstRowOnChange: false }}
     />
   );
 };

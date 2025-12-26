@@ -1,7 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { requireRole } from '@utils/authUtil';
 
 export const Route = createFileRoute('/_authenticated/stamps')({
+  component: () => <Outlet />,
   beforeLoad: async ({ context }) => {
     const { user } = context.authenticated;
     requireRole(user, [

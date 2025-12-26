@@ -312,7 +312,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     dataSource: transformedData,
     loading: loading,
     size: 'small',
-    scroll: { x: 'max-content' },
+    scroll: { x: 'max-content', scrollToFirstRowOnChange: false },
     tableLayout: 'auto',
     pagination: false
   };

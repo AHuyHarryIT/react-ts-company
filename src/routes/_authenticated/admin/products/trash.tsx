@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Input, Select, Table, TableColumnsType, TableProps } from 'antd';
+import { Input, Select, Table, TableColumnsType, TableProps, Flex } from 'antd';
 import { useState } from 'react';
 
 import { ProductType } from '@/types/productType';
@@ -14,6 +14,72 @@ import { ProductModelEnumOptions } from '@schemas/product/productModelEnum.enum'
 import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEnum.enum';
 import { productService } from '@services/ProductService';
 import { debounce } from 'lodash';
+import { Button, Modal, message } from 'antd';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { IconDelete } from '@components/icons';
+
+interface ForceDeleteButtonProps {
+  productId: string;
+  productName: string;
+  productCode: string;
+}
+
+const ForceDeleteButton: React.FC<ForceDeleteButtonProps> = ({
+  productId,
+  productName
+}) => {
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const forceDeleteMutation = useMutation({
+    mutationFn: () => productService.forceDelete(productId),
+    onSuccess: () => {
+      message.success('Xóa vĩnh viễn thành công');
+      queryClient.invalidateQueries();
+      setOpen(false);
+    },
+    onError: () => {
+      message.error('Xóa vĩnh viễn thất bại');
+    }
+  });
+
+  return (
+    <>
+      <Button
+        size="middle"
+        variant="solid"
+        color="red"
+        icon={<IconDelete />}
+        onClick={() => setOpen(true)}
+        loading={forceDeleteMutation.isPending}
+      />
+
+      <Modal
+        title="Xóa sản phẩm"
+        loading={forceDeleteMutation.isPending}
+        open={open}
+        centered
+        okButtonProps={{
+          loading: forceDeleteMutation.isPending,
+          danger: true,
+          size: 'middle'
+        }}
+        okText="Xóa"
+        onOk={() => forceDeleteMutation.mutate()}
+        cancelButtonProps={{
+          size: 'middle'
+        }}
+        onCancel={() => setOpen(false)}
+        cancelText="Hủy"
+      >
+        <p className="mb-3">
+          Bạn có muốn xoá sản phẩm <strong>{productName}</strong> này không?
+        </p>
+        <p className="text-sm text-red-600">Không thể hoàn tác!</p>
+      </Modal>
+    </>
+  );
+};
 
 export const Route = createFileRoute('/_authenticated/admin/products/trash')({
   component: RouteComponent
@@ -37,7 +103,7 @@ function RouteComponent() {
   });
 
   const handleChange: TableProps<ProductType>['onChange'] = (
-    _,
+    _pagination,
     filters,
     sorter
   ) => {
@@ -53,10 +119,9 @@ function RouteComponent() {
       newFilters[`filter[${key}]`] = value?.toString();
     });
     setParams((prev) => ({
+      ...prev,
       ...newFilters,
-      sort: sortValue,
-      page: prev.page,
-      limit: prev.limit
+      sort: sortValue
     }));
   };
 
@@ -146,23 +211,21 @@ function RouteComponent() {
     {
       title: 'Thao tác',
       align: 'center',
-      minWidth: 100,
+      minWidth: 180,
       render: (_value, record) => {
         return (
-          <ConfirmButton
-            isRestore={true}
-            id={record.id}
-            service={productService}
-            content={
-              <p>
-                Bạn có chắc chắn muốn khôi phục sản phẩm{' '}
-                <strong>
-                  {record.name} - {record.code}
-                </strong>{' '}
-                không?
-              </p>
-            }
-          />
+          <Flex gap="small" justify="center" wrap="wrap">
+            <ConfirmButton
+              isRestore={true}
+              id={record.id}
+              service={productService}
+            />
+            <ForceDeleteButton
+              productId={record.id}
+              productName={record.name}
+              productCode={record.code}
+            />
+          </Flex>
         );
       }
     }

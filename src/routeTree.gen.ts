@@ -30,8 +30,7 @@ import { Route as AuthenticatedProfileIndexImport } from './routes/_authenticate
 import { Route as AuthenticatedActivityScheduleIndexImport } from './routes/_authenticated/activity-schedule/index'
 import { Route as AuthenticatedWorkSchedulesIdImport } from './routes/_authenticated/work-schedules/$id'
 import { Route as AuthenticatedStampsHistoryImport } from './routes/_authenticated/stamps/history'
-import { Route as AuthenticatedStampsBoxImport } from './routes/_authenticated/stamps/box'
-import { Route as AuthenticatedStampsBagImport } from './routes/_authenticated/stamps/bag'
+import { Route as AuthenticatedStampsCreateImport } from './routes/_authenticated/stamps/create'
 import { Route as AuthenticatedScanStorageImport } from './routes/_authenticated/scan/storage'
 import { Route as AuthenticatedRequestFormsIdImport } from './routes/_authenticated/request-forms/$id'
 import { Route as AuthenticatedAdminNotificationDemoImport } from './routes/_authenticated/admin/notification-demo'
@@ -198,15 +197,9 @@ const AuthenticatedStampsHistoryRoute = AuthenticatedStampsHistoryImport.update(
   } as any,
 )
 
-const AuthenticatedStampsBoxRoute = AuthenticatedStampsBoxImport.update({
-  id: '/box',
-  path: '/box',
-  getParentRoute: () => AuthenticatedStampsRouteRoute,
-} as any)
-
-const AuthenticatedStampsBagRoute = AuthenticatedStampsBagImport.update({
-  id: '/bag',
-  path: '/bag',
+const AuthenticatedStampsCreateRoute = AuthenticatedStampsCreateImport.update({
+  id: '/create',
+  path: '/create',
   getParentRoute: () => AuthenticatedStampsRouteRoute,
 } as any)
 
@@ -671,18 +664,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedScanStorageImport
       parentRoute: typeof AuthenticatedImport
     }
-    '/_authenticated/stamps/bag': {
-      id: '/_authenticated/stamps/bag'
-      path: '/bag'
-      fullPath: '/stamps/bag'
-      preLoaderRoute: typeof AuthenticatedStampsBagImport
-      parentRoute: typeof AuthenticatedStampsRouteImport
-    }
-    '/_authenticated/stamps/box': {
-      id: '/_authenticated/stamps/box'
-      path: '/box'
-      fullPath: '/stamps/box'
-      preLoaderRoute: typeof AuthenticatedStampsBoxImport
+    '/_authenticated/stamps/create': {
+      id: '/_authenticated/stamps/create'
+      path: '/create'
+      fullPath: '/stamps/create'
+      preLoaderRoute: typeof AuthenticatedStampsCreateImport
       parentRoute: typeof AuthenticatedStampsRouteImport
     }
     '/_authenticated/stamps/history': {
@@ -1239,15 +1225,13 @@ const AuthenticatedEmployeeRouteRouteWithChildren =
   )
 
 interface AuthenticatedStampsRouteRouteChildren {
-  AuthenticatedStampsBagRoute: typeof AuthenticatedStampsBagRoute
-  AuthenticatedStampsBoxRoute: typeof AuthenticatedStampsBoxRoute
+  AuthenticatedStampsCreateRoute: typeof AuthenticatedStampsCreateRoute
   AuthenticatedStampsHistoryRoute: typeof AuthenticatedStampsHistoryRoute
 }
 
 const AuthenticatedStampsRouteRouteChildren: AuthenticatedStampsRouteRouteChildren =
   {
-    AuthenticatedStampsBagRoute: AuthenticatedStampsBagRoute,
-    AuthenticatedStampsBoxRoute: AuthenticatedStampsBoxRoute,
+    AuthenticatedStampsCreateRoute: AuthenticatedStampsCreateRoute,
     AuthenticatedStampsHistoryRoute: AuthenticatedStampsHistoryRoute,
   }
 
@@ -1323,8 +1307,7 @@ export interface FileRoutesByFullPath {
   '/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/request-forms/$id': typeof AuthenticatedRequestFormsIdRoute
   '/scan/storage': typeof AuthenticatedScanStorageRoute
-  '/stamps/bag': typeof AuthenticatedStampsBagRoute
-  '/stamps/box': typeof AuthenticatedStampsBoxRoute
+  '/stamps/create': typeof AuthenticatedStampsCreateRoute
   '/stamps/history': typeof AuthenticatedStampsHistoryRoute
   '/work-schedules/$id': typeof AuthenticatedWorkSchedulesIdRoute
   '/activity-schedule/': typeof AuthenticatedActivityScheduleIndexRoute
@@ -1386,8 +1369,7 @@ export interface FileRoutesByTo {
   '/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/request-forms/$id': typeof AuthenticatedRequestFormsIdRoute
   '/scan/storage': typeof AuthenticatedScanStorageRoute
-  '/stamps/bag': typeof AuthenticatedStampsBagRoute
-  '/stamps/box': typeof AuthenticatedStampsBoxRoute
+  '/stamps/create': typeof AuthenticatedStampsCreateRoute
   '/stamps/history': typeof AuthenticatedStampsHistoryRoute
   '/work-schedules/$id': typeof AuthenticatedWorkSchedulesIdRoute
   '/activity-schedule': typeof AuthenticatedActivityScheduleIndexRoute
@@ -1457,8 +1439,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/_authenticated/request-forms/$id': typeof AuthenticatedRequestFormsIdRoute
   '/_authenticated/scan/storage': typeof AuthenticatedScanStorageRoute
-  '/_authenticated/stamps/bag': typeof AuthenticatedStampsBagRoute
-  '/_authenticated/stamps/box': typeof AuthenticatedStampsBoxRoute
+  '/_authenticated/stamps/create': typeof AuthenticatedStampsCreateRoute
   '/_authenticated/stamps/history': typeof AuthenticatedStampsHistoryRoute
   '/_authenticated/work-schedules/$id': typeof AuthenticatedWorkSchedulesIdRoute
   '/_authenticated/activity-schedule/': typeof AuthenticatedActivityScheduleIndexRoute
@@ -1528,8 +1509,7 @@ export interface FileRouteTypes {
     | '/admin/notification-demo'
     | '/request-forms/$id'
     | '/scan/storage'
-    | '/stamps/bag'
-    | '/stamps/box'
+    | '/stamps/create'
     | '/stamps/history'
     | '/work-schedules/$id'
     | '/activity-schedule/'
@@ -1590,8 +1570,7 @@ export interface FileRouteTypes {
     | '/admin/notification-demo'
     | '/request-forms/$id'
     | '/scan/storage'
-    | '/stamps/bag'
-    | '/stamps/box'
+    | '/stamps/create'
     | '/stamps/history'
     | '/work-schedules/$id'
     | '/activity-schedule'
@@ -1659,8 +1638,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/notification-demo'
     | '/_authenticated/request-forms/$id'
     | '/_authenticated/scan/storage'
-    | '/_authenticated/stamps/bag'
-    | '/_authenticated/stamps/box'
+    | '/_authenticated/stamps/create'
     | '/_authenticated/stamps/history'
     | '/_authenticated/work-schedules/$id'
     | '/_authenticated/activity-schedule/'
@@ -1822,8 +1800,7 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/stamps/route.tsx",
       "parent": "/_authenticated",
       "children": [
-        "/_authenticated/stamps/bag",
-        "/_authenticated/stamps/box",
+        "/_authenticated/stamps/create",
         "/_authenticated/stamps/history"
       ]
     },
@@ -1888,12 +1865,8 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/scan/storage.tsx",
       "parent": "/_authenticated"
     },
-    "/_authenticated/stamps/bag": {
-      "filePath": "_authenticated/stamps/bag.tsx",
-      "parent": "/_authenticated/stamps"
-    },
-    "/_authenticated/stamps/box": {
-      "filePath": "_authenticated/stamps/box.tsx",
+    "/_authenticated/stamps/create": {
+      "filePath": "_authenticated/stamps/create.tsx",
       "parent": "/_authenticated/stamps"
     },
     "/_authenticated/stamps/history": {

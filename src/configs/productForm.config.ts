@@ -62,11 +62,26 @@ export const productCreateFields = zodToFieldsWithOverride(
       type: 'number',
       index: 10
     },
+    material: {
+      label: 'Vật liệu',
+      type: 'text',
+      index: 11
+    },
+    color: {
+      label: 'Màu sắc',
+      type: 'text',
+      index: 12
+    },
+    quantity_per_package: {
+      label: 'Số lượng/gói',
+      type: 'number',
+      index: 13
+    },
     companies: {
       label: 'Công ty',
       type: 'select-multiple',
       options: ProductCompanyEnumOptions,
-      index: 11
+      index: 14
     }
   }
 );
@@ -111,11 +126,26 @@ export const productUpdateFields = zodToFieldsWithOverride(
       type: 'number',
       index: 7
     },
+    material: {
+      label: 'Vật liệu',
+      type: 'text',
+      index: 8
+    },
+    color: {
+      label: 'Màu sắc',
+      type: 'text',
+      index: 9
+    },
+    quantity_per_package: {
+      label: 'Số lượng/gói',
+      type: 'number',
+      index: 10
+    },
     companies: {
       label: 'Công ty',
       type: 'select-multiple',
       options: ProductCompanyEnumOptions,
-      index: 8
+      index: 11
     }
   }
 );

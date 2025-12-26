@@ -137,7 +137,7 @@ export const SalaryTable: React.FC<SalaryTableProps> = ({ data, loading }) => {
     dataSource: data,
     loading: loading,
     size: 'small',
-    scroll: { x: 'max-content' },
+    scroll: { x: 'max-content', scrollToFirstRowOnChange: false },
     tableLayout: 'auto',
     pagination: false
   };

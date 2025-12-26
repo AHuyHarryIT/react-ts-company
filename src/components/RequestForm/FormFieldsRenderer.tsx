@@ -12,10 +12,11 @@ interface Employee {
   role_name?: string;
 }
 
-// Hàm để disable các ngày trong quá khứ (không bao gồm hôm nay)
+// Hàm để disable các ngày trong quá khứ (cho phép chọn từ 10 ngày trước đến tương lai)
 const disabledDate = (current: Dayjs | null): boolean => {
-  // Disable tất cả ngày trước hôm nay (cho phép chọn từ hôm nay trở đi)
-  return current ? current.isBefore(dayjs().startOf('day')) : false;
+  // Disable các ngày trước 10 ngày so với hôm nay (cho phép chọn từ 10 ngày trước đến tương lai)
+  const tenDaysAgo = dayjs().subtract(10, 'day').startOf('day');
+  return current ? current.isBefore(tenDaysAgo) : false;
 };
 
 export const GiayUyQuyenForm: React.FC = () => {

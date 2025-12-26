@@ -10,11 +10,11 @@ const columns: TableProps<WorkCalendarTableType>['columns'] = [
   {
     title: 'STT',
     rowScope: 'row',
-    render: (_value, _record, index) => index + 1,
+    render: (_value, _record, index) => index + 1
   },
   {
     title: 'Tiêu đề',
-    dataIndex: 'title',
+    dataIndex: 'title'
   },
   {
     title: 'Ngày bắt đầu',
@@ -23,13 +23,13 @@ const columns: TableProps<WorkCalendarTableType>['columns'] = [
       new Date(value).toLocaleDateString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
-        year: 'numeric',
-      }),
-  },
+        year: 'numeric'
+      })
+  }
 ];
 
 export const WorkCalendarTable: React.FC<WorkCalendarTableProps> = ({
-  data,
+  data
 }: WorkCalendarTableProps) => {
   data.sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -45,7 +45,7 @@ export const WorkCalendarTable: React.FC<WorkCalendarTableProps> = ({
       size="small"
       bordered
       pagination={false}
-      scroll={{ x: 425 }}
+      scroll={{ x: 425, scrollToFirstRowOnChange: false }}
     />
   );
 };

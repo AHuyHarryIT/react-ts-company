@@ -61,7 +61,7 @@ function RouteComponent() {
   });
 
   const handleChange: TableProps<EmployeeType>['onChange'] = (
-    pagination,
+    _pagination,
     filters,
     sorter
   ) => {
@@ -85,8 +85,6 @@ function RouteComponent() {
 
     setParams((prev) => ({
       ...prev,
-      page: pagination.current,
-      limit: pagination.pageSize,
       sort: sortValue,
       ...newFilters
     }));

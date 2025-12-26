@@ -42,10 +42,7 @@ export const productCreateSchema = overrideSchema(productSchema, {
   quantity: true,
   FAPV: true,
   FASV: true,
-  FAVV: true,
-  material: true,
-  color: true,
-  quantity_per_package: true
+  FAVV: true
 });
 
 export const productUpdateSchema = overrideSchema(productCreateSchema).omit({

@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 
 import { Button, DatePicker, Flex, Input, Select, Tabs, TabsProps } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import axiosPrivate from '@/api/axiosInstance';
 import ComponentCard from '@components/common/ComponentCard';
@@ -57,25 +57,9 @@ export default function ProductList() {
   const handleSearch = debounce((value: string) => {
     setParams((prev) => ({
       ...prev,
-      'filter[search]': undefined
-    }));
-    if (!value) {
-      return;
-    }
-    setParams((prev) => ({
-      ...prev,
-      'filter[search]': value
+      'filter[search]': value || undefined
     }));
   }, 300);
-
-  useEffect(() => {
-    const total = queryResult.data?.total || 0;
-    const limit = params.limit || 50;
-    const page = params.page || 1;
-    if (total <= limit * (page - 1)) {
-      setParams((prev) => ({ ...prev, page: 1 }));
-    }
-  }, [params.limit, params.page, queryResult.data?.total]);
 
   const productTabs: TabsProps['items'] = [
     {
@@ -85,6 +69,7 @@ export default function ProductList() {
         <TotalTable
           months={months}
           queryResult={queryResult}
+          params={params}
           setParams={setParams}
         />
       )
@@ -96,6 +81,7 @@ export default function ProductList() {
         <ProduceTable
           month={month}
           queryResult={queryResult}
+          params={params}
           setParams={setParams}
         />
       )
@@ -107,6 +93,7 @@ export default function ProductList() {
         <Check200Table
           month={month}
           queryResult={queryResult}
+          params={params}
           setParams={setParams}
         />
       )
@@ -118,6 +105,7 @@ export default function ProductList() {
         <Error200Table
           month={month}
           queryResult={queryResult}
+          params={params}
           setParams={setParams}
         />
       )
@@ -129,6 +117,7 @@ export default function ProductList() {
         <ExportTable
           month={month}
           queryResult={queryResult}
+          params={params}
           setParams={setParams}
         />
       )
@@ -180,13 +169,14 @@ export default function ProductList() {
             picker="month"
             placeholder="Chọn tháng"
             onChange={(date) => {
+              const newMonth = date
+                ? date.startOf('month')
+                : dayjs().startOf('month');
+              setMonth(newMonth);
               setParams((prev) => ({
                 ...prev,
-                month: date
-                  ? date.startOf('month').format('YYYY-MM')
-                  : dayjs().startOf('month').format('YYYY-MM')
+                month: newMonth.format('YYYY-MM')
               }));
-              setMonth(date ? date.startOf('month') : dayjs().startOf('month'));
             }}
           />
           <Select

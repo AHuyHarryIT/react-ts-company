@@ -314,7 +314,7 @@ export const LotReport: React.FC<LotReportProps> = ({ data }) => {
                 showTotal: (total, range) =>
                   `${range[0]}-${range[1]} của ${total} LOT`
               }}
-              scroll={{ x: 'max-content' }}
+              scroll={{ x: 'max-content', scrollToFirstRowOnChange: false }}
               size="small"
               bordered
               className="overflow-x-auto"

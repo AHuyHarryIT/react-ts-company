@@ -27,11 +27,6 @@ export function ConfirmButton<
   size = 'middle'
 }: DeleteProps<TData, TCreateDto, TUpdateDto>) {
   const [open, setOpen] = useState(false);
-  const { deleteItem, isDeleting, restoreItem, isRestoring } =
-    useDynamicCrudForm({
-      id,
-      service
-    });
 
   const handleOpen = () => {
     setOpen(true);
@@ -40,6 +35,13 @@ export function ConfirmButton<
   const handleClose = () => {
     setOpen(false);
   };
+
+  const { deleteItem, isDeleting, restoreItem, isRestoring } =
+    useDynamicCrudForm({
+      id,
+      service,
+      onSuccess: handleClose // Đóng modal sau khi xóa/khôi phục thành công
+    });
 
   return (
     <>

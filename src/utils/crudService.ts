@@ -67,4 +67,8 @@ export class CrudService<
   restore(id: number | string) {
     return axiosPrivate.post(`${this.endpoint}/restore/${id}`);
   }
+
+  forceDelete(id: number | string) {
+    return axiosPrivate.delete(`${this.endpoint}/force-delete/${id}`);
+  }
 }

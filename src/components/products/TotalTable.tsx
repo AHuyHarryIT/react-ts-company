@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { Table, TableColumnsType, TableProps } from 'antd';
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { ProductType } from '@/types/productType';
 import { QueryParams } from '@/types/queryParams';
@@ -39,25 +39,19 @@ export type TotalTableType = {
 interface TotalTableProps {
   months?: string[];
   queryResult: UseQueryResult<PaginatedResponse<ProductType>>;
+  params: QueryParams;
   setParams: React.Dispatch<React.SetStateAction<QueryParams>>;
 }
 
 export const TotalTable: React.FC<TotalTableProps> = ({
-  months = [],
+  months,
   queryResult,
+  params,
   setParams
 }) => {
   const { data: response } = queryResult;
-  const { tableData, pagination } = useMemo(() => {
-    return {
-      tableData: response?.data || [],
-      pagination: {
-        current: response?.current_page,
-        total: response?.total,
-        pageSize: response?.per_page
-      }
-    };
-  }, [response]);
+  const tableData = response?.data || [];
+  const total = response?.total || 0;
 
   const { data: monthlyQuantities } = useQuery({
     queryKey: ['month-quantities'],
@@ -71,26 +65,28 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     monthlyQuantities ?? []
   ) as TotalTableType[];
 
-  const dateColumns: TableColumnsType<TotalTableType> = months.map((month) => {
-    return {
-      key: `${month}_quantity`,
-      title: (
-        <div>
-          Số lượng
-          <br />
-          Đã xuất tháng {month}
-        </div>
-      ),
-      minWidth: 120,
-      align: 'center',
-      className: 'bg-indigo-300',
-      dataIndex: ['times', month, 'quantity'],
-      render: (value) => {
-        if (!value) return 0;
-        return value.toLocaleString();
-      }
-    };
-  });
+  const dateColumns: TableColumnsType<TotalTableType> = (months ?? []).map(
+    (month) => {
+      return {
+        key: `${month}_quantity`,
+        title: (
+          <div>
+            Số lượng
+            <br />
+            Đã xuất tháng {month}
+          </div>
+        ),
+        minWidth: 120,
+        align: 'center',
+        className: 'bg-indigo-300',
+        dataIndex: ['times', month, 'quantity'],
+        render: (value) => {
+          if (!value) return 0;
+          return value.toLocaleString();
+        }
+      };
+    }
+  );
 
   const columns: TableColumnsType<TotalTableType> = [
     {
@@ -99,9 +95,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       minWidth: 50,
       align: 'center',
       render: (_value, _record, index) =>
-        index +
-        1 +
-        (pagination.pageSize ?? 50) * ((pagination.current ?? 1) - 1)
+        index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
@@ -361,16 +355,26 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
+    scroll: {
+      x: 'max-content',
+      scrollToFirstRowOnChange: false
+    },
     pagination: {
       ...customTableProps.pagination,
-      pageSize: pagination.pageSize,
-      current: pagination.current,
-      total: pagination.total,
+      pageSize: params.limit,
+      current: params.page,
+      total: total,
       onShowSizeChange: (_current, size) => {
-        setParams((prev) => ({ ...prev, limit: size }));
+        setParams((prev) => ({
+          ...prev,
+          limit: size
+        }));
       },
       onChange: (page) => {
-        setParams((prev) => ({ ...prev, page }));
+        setParams((prev) => ({
+          ...prev,
+          page: page
+        }));
       }
     }
   };
