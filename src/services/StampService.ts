@@ -83,3 +83,29 @@ export const fetchEmpStampHistory = async (params: QueryParams) => {
   });
   return response;
 };
+
+export const checkDuplicateStamps = async (params: {
+  product_id: string;
+  date: string;
+  shift: Shift;
+  binStart: string;
+  binCount: number;
+  type: string;
+  record?: HistoryPrintStampType;
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { record, ...apiParams } = params;
+
+  const response = await axiosPrivate.post<{
+    isDuplicate: boolean;
+    duplicates?: Array<{
+      id: string;
+      binStart: string;
+      binCount: number;
+      overlappingStamps: number[];
+    }>;
+    message?: string;
+  }>(`${ENDPOINT}/check-duplicate`, apiParams);
+
+  return response.data;
+};

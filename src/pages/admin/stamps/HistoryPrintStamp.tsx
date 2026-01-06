@@ -3,12 +3,17 @@ import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { IconPrint } from '@components/icons';
-import { getStampHistory, HistoryPrintStampType } from '@services/StampService';
-import { useQuery } from '@tanstack/react-query';
+import {
+  getStampHistory,
+  HistoryPrintStampType,
+  checkDuplicateStamps
+} from '@services/StampService';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route } from '@routes/_authenticated/stamps/history';
 import {
   Button,
   DatePicker,
+  Modal,
   Select,
   Table,
   TableColumnsType,
@@ -51,16 +56,98 @@ export default function HistoryPrintStamp() {
     pageSize: response?.per_page
   };
 
+  // Mutation to check duplicate stamps
+  const { mutate: checkDuplicate } = useMutation({
+    mutationKey: ['checkDuplicateStamps'],
+    mutationFn: checkDuplicateStamps,
+    onSuccess: (data, variables) => {
+      const record = variables.record;
+      if (!record) return;
+
+      if (data.isDuplicate && data.duplicates && data.duplicates.length > 0) {
+        const duplicateInfo = data.duplicates
+          .map(
+            (dup: { overlappingStamps: number[] }) =>
+              `Tem số: ${dup.overlappingStamps.join(', ')}`
+          )
+          .join('\n');
+
+        Modal.confirm({
+          title: 'Cảnh báo: Phát hiện tem trùng lặp',
+          content: (
+            <div>
+              {/* <p>Các tem sau đã được in trước đó với trạng thái "Đã in" và mục đích "In mới":</p> */}
+              <pre className="mt-2 rounded border border-yellow-200 bg-yellow-50 p-2 text-sm">
+                {duplicateInfo}
+              </pre>
+              <p className="mt-2 font-semibold text-red-600">
+                Bạn có chắc chắn muốn tiếp tục in các tem này không?
+              </p>
+            </div>
+          ),
+          okText: 'Tiếp tục in',
+          cancelText: 'Hủy',
+          okButtonProps: { danger: true },
+          onOk: () => {
+            setSelectedRecord(record);
+            setTimeout(() => {
+              printPreviewRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }, 100);
+          }
+        });
+      } else {
+        setSelectedRecord(record);
+        setTimeout(() => {
+          printPreviewRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 100);
+      }
+    },
+    onError: (error) => {
+      console.error('Error checking duplicates:', error);
+      Modal.error({
+        title: 'Lỗi',
+        content: 'Lỗi khi kiểm tra tem trùng lặp. Vui lòng thử lại.'
+      });
+    }
+  });
+
   // Function to handle print button click
   const handlePrintClick = (record: HistoryPrintStampType) => {
-    setSelectedRecord(record);
-    // Scroll to print preview section smoothly
-    setTimeout(() => {
-      printPreviewRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
+    // Validate required fields
+    if (
+      !record.product_id ||
+      !record.date ||
+      !record.shift ||
+      !record.binStart ||
+      !record.binCount ||
+      !record.type
+    ) {
+      Modal.error({
+        title: 'Lỗi',
+        content: 'Thiếu thông tin cần thiết để kiểm tra tem trùng lặp.'
       });
-    }, 100);
+      return;
+    }
+
+    // Prepare request data with proper types
+    const requestData = {
+      product_id: String(record.product_id), // Ensure string
+      date: dayjs(record.date).format('YYYY-MM-DD'), // Ensure correct date format
+      shift: record.shift,
+      binStart: String(record.binStart), // Ensure string
+      binCount: Number(record.binCount), // Ensure number
+      type: record.type,
+      record: record
+    };
+
+    // Check for duplicates first
+    checkDuplicate(requestData);
   };
 
   // Effect để scroll đến dòng được highlight

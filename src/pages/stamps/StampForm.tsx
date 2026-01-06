@@ -28,6 +28,7 @@ interface FormFields {
   totalStamp: number;
   startStamp: number;
   productCode: ProductType['code'];
+  purpose: 'new' | 'additional' | 'reprint';
 }
 
 export default function StampForm() {
@@ -39,6 +40,7 @@ export default function StampForm() {
     totalStamp: number;
     shift: Shift;
     date: Dayjs;
+    purpose: 'new' | 'additional' | 'reprint';
   }>();
   const [hasComma, setHasComma] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -88,7 +90,8 @@ export default function StampForm() {
         startStamp: values.startStamp,
         totalStamp: finalTotalStamp,
         shift: values.shift,
-        date: values.date
+        date: values.date,
+        purpose: values.purpose
       });
 
       // Scroll to preview section after a short delay to ensure it's rendered
@@ -137,6 +140,21 @@ export default function StampForm() {
               rules={[{ required: true, message: 'Vui lòng chọn ca' }]}
             >
               <Select options={ShiftEnumOptions} placeholder="Chọn ca" />
+            </Form.Item>
+            <Form.Item<FormFields>
+              label="Mục đích in"
+              name="purpose"
+              rules={[{ required: true, message: 'Vui lòng chọn mục đích in' }]}
+              initialValue="new"
+            >
+              <Select
+                placeholder="Chọn mục đích in"
+                options={[
+                  { value: 'new', label: 'In mới' },
+                  { value: 'additional', label: 'In thêm' },
+                  { value: 'reprint', label: 'In lại' }
+                ]}
+              />
             </Form.Item>
             {!hasComma && (
               <Form.Item<FormFields>
@@ -243,6 +261,7 @@ export default function StampForm() {
                 totalStamp={stampData.totalStamp}
                 shift={stampData.shift}
                 date={stampData.date}
+                purpose={stampData.purpose}
               />
             ) : (
               <PrintBoxStamp
@@ -251,6 +270,7 @@ export default function StampForm() {
                 totalStamp={stampData.totalStamp}
                 shift={stampData.shift}
                 date={stampData.date}
+                purpose={stampData.purpose}
               />
             )}
           </ComponentCard>

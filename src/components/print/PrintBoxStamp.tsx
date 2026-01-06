@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Image, message, Radio } from 'antd';
+import { Button, Image, message, Modal, Radio } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { useCallback, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import Barcode from 'react-barcode';
 
 import { ProductType } from '@/types/productType';
-import { saveStamp } from '@services/StampService';
+import { saveStamp, checkDuplicateStamps } from '@services/StampService';
 import { Shift } from '@/types/shift';
 import logo from '@assets/images/logo/vvp02.png';
 import { EmployeeType } from '@/types/employeeType';
@@ -21,6 +21,7 @@ interface PrintBoxStampProps {
   shift: Shift;
   employee_id?: EmployeeType['id'];
   stamp_id?: string;
+  purpose?: 'new' | 'additional' | 'reprint';
 }
 
 export const PrintBoxStamp = ({
@@ -30,7 +31,8 @@ export const PrintBoxStamp = ({
   date,
   shift,
   employee_id,
-  stamp_id
+  stamp_id,
+  purpose
 }: PrintBoxStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
@@ -90,7 +92,48 @@ export const PrintBoxStamp = ({
     }
   });
 
-  const handleSavePrintLog = useCallback(() => {
+  const { mutate: checkDuplicate } = useMutation({
+    mutationKey: ['checkDuplicateStamps'],
+    mutationFn: checkDuplicateStamps,
+    onSuccess: (data) => {
+      if (data.isDuplicate && data.duplicates && data.duplicates.length > 0) {
+        const duplicateInfo = data.duplicates
+          .map(
+            (dup: { overlappingStamps: number[] }) =>
+              `Tem số: ${dup.overlappingStamps.join(', ')}`
+          )
+          .join('\n');
+
+        Modal.confirm({
+          title: 'Cảnh báo: Phát hiện tem trùng lặp',
+          content: (
+            <div>
+              <pre className="mt-2 rounded border border-yellow-200 bg-yellow-50 p-2 text-sm">
+                {duplicateInfo}
+              </pre>
+              <p className="mt-2 font-semibold text-red-600">
+                Bạn có chắc chắn muốn tiếp tục in các tem này không?
+              </p>
+            </div>
+          ),
+          okText: 'Tiếp tục in',
+          cancelText: 'Hủy',
+          okButtonProps: { danger: true },
+          onOk: () => {
+            performPrint();
+          }
+        });
+      } else {
+        performPrint();
+      }
+    },
+    onError: (error) => {
+      console.error('Error checking duplicates:', error);
+      message.error('Lỗi khi kiểm tra tem trùng lặp. Vui lòng thử lại.');
+    }
+  });
+
+  const performPrint = useCallback(() => {
     handlePrint();
     mutate({
       productId: product.id,
@@ -103,7 +146,8 @@ export const PrintBoxStamp = ({
           : stampList.slice(0, totalStamp).join(','),
       type: 'box',
       employee_id: employee_id,
-      stamp_id: stamp_id
+      stamp_id: stamp_id,
+      purpose: purpose
     });
   }, [
     originalStampList,
@@ -115,7 +159,38 @@ export const PrintBoxStamp = ({
     shift,
     totalStamp,
     employee_id,
-    stamp_id
+    stamp_id,
+    purpose
+  ]);
+
+  const handleSavePrintLog = useCallback(() => {
+    // Only check duplicates if no stamp_id (self-created stamp)
+    if (!stamp_id) {
+      checkDuplicate({
+        product_id: String(product.id),
+        date: date.format('YYYY-MM-DD'),
+        shift: shift,
+        binStart:
+          originalStampList.length > 1
+            ? originalStampList.slice(0, totalStamp).join(',')
+            : stampList.slice(0, totalStamp).join(','),
+        binCount: totalStamp,
+        type: 'box'
+      });
+    } else {
+      // If from history page, print directly
+      performPrint();
+    }
+  }, [
+    originalStampList,
+    stampList,
+    date,
+    checkDuplicate,
+    product,
+    shift,
+    totalStamp,
+    stamp_id,
+    performPrint
   ]);
 
   // Use the custom hook for print shortcut
