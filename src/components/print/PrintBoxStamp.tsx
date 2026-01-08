@@ -66,11 +66,6 @@ export const PrintBoxStamp = ({
             ...evenNumbers.map((n) => n.toString())
           ];
 
-          console.log('BoxStamp - Input stamps:', stamps);
-          console.log('BoxStamp - Odd numbers:', oddNumbers);
-          console.log('BoxStamp - Even numbers:', evenNumbers);
-          console.log('BoxStamp - Arranged stamps:', arrangedStamps);
-
           return arrangedStamps;
         })()
       : originalStampList;
@@ -96,6 +91,11 @@ export const PrintBoxStamp = ({
     mutationKey: ['checkDuplicateStamps'],
     mutationFn: checkDuplicateStamps,
     onSuccess: (data) => {
+      if (!data) {
+        performPrint();
+        return;
+      }
+
       if (data.isDuplicate && data.duplicates && data.duplicates.length > 0) {
         const duplicateInfo = data.duplicates
           .map(

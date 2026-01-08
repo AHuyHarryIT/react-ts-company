@@ -8,7 +8,7 @@ import {
   Select,
   Spin
 } from 'antd';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 
 import axiosPrivate from '@/api/axiosInstance';
@@ -21,7 +21,7 @@ import { updateMonthlyQuantities } from '@services/TotalQuantityService';
 interface FormFields {
   month: string;
   productType: number;
-  [key: `product_${number | string}`]: number;
+  [key: `product_${number}`]: number;
 }
 
 interface ProductsResponse {
@@ -79,6 +79,18 @@ function RouteComponent() {
 
   const productList = products?.data || [];
 
+  // Update form values when product data changes
+  useEffect(() => {
+    if (productList.length > 0) {
+      const newValues: Record<string, number> = {};
+      productList.forEach((product) => {
+        newValues[`product_${product.id}`] =
+          product.totalmonthquantities?.[0]?.totalQuan ?? 0;
+      });
+      form.setFieldsValue(newValues);
+    }
+  }, [productList, form]);
+
   const { mutate, isPending } = useMutation({
     mutationKey: ['productQuantities', month, productType],
     mutationFn: async ({
@@ -116,7 +128,7 @@ function RouteComponent() {
   ) => {
     // filter not null values
     const productQuantities = Object.entries(value)
-      .filter(([key, val]) => key.startsWith('product_') && val > 0)
+      .filter(([key, val]) => key.startsWith('product_') && val >= 0)
       .map(([key, val]) => ({
         productId: key.split('_')[1],
         quantity: val
@@ -193,12 +205,9 @@ function RouteComponent() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {productList.map((product) => (
                   <Form.Item<FormFields>
-                    key={`product_${product.id}_${month}_${productType}`}
+                    key={`product_${product.id}`}
                     label={product.name}
-                    name={`product_${product.id}_${month}_${productType}`}
-                    initialValue={
-                      product.totalmonthquantities?.[0]?.totalQuan ?? 0
-                    }
+                    name={`product_${product.id}`}
                     rules={[
                       {
                         type: 'number',

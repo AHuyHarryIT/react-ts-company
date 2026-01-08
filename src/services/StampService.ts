@@ -8,6 +8,17 @@ import { Shift } from '@/types/shift';
 const ENDPOINT = '/api/stamps';
 const EMP_ENDPOINT = '/api/employee/stamps';
 
+interface DuplicateCheckResponse {
+  isDuplicate: boolean;
+  duplicates?: Array<{
+    id: string;
+    binStart: string;
+    binCount: number;
+    overlappingStamps: number[];
+  }>;
+  message?: string;
+}
+
 interface StampLogRequest {
   productId: string;
   date: string;
@@ -92,20 +103,24 @@ export const checkDuplicateStamps = async (params: {
   binCount: number;
   type: string;
   record?: HistoryPrintStampType;
-}) => {
+}): Promise<DuplicateCheckResponse> => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { record, ...apiParams } = params;
 
-  const response = await axiosPrivate.post<{
-    isDuplicate: boolean;
-    duplicates?: Array<{
-      id: string;
-      binStart: string;
-      binCount: number;
-      overlappingStamps: number[];
-    }>;
-    message?: string;
-  }>(`${ENDPOINT}/check-duplicate`, apiParams);
+  try {
+    // axiosPrivate interceptor already unwraps response.data
+    const data = (await axiosPrivate.post(
+      `${ENDPOINT}/check-duplicate`,
+      apiParams
+    )) as DuplicateCheckResponse;
 
-  return response.data;
+    return data;
+  } catch {
+    // Return safe default if API fails
+    return {
+      isDuplicate: false,
+      duplicates: [],
+      message: 'API error'
+    };
+  }
 };
