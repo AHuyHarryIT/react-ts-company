@@ -21,6 +21,7 @@ import { PrintBoxStamp } from '@components/print/PrintBoxStamp';
 import { ShiftEnumOptions } from '@constants/shift.enum';
 import { useCrudList } from '@hooks/useCrudList';
 import { productService } from '@services/ProductService';
+import { useNavigate } from '@tanstack/react-router';
 
 interface FormFields {
   date: Dayjs;
@@ -44,6 +45,7 @@ export default function StampForm() {
   }>();
   const [hasComma, setHasComma] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const stampLabel = type === 'box' ? 'thùng' : 'bịch';
 
@@ -246,6 +248,13 @@ export default function StampForm() {
               </Button>
               <Button color="primary" variant="solid" htmlType="reset">
                 Hủy
+              </Button>
+              <Button
+                color="default"
+                variant="outlined"
+                onClick={() => navigate({ to: '/stamps/history' })}
+              >
+                Xem Lịch Sử
               </Button>
             </Flex>
           </Form.Item>
