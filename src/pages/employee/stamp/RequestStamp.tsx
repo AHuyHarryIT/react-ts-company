@@ -6,6 +6,10 @@ import { IconAdd, IconHistory } from '@components/icons';
 import { UserInfo } from '@components/UserInfo';
 import { productService } from '@services/ProductService';
 import { empStampRequest } from '@services/StampService';
+import {
+  getStampErrorMessage,
+  isErrorCodeObject
+} from '@/utils/stampErrorCodes';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
@@ -17,10 +21,12 @@ import {
   Input,
   InputNumber,
   message,
+  Modal,
   Select
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
+import { useState } from 'react';
 import { IoCloseOutline } from 'react-icons/io5';
 
 interface StampType {
@@ -45,13 +51,14 @@ interface ProductOption {
 
 export const RequestStamp = () => {
   const [form] = Form.useForm<FormFields>();
+  const [pendingData, setPendingData] = useState<FormFields | null>(null);
 
   const { data: productsData } = useQuery({
     queryKey: ['products'],
     queryFn: () => productService.list({ limit: 0 })
   });
 
-  const { mutate, isPending } = useMutation({
+  const { mutate: submitRequest, isPending: isSubmitting } = useMutation({
     mutationKey: ['request-stamp'],
     mutationFn: (data: FormFields) => {
       const formattedData = data.stamps.map((stamp) => {
@@ -78,16 +85,206 @@ export const RequestStamp = () => {
     },
     onSuccess: () => {
       form.resetFields();
+      setPendingData(null);
       message.success({
         content: 'Yêu cầu in tem đã được gửi',
         key: 'request-stamp'
       });
     },
-    onError: () => {
-      message.error({
-        content: 'Đã xảy ra lỗi khi gửi yêu cầu in tem',
-        key: 'request-stamp'
+    onError: (error: unknown) => {
+      interface StampError {
+        stampIndex: number;
+        productName: string;
+        date: string;
+        shift: string;
+        type: string;
+        messages: string[];
+      }
+
+      const stampErrors: StampError[] = [];
+      const generalErrors: string[] = [];
+
+      interface AxiosError {
+        response?: {
+          status?: number;
+          data?: {
+            errors?: Record<
+              string,
+              Array<string | { code: string; params: Record<string, unknown> }>
+            >;
+            message?: string;
+          };
+        };
+        message?: string;
+      }
+
+      const axiosError = error as AxiosError;
+
+      if (axiosError?.response?.status === 422) {
+        const responseData = axiosError.response.data;
+
+        if (responseData?.errors) {
+          const errors = responseData.errors;
+
+          Object.keys(errors).forEach((field) => {
+            const stampIndexMatch = field.match(/stamps\.(\d+)\./);
+            const errorArray = errors[field];
+
+            if (stampIndexMatch) {
+              const stampIndex = parseInt(stampIndexMatch[1]);
+              const stamp = pendingData?.stamps?.[stampIndex];
+              const productId = stamp?.productId;
+              const product = productsData?.data?.find(
+                (p) => p.id === productId
+              );
+              const productName =
+                product?.name || `Sản phẩm #${stampIndex + 1}`;
+              const date = stamp?.date?.format('DD/MM/YYYY') || '';
+              const shift =
+                stamp?.shift === 1 ? 'Ca 1' : stamp?.shift === 2 ? 'Ca 2' : '';
+              const type =
+                stamp?.type === 'box'
+                  ? 'Tem thùng'
+                  : stamp?.type === 'bag'
+                    ? 'Tem bịch'
+                    : '';
+
+              let stampError = stampErrors.find(
+                (e) => e.stampIndex === stampIndex
+              );
+              if (!stampError) {
+                stampError = {
+                  stampIndex,
+                  productName,
+                  date,
+                  shift,
+                  type,
+                  messages: []
+                };
+                stampErrors.push(stampError);
+              }
+
+              // Process each error in the array
+              errorArray.forEach((errorItem) => {
+                if (isErrorCodeObject(errorItem)) {
+                  // New format: { code: string, params: object }
+                  console.log('Error Code:', errorItem.code);
+                  console.log(
+                    'Error Params:',
+                    JSON.stringify(errorItem.params, null, 2)
+                  );
+                  const errorMessage = getStampErrorMessage(
+                    errorItem.code,
+                    errorItem.params,
+                    'vi'
+                  );
+                  console.log('Generated Message:', errorMessage);
+                  stampError!.messages.push(errorMessage);
+                } else if (typeof errorItem === 'string') {
+                  // Legacy format: string message
+                  stampError!.messages.push(errorItem);
+                }
+              });
+            } else {
+              // General errors (not stamp-specific)
+              errorArray.forEach(
+                (
+                  errorItem:
+                    | string
+                    | { code: string; params: Record<string, unknown> }
+                ) => {
+                  if (isErrorCodeObject(errorItem)) {
+                    const errorMessage = getStampErrorMessage(
+                      errorItem.code,
+                      errorItem.params,
+                      'vi'
+                    );
+                    generalErrors.push(errorMessage);
+                  } else if (typeof errorItem === 'string') {
+                    generalErrors.push(errorItem);
+                  }
+                }
+              );
+            }
+          });
+
+          stampErrors.sort((a, b) => a.stampIndex - b.stampIndex);
+        } else if (responseData?.message) {
+          generalErrors.push(responseData.message);
+        } else if (typeof responseData === 'string') {
+          generalErrors.push(responseData);
+        }
+      } else if (axiosError?.response?.data?.message) {
+        generalErrors.push(axiosError.response.data.message);
+      } else if (
+        axiosError &&
+        typeof axiosError === 'object' &&
+        'message' in axiosError &&
+        typeof axiosError.message === 'string'
+      ) {
+        generalErrors.push(axiosError.message);
+      }
+
+      if (stampErrors.length === 0 && generalErrors.length === 0) {
+        generalErrors.push('Đã xảy ra lỗi không xác định. Vui lòng thử lại.');
+      }
+
+      Modal.error({
+        title: 'Không thể gửi yêu cầu',
+        icon: null,
+        width: '90%',
+        style: { maxWidth: '600px' },
+        content: (
+          <div className="space-y-2.5">
+            {generalErrors.map((msg, index) => (
+              <div
+                key={`general-${index}`}
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-900"
+              >
+                {msg}
+              </div>
+            ))}
+
+            {stampErrors.map((stampError) => (
+              <div
+                key={`stamp-${stampError.stampIndex}`}
+                className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3"
+              >
+                <div className="mb-2 border-b border-orange-200 pb-2">
+                  <div className="text-xs font-medium text-orange-600">
+                    Yêu cầu #{stampError.stampIndex + 1}
+                  </div>
+                  <div className="mt-1 font-medium text-orange-900">
+                    {stampError.productName}
+                  </div>
+                  <div className="mt-1 text-xs text-orange-600">
+                    {stampError.date} • {stampError.shift} • {stampError.type}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  {stampError.messages.map((msg, msgIndex) => (
+                    <div
+                      key={msgIndex}
+                      className="flex items-start gap-2 text-sm leading-relaxed text-orange-900"
+                    >
+                      <span className="mt-0.5 text-orange-500">•</span>
+                      <span className="flex-1">{msg}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ),
+        okText: 'Đã hiểu',
+        okButtonProps: {
+          className:
+            'bg-blue-500 hover:bg-blue-600 border-blue-500 hover:border-blue-600'
+        },
+        centered: true
       });
+
+      message.destroy('request-stamp');
     },
     onMutate: () => {
       message.loading({
@@ -96,6 +293,12 @@ export const RequestStamp = () => {
       });
     }
   });
+
+  // Submit directly without frontend validation - let backend handle all validation
+  const handleFormSubmit = (values: FormFields) => {
+    setPendingData(values);
+    submitRequest(values);
+  };
 
   const productOptions: ProductOption[] =
     productsData?.data?.map((product) => ({
@@ -123,11 +326,9 @@ export const RequestStamp = () => {
   const formProps: FormProps<FormFields> = {
     ...customFormProps,
     form,
-    disabled: isPending,
+    disabled: isSubmitting,
     initialValues: { stamps: [{}] },
-    onFinish: (values) => {
-      mutate({ stamps: values.stamps });
-    }
+    onFinish: handleFormSubmit
   };
 
   return (
@@ -296,7 +497,7 @@ export const RequestStamp = () => {
             <Button
               variant="solid"
               color="green"
-              loading={isPending}
+              loading={isSubmitting}
               htmlType="submit"
             >
               Thêm

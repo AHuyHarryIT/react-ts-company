@@ -28,7 +28,8 @@ import { PrintBoxStamp } from '@components/print/PrintBoxStamp';
 import { RejectModal } from './RejectModal';
 
 export default function HistoryPrintStamp() {
-  const [date, setDate] = useState<Dayjs>(dayjs());
+  const [lotDate, setLotDate] = useState<Dayjs | null>(null);
+  const [createdDate, setCreatedDate] = useState<Dayjs | null>(dayjs());
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
@@ -253,7 +254,7 @@ export default function HistoryPrintStamp() {
       dataIndex: 'created_at',
       align: 'center',
       render: (value) => {
-        return dayjs(value).format('DD-MM-YYYY');
+        return dayjs(value).format('DD/MM/YYYY');
       }
     },
     {
@@ -384,23 +385,80 @@ export default function HistoryPrintStamp() {
 
   return (
     <>
-      <ComponentCard title={`LỊch sử in tem - ${date.format('DD-MM-YYYY')}`}>
+      <ComponentCard
+        title={`Lịch sử in tem${lotDate ? ` - Số Lot: ${lotDate.format('DD/MM/YYYY')}` : createdDate ? ` - ${createdDate.format('DD/MM/YYYY')}` : ''}`}
+      >
         <RefreshButton
           isLoading={queryResult.isFetching}
           refresh={queryResult.refetch}
         />
         <section className="flex flex-wrap gap-2">
           <DatePicker
-            placeholder="Chọn ngày"
-            value={date}
+            placeholder="Chọn Số Lot"
+            format="DD/MM/YYYY"
+            value={lotDate}
+            allowClear
             onChange={(value) => {
-              setDate(value ? value : dayjs());
-              setParams((prev) => ({
-                ...prev,
-                'filter[created_at]': value
-                  ? value.format('YYYY-MM-DD')
-                  : dayjs().format('YYYY-MM-DD')
-              }));
+              setLotDate(value);
+              const newParams: QueryParams = {
+                page: 1,
+                limit: params.limit || 50,
+                include: ['employee', 'manager', 'product']
+              };
+
+              if (value) {
+                // Khi chọn Số Lot, xóa filter created_at
+                newParams['filter[date]'] = dayjs(value).format('YYYY-MM-DD');
+                setCreatedDate(null);
+              } else if (createdDate) {
+                // Khi clear Số Lot, giữ lại created_at nếu có
+                newParams['filter[created_at]'] =
+                  createdDate.format('YYYY-MM-DD');
+              }
+
+              // Giữ lại các filter khác (shift, status)
+              if (params['filter[shift]']) {
+                newParams['filter[shift]'] = params['filter[shift]'];
+              }
+              if (params['filter[status]']) {
+                newParams['filter[status]'] = params['filter[status]'];
+              }
+
+              setParams(newParams);
+            }}
+          />
+          <DatePicker
+            placeholder="Chọn ngày gửi"
+            format="DD/MM/YYYY"
+            value={createdDate}
+            allowClear
+            onChange={(value) => {
+              setCreatedDate(value);
+              const newParams: QueryParams = {
+                page: 1,
+                limit: params.limit || 50,
+                include: ['employee', 'manager', 'product']
+              };
+
+              if (value) {
+                // Khi chọn ngày gửi, xóa filter date
+                newParams['filter[created_at]'] =
+                  dayjs(value).format('YYYY-MM-DD');
+                setLotDate(null);
+              } else if (lotDate) {
+                // Khi clear ngày gửi, giữ lại date nếu có
+                newParams['filter[date]'] = lotDate.format('YYYY-MM-DD');
+              }
+
+              // Giữ lại các filter khác (shift, status)
+              if (params['filter[shift]']) {
+                newParams['filter[shift]'] = params['filter[shift]'];
+              }
+              if (params['filter[status]']) {
+                newParams['filter[status]'] = params['filter[status]'];
+              }
+
+              setParams(newParams);
             }}
           />
           <Select

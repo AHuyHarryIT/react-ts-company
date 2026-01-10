@@ -124,3 +124,29 @@ export const checkDuplicateStamps = async (params: {
     };
   }
 };
+
+export const checkDuplicateStampsForEmployee = async (params: {
+  product_id: string;
+  date: string;
+  shift: Shift;
+  binStart: string;
+  binCount: number;
+  type: string;
+}): Promise<DuplicateCheckResponse> => {
+  try {
+    // axiosPrivate interceptor already unwraps response.data
+    const data = (await axiosPrivate.post(
+      `${EMP_ENDPOINT}/check-duplicate`,
+      params
+    )) as DuplicateCheckResponse;
+
+    return data;
+  } catch {
+    // Return safe default if API fails
+    return {
+      isDuplicate: false,
+      duplicates: [],
+      message: 'API error'
+    };
+  }
+};
