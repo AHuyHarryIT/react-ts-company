@@ -196,6 +196,19 @@ export const PrintBoxStamp = ({
   // Use the custom hook for print shortcut
   usePrintShortcut(handleSavePrintLog);
 
+  // Helper function to format product name with line breaks at parentheses
+  const formatProductName = (name: string) => {
+    const parts = name
+      .split(/(\([^)]*\))/g)
+      .filter((part) => part.trim() !== '');
+    return parts.map((part, index) => (
+      <span key={index}>
+        {part}
+        {index < parts.length - 1 && <br />}
+      </span>
+    ));
+  };
+
   // Helper function to render stamp table
   const renderStampTable = (stamp: number | null) => (
     <table
@@ -249,7 +262,7 @@ export const PrintBoxStamp = ({
             <p
               className={`${product.name.length < 10 ? 'text-base' : 'text-sm'} font-bold`}
             >
-              {product.name}
+              {formatProductName(product.name)}
             </p>
           </td>
           <td>CODE</td>
@@ -353,7 +366,7 @@ export const PrintBoxStamp = ({
         </tr>
         <tr>
           <td className="text-[6px]">(Thời gian) 時間</td>
-          <td colSpan={5} className="text-[6px]">
+          <td colSpan={5} className="text-left text-[6px]">
             {date.format('DD/MM/YYYY')} {shift == 1 ? '07:30' : '19:30'}
           </td>
         </tr>
