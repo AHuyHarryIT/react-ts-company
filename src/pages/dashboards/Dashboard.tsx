@@ -222,10 +222,10 @@ export default function Dashboard() {
       navLink: '/activity-schedule'
     },
 
-    // Scan
+    // Scan → chuyển sang trang Stock
     scan: {
       icon: <LuScanLine />,
-      navLink: '/scan'
+      navLink: '/stock'
     },
 
     // Chọn sản phẩm active
@@ -268,11 +268,11 @@ export default function Dashboard() {
       navLink: '/stamps/history'
     },
 
-    // Kho xuất hàng
+    // Kho xuất hàng → chuyển sang trang Stock
     view_export_warehouse: {
       icon: <FaTruck />,
       value: `Tháng ${new Date().getMonth() + 1}`,
-      navLink: '/scan/storage'
+      navLink: '/stock'
     }
   };
 

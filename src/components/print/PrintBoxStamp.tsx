@@ -211,9 +211,7 @@ export const PrintBoxStamp = ({
 
   // Helper function to render stamp table
   const renderStampTable = (stamp: number | null) => (
-    <table
-      className={`border border-black text-center ${product.FAVV ? 'has-barcode text-[8.3px]' : 'text-[10px]'}`}
-    >
+    <table className="has-barcode border border-black text-center text-[8.3px]">
       <colgroup>
         <col className="w-[80px]" />
         <col className="w-[140px]" />
@@ -307,35 +305,33 @@ export const PrintBoxStamp = ({
             </div>
           </td>
         </tr>
-        {product.FAVV == true && (
-          <tr className="h-8">
-            <td className="py-0 text-start text-[8px] leading-tight">
-              Mã vạch
-              <br />
-              バーコード
-            </td>
-            <td colSpan={5} className="px-0 py-0">
-              <div className="flex items-center justify-center px-0 py-0">
-                <Barcode
-                  className="max-w-[180px]"
-                  width={1.5}
-                  height={30}
-                  format="CODE128"
-                  displayValue={false}
-                  margin={2}
-                  fontSize={0}
-                  textMargin={0}
-                  background="#FFFFFF"
-                  lineColor="#000000"
-                  value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
-                    if (stamp === null) return '000';
-                    return stamp.toString().padStart(3, '0');
-                  })()}`}
-                />
-              </div>
-            </td>
-          </tr>
-        )}
+        <tr className="h-8">
+          <td className="py-0 text-start text-[8px] leading-tight">
+            Mã vạch
+            <br />
+            バーコード
+          </td>
+          <td colSpan={5} className="px-0 py-0">
+            <div className="flex items-center justify-center px-0 py-0">
+              <Barcode
+                className="max-w-[180px]"
+                width={1.5}
+                height={30}
+                format="CODE128"
+                displayValue={false}
+                margin={2}
+                fontSize={0}
+                textMargin={0}
+                background="#FFFFFF"
+                lineColor="#000000"
+                value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
+                  if (stamp === null) return '000';
+                  return stamp.toString().padStart(3, '0');
+                })()}`}
+              />
+            </div>
+          </td>
+        </tr>
         <tr>
           <td className="text-start">
             Số lượng
@@ -366,7 +362,7 @@ export const PrintBoxStamp = ({
         </tr>
         <tr>
           <td className="text-[6px]">(Thời gian) 時間</td>
-          <td colSpan={5} className="text-left text-[6px]">
+          <td colSpan={5} className="pl-[17%] text-left text-[6px]">
             {date.format('DD/MM/YYYY')} {shift == 1 ? '07:30' : '19:30'}
           </td>
         </tr>

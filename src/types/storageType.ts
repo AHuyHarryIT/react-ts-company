@@ -18,11 +18,12 @@ export type LotModalData = {
   code: string;
   date: string;
   product: ProductType['code'];
+  shift: string;
   expected: number;
   startFrom: number;
   endAt: number;
   actual: number;
   missing: number;
-  missingLots: string[];
+  missingBins: string[];
   status: string;
 };

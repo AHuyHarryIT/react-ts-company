@@ -8,7 +8,7 @@ import {
   Select,
   Spin
 } from 'antd';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 
 import axiosPrivate from '@/api/axiosInstance';
@@ -77,7 +77,7 @@ function RouteComponent() {
     }
   });
 
-  const productList = products?.data || [];
+  const productList = useMemo(() => products?.data || [], [products]);
 
   // Update form values when product data changes
   useEffect(() => {

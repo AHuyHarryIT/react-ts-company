@@ -1,11 +1,11 @@
-import ScanProduct from '@pages/employee/scan/ScanProduct';
 import { createFileRoute } from '@tanstack/react-router';
 import { requireRole } from '@utils/authUtil';
 
-export const Route = createFileRoute('/_authenticated/scan/')({
-  component: ScanProduct,
+export const Route = createFileRoute('/_authenticated/stock')({
   beforeLoad: async ({ context }) => {
     const { user } = context.authenticated;
-    requireRole(user, ['kho']);
+
+    // Cho phép admin và các role có quyền quản lý kho
+    requireRole(user, ['admin', 'super admin', 'co admin', 'kho']);
   }
 });
