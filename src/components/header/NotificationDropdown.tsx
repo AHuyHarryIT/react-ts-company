@@ -1,11 +1,12 @@
-import { IconDelete } from '@components/icons';
 import { useStampNotification } from '@hooks/useStampNotification';
+import { useFeedbackNotification } from '@hooks/useFeedbackNotification';
+import { useAdminFeedbackNotification } from '@hooks/useAdminFeedbackNotification';
+import { useAuth } from '@hooks/useAuth';
+import { removeFeedbackNotification } from '@stores/feedbackNotificationStore';
 import { Link } from '@tanstack/react-router';
-import { Button, Dropdown, List, MenuProps, Badge } from 'antd';
-import { FaRegBell } from 'react-icons/fa';
-import { useMemo } from 'react';
-
-type MenuItem = Required<MenuProps>['items'][number];
+import { Badge } from 'antd';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FaRegBell, FaTrash } from 'react-icons/fa';
 
 // Helper function to convert stamp numbers to range format
 function formatStampRanges(stamps: number[]): string {
@@ -37,13 +38,11 @@ function parseStampNumbers(
   const binStartStr = String(binStart);
 
   if (binStartStr.includes(',')) {
-    // Parse comma-separated values
     return binStartStr
       .split(',')
       .map((n) => parseInt(n.trim()))
       .filter((n) => !isNaN(n));
   } else {
-    // Generate range from binStart to binStart + binCount - 1
     const start = parseInt(binStartStr);
     return Array.from({ length: binCount }, (_, i) => start + i);
   }
@@ -61,11 +60,58 @@ type GroupedNotification = {
   latestTime: string;
 };
 
+// Time ago helper
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Vừa xong';
+  if (mins < 60) return `${mins} phút trước`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  return `${days} ngày trước`;
+}
+
 export default function NotificationDropdown() {
   const { items: stampItems, handleClearNotifications } =
     useStampNotification();
+  const { user } = useAuth();
+  const isEmployee = !['super admin', 'admin', 'co admin'].includes(
+    (user?.role?.name || '').toLowerCase()
+  );
+  const isAdmin = !isEmployee;
+  const {
+    notifications: feedbackNotifs,
+    unreadCount: feedbackUnread,
+    clearAll: clearAllFeedback
+  } = useFeedbackNotification(isEmployee, user?.id);
+  const {
+    notifications: adminFeedbackNotifs,
+    unreadCount: adminFeedbackUnread,
+    clearAll: clearAllAdminFeedback
+  } = useAdminFeedbackNotification(isAdmin);
 
-  // Group notifications by employee + product + date + shift
+  // Merge: employee sees reply notifs, admin sees new feedback notifs
+  const allFeedbackNotifs = isEmployee ? feedbackNotifs : adminFeedbackNotifs;
+  const allFeedbackUnread = isEmployee ? feedbackUnread : adminFeedbackUnread;
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Group notifications
   const groupedNotifications = useMemo(() => {
     const groups = new Map<string, GroupedNotification>();
 
@@ -73,13 +119,11 @@ export default function NotificationDropdown() {
       if (!item.meta) return;
 
       const key = `${item.meta.employee_id}-${item.meta.product_id}-${item.meta.date}-${item.meta.shift}`;
-
       const stamps = parseStampNumbers(item.meta.binStart, item.meta.binCount);
 
       if (groups.has(key)) {
         const group = groups.get(key)!;
 
-        // Parse existing ranges back to numbers
         const allStamps: number[] = [];
         group.stampRanges.split(',').forEach((range) => {
           const trimmed = range.trim();
@@ -93,12 +137,10 @@ export default function NotificationDropdown() {
           }
         });
 
-        // Merge stamps and format
         const mergedStamps = [...new Set([...allStamps, ...stamps])];
         group.stampRanges = formatStampRanges(mergedStamps);
         group.recordIds.push(item.recordId);
 
-        // Update latest time
         if (item.sent_at && item.sent_at > group.latestTime) {
           group.latestTime = item.sent_at;
         }
@@ -117,88 +159,171 @@ export default function NotificationDropdown() {
       }
     });
 
-    // Sort by latest time descending
     return Array.from(groups.values()).sort(
       (a, b) =>
         new Date(b.latestTime).getTime() - new Date(a.latestTime).getTime()
     );
   }, [stampItems]);
 
-  const items: MenuItem[] = [
-    {
-      type: 'item',
-      key: 'user',
-      label: (
-        <div className="block font-medium text-gray-800 dark:text-gray-400">
-          Thông báo
-        </div>
-      ),
-      disabled: true,
-      style: { cursor: 'default' }
-    },
-    {
-      type: 'divider'
-    },
-    {
-      type: 'item' as const,
-      key: `stamp-notification`,
-      label: (
-        <>
-          {groupedNotifications.length > 0 && (
-            <Button
-              icon={<IconDelete size={16} />}
-              variant="solid"
-              color="danger"
-              className="mb-2"
-              onClick={handleClearNotifications}
-            >
-              Xóa tất cả
-            </Button>
-          )}
-          <div className="max-h-96 max-w-xs overflow-y-auto">
-            <List
-              dataSource={groupedNotifications}
-              renderItem={(n, index) => (
-                <List.Item key={`noti-group-${index}`}>
-                  <Link
-                    to="/stamps/history"
-                    search={{ highlightId: n.recordIds[0] }}
-                  >
-                    <div>
-                      <span className="text-theme-sm block font-medium text-gray-800 dark:text-gray-400">
-                        Yêu cầu in tem
-                      </span>
-                      <span className="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
-                        <strong>{n.employee_name}</strong> gửi yêu cầu sản phẩm{' '}
-                        <strong>{n.product_name}</strong> (Ca {n.shift}) - Tem
-                        số: <strong>{n.stampRanges}</strong>
-                      </span>
-                    </div>
-                  </Link>
-                </List.Item>
-              )}
-            />
-          </div>
-        </>
-      )
-    }
-  ];
+  const count = stampItems.length + allFeedbackUnread;
+
+  // Time ago for feedback
+  function fbTimeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Vừa xong';
+    if (mins < 60) return `${mins} phút trước`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    return `${days} ngày trước`;
+  }
 
   return (
-    <div>
-      <Dropdown
-        menu={{
-          items
-        }}
-        trigger={['click']}
-        arrow
-      >
-        <Badge count={stampItems.length} size="small" offset={[-2, 2]}>
-          <button className="hover:text-dark-900 relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">
-            <FaRegBell className="text-xl" />
-          </button>
-        </Badge>
-      </Dropdown>
+    <div className="relative" ref={dropdownRef}>
+      {/* ── Bell Button ── */}
+      <Badge count={count} size="small" offset={[-2, 2]}>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-all duration-300 hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+        >
+          <FaRegBell className="text-lg" />
+        </button>
+      </Badge>
+
+      {/* ── Dropdown Panel ── */}
+      {open && (
+        <div
+          className="absolute top-full right-0 z-50 mt-1.5 w-72 overflow-hidden rounded-xl border border-gray-100/80 bg-white/95 shadow-lg backdrop-blur-xl sm:w-80 dark:border-gray-700/50 dark:bg-gray-800/95"
+          style={{ animation: 'slideDown 0.2s ease-out' }}
+        >
+          {/* ── Header ── */}
+          <div className="flex items-center justify-between px-3.5 py-2.5">
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-semibold text-gray-800 dark:text-white">
+                Thông báo
+              </span>
+              {count > 0 && (
+                <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                  {count}
+                </span>
+              )}
+            </div>
+            {groupedNotifications.length > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClearNotifications();
+                  clearAllFeedback();
+                  clearAllAdminFeedback();
+                }}
+                className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-red-500 transition-colors duration-200 active:bg-red-50 dark:text-red-400"
+              >
+                <FaTrash className="text-[9px]" />
+                <span>Xóa tất cả</span>
+              </button>
+            )}
+          </div>
+
+          <div className="mx-3 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-gray-700" />
+
+          {/* ── Notification List ── */}
+          <div className="scrollbar-thin max-h-72 overflow-y-auto">
+            {groupedNotifications.length === 0 &&
+            allFeedbackNotifs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800">
+                  <FaRegBell className="text-base text-gray-300 dark:text-gray-600" />
+                </div>
+                <p className="mt-2 text-[12px] text-gray-400 dark:text-gray-500">
+                  Không có thông báo
+                </p>
+              </div>
+            ) : (
+              <div className="py-1">
+                {/* ── Feedback Notifications ── */}
+                {allFeedbackNotifs.map((fb) => (
+                  <Link
+                    key={`fb-${fb.id}`}
+                    to={isAdmin ? '/admin/feedbacks' : '/'}
+                    search={isAdmin ? { highlightId: String(fb.id) } : {}}
+                    onClick={() => {
+                      removeFeedbackNotification(fb.id);
+                      setOpen(false);
+                    }}
+                    className={`block cursor-pointer px-3.5 py-2 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5 ${
+                      !fb.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <p className="text-[12px] font-semibold text-gray-800 dark:text-gray-200">
+                        {isAdmin
+                          ? 'Góp ý mới từ nhân viên'
+                          : `Góp ý ${fb.status === 'resolved' ? 'đã xử lý' : 'bị từ chối'}`}
+                      </p>
+                      {!fb.read && (
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+                      )}
+                    </div>
+                    {isEmployee && (
+                      <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          "{fb.subject}"
+                        </span>
+                        {fb.admin_reply && ` — ${fb.admin_reply}`}
+                      </p>
+                    )}
+                    <p className="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                      {fbTimeAgo(fb.replied_at)}
+                    </p>
+                  </Link>
+                ))}
+
+                {/* ── Stamp Notifications ── */}
+                {groupedNotifications.map((n, index) => (
+                  <Link
+                    key={`noti-${index}`}
+                    to="/stamps/history"
+                    search={{ highlightId: n.recordIds[0] }}
+                    onClick={() => setOpen(false)}
+                    className="block px-3.5 py-2 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5"
+                  >
+                    <p className="text-[12px] font-semibold text-gray-800 dark:text-gray-200">
+                      Yêu cầu in tem
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {n.employee_name}
+                      </span>
+                      {' · '}
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {n.product_name}
+                      </span>
+                      {' · Ca '}
+                      {n.shift}
+                      {' · Tem: '}
+                      <span className="font-medium text-blue-600 dark:text-blue-400">
+                        {n.stampRanges}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                      {timeAgo(n.latestTime)}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Animation ── */}
+      <style>{`
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </div>
   );
 }

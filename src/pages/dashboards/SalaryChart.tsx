@@ -2,7 +2,8 @@ import { SalaryType } from '@/types/salaryType';
 import { Column } from '@ant-design/plots';
 import { uiStore } from '@stores/uiStore';
 import { useStore } from '@tanstack/react-store';
-import { Badge, Card, Statistic } from 'antd';
+import { Badge, Card } from 'antd';
+import { FaArrowUp, FaArrowDown, FaChartLine, FaEquals } from 'react-icons/fa';
 
 type salaryDataType = {
   month: string;
@@ -41,28 +42,44 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
     xField: 'month',
     yField: 'total',
     height: 400,
-    color: '#3b82f6', // Single blue color
-    columnStyle: {
-      radius: [4, 4, 0, 0],
-      cursor: 'pointer'
+    style: {
+      radiusTopLeft: 8,
+      radiusTopRight: 8,
+      fill: 'linear-gradient(-90deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%)',
+      fillOpacity: 0.9,
+      cursor: 'pointer',
+      maxWidth: 48
+    },
+    state: {
+      active: {
+        fillOpacity: 1,
+        stroke: '#1d4ed8',
+        strokeWidth: 1
+      },
+      inactive: {
+        fillOpacity: 0.5
+      }
     },
     axis: {
       y: {
         labelFormatter: (v: number) => formatCurrency(v),
-        title: {
-          text: 'Tổng lương',
+        title: false,
+        label: {
           style: {
-            fontSize: 11,
-            fontWeight: 500,
-            fill: '#6b7280'
+            fill: '#9ca3af',
+            fontSize: 11
           }
         },
-        grid: {
-          line: {
-            style: {
-              stroke: '#f0f0f0',
-              strokeDasharray: '3,3'
-            }
+        grid: true,
+        gridStroke: '#f3f4f6',
+        gridStrokeDasharray: '4,4'
+      },
+      x: {
+        label: {
+          style: {
+            fill: '#6b7280',
+            fontSize: 11,
+            fontWeight: 500
           }
         }
       }
@@ -72,30 +89,18 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
           label: {
             text: (d: salaryDataType) => formatCurrency(d.total),
             textBaseline: 'bottom',
-            offset: 12,
+            offset: 8,
             style: {
-              fill: '#1f2937',
-              fontSize: 12,
+              fill: '#374151',
+              fontSize: 11,
               fontWeight: 600,
-              textAlign: 'center',
-              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+              textAlign: 'center'
             }
           }
         }
       : {}),
     tooltip: {
       title: (d: salaryDataType) => `Tháng ${d.month}`,
-      showTitle: true,
-      domStyles: {
-        'g2-tooltip': {
-          background: 'rgba(0, 0, 0, 0.8)',
-          color: '#fff',
-          borderRadius: '6px',
-          padding: '8px 12px',
-          fontSize: '12px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-        }
-      },
       items: [
         {
           field: 'total',
@@ -107,21 +112,13 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
     animation: {
       appear: {
         animation: 'grow-in-y',
-        duration: 1200,
-        delay: (_: salaryDataType, index: number) => index * 200
+        duration: 800,
+        delay: (_: salaryDataType, index: number) => index * 80
       }
     },
-    interactions: [
-      {
-        type: 'element-highlight-by-color'
-      },
-      {
-        type: 'active-region'
-      },
-      {
-        type: 'brush'
-      }
-    ]
+    interaction: {
+      elementHighlight: true
+    }
   };
 
   // Calculate statistics
@@ -140,37 +137,58 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
     ? ((latestMonth.total - previousMonth.total) / previousMonth.total) * 100
     : 0;
 
+  const statCards = [
+    {
+      label: 'Cao nhất',
+      value: maxSalary,
+      icon: <FaArrowUp className="text-gray-400" />
+    },
+    {
+      label: 'Trung bình',
+      value: avgSalary,
+      icon: <FaEquals className="text-gray-400" />
+    },
+    {
+      label: 'Tổng cộng',
+      value: totalSalaries,
+      icon: <FaChartLine className="text-gray-400" />
+    },
+    {
+      label: 'Thấp nhất',
+      value: minSalary,
+      icon: <FaArrowDown className="text-gray-400" />
+    }
+  ];
+
   return (
     <div className="h-full w-full">
       <Card
-        className="h-full border-0 bg-white shadow-lg"
-        style={{
-          borderRadius: '12px',
-          overflow: 'hidden'
-        }}
+        className="!rounded-2xl !border-gray-100 !shadow-sm dark:!border-gray-700 dark:!bg-gray-800/50"
         title={
           <div className="flex items-center gap-3">
             <div>
-              <h3 className="mb-1 text-lg font-semibold text-gray-800 uppercase">
+              <h3 className="mb-1 text-lg font-bold text-gray-800 uppercase dark:text-white">
                 Tổng Quan Bảng Lương
               </h3>
-              <p className="flex items-center gap-2 text-sm font-normal text-gray-500">
+              <p className="flex flex-wrap items-center gap-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                 <Badge count={chartData.length} showZero color="#6b7280" />
                 <span>
-                  {chartData.length} bảng lương được theo dõi từ tháng{' '}
+                  {chartData.length} bảng lương từ tháng{' '}
                   {chartData[0]?.month || 'N/A'} đến tháng{' '}
                   {chartData[chartData.length - 1]?.month || 'N/A'}
                 </span>
                 {growthRate > 0 ? (
-                  <span className="text-xs font-medium text-red-600">
-                    +{growthRate.toFixed(1)}%
+                  <span className="rounded-md bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                    ▲ +{growthRate.toFixed(1)}%
                   </span>
                 ) : growthRate < 0 ? (
-                  <span className="text-xs font-medium text-green-500">
-                    {growthRate.toFixed(1)}%
+                  <span className="rounded-md bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                    ▼ {growthRate.toFixed(1)}%
                   </span>
                 ) : (
-                  <span className="text-xs text-gray-500">Ổn định</span>
+                  <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                    Ổn định
+                  </span>
                 )}
               </p>
             </div>
@@ -178,94 +196,32 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
         }
         extra={
           <div className="hidden items-center gap-4 lg:flex">
-            <span className="rounded bg-gray-50 px-2 py-1 text-xs font-bold text-gray-600">
-              Theo dõi lương
+            <span className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1.5 text-xs font-bold text-emerald-600 dark:from-emerald-900/30 dark:to-teal-900/30 dark:text-emerald-400">
+              💰 Theo dõi lương
             </span>
           </div>
         }
       >
-        {/* Top Stats Cards */}
-        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <Card
-            className="border border-gray-200 bg-white shadow-sm"
-            style={{ borderRadius: '8px' }}
-          >
-            <Statistic
-              title={
-                <span className="text-xs font-medium text-gray-600">
-                  Cao nhất
-                </span>
-              }
-              value={maxSalary}
-              formatter={(value) => (
-                <span className="text-base font-semibold text-gray-900">
-                  {formatCurrency(Number(value))}
-                </span>
-              )}
-            />
-          </Card>
-
-          <Card
-            className="border border-gray-200 bg-white shadow-sm"
-            style={{ borderRadius: '8px' }}
-          >
-            <Statistic
-              title={
-                <span className="text-xs font-medium text-gray-600">
-                  Trung bình
-                </span>
-              }
-              value={avgSalary}
-              formatter={(value) => (
-                <span className="text-base font-semibold text-gray-900">
-                  {formatCurrency(Number(value))}
-                </span>
-              )}
-            />
-          </Card>
-
-          <Card
-            className="border border-gray-200 bg-white shadow-sm"
-            style={{ borderRadius: '8px' }}
-          >
-            <Statistic
-              title={
-                <span className="text-xs font-medium text-gray-600">
-                  Tổng cộng
-                </span>
-              }
-              value={totalSalaries}
-              formatter={(value) => (
-                <span className="text-base font-semibold text-gray-900">
-                  {formatCurrency(Number(value))}
-                </span>
-              )}
-            />
-          </Card>
-
-          <Card
-            className="border border-gray-200 bg-white shadow-sm"
-            style={{ borderRadius: '8px' }}
-          >
-            <Statistic
-              title={
-                <span className="text-xs font-medium text-gray-600">
-                  Thấp nhất
-                </span>
-              }
-              value={minSalary}
-              formatter={(value) => (
-                <span className="text-base font-semibold text-gray-900">
-                  {formatCurrency(Number(value))}
-                </span>
-              )}
-            />
-          </Card>
+        {/* Stats Cards */}
+        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {statCards.map((stat, i) => (
+            <div
+              key={i}
+              className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
+            >
+              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                {stat.icon} {stat.label}
+              </div>
+              <div className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
+                {formatCurrency(stat.value)}
+              </div>
+            </div>
+          ))}
         </div>
 
+        {/* Chart */}
         <div className="relative">
-          {/* Chart container with glass effect */}
-          <div className="w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="w-full rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/30">
             <div
               className="w-full"
               style={{ height: 'clamp(300px, 50vh, 400px)' }}
@@ -274,14 +230,13 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
             </div>
           </div>
 
-          {/* Empty state with enhanced design */}
           {chartData.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-gray-50">
+            <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800/80">
               <div className="p-6 text-center">
-                <p className="mb-1 text-base font-medium text-gray-600">
+                <p className="mb-1 text-base font-medium text-gray-600 dark:text-gray-300">
                   Chưa có dữ liệu lương
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Dữ liệu bảng lương sẽ xuất hiện tại đây
                 </p>
               </div>
@@ -291,37 +246,42 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
 
         {/* Salary Analysis */}
         {chartData.length > 0 && (
-          <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <h4 className="mb-3 text-sm font-medium text-gray-800">
-              Phân tích lương tháng
+          <div className="mt-6 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+            <h4 className="mb-3 text-sm font-bold text-gray-800 dark:text-white">
+              📋 Phân tích lương
             </h4>
             <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
-              <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Chênh lệch cao-thấp:</span>
-                <span className="font-medium text-gray-900">
+              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Chênh lệch:
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
                   {formatCurrency(maxSalary - minSalary)}
                 </span>
               </div>
-              <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">
-                  Những tháng trên trung bình:
+              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Trên trung bình:
                 </span>
-                <span className="font-medium text-gray-900">
-                  {chartData.filter((item) => item.total >= avgSalary).length}
+                <span className="font-semibold text-emerald-600">
+                  {chartData.filter((item) => item.total >= avgSalary).length}{' '}
+                  tháng
                 </span>
               </div>
-              <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Xu hướng (tăng/giảm):</span>
+              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Xu hướng:
+                </span>
                 <span
-                  className={`font-medium ${
+                  className={`font-semibold ${
                     growthRate > 0
                       ? 'text-red-600'
                       : growthRate < 0
                         ? 'text-green-500'
-                        : 'text-gray-600'
+                        : 'text-gray-600 dark:text-gray-400'
                   }`}
                 >
-                  {growthRate > 0 ? '+' : ''}
+                  {growthRate > 0 ? '▲ +' : growthRate < 0 ? '▼ ' : ''}
                   {growthRate.toFixed(1)}%
                 </span>
               </div>
@@ -329,31 +289,33 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
 
             {/* Latest month highlight */}
             {latestMonth && (
-              <div className="mt-3 rounded border border-gray-200 bg-white p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      Tháng gần nhất:{' '}
-                      <span className="text-blue-600">{latestMonth.month}</span>
-                    </p>
-                    <p className="mt-1 text-xs text-gray-600">
-                      Lương:{' '}
-                      <strong>{formatCurrency(latestMonth.total)}</strong>
-                    </p>
-                  </div>
-                  {growthRate !== 0 && (
-                    <div
-                      className={`rounded px-2 py-1 text-xs font-medium ${
-                        growthRate > 0
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-green-100 text-green-700'
-                      }`}
-                    >
-                      {growthRate > 0 ? '+' : ''}
-                      {growthRate.toFixed(1)}%
-                    </div>
-                  )}
+              <div className="mt-3 flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <div>
+                  <p className="text-sm font-medium text-gray-800 dark:text-white">
+                    Tháng gần nhất:{' '}
+                    <span className="text-blue-600 dark:text-blue-400">
+                      {latestMonth.month}
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    Lương:{' '}
+                    <strong className="text-gray-900 dark:text-white">
+                      {formatCurrency(latestMonth.total)}
+                    </strong>
+                  </p>
                 </div>
+                {growthRate !== 0 && (
+                  <div
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                      growthRate > 0
+                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    }`}
+                  >
+                    {growthRate > 0 ? '+' : ''}
+                    {growthRate.toFixed(1)}%
+                  </div>
+                )}
               </div>
             )}
           </div>

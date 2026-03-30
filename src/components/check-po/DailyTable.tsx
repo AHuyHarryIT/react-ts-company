@@ -11,9 +11,10 @@ import { produceDataSource } from '@utils/poDataUtil';
 
 interface DailyTableProps {
   month: Dayjs;
+  search?: string;
 }
 
-export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
+export const DailyTable: React.FC<DailyTableProps> = ({ month, search }) => {
   const [dataSource, setDataSource] = useState<ProduceTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
@@ -26,7 +27,7 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
     queryResult
   } = useCrudList({
     service: productService,
-    queryKey: 'products',
+    queryKey: 'products-daily',
     initialFilters: {
       page: page,
       limit: limit,
@@ -57,9 +58,15 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month }) => {
   useEffect(() => {
     if (!tableData.length) return;
 
-    const data = produceDataSource(tableData);
+    let data = produceDataSource(tableData);
+
+    if (search) {
+      const keyword = search.toLowerCase().trim();
+      data = data.filter((item) => item.name?.toLowerCase().includes(keyword));
+    }
+
     setDataSource(data);
-  }, [tableData]);
+  }, [tableData, search]);
 
   const dateColumns: TableColumnsType<ProduceTableType> = dayList.map(
     (date, index) => {

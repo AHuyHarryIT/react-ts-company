@@ -3,3 +3,22 @@
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Feedback notification highlight */
+.feedback-highlight td {
+  animation: feedbackPulse 2s ease-in-out;
+}
+
+@keyframes feedbackPulse {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  15%,
+  45% {
+    background-color: rgba(99, 102, 241, 0.08);
+  }
+  75% {
+    background-color: rgba(99, 102, 241, 0.03);
+  }
+}

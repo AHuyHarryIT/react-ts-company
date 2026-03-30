@@ -12,6 +12,7 @@ interface DeleteProps<TData, TCreateDto, TUpdateDto> {
   service: CrudServiceType<TData, TCreateDto, TUpdateDto>;
   content?: React.ReactNode;
   isRestore?: boolean;
+  isForceDelete?: boolean;
   size?: SizeType;
 }
 
@@ -24,6 +25,7 @@ export function ConfirmButton<
   service,
   content,
   isRestore,
+  isForceDelete,
   size = 'middle'
 }: DeleteProps<TData, TCreateDto, TUpdateDto>) {
   const [open, setOpen] = useState(false);
@@ -36,51 +38,83 @@ export function ConfirmButton<
     setOpen(false);
   };
 
-  const { deleteItem, isDeleting, restoreItem, isRestoring } =
-    useDynamicCrudForm({
-      id,
-      service,
-      onSuccess: handleClose // Đóng modal sau khi xóa/khôi phục thành công
-    });
+  const {
+    deleteItem,
+    isDeleting,
+    restoreItem,
+    isRestoring,
+    forceDeleteItem,
+    isForceDeleting
+  } = useDynamicCrudForm({
+    id,
+    service,
+    onSuccess: handleClose
+  });
+
+  // Determine mode
+  const mode = isForceDelete ? 'forceDelete' : isRestore ? 'restore' : 'delete';
+  const labels = {
+    delete: {
+      btn: 'Xóa',
+      title: 'Xác nhận xóa',
+      default: 'Bạn có chắc chắn muốn xóa?'
+    },
+    restore: {
+      btn: 'Khôi phục',
+      title: 'Xác nhận khôi phục',
+      default: 'Bạn có chắc chắn muốn khôi phục?'
+    },
+    forceDelete: {
+      btn: 'Xoá vĩnh viễn',
+      title: 'Xác nhận xoá vĩnh viễn',
+      default: 'Hành động này không thể hoàn tác!'
+    }
+  };
+  const label = labels[mode];
+  const isPending =
+    mode === 'forceDelete'
+      ? isForceDeleting
+      : mode === 'restore'
+        ? isRestoring
+        : isDeleting;
+  const btnColor = mode === 'restore' ? 'gold' : 'red';
 
   return (
     <>
       <Button
         size={size}
         variant="solid"
-        color={isRestore ? 'gold' : 'red'}
+        color={btnColor}
         icon={isRestore ? <IconRestore /> : <IconDelete />}
         onClick={handleOpen}
-        loading={isDeleting}
+        loading={isPending}
       >
-        {isRestore ? 'Khôi phục' : 'Xóa'}
+        {label.btn}
       </Button>
 
       <Modal
         title={
           <>
             <span className="text-xl font-semibold text-gray-800">
-              {isRestore ? 'Xác nhận khôi phục' : 'Xác nhận xóa'}
+              {label.title}
             </span>
           </>
         }
-        loading={isDeleting || isRestoring}
+        loading={isPending}
         open={open}
         centered
         okButtonProps={{
-          loading: isDeleting || isRestoring,
-          danger: !isRestore,
+          loading: isPending,
+          danger: mode !== 'restore',
           size,
           variant: 'solid',
-          color: isRestore ? 'gold' : 'danger'
+          color: mode === 'restore' ? 'gold' : 'danger'
         }}
-        okText={isRestore ? 'Khôi phục' : 'Xóa'}
+        okText={label.btn}
         onOk={() => {
-          if (isRestore) {
-            restoreItem();
-          } else {
-            deleteItem();
-          }
+          if (mode === 'restore') restoreItem();
+          else if (mode === 'forceDelete') forceDeleteItem();
+          else deleteItem();
         }}
         cancelButtonProps={{
           size
@@ -88,10 +122,7 @@ export function ConfirmButton<
         onCancel={handleClose}
         cancelText="Hủy"
       >
-        {content ||
-          (isRestore
-            ? 'Bạn có chắc chắn muốn khôi phục?'
-            : 'Bạn có chắc chắn muốn xóa?')}
+        {content || label.default}
       </Modal>
     </>
   );

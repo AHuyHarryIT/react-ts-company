@@ -47,3 +47,8 @@ export const deletePurchaseOrder = async (id: string) => {
   const response = await axiosPrivate.delete(`${ENDPOINT}/${id}`);
   return response;
 };
+
+export const deleteBatchPurchaseOrder = async (batchId: string) => {
+  const response = await axiosPrivate.delete(`${ENDPOINT}/batch/${batchId}`);
+  return response;
+};

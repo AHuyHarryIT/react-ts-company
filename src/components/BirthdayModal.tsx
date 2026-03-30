@@ -1,5 +1,5 @@
-import { HeartOutlined, StarFilled, GiftTwoTone } from '@ant-design/icons';
-import { Button, Image, Modal, Typography, Tag, Divider } from 'antd';
+import { HeartOutlined, HeartFilled } from '@ant-design/icons';
+import { Button, Image, Modal, Typography } from 'antd';
 import React, { useEffect, useMemo } from 'react';
 
 import cake1 from '@assets/images/birthdayCakes/birthdayCake1.jpg';
@@ -12,19 +12,12 @@ import {
 const { Title, Text } = Typography;
 
 export interface BirthdayModalProps {
-  /** Danh sách tên nhân viên có sinh nhật */
   employees?: string[];
-  /** Tên công ty hiển thị tiêu đề */
   companyName?: string;
-  /** Hiển thị modal */
   open?: boolean;
-  /** Callback khi đóng modal */
   onClose?: () => void;
-  /** Tự động đóng sau X mili-giây (mặc định 10s). Đặt 0 để không tự đóng. */
   autoCloseMs?: number;
-  /** Ghi đè tiêu đề modal */
   title?: string;
-  /** Màu thương hiệu chính (hex) */
   brandColor?: string;
 }
 
@@ -36,22 +29,22 @@ const BASE_WISHES = [
   '{name} luôn hạnh phúc, thành công và tràn đầy năng lượng tích cực!',
   'Mong {name} đạt được mọi mục tiêu và ước mơ trong năm tới!',
   '{name} sẽ có thật nhiều kỷ niệm đẹp cùng đồng nghiệp và người thân!',
-  'Tuổi mới thật “bùng nổ” với nhiều dự án thành công nha {name}!',
+  'Tuổi mới thật "bùng nổ" với nhiều dự án thành công nha {name}!',
   'Chúc {name} cười thật nhiều mỗi ngày và luôn được yêu thương!',
   'Mong mọi điều tốt lành luôn đồng hành cùng {name}!'
 ];
 
-const BALLOON_COLORS = [
+const CONFETTI_COLORS = [
   '#FF6B6B',
   '#4ECDC4',
   '#45B7D1',
-  '#96CEB4',
-  '#FFEAA7',
-  '#DDA0DD',
-  '#98D8C8',
-  '#F7DC6F',
-  '#BB8FCE',
-  '#85C1E9'
+  '#FFD93D',
+  '#FF9FF3',
+  '#54A0FF',
+  '#5F27CD',
+  '#F368E0',
+  '#FF6348',
+  '#2ED573'
 ];
 
 function pickRandom<T>(arr: T[]): T {
@@ -73,7 +66,6 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
   const randomImage = useMemo(() => pickRandom(IMAGES), []);
   const wishes = useMemo(() => employees.map((e) => makeWish(e)), [employees]);
 
-  // Logic thông minh cho nhiều người
   const isMany = employees.length > 3;
   const maxWishes = isMany ? Math.min(employees.length, 5) : employees.length;
   const displayWishes = wishes.slice(0, maxWishes);
@@ -92,356 +84,441 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
     <>
       <style>
         {`
-        /* —— Mobile-first responsive sizing —— */
-        .birthday-modal { 
-          width: min(85vw, 340px) !important; 
-          max-height: 80vh !important;
+        /* ═══════════════════════════════════════════════════════════════ */
+        /*  BIRTHDAY MODAL — Bright & Festive Premium Design            */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        .bd-modal { 
+          width: min(88vw, 400px) !important;
+          max-height: 92vh !important;
           margin: 0 auto !important;
         }
-        @media (min-width: 480px) { 
-          .birthday-modal { width: min(75vw, 380px) !important; } 
-        }
-        @media (min-width: 768px) { 
-          .birthday-modal { width: min(60vw, 420px) !important; max-height: 85vh !important; } 
-        }
-        @media (min-width: 1024px) { 
-          .birthday-modal { width: min(45vw, 480px) !important; max-height: 90vh !important; } 
-        }
+        @media (min-width: 480px) { .bd-modal { width: min(78vw, 440px) !important; } }
+        @media (min-width: 768px) { .bd-modal { width: min(55vw, 480px) !important; } }
+        @media (min-width: 1024px) { .bd-modal { width: min(40vw, 500px) !important; } }
 
-        /* —— Prefers-reduced-motion —— */
         @media (prefers-reduced-motion: reduce) {
-          .animate, .sparkle, .confetti, .balloon, .ribbon-shimmer, .shine { 
-            animation: none !important; transition: none !important; 
+          .bd-modal *, .bd-modal *::before, .bd-modal *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
           }
         }
 
-        /* —— Dark mode —— */
-        @media (prefers-color-scheme: dark) {
-          .birthday-modal .ant-modal-content {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-          }
-          .ribbon {
-            background: linear-gradient(135deg, ${brandColor}, #8b5cf6) !important;
-          }
-        }
-
-        /* —— Modern glass effect —— */
-        .birthday-modal .ant-modal-content {
+        /* —— Modal container — Bright warm gradient —— */
+        .bd-modal .ant-modal-content {
           position: relative;
-          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
-          border-radius: 20px;
+          background: linear-gradient(160deg, #fff9f0 0%, #ffffff 30%, #fff5f8 60%, #fef0f5 100%);
+          border-radius: 24px;
           overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(255, 107, 157, 0.15);
           box-shadow: 
-            0 25px 50px -12px rgba(0, 0, 0, 0.25),
-            0 0 0 1px rgba(255, 255, 255, 0.3);
-          backdrop-filter: blur(16px);
+            0 24px 60px -12px rgba(255, 107, 157, 0.18),
+            0 12px 24px -8px rgba(0, 0, 0, 0.08),
+            0 0 0 1px rgba(255, 255, 255, 0.8);
           padding: 0;
         }
 
-        .birthday-modal .ant-modal-content::before {
+        /* —— Top ribbon — vibrant gradient bar —— */
+        .bd-ribbon {
+          position: relative;
+          background: linear-gradient(135deg, ${brandColor}, #ff8fab, #ffa07a);
+          padding: 14px 20px;
+          text-align: center;
+          overflow: hidden;
+        }
+        .bd-ribbon::after {
           content: '';
           position: absolute;
           inset: 0;
-          padding: 1px;
-          border-radius: 20px;
           background: linear-gradient(
-            45deg, 
-            ${brandColor}40, 
-            #ffd93d40, 
-            #6bcf7f40, 
-            #45b7d140
+            90deg, 
+            transparent 0%, 
+            rgba(255,255,255,0.2) 50%, 
+            transparent 100%
           );
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask-composite: exclude;
-          opacity: 0.6;
+          transform: translateX(-100%);
+          animation: bd-ribbon-shine 4s ease-in-out infinite;
+        }
+        @keyframes bd-ribbon-shine {
+          0% { transform: translateX(-100%); }
+          60%, 100% { transform: translateX(100%); }
         }
 
-        /* —— Compact header —— */
-        .ribbon {
-          position: relative;
-          background: linear-gradient(135deg, ${brandColor}, #ff8fab);
-          padding: 12px 16px;
-          text-align: center;
+        .bd-ribbon-emoji {
+          font-size: 28px;
+          display: block;
+          margin-bottom: 4px;
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+          animation: bd-bounce 2s ease-in-out infinite;
+        }
+        @keyframes bd-bounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-4px) scale(1.05); }
         }
 
-        .ribbon::after {
-          content: '';
-          position: absolute;
-          inset: auto 0 -1px 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-          animation: shine 3s ease-in-out infinite;
+        .bd-ribbon-title {
+          margin: 0 !important;
+          font-size: 20px !important;
+          font-weight: 700 !important;
+          color: #fff !important;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          letter-spacing: -0.3px;
         }
 
-        @keyframes shine { 
-          0%, 100% { opacity: 0; transform: translateX(-100%); }
-          50% { opacity: 1; transform: translateX(100%); }
-        }
-
-        .ribbon-title {
-          margin: 0;
-          font-size: 16px !important;
-          font-weight: 600;
-          color: #fff;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .brand-sub {
-          margin: 2px 0 0;
+        .bd-ribbon-company {
+          margin-top: 2px;
           font-size: 11px;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255, 255, 255, 0.85);
           font-weight: 500;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.8px;
         }
 
-        /* —— Compact body —— */
-        .body-wrap { 
-          padding: 12px 14px 14px;
-          max-height: calc(80vh - 80px);
-          overflow-y: auto;
-        }
-        @media (min-width: 768px) { 
-          .body-wrap { padding: 16px 18px 18px; } 
-        }
-
-        /* —— Cake image - căn giữa và hiển thị đầy đủ —— */
-        .cake {
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-          transition: transform 0.3s ease;
-          aspect-ratio: 16 / 9;
-          max-height: 180px;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        @media (min-width: 480px) {
-          .cake { max-height: 200px; }
-        }
-        @media (min-width: 768px) {
-          .cake { max-height: 220px; }
-        }
-        @media (min-width: 1024px) {
-          .cake { max-height: 240px; }
-        }
-        .cake img { 
-          display: block; 
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          object-position: center;
-          background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-        }
-        .cake.animate:hover { transform: translateY(-2px) scale(1.02); }
-
-        /* —— Compact name tags với responsive —— */
-        .names { 
-          display: flex; 
-          gap: 6px; 
-          flex-wrap: wrap; 
-          justify-content: center;
-          margin: 8px 0;
-          max-height: 60px;
+        /* —— Body wrapper —— */
+        .bd-body {
+          position: relative;
+          z-index: 2;
+          padding: 16px 18px 20px;
+          max-height: calc(92vh - 90px);
           overflow-y: auto;
           scrollbar-width: thin;
-          scrollbar-color: ${brandColor}40 transparent;
+          scrollbar-color: ${brandColor}25 transparent;
         }
-        .names::-webkit-scrollbar { width: 2px; }
-        .names::-webkit-scrollbar-thumb { 
-          background: ${brandColor}40; 
-          border-radius: 1px; 
-        }
-        .names .ant-tag {
-          border-radius: 20px;
-          border: none;
-          padding: 4px 8px;
-          font-size: 12px;
-          background: rgba(0, 0, 0, 0.05);
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          flex-shrink: 0;
-        }
-        @media (prefers-color-scheme: dark) {
-          .names .ant-tag { 
-            background: rgba(255, 255, 255, 0.1); 
-            color: #e2e8f0; 
-          }
+        .bd-body::-webkit-scrollbar { width: 3px; }
+        .bd-body::-webkit-scrollbar-thumb { 
+          background: ${brandColor}30; 
+          border-radius: 3px; 
         }
 
-        /* —— Wish list với giới hạn chiều cao thông minh —— */
-        .wish-list { 
+        /* —— Cake image —— */
+        .bd-cake-wrap {
+          position: relative;
+          border-radius: 16px;
+          overflow: hidden;
+          margin-bottom: 16px;
+          max-height: 210px;
+          box-shadow: 
+            0 8px 28px rgba(255, 107, 157, 0.15),
+            0 4px 12px rgba(0, 0, 0, 0.06);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          border: 2px solid rgba(255, 107, 157, 0.1);
+        }
+        .bd-cake-wrap:hover { 
+          transform: scale(1.02) translateY(-2px);
+          box-shadow: 
+            0 12px 36px rgba(255, 107, 157, 0.2),
+            0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .bd-cake-wrap img {
+          display: block;
+          width: 100%;
+          height: 210px;
+          object-fit: cover;
+          object-position: center;
+        }
+
+        @media (max-width: 479px) {
+          .bd-cake-wrap { max-height: 160px; }
+          .bd-cake-wrap img { height: 160px; }
+        }
+
+        /* —— Name badges —— */
+        .bd-names {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+
+        .bd-name-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          border-radius: 100px;
+          background: linear-gradient(135deg, ${brandColor}10, ${brandColor}05);
+          border: 1px solid ${brandColor}20;
+          transition: all 0.25s ease;
+          cursor: default;
+        }
+        .bd-name-badge:hover {
+          background: linear-gradient(135deg, ${brandColor}18, ${brandColor}10);
+          border-color: ${brandColor}40;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px ${brandColor}15;
+        }
+
+        .bd-name-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, ${brandColor}, #ff8fab);
+          box-shadow: 0 0 6px ${brandColor}50;
+          animation: bd-dot-pulse 2s ease-in-out infinite;
+        }
+        @keyframes bd-dot-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(0.85); }
+        }
+
+        .bd-name-text {
+          font-size: 13px;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        .bd-name-more {
+          padding: 5px 12px;
+          background: ${brandColor}08;
+          border-color: ${brandColor}18;
+        }
+        .bd-name-more .bd-name-text {
+          color: ${brandColor};
+          font-size: 12px;
+        }
+
+        /* —— Divider —— */
+        .bd-divider {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 12px 0;
+        }
+        .bd-divider-line {
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, ${brandColor}20, transparent);
+        }
+        .bd-divider-star {
+          color: #ffd93d;
+          font-size: 14px;
+          filter: drop-shadow(0 0 4px rgba(255, 217, 61, 0.4));
+          animation: bd-star-spin 4s linear infinite;
+        }
+        @keyframes bd-star-spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .bd-divider-count {
+          font-size: 11px;
+          color: #9ca3af;
+          white-space: nowrap;
+        }
+
+        /* —— Wish cards —— */
+        .bd-wishes {
           display: flex;
           flex-direction: column;
-          gap: 6px;
-          max-height: 200px;
+          gap: 8px;
+          max-height: 220px;
           overflow-y: auto;
           scrollbar-width: thin;
-          scrollbar-color: ${brandColor}40 transparent;
-          padding-right: 4px;
+          scrollbar-color: ${brandColor}20 transparent;
+          padding-right: 2px;
         }
-        .wish-list::-webkit-scrollbar { width: 3px; }
-        .wish-list::-webkit-scrollbar-track { background: transparent; }
-        .wish-list::-webkit-scrollbar-thumb { 
-          background: ${brandColor}40; 
-          border-radius: 2px; 
-        }
-        
-        /* Khi có nhiều người, thu gọn wish items */
-        .wish-list.many-people .wish-item {
-          padding: 6px 8px;
-        }
-        .wish-list.many-people .wish-item .ant-typography {
-          font-size: 12px !important;
+        .bd-wishes::-webkit-scrollbar { width: 3px; }
+        .bd-wishes::-webkit-scrollbar-thumb { 
+          background: ${brandColor}25; 
+          border-radius: 3px; 
         }
 
-        .wish-item {
-          background: rgba(255, 255, 255, 0.7);
-          border: 1px solid rgba(255, 255, 255, 0.8);
-          border-radius: 10px;
-          padding: 8px 10px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          transition: all 0.2s ease;
-          backdrop-filter: blur(8px);
+        .bd-wish-card {
+          position: relative;
+          padding: 10px 14px;
+          border-radius: 14px;
+          background: #fff;
+          border: 1px solid #f3f0ef;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+          transition: all 0.25s ease;
+          overflow: hidden;
         }
-        .wish-item:hover { 
-          transform: translateY(-1px); 
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); 
-          border-color: ${brandColor}60;
+        .bd-wish-card::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background: linear-gradient(180deg, ${brandColor}, #ffa07a);
+          border-radius: 3px 0 0 3px;
+          opacity: 0;
+          transition: opacity 0.25s ease;
         }
-        .wish-item .ant-typography {
+        .bd-wish-card:hover {
+          background: #fffaf8;
+          border-color: ${brandColor}25;
+          transform: translateX(3px);
+          box-shadow: 0 4px 16px rgba(255, 107, 157, 0.08);
+        }
+        .bd-wish-card:hover::before { opacity: 1; }
+
+        .bd-wish-content {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .bd-wish-heart {
+          flex-shrink: 0;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: linear-gradient(135deg, ${brandColor}15, #ffa07a12);
+          color: ${brandColor};
+          font-size: 12px;
+          margin-top: 1px;
+        }
+
+        .bd-wish-text {
           font-size: 13px !important;
-          line-height: 1.4 !important;
+          line-height: 1.55 !important;
+          color: #4b5563 !important;
           margin: 0 !important;
         }
 
-        /* —— Rich Effects: Confetti, Hearts, Stars, Balloons —— */
-        @keyframes confettiFall { 
-          0% { transform: translateY(-30px) rotate(0deg) scale(1); opacity: 1; }
-          50% { transform: translateY(50px) rotate(180deg) scale(1.2); opacity: 0.8; }
-          100% { transform: translateY(120px) rotate(360deg) scale(0.8); opacity: 0; }
+        .bd-wish-more {
+          background: linear-gradient(135deg, ${brandColor}06, #ffa07a06);
+          border-color: ${brandColor}15;
+          border-style: dashed;
         }
-        
-        @keyframes heartFloat {
-          0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
-          20% { opacity: 1; }
-          80% { opacity: 1; }
-          100% { transform: translateY(-80px) rotate(15deg) scale(1.2); opacity: 0; }
-        }
-        
-        @keyframes sparkle {
-          0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
-          50% { transform: scale(1) rotate(180deg); opacity: 1; }
-        }
-        
-        @keyframes balloonFloat {
-          0% { transform: translateY(0) rotate(-5deg); }
-          50% { transform: translateY(-10px) rotate(5deg); }
-          100% { transform: translateY(0) rotate(-5deg); }
-        }
-        
-        @keyframes firework {
-          0% { transform: scale(0) rotate(0deg); opacity: 1; }
-          50% { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
-          100% { transform: scale(3) rotate(360deg); opacity: 0; }
+        .bd-wish-more .bd-wish-text {
+          color: ${brandColor} !important;
+          font-style: italic;
+          font-size: 12px !important;
         }
 
-        .confetti {
-          position: absolute;
-          width: 8px;
-          height: 8px;
-          border-radius: 2px;
-          animation: confettiFall 3s ease-out infinite;
-          will-change: transform, opacity;
+        /* —— Compact mode for many people —— */
+        .bd-wishes.many .bd-wish-card { padding: 8px 12px; }
+        .bd-wishes.many .bd-wish-text { font-size: 12px !important; }
+        .bd-wishes.many .bd-wish-heart { width: 24px; height: 24px; font-size: 10px; }
+
+        /* —— CTA Button —— */
+        .bd-cta-wrap {
+          display: flex;
+          justify-content: center;
+          margin-top: 18px;
         }
-        
-        .heart {
-          position: absolute;
-          font-size: 16px;
-          color: #ff69b4;
-          animation: heartFloat 4s ease-out infinite;
-          will-change: transform, opacity;
+
+        .bd-cta {
+          position: relative;
+          height: 42px !important;
+          padding: 0 32px !important;
+          border-radius: 100px !important;
+          border: none !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+          color: #fff !important;
+          background: linear-gradient(135deg, ${brandColor}, #ff8fab, #ffa07a) !important;
+          background-size: 200% 200% !important;
+          animation: bd-gradient-shift 4s ease infinite;
+          box-shadow: 
+            0 6px 20px ${brandColor}30,
+            0 2px 6px rgba(0, 0, 0, 0.08) !important;
+          transition: all 0.3s ease !important;
+          overflow: hidden;
         }
-        
-        .sparkle {
-          position: absolute;
-          width: 4px;
-          height: 4px;
-          background: #ffd700;
-          border-radius: 50%;
-          animation: sparkle 2s ease-in-out infinite;
-          will-change: transform, opacity;
+        .bd-cta:hover {
+          transform: translateY(-2px) scale(1.02) !important;
+          box-shadow: 
+            0 10px 30px ${brandColor}40,
+            0 4px 8px rgba(0, 0, 0, 0.1) !important;
         }
-        
-        .balloon {
+        .bd-cta::after {
+          content: '';
           position: absolute;
-          font-size: 20px;
-          animation: balloonFloat 3s ease-in-out infinite;
-          will-change: transform;
+          inset: 0;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+          transform: translateX(-100%);
+          animation: bd-cta-shine 3s ease-in-out infinite;
         }
-        
-        .firework {
+
+        @keyframes bd-gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        @keyframes bd-cta-shine {
+          0% { transform: translateX(-100%); }
+          60%, 100% { transform: translateX(100%); }
+        }
+
+        /* ═══════ Decorations ═══════ */
+        .bd-decors {
           position: absolute;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          animation: firework 2s ease-out infinite;
-          will-change: transform, opacity;
-        }
-        
-        .decors { 
-          position: absolute; 
-          inset: 0; 
-          overflow: hidden; 
+          inset: 0;
+          overflow: hidden;
           pointer-events: none;
           z-index: 1;
         }
 
-        /* —— Compact button —— */
-        .cta {
-          background: linear-gradient(135deg, ${brandColor}, #ff8fab);
-          border: none;
-          color: white;
-          font-weight: 600;
-          font-size: 14px;
-          height: 36px;
-          padding: 0 20px;
-          border-radius: 18px;
-          box-shadow: 0 4px 12px ${brandColor}40;
-          transition: all 0.2s ease;
+        @keyframes bd-confetti {
+          0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 0.5; }
+          100% { transform: translateY(var(--bd-fall, 400px)) rotate(720deg); opacity: 0; }
         }
-        .cta:hover { 
-          filter: brightness(1.05); 
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px ${brandColor}50;
+        .bd-confetti {
+          position: absolute;
+          border-radius: 2px;
+          animation: bd-confetti var(--bd-dur, 4s) ease-in infinite;
+          animation-delay: var(--bd-delay, 0s);
+          will-change: transform, opacity;
         }
 
-        /* —— Mobile optimizations cho nhiều người —— */
+        @keyframes bd-emoji-rise {
+          0% { transform: translateY(0) scale(0.6); opacity: 0; }
+          15% { opacity: 0.7; }
+          80% { opacity: 0.4; }
+          100% { transform: translateY(-120px) scale(1.1); opacity: 0; }
+        }
+        .bd-emoji {
+          position: absolute;
+          animation: bd-emoji-rise var(--bd-dur, 5s) ease-out infinite;
+          animation-delay: var(--bd-delay, 0s);
+          will-change: transform, opacity;
+        }
+
+        @keyframes bd-sparkle {
+          0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+          50% { opacity: 1; transform: scale(1) rotate(180deg); }
+        }
+        .bd-sparkle {
+          position: absolute;
+          color: #ffd93d;
+          font-size: 10px;
+          animation: bd-sparkle var(--bd-dur, 2.5s) ease-in-out infinite;
+          animation-delay: var(--bd-delay, 0s);
+          will-change: transform, opacity;
+        }
+
+        /* —— Empty state —— */
+        .bd-empty {
+          padding: 16px 0;
+          text-align: center;
+        }
+
+        /* —— Mobile tweaks —— */
         @media (max-width: 479px) {
-          .birthday-modal {
-            width: 90vw !important;
-            max-height: 90vh !important;
-          }
-          .ribbon-title { font-size: 14px !important; }
-          .brand-sub { font-size: 10px; }
-          .body-wrap { 
-            padding: 10px 12px 12px; 
-            max-height: calc(90vh - 70px);
-            overflow-y: auto;
-          }
-          .cake { max-height: 140px; }
-          .names { max-height: 50px; }
-          .wish-list { max-height: 150px; }
-          .cta { height: 32px; font-size: 13px; padding: 0 16px; }
+          .bd-modal { width: 92vw !important; }
+          .bd-ribbon { padding: 12px 16px; }
+          .bd-ribbon-emoji { font-size: 24px; }
+          .bd-ribbon-title { font-size: 17px !important; }
+          .bd-body { padding: 12px 14px 16px; }
+          .bd-name-badge { padding: 4px 10px; }
+          .bd-name-text { font-size: 12px; }
+          .bd-wish-text { font-size: 12px !important; }
+          .bd-wishes { max-height: 160px; }
+          .bd-cta { height: 38px !important; padding: 0 24px !important; font-size: 13px !important; }
         }
         `}
       </style>
 
       <Modal
-        className="birthday-modal"
+        className="bd-modal"
         open={open}
         onCancel={handleClose}
         footer={null}
@@ -449,211 +526,138 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
         closeIcon={false}
         styles={{ body: { padding: 0 } }}
       >
-        {/* Ribbon header */}
-        <div className="ribbon">
-          <Title level={4} className="ribbon-title">
-            <GiftTwoTone twoToneColor={brandColor} /> {title}
-          </Title>
-          <div className="brand-sub">{companyName}</div>
-        </div>
-
-        {/* Hiệu ứng sinh nhật phong phú */}
-        <div className="decors">
+        {/* ═══ Decorations ═══ */}
+        <div className="bd-decors">
           {/* Confetti */}
-          {Array.from({ length: 12 }).map((_, i) => (
+          {Array.from({ length: 20 }).map((_, i) => (
             <div
-              key={`confetti-${i}`}
-              className="confetti"
-              style={{
-                left: `${5 + Math.random() * 90}%`,
-                backgroundColor: BALLOON_COLORS[i % BALLOON_COLORS.length],
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${2.5 + Math.random() * 1.5}s`
-              }}
+              key={`cf-${i}`}
+              className="bd-confetti"
+              style={
+                {
+                  left: `${2 + ((i * 5) % 96)}%`,
+                  top: '-3%',
+                  width: `${5 + Math.random() * 5}px`,
+                  height: `${5 + Math.random() * 5}px`,
+                  backgroundColor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+                  borderRadius: i % 3 === 0 ? '50%' : '2px',
+                  '--bd-dur': `${3 + Math.random() * 3}s`,
+                  '--bd-delay': `${Math.random() * 4}s`,
+                  '--bd-fall': `${300 + Math.random() * 300}px`
+                } as React.CSSProperties
+              }
             />
-          ))}
-
-          {/* Floating Hearts */}
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={`heart-${i}`}
-              className="heart"
-              style={{
-                left: `${15 + Math.random() * 70}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${3.5 + Math.random() * 1}s`
-              }}
-            >
-              ❤️
-            </div>
           ))}
 
           {/* Sparkles */}
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 10 }).map((_, i) => (
             <div
-              key={`sparkle-${i}`}
-              className="sparkle"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${1.5 + Math.random() * 1}s`
-              }}
-            />
-          ))}
-
-          {/* Floating Balloons */}
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={`balloon-${i}`}
-              className="balloon"
-              style={{
-                left: `${10 + i * 20}%`,
-                top: `${60 + Math.random() * 20}%`,
-                animationDelay: `${i * 0.5}s`,
-                color: BALLOON_COLORS[i % BALLOON_COLORS.length]
-              }}
+              key={`sp-${i}`}
+              className="bd-sparkle"
+              style={
+                {
+                  left: `${5 + Math.random() * 90}%`,
+                  top: `${5 + Math.random() * 90}%`,
+                  '--bd-dur': `${2 + Math.random() * 2}s`,
+                  '--bd-delay': `${Math.random() * 3}s`
+                } as React.CSSProperties
+              }
             >
-              🎈
+              ✦
             </div>
           ))}
 
-          {/* Fireworks */}
-          {Array.from({ length: 5 }).map((_, i) => (
+          {/* Floating emojis */}
+          {['🎂', '🎁', '🎈', '🎊', '💖', '🌟', '🎵', '🧁'].map((emoji, i) => (
             <div
-              key={`firework-${i}`}
-              className="firework"
-              style={{
-                left: `${20 + Math.random() * 60}%`,
-                top: `${10 + Math.random() * 30}%`,
-                backgroundColor: BALLOON_COLORS[i % BALLOON_COLORS.length],
-                animationDelay: `${Math.random() * 1.5}s`,
-                animationDuration: `${1.8 + Math.random() * 0.8}s`
-              }}
-            />
-          ))}
-
-          {/* Birthday Cake Icons */}
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={`cake-icon-${i}`}
-              className="heart"
-              style={{
-                left: `${25 + i * 25}%`,
-                animationDelay: `${1 + i * 0.8}s`,
-                fontSize: '14px'
-              }}
+              key={`em-${i}`}
+              className="bd-emoji"
+              style={
+                {
+                  left: `${5 + i * 12}%`,
+                  bottom: '-5%',
+                  fontSize: `${14 + Math.random() * 6}px`,
+                  '--bd-dur': `${5 + Math.random() * 3}s`,
+                  '--bd-delay': `${i * 0.7 + Math.random()}s`
+                } as React.CSSProperties
+              }
             >
-              🎂
-            </div>
-          ))}
-
-          {/* Gift Icons */}
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={`gift-${i}`}
-              className="heart"
-              style={{
-                left: `${30 + i * 20}%`,
-                animationDelay: `${2 + i * 0.6}s`,
-                fontSize: '12px'
-              }}
-            >
-              🎁
+              {emoji}
             </div>
           ))}
         </div>
 
-        {/* Body */}
-        <div className="body-wrap">
-          {/* ảnh bánh */}
-          <div className="cake animate mb-4">
+        {/* ═══ Ribbon Header ═══ */}
+        <div className="bd-ribbon">
+          <span className="bd-ribbon-emoji">🎂</span>
+          <Title level={3} className="bd-ribbon-title">
+            {title}
+          </Title>
+          <div className="bd-ribbon-company">{companyName}</div>
+        </div>
+
+        {/* ═══ Body ═══ */}
+        <div className="bd-body">
+          {/* Cake image */}
+          <div className="bd-cake-wrap">
             <Image
               src={randomImage}
               alt="Birthday Cake"
               preview={false}
-              className="w-full"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               placeholder
             />
           </div>
 
-          {/* Tên nhân viên (chips với scroll khi nhiều) */}
+          {/* Name badges */}
           {employees.length > 0 && (
-            <>
-              <div className="names">
-                {employees.map((name, idx) => (
-                  <Tag key={idx}>
-                    <Text strong style={{ fontSize: '12px' }}>
-                      {name}
-                    </Text>
-                  </Tag>
-                ))}
-                {employees.length > 5 && (
-                  <Tag
-                    style={{ background: brandColor + '20', color: brandColor }}
-                  >
-                    <Text strong style={{ fontSize: '11px' }}>
-                      +{employees.length - 5} người nữa
-                    </Text>
-                  </Tag>
-                )}
-              </div>
-              <Divider style={{ margin: '8px 0 10px' }}>
-                <StarFilled style={{ color: '#ffd93d', fontSize: '12px' }} />
-                {employees.length > 1 && (
-                  <Text
-                    style={{
-                      fontSize: '10px',
-                      color: '#666',
-                      marginLeft: '4px'
-                    }}
-                  >
-                    ({employees.length} người)
-                  </Text>
-                )}
-              </Divider>
-            </>
+            <div className="bd-names">
+              {employees.slice(0, 8).map((name, idx) => (
+                <div key={idx} className="bd-name-badge">
+                  <span className="bd-name-dot" />
+                  <span className="bd-name-text">{name}</span>
+                </div>
+              ))}
+              {employees.length > 8 && (
+                <div className="bd-name-badge bd-name-more">
+                  <span className="bd-name-text">
+                    +{employees.length - 8} người nữa
+                  </span>
+                </div>
+              )}
+            </div>
           )}
 
-          {/* Lời chúc (thông minh với nhiều người) */}
+          {/* Divider */}
+          <div className="bd-divider">
+            <div className="bd-divider-line" />
+            <span className="bd-divider-star">⭐</span>
+            {employees.length > 1 && (
+              <span className="bd-divider-count">{employees.length} người</span>
+            )}
+            <div className="bd-divider-line" />
+          </div>
+
+          {/* Wishes */}
           {employees.length > 0 ? (
-            <div className={`wish-list ${isMany ? 'many-people' : ''}`}>
+            <div className={`bd-wishes ${isMany ? 'many' : ''}`}>
               {displayWishes.map((wish, i) => (
-                <div key={i} className="wish-item">
-                  <div className="flex items-center gap-2">
-                    <HeartOutlined
-                      style={{ color: brandColor, fontSize: '12px' }}
-                    />
-                    <Text
-                      style={{
-                        fontSize: isMany ? '12px' : '13px',
-                        lineHeight: '1.4'
-                      }}
-                    >
-                      {wish}
-                    </Text>
+                <div key={i} className="bd-wish-card">
+                  <div className="bd-wish-content">
+                    <div className="bd-wish-heart">
+                      <HeartFilled />
+                    </div>
+                    <Text className="bd-wish-text">{wish}</Text>
                   </div>
                 </div>
               ))}
               {hasMore && (
-                <div
-                  className="wish-item"
-                  style={{
-                    background: brandColor + '10',
-                    borderColor: brandColor + '30'
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <HeartOutlined
-                      style={{ color: brandColor, fontSize: '12px' }}
-                    />
-                    <Text
-                      style={{
-                        fontSize: '12px',
-                        fontStyle: 'italic',
-                        color: brandColor
-                      }}
-                    >
+                <div className="bd-wish-card bd-wish-more">
+                  <div className="bd-wish-content">
+                    <div className="bd-wish-heart">
+                      <HeartOutlined />
+                    </div>
+                    <Text className="bd-wish-text">
                       ...và {wishes.length - maxWishes} lời chúc nữa cho tất cả
                       mọi người! 🎉
                     </Text>
@@ -662,23 +666,23 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
               )}
             </div>
           ) : (
-            <div className="py-2 text-center">
-              <Text type="secondary" style={{ fontSize: '13px' }}>
+            <div className="bd-empty">
+              <Text style={{ fontSize: '13px', color: '#9ca3af' }}>
                 Hôm nay chưa có sinh nhật nào 🎂
               </Text>
             </div>
           )}
 
-          {/* CTA */}
-          <div className="mt-3 flex justify-center">
+          {/* CTA Button */}
+          <div className="bd-cta-wrap">
             <Button
               type="primary"
-              size="middle"
+              size="large"
               onClick={handleClose}
-              className="cta"
-              icon={<HeartOutlined style={{ fontSize: '12px' }} />}
+              className="bd-cta"
+              icon={<HeartOutlined style={{ fontSize: '13px' }} />}
             >
-              Gửi lời chúc
+              Gửi lời chúc 💝
             </Button>
           </div>
         </div>

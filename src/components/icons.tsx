@@ -18,4 +18,7 @@ export {
 
 export { IoIosLogOut as IconLogOut } from 'react-icons/io';
 
-export { FaHistory as IconHistory } from 'react-icons/fa';
+export {
+  FaHistory as IconHistory,
+  FaShieldAlt as IconShield
+} from 'react-icons/fa';

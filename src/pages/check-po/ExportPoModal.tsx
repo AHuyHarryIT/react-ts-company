@@ -400,21 +400,39 @@ export const ExportPoModal = () => {
         Export
       </Button>
       <Modal
-        title="Xuất PO"
+        title={
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-500/20 to-teal-500/20 text-green-600">
+              <IconExport />
+            </span>
+            <div>
+              <div className="text-base font-semibold">Xuất PO</div>
+              <div className="text-xs font-normal text-gray-400">
+                Chọn tháng để xuất file Excel PO
+              </div>
+            </div>
+          </div>
+        }
         open={open}
         onOk={handleExport}
         onCancel={handleClose}
-        maskClosable={false}
-        okText="Xuất"
+        okText="Xuất file"
+        cancelText="Hủy"
         loading={isPending}
+        styles={{ body: { padding: '16px 24px' } }}
       >
-        <p>Chọn tháng để xuất PO</p>
-        <DatePicker
-          picker="month"
-          value={month}
-          style={{ width: '100%' }}
-          onChange={(date) => (date ? setMonth(date) : setMonth(dayjs()))}
-        />
+        <div className="space-y-3">
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            Chọn tháng xuất PO
+          </label>
+          <DatePicker
+            picker="month"
+            value={month}
+            style={{ width: '100%' }}
+            className="!rounded-lg"
+            onChange={(date) => (date ? setMonth(date) : setMonth(dayjs()))}
+          />
+        </div>
       </Modal>
     </>
   );

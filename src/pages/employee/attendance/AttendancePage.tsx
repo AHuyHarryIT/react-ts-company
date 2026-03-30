@@ -1,0 +1,904 @@
+import BackButton from '@components/common/BackButton';
+import ComponentCard from '@components/common/ComponentCard';
+import { customTableProps } from '@components/custom/TableProps.custom';
+import {
+  AttendanceResponse,
+  fetchEmpAttendances
+} from '@services/AttendanceService';
+import { QueryParams } from '@/types/queryParams';
+import { uiStore } from '@stores/uiStore';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useStore } from '@tanstack/react-store';
+import {
+  DatePicker,
+  Empty,
+  Segmented,
+  Spin,
+  Statistic,
+  Switch,
+  Table,
+  TableColumnsType,
+  Tag,
+  Tooltip
+} from 'antd';
+import { TableProps } from 'antd/lib';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import { useMemo, useState } from 'react';
+import {
+  FiActivity,
+  FiClock,
+  FiCalendar,
+  FiAlertTriangle
+} from 'react-icons/fi';
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+interface CalculatedRow {
+  employee_id: string;
+  name: string;
+  company: string;
+  calendar_category_id: string;
+  date: string;
+  shift: number;
+  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
+  day_type: string;
+  is_schedule_change: boolean;
+  time_in: string;
+  time_out: string;
+  total_hours: number | null;
+  overtime_hours: number | null;
+  administrative_hours: number | null;
+}
+
+type ActiveTab = 'history' | 'calculate';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const fmtDate = (v: string) =>
+  v
+    ? new Date(v).toLocaleString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      })
+    : null;
+
+const fmtWeekday = (v: string) =>
+  v ? new Date(v).toLocaleString('vi-VN', { weekday: 'long' }) : null;
+
+const fmtTime = (v: string) =>
+  v
+    ? new Date(v).toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
+    : '-';
+
+// ── Summary Stats ────────────────────────────────────────────────────────────
+
+function SummaryStats({
+  data,
+  isMobile
+}: {
+  data: CalculatedRow[];
+  isMobile: boolean;
+}) {
+  const stats = useMemo(() => {
+    const workDays = data.filter((d) => d.shift > 0).length;
+    const totalHours = data.reduce((s, d) => s + (d.total_hours || 0), 0);
+    const otHours = data.reduce((s, d) => s + (d.overtime_hours || 0), 0);
+    const adminHours = data.reduce(
+      (s, d) => s + (d.administrative_hours || 0),
+      0
+    );
+    const missingDays = data.filter(
+      (d) =>
+        d.shift > 0 &&
+        (!d.time_in || !d.time_out || d.time_in === '' || d.time_out === '')
+    ).length;
+    return { workDays, totalHours, otHours, adminHours, missingDays };
+  }, [data]);
+
+  if (isMobile) {
+    return (
+      <div className="grid grid-cols-6 overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="col-span-2 border-r border-b border-gray-200 py-2.5 text-center">
+          <div className="text-[11px] text-gray-400">Đi làm</div>
+          <div className="text-base leading-tight font-bold text-gray-800">
+            {stats.workDays}{' '}
+            <span className="text-[11px] font-normal text-gray-400">ngày</span>
+          </div>
+        </div>
+        <div className="col-span-2 border-r border-b border-gray-200 py-2.5 text-center">
+          <div className="text-[11px] text-gray-400">Tổng giờ</div>
+          <div className="text-base leading-tight font-bold text-gray-800">
+            {Math.round(stats.totalHours * 10) / 10}{' '}
+            <span className="text-[11px] font-normal text-gray-400">giờ</span>
+          </div>
+        </div>
+        <div className="col-span-2 border-b border-gray-200 py-2.5 text-center">
+          <div className="text-[11px] text-gray-400">Hành chính</div>
+          <div className="text-base leading-tight font-bold text-gray-800">
+            {Math.round(stats.adminHours * 10) / 10}{' '}
+            <span className="text-[11px] font-normal text-gray-400">giờ</span>
+          </div>
+        </div>
+        <div className="col-span-3 border-r border-gray-200 py-2.5 text-center">
+          <div className="text-[11px] text-gray-400">Tăng ca</div>
+          <div className="text-base leading-tight font-bold text-gray-800">
+            {Math.round(stats.otHours * 10) / 10}{' '}
+            <span className="text-[11px] font-normal text-gray-400">giờ</span>
+          </div>
+        </div>
+        <div
+          className={`col-span-3 py-2.5 text-center ${stats.missingDays > 0 ? 'bg-red-50' : ''}`}
+        >
+          <div className="text-[11px] text-gray-400">Quên chấm công</div>
+          <div
+            className={`text-base leading-tight font-bold ${stats.missingDays > 0 ? 'text-red-600' : 'text-gray-800'}`}
+          >
+            {stats.missingDays}{' '}
+            <span className="text-[11px] font-normal text-gray-400">ngày</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-blue-100/50 px-4 py-3 dark:border-blue-900 dark:from-blue-950/30 dark:to-blue-900/20">
+        <Statistic
+          title={
+            <span className="text-xs text-blue-600 dark:text-blue-400">
+              Ngày đi làm
+            </span>
+          }
+          value={stats.workDays}
+          suffix="ngày"
+          valueStyle={{
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: '#2563eb'
+          }}
+        />
+      </div>
+      <div className="rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-emerald-100/50 px-4 py-3 dark:border-emerald-900 dark:from-emerald-950/30 dark:to-emerald-900/20">
+        <Statistic
+          title={
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">
+              Tổng giờ làm
+            </span>
+          }
+          value={Math.round(stats.totalHours * 100) / 100}
+          suffix="h"
+          valueStyle={{
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: '#059669'
+          }}
+        />
+      </div>
+      <div className="rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50 to-violet-100/50 px-4 py-3 dark:border-violet-900 dark:from-violet-950/30 dark:to-violet-900/20">
+        <Statistic
+          title={
+            <span className="text-xs text-violet-600 dark:text-violet-400">
+              Giờ hành chính
+            </span>
+          }
+          value={Math.round(stats.adminHours * 100) / 100}
+          suffix="h"
+          valueStyle={{
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: '#7c3aed'
+          }}
+        />
+      </div>
+      <div className="rounded-xl border border-amber-100 bg-gradient-to-br from-amber-50 to-amber-100/50 px-4 py-3 dark:border-amber-900 dark:from-amber-950/30 dark:to-amber-900/20">
+        <Statistic
+          title={
+            <span className="text-xs text-amber-600 dark:text-amber-400">
+              Giờ tăng ca
+            </span>
+          }
+          value={Math.round(stats.otHours * 100) / 100}
+          suffix="h"
+          valueStyle={{
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: '#d97706'
+          }}
+        />
+      </div>
+      <div className="rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50 to-rose-100/50 px-4 py-3 dark:border-rose-900 dark:from-rose-950/30 dark:to-rose-900/20">
+        <Statistic
+          title={
+            <span className="text-xs text-rose-600 dark:text-rose-400">
+              Quên chấm công
+            </span>
+          }
+          value={stats.missingDays}
+          suffix="ngày"
+          valueStyle={{
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: stats.missingDays > 0 ? '#e11d48' : '#6b7280'
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Mobile Card for Calculate ───────────────────────────────────────────────
+
+function MobileCalculateRow({ item }: { item: CalculatedRow }) {
+  const isMissing =
+    item.shift > 0 &&
+    (!item.time_in ||
+      !item.time_out ||
+      item.time_in === '' ||
+      item.time_out === '');
+
+  return (
+    <div
+      className={`rounded-xl border bg-white p-3.5 shadow-sm ${
+        isMissing ? 'border-red-200' : 'border-gray-100'
+      }`}
+    >
+      {/* Header: Date + Total */}
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="text-sm font-semibold text-gray-800">
+            {dayjs(item.date).format('DD/MM')}
+          </span>
+          <span className="ml-1.5 text-[13px] text-gray-400 capitalize">
+            {dayjs(item.date).format('dddd')}
+          </span>
+        </div>
+        {item.shift > 0 ? (
+          <div className="text-right">
+            <span className="text-xl font-bold text-gray-800 tabular-nums">
+              {item.total_hours ?? 0}
+            </span>
+            <span className="ml-0.5 text-sm text-gray-400">giờ</span>
+            {(item.overtime_hours ?? 0) > 0 && (
+              <span className="ml-1.5 text-sm text-amber-500 tabular-nums">
+                +{item.overtime_hours}h TC
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-sm text-gray-300 italic">Nghỉ</span>
+        )}
+      </div>
+      {/* Time in / out */}
+      {item.shift > 0 && (
+        <div className="mt-2.5 flex gap-2">
+          <div className="flex-1 rounded-lg bg-gray-50 px-3 py-2">
+            <div className="text-[11px] text-gray-400">Vào</div>
+            <div
+              className={`text-sm font-semibold tabular-nums ${item.time_in ? 'text-teal-600' : 'text-red-400'}`}
+            >
+              {item.time_in ? fmtTime(item.time_in) : '--:--:--'}
+            </div>
+          </div>
+          <div className="flex-1 rounded-lg bg-gray-50 px-3 py-2">
+            <div className="text-[11px] text-gray-400">Ra</div>
+            <div
+              className={`text-sm font-semibold tabular-nums ${item.time_out ? 'text-slate-600' : 'text-red-400'}`}
+            >
+              {item.time_out ? fmtTime(item.time_out) : '--:--:--'}
+            </div>
+          </div>
+        </div>
+      )}
+      {isMissing && (
+        <div className="mt-2 text-xs text-red-400">⚠ Chưa đủ chấm công</div>
+      )}
+    </div>
+  );
+}
+
+// ── Mobile Card for History ────────────────────────────────────────────────
+const hnhcLabels: Record<string, { label: string; color: string }> = {
+  N: { label: 'Ca ngày', color: 'text-orange-500' },
+  D: { label: 'Ca đêm', color: 'text-indigo-600' },
+  X: { label: 'Nghỉ', color: 'text-gray-400' },
+  TC: { label: 'Tăng cường đêm', color: 'text-purple-600' },
+  LN: { label: 'Làm thêm ca ngày', color: 'text-amber-600' }
+};
+
+function MobileHistoryRow({ item }: { item: AttendanceResponse }) {
+  const sameDateEntries = item.dates?.filter((d) => d.date === item.date) ?? [];
+  const shift = item.hnhc ? hnhcLabels[item.hnhc] : null;
+
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white p-3.5 shadow-sm">
+      {/* Header: Date + shift type */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-sm font-semibold text-gray-800">
+            {dayjs(item.date).format('DD/MM')}
+          </span>
+          <span className="text-[13px] text-gray-400 capitalize">
+            {dayjs(item.date).format('dddd')}
+          </span>
+        </div>
+        {shift && (
+          <span className={`text-[13px] font-medium ${shift.color}`}>
+            {shift.label}
+          </span>
+        )}
+      </div>
+      {/* Scan times */}
+      {sameDateEntries.length > 0 && (
+        <div className="mt-2 rounded-lg bg-gray-50 px-3 py-2">
+          {sameDateEntries.map((d, i) => (
+            <div
+              key={i}
+              className={`flex items-center justify-between py-1 ${
+                i > 0 ? 'border-t border-gray-100' : ''
+              }`}
+            >
+              <span className="text-xs text-gray-400">Lần {i + 1}</span>
+              <span className="text-sm font-semibold text-teal-600 tabular-nums">
+                {fmtTime(d.datetime)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  Main Page Component
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const AttendancePage = () => {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('calculate');
+  const [month, setMonth] = useState<Dayjs>(dayjs());
+  const [forgottenDays, setForgottenDays] = useState<boolean>(false);
+  const [historyParams, setHistoryParams] = useState<QueryParams>({
+    page: 1,
+    limit: 15,
+    'filter[date_between]':
+      dayjs().startOf('month').format('YYYY-MM-DD') +
+      ',' +
+      dayjs().endOf('month').format('YYYY-MM-DD')
+  });
+
+  const { isMobile } = useStore(uiStore);
+
+  // ── Calculate data (include_calculation=1, no pagination) ────────────────
+  const { data: calcResponse, isLoading: calcLoading } = useQuery({
+    queryKey: ['emp-attendance', 'calculate', month.format('MM-YYYY')],
+    queryFn: async () => {
+      const today = dayjs();
+      const endDate = month.isSame(today, 'month')
+        ? today.format('YYYY-MM-DD')
+        : month.endOf('month').format('YYYY-MM-DD');
+
+      return await fetchEmpAttendances({
+        include_calculation: 1,
+        limit: 0,
+        'filter[date_between]':
+          month.startOf('month').format('YYYY-MM-DD') + ',' + endDate
+      });
+    },
+    enabled: activeTab === 'calculate',
+    placeholderData: keepPreviousData
+  });
+
+  // ── History (raw) data ──────────────────────────────────────────────────
+  const { data: historyResponse, isLoading: historyLoading } = useQuery({
+    queryKey: ['emp-attendance', 'history', historyParams],
+    queryFn: async () => {
+      return await fetchEmpAttendances(historyParams);
+    },
+    enabled: activeTab === 'history',
+    placeholderData: keepPreviousData
+  });
+
+  // ── Derived data ────────────────────────────────────────────────────────
+  const calcData = useMemo(
+    () => (calcResponse?.data || []) as unknown as CalculatedRow[],
+    [calcResponse?.data]
+  );
+  const filteredCalcData = useMemo(() => {
+    if (!forgottenDays) return calcData;
+    return calcData.filter(
+      (a) =>
+        a.shift > 0 &&
+        (!a.time_in || !a.time_out || a.time_in === '' || a.time_out === '')
+    );
+  }, [calcData, forgottenDays]);
+
+  const historyData = (historyResponse?.data || []) as AttendanceResponse[];
+
+  // ── Calculate columns ─────────────────────────────────────────────────
+  const calcColumns: TableColumnsType<CalculatedRow> = [
+    {
+      title: 'STT',
+      rowScope: 'row',
+      align: 'center',
+      width: 50,
+      render: (_v, _r, i) => i + 1
+    },
+    {
+      title: 'Ngày',
+      dataIndex: 'date',
+      key: 'date',
+      width: 110,
+      render: (v) => fmtDate(v)
+    },
+    {
+      title: 'Thứ',
+      dataIndex: 'date',
+      key: 'weekday',
+      width: 120,
+      render: (v) => (
+        <span className="text-gray-500 capitalize">{fmtWeekday(v)}</span>
+      )
+    },
+    {
+      title: 'Giờ vào',
+      dataIndex: 'time_in',
+      key: 'time_in',
+      width: 100,
+      render: (v) => (
+        <span className={v ? 'text-emerald-600' : 'text-gray-300'}>
+          {fmtTime(v)}
+        </span>
+      )
+    },
+    {
+      title: 'Giờ ra',
+      dataIndex: 'time_out',
+      key: 'time_out',
+      width: 100,
+      render: (v) => (
+        <span className={v ? 'text-rose-600' : 'text-gray-300'}>
+          {fmtTime(v)}
+        </span>
+      )
+    },
+    {
+      title: 'Loại ngày',
+      dataIndex: 'day_type',
+      key: 'day_type',
+      width: 110,
+      align: 'center',
+      filters: [
+        { text: 'Ca ngày', value: 'Ca ngày' },
+        { text: 'Ca đêm', value: 'Ca đêm' },
+        { text: 'Nghỉ', value: '' }
+      ],
+      onFilter: (value, record) => {
+        if (value === '') return !record.day_type || record.day_type === '';
+        return record.day_type === value;
+      },
+      render: (v, record) => {
+        if (record.is_schedule_change)
+          return (
+            <Tag color="warning" className="!m-0">
+              {v}
+            </Tag>
+          );
+        if (v === 'Ca ngày')
+          return (
+            <Tag color="processing" className="!m-0">
+              Ca ngày
+            </Tag>
+          );
+        if (v === 'Ca đêm')
+          return (
+            <Tag color="purple" className="!m-0">
+              Ca đêm
+            </Tag>
+          );
+        return (
+          <Tag color="success" className="!m-0">
+            Nghỉ
+          </Tag>
+        );
+      }
+    },
+    {
+      title: 'Tổng giờ',
+      dataIndex: 'total_hours',
+      key: 'total_hours',
+      width: 100,
+      align: 'center',
+      sorter: (a, b) => (a.total_hours || 0) - (b.total_hours || 0),
+      render: (v, record) => {
+        if (!record.shift) return <span className="text-gray-300">-</span>;
+        return v ? (
+          <span className="font-semibold">{v}h</span>
+        ) : (
+          <Tooltip title="Chấm công chưa đủ">
+            <Tag color="error" className="!m-0 cursor-help">
+              Thiếu
+            </Tag>
+          </Tooltip>
+        );
+      }
+    },
+    {
+      title: 'Hành chính',
+      dataIndex: 'administrative_hours',
+      key: 'administrative_hours',
+      width: 100,
+      align: 'center',
+      render: (v, record) => {
+        if (!record.shift) return <span className="text-gray-300">-</span>;
+        return v ? (
+          <span className="font-medium text-violet-600">{v}h</span>
+        ) : (
+          <Tooltip title="Chấm công chưa đủ">
+            <Tag color="error" className="!m-0 cursor-help">
+              Thiếu
+            </Tag>
+          </Tooltip>
+        );
+      }
+    },
+    {
+      title: 'Tăng ca',
+      dataIndex: 'overtime_hours',
+      key: 'overtime_hours',
+      width: 80,
+      align: 'center',
+      sorter: (a, b) => (a.overtime_hours || 0) - (b.overtime_hours || 0),
+      render: (v) =>
+        v ? (
+          <span className="font-semibold text-amber-600">{v}h</span>
+        ) : (
+          <span className="text-gray-300">-</span>
+        )
+    }
+  ];
+
+  // ── History columns ────────────────────────────────────────────────────
+  const historyColumns: TableColumnsType<AttendanceResponse> = [
+    {
+      title: 'STT',
+      rowScope: 'row',
+      align: 'center',
+      width: 50,
+      render: (_v, _r, i) =>
+        i + 1 + (historyParams.limit ?? 15) * ((historyParams.page ?? 1) - 1)
+    },
+    {
+      title: 'Ngày',
+      dataIndex: 'date',
+      key: 'date',
+      width: 110,
+      render: (v) => fmtDate(v)
+    },
+    {
+      title: 'Thứ',
+      dataIndex: 'date',
+      key: 'weekday',
+      width: 120,
+      render: (v) => (
+        <span className="text-gray-500 capitalize">{fmtWeekday(v)}</span>
+      )
+    },
+    {
+      title: 'HNHC',
+      dataIndex: 'hnhc',
+      key: 'hnhc',
+      width: 80,
+      align: 'center',
+      render: (v: string | null) =>
+        v ? (
+          <Tag
+            color={
+              v === 'N'
+                ? 'blue'
+                : v === 'D' || v === 'TC'
+                  ? 'purple'
+                  : v === 'X'
+                    ? 'green'
+                    : v === 'LN'
+                      ? 'cyan'
+                      : 'default'
+            }
+            className="!m-0"
+          >
+            {v}
+          </Tag>
+        ) : (
+          <span className="text-gray-300">-</span>
+        )
+    },
+    {
+      title: 'Số lần quẹt',
+      key: 'scan_count',
+      width: 100,
+      align: 'center',
+      render: (_, record) => {
+        const sameDateEntries =
+          record.dates?.filter((d) => d.date === record.date) ?? [];
+        return (
+          <span className="font-semibold text-blue-600">
+            {sameDateEntries.length}
+          </span>
+        );
+      }
+    },
+    {
+      title: 'Thời gian quẹt',
+      key: 'scan_times',
+      render: (_, record) => {
+        const sameDateEntries =
+          record.dates?.filter((d) => d.date === record.date) ?? [];
+        return sameDateEntries.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {sameDateEntries.map((d, idx) => (
+              <Tag key={idx} className="!m-0 !text-xs">
+                {fmtTime(d.datetime)}
+              </Tag>
+            ))}
+          </div>
+        ) : (
+          <span className="text-gray-300">Không có dữ liệu</span>
+        );
+      }
+    }
+  ];
+
+  // ── Table props ────────────────────────────────────────────────────────
+  const calcTableProps: TableProps<CalculatedRow> = {
+    ...(customTableProps as unknown as TableProps<CalculatedRow>),
+    rowKey: (r) => `calc-${r.employee_id}-${r.date}`,
+    columns: calcColumns,
+    dataSource: filteredCalcData,
+    loading: calcLoading,
+    pagination: false,
+    rowClassName: (record) => {
+      if (
+        record.shift > 0 &&
+        (!record.time_in ||
+          !record.time_out ||
+          record.time_in === '' ||
+          record.time_out === '')
+      ) {
+        return '!bg-rose-50/60';
+      }
+      return '';
+    }
+  };
+
+  const historyTableProps: TableProps<AttendanceResponse> = {
+    ...(customTableProps as unknown as TableProps<AttendanceResponse>),
+    rowKey: (r) => `hist-${r.employee_id}-${r.date}`,
+    columns: historyColumns,
+    dataSource: historyData,
+    loading: historyLoading,
+    pagination: {
+      ...customTableProps.pagination,
+      current: historyResponse?.current_page || 1,
+      pageSize: historyResponse?.per_page || 15,
+      total: historyResponse?.total || 0,
+      onShowSizeChange: (_current, size) => {
+        setHistoryParams((prev) => ({ ...prev, limit: size }));
+      },
+      onChange: (page) => {
+        setHistoryParams((prev) => ({ ...prev, page }));
+      }
+    }
+  };
+
+  // ── Month change handler ───────────────────────────────────────────────
+  const handleMonthChange = (date: Dayjs | null) => {
+    const d = date || dayjs();
+    setMonth(d);
+    setHistoryParams((prev) => ({
+      ...prev,
+      page: 1,
+      'filter[date_between]':
+        d.startOf('month').format('YYYY-MM-DD') +
+        ',' +
+        d.endOf('month').format('YYYY-MM-DD')
+    }));
+  };
+
+  return (
+    <>
+      <BackButton to="/" />
+      <ComponentCard
+        title={
+          <div className="flex items-center gap-3">
+            <FiCalendar className="text-blue-500" />
+            <span>Chấm công của tôi</span>
+          </div>
+        }
+      >
+        {/* ── Header Block: Filters + Controls ─────────────────────────── */}
+        {isMobile ? (
+          <div className="space-y-2">
+            {/* Row 1: Month picker + forgotten switch */}
+            <div className="flex items-center justify-between">
+              <DatePicker
+                id="att-month-picker"
+                placeholder="Chọn tháng"
+                value={month}
+                picker="month"
+                format="MM-YYYY"
+                onChange={handleMonthChange}
+                allowClear={false}
+                style={{ width: 130 }}
+                size="small"
+              />
+              {activeTab === 'calculate' && (
+                <label
+                  htmlFor="att-forgotten-switch"
+                  className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500 select-none"
+                >
+                  <Switch
+                    id="att-forgotten-switch"
+                    size="small"
+                    checked={forgottenDays}
+                    onChange={setForgottenDays}
+                  />
+                  <FiAlertTriangle
+                    size={13}
+                    className={
+                      forgottenDays ? 'text-rose-500' : 'text-gray-400'
+                    }
+                  />
+                  Thiếu chấm công
+                </label>
+              )}
+            </div>
+            {/* Row 2: Tabs full width */}
+            <Segmented
+              block
+              value={activeTab}
+              onChange={(v) => setActiveTab(v as ActiveTab)}
+              options={[
+                {
+                  value: 'calculate',
+                  label: (
+                    <div className="flex items-center justify-center gap-1.5">
+                      <FiActivity size={14} />
+                      <span>Bảng tính công</span>
+                    </div>
+                  )
+                },
+                {
+                  value: 'history',
+                  label: (
+                    <div className="flex items-center justify-center gap-1.5">
+                      <FiClock size={14} />
+                      <span>Lịch sử quẹt</span>
+                    </div>
+                  )
+                }
+              ]}
+            />
+          </div>
+        ) : (
+          <div className="rounded-xl border border-gray-200 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/30">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="att-month-picker"
+                  className="text-sm font-medium text-gray-600 dark:text-gray-300"
+                >
+                  Tháng:
+                </label>
+                <DatePicker
+                  id="att-month-picker"
+                  placeholder="Chọn tháng"
+                  value={month}
+                  picker="month"
+                  format="MM-YYYY"
+                  onChange={handleMonthChange}
+                  allowClear={false}
+                  style={{ width: 140 }}
+                />
+              </div>
+              <Segmented
+                value={activeTab}
+                onChange={(v) => setActiveTab(v as ActiveTab)}
+                options={[
+                  {
+                    value: 'calculate',
+                    label: (
+                      <div className="flex items-center gap-1.5 px-1">
+                        <FiActivity />
+                        <span>Bảng tính công</span>
+                      </div>
+                    )
+                  },
+                  {
+                    value: 'history',
+                    label: (
+                      <div className="flex items-center gap-1.5 px-1">
+                        <FiClock />
+                        <span>Lịch sử quẹt</span>
+                      </div>
+                    )
+                  }
+                ]}
+              />
+              {activeTab === 'calculate' && (
+                <div className="ml-auto flex items-center gap-2">
+                  <Switch
+                    id="att-forgotten-switch-desktop"
+                    size="small"
+                    checked={forgottenDays}
+                    onChange={setForgottenDays}
+                  />
+                  <label
+                    htmlFor="att-forgotten-switch-desktop"
+                    className="flex cursor-pointer items-center gap-1 text-sm text-gray-500 select-none"
+                  >
+                    <FiAlertTriangle
+                      className={
+                        forgottenDays ? 'text-rose-500' : 'text-gray-400'
+                      }
+                    />
+                    Quên chấm công
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Summary Stats (calculate tab only) ──────────────────────── */}
+        {activeTab === 'calculate' && !calcLoading && calcData.length > 0 && (
+          <SummaryStats data={calcData} isMobile={isMobile} />
+        )}
+
+        {/* ── Data Area ───────────────────────────────────────────────── */}
+        {activeTab === 'calculate' ? (
+          isMobile ? (
+            <Spin spinning={calcLoading}>
+              {filteredCalcData.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {filteredCalcData.map((item) => (
+                    <MobileCalculateRow
+                      key={`m-calc-${item.employee_id}-${item.date}`}
+                      item={item}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Empty description="Không có dữ liệu" />
+              )}
+            </Spin>
+          ) : (
+            <Table {...calcTableProps} />
+          )
+        ) : isMobile ? (
+          <Spin spinning={historyLoading}>
+            {historyData.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {historyData.map((item) => (
+                  <MobileHistoryRow
+                    key={`m-hist-${item.employee_id}-${item.date}`}
+                    item={item}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Empty description="Không có dữ liệu" />
+            )}
+          </Spin>
+        ) : (
+          <Table {...historyTableProps} />
+        )}
+      </ComponentCard>
+    </>
+  );
+};

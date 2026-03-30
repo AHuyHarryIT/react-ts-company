@@ -247,7 +247,7 @@ export const History = () => {
           schema={attendanceSchema}
           fields={useAttendanceCreateFields()}
         />
-        <Link to="/admin/attendances/record">
+        <Link to="/admin/attendances">
           <Button color="blue" variant="solid" icon={<IconTable />}>
             Bảng tính công
           </Button>

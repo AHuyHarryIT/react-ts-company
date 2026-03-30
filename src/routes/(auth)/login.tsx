@@ -1,3 +1,22 @@
+// Credential Management API – not yet in TS's default lib definitions
+declare global {
+  interface PasswordCredentialInit {
+    id: string;
+    password: string;
+  }
+  interface PasswordCredential extends Credential {
+    readonly password: string;
+  }
+  // eslint-disable-next-line no-var
+  var PasswordCredential:
+    | {
+        new (init: PasswordCredentialInit): PasswordCredential;
+        prototype: PasswordCredential;
+      }
+    | undefined;
+}
+
+import { useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useSearch } from '@tanstack/react-router';
 import type { FormProps } from 'antd';
@@ -11,11 +30,76 @@ import { IoLockClosedOutline } from 'react-icons/io5';
 type FieldType = {
   username: string;
   password: string;
-  remember: boolean;
 };
 
 type LoginSearch = {
   redirect?: string;
+};
+
+/**
+ * Trigger the browser's native "Save password?" prompt.
+ *
+ * 1. Try the modern Credential Management API (Chrome 51+, Edge 79+).
+ * 2. Fallback: submit a hidden `<form>` targeting a hidden `<iframe>` so
+ *    older browsers / Firefox still see a "real" form submission and offer
+ *    to save credentials.
+ */
+const triggerBrowserSavePassword = (
+  username: string,
+  password: string,
+  redirectTo: string
+) => {
+  // --- Modern API ---
+  if (window.PasswordCredential) {
+    const PC = window.PasswordCredential;
+    const cred = new PC({
+      id: username,
+      password: password
+    });
+    navigator.credentials.store(cred).finally(() => {
+      window.location.href = redirectTo;
+    });
+    return;
+  }
+
+  // --- Fallback: hidden form submit ---
+  // Create a tiny invisible iframe as the form target
+  const iframe = document.createElement('iframe');
+  iframe.name = '__saveCredFrame';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  // Build a real <form> with proper autocomplete attributes
+  const hiddenForm = document.createElement('form');
+  hiddenForm.method = 'POST';
+  hiddenForm.action = window.location.href; // same page – the iframe swallows the response
+  hiddenForm.target = '__saveCredFrame';
+  hiddenForm.style.display = 'none';
+
+  const uInput = document.createElement('input');
+  uInput.type = 'text';
+  uInput.name = 'username';
+  uInput.autocomplete = 'username';
+  uInput.value = username;
+
+  const pInput = document.createElement('input');
+  pInput.type = 'password';
+  pInput.name = 'password';
+  pInput.autocomplete = 'current-password';
+  pInput.value = password;
+
+  hiddenForm.appendChild(uInput);
+  hiddenForm.appendChild(pInput);
+  document.body.appendChild(hiddenForm);
+
+  hiddenForm.submit();
+
+  // Redirect shortly after – gives the browser time to process
+  setTimeout(() => {
+    document.body.removeChild(hiddenForm);
+    document.body.removeChild(iframe);
+    window.location.href = redirectTo;
+  }, 500);
 };
 
 export const Route = createFileRoute('/(auth)/login')({
@@ -40,25 +124,31 @@ function RouteComponent() {
 
   const { mutate: loginMutation, isPending } = useMutation({
     mutationKey: ['authLogin'],
-    mutationFn: ({ username, password, remember }: FieldType) =>
-      authLogin(username, password, remember),
+    mutationFn: ({ username, password }: FieldType) =>
+      authLogin(username, password),
     onSuccess: () => {
       message.success('Đăng nhập thành công!');
 
-      // Determine redirect path
       const redirectTo =
         search.redirect && search.redirect !== '/login' ? search.redirect : '/';
 
-      // Redirect after success message
-      setTimeout(() => {
-        window.location.href = redirectTo;
-      }, 1000);
+      const values = lastValuesRef.current;
+      if (values) {
+        // Trigger browser's native "Save password?" prompt, then redirect
+        triggerBrowserSavePassword(
+          values.username,
+          values.password,
+          redirectTo
+        );
+      } else {
+        setTimeout(() => {
+          window.location.href = redirectTo;
+        }, 1000);
+      }
     },
     onError: (error: unknown) => {
-      // Reset password field
       form.resetFields(['password']);
 
-      // Xử lý các loại lỗi chi tiết hơn
       let errorMessage = 'Đăng nhập thất bại! Vui lòng thử lại.';
 
       try {
@@ -80,10 +170,13 @@ function RouteComponent() {
 
           switch (status) {
             case 401:
-              errorMessage = 'Tên đăng nhập hoặc mật khẩu không chính xác!';
+              errorMessage =
+                data?.message || 'Số điện thoại hoặc mật khẩu không đúng!';
+              break;
+            case 403:
+              errorMessage = data?.message || 'Bạn đã nghỉ việc!';
               break;
             case 422:
-              // Xử lý validation errors
               if (data?.error?.errors) {
                 const errors = Object.values(data.error.errors).flat();
                 errorMessage =
@@ -111,7 +204,6 @@ function RouteComponent() {
                 `Lỗi ${status}: Vui lòng thử lại.`;
           }
         } else if (error instanceof Error) {
-          // Network error hoặc lỗi khác
           if (error.message.includes('Network Error')) {
             errorMessage =
               'Lỗi kết nối mạng! Vui lòng kiểm tra internet và thử lại.';
@@ -123,23 +215,19 @@ function RouteComponent() {
         errorMessage = 'Đăng nhập thất bại! Vui lòng thử lại.';
       }
 
-      // Hiển thị lỗi
       message.error(errorMessage);
     }
   });
 
-  const handleLogin = (values: FieldType) => {
-    if (isPending) return;
-
-    loginMutation({
-      username: values.username,
-      password: values.password,
-      remember: values.remember || false
-    });
-  };
+  const lastValuesRef = useRef<FieldType | null>(null);
 
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    handleLogin(values);
+    if (isPending) return;
+    lastValuesRef.current = values;
+    loginMutation({
+      username: values.username,
+      password: values.password
+    });
   };
 
   return (
@@ -156,9 +244,9 @@ function RouteComponent() {
         <Form
           form={form}
           name="auth-login"
-          initialValues={{ remember: false }}
           onFinish={onFinish}
           layout="vertical"
+          autoComplete="on"
         >
           <Form.Item<FieldType>
             name="username"
@@ -170,6 +258,7 @@ function RouteComponent() {
               placeholder="Số điện thoại hoặc tên đăng nhập"
               prefix={<FaRegUser />}
               disabled={isPending}
+              autoComplete="username"
             />
           </Form.Item>
 
@@ -181,6 +270,7 @@ function RouteComponent() {
               placeholder="Mật khẩu"
               prefix={<IoLockClosedOutline />}
               disabled={isPending}
+              autoComplete="current-password"
             />
           </Form.Item>
 

@@ -62,11 +62,17 @@ export const Check200Table: React.FC<Check200TableProps> = ({
       .date(index + 1)
       .format('DD-MM-YYYY');
     return {
-      title: date,
+      title: (
+        <span className="text-xs">
+          {dayjs(month)
+            .date(index + 1)
+            .format('DD/MM')}
+        </span>
+      ),
       align: 'center',
       dataIndex: ['times', date, 'quantity'],
       key: `${date}_quantity`,
-      minWidth: 100,
+      width: 75,
       className: index % 2 === 0 ? 'bg-indigo-200' : '',
       render: (value) => {
         if (!value) return '0';
@@ -81,16 +87,18 @@ export const Check200Table: React.FC<Check200TableProps> = ({
     {
       title: <div className="capitalize">STT</div>,
       rowScope: 'row',
-      minWidth: 50,
+      width: 50,
       align: 'center',
+      responsive: ['md'],
       render: (_value, _record, index) =>
         index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
-      minWidth: 100,
+      width: 120,
       fixed: 'left',
       dataIndex: 'name',
+      ellipsis: true,
       render: (value, record) => {
         return (
           <Link to={'/admin/products/$id'} params={{ id: record.id }}>
@@ -100,22 +108,22 @@ export const Check200Table: React.FC<Check200TableProps> = ({
       }
     },
     {
-      title: <div>Mã sản phẩm</div>,
-      minWidth: 100,
-      dataIndex: 'code'
+      title: <div>Mã SP</div>,
+      width: 90,
+      dataIndex: 'code',
+      responsive: ['lg']
     },
     {
       title: (
-        <div>
-          Tồn đầu kỳ
+        <div className="text-xs leading-tight">
+          Tồn ĐK
           <br />
-          Hàng 200%
+          200%
         </div>
       ),
-      minWidth: 100,
+      width: 80,
       align: 'center',
       dataIndex: 'startStock',
-      fixed: 'left',
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({
@@ -125,16 +133,15 @@ export const Check200Table: React.FC<Check200TableProps> = ({
     },
     {
       title: (
-        <div>
+        <div className="text-xs leading-tight">
           Phát sinh
           <br />
-          Kiểm hàng 200%
+          KH 200%
         </div>
       ),
-      minWidth: 100,
+      width: 80,
       align: 'center',
       dataIndex: 'incurred',
-      fixed: 'left',
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Tag, Button, Space, Tooltip } from 'antd';
+import { Table, Tag, Button, Space, Tooltip, Pagination, Spin } from 'antd';
 import {
   EyeOutlined,
   EditOutlined,
@@ -324,6 +324,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       dataIndex: 'index',
       key: 'index',
       width: 60,
+      responsive: ['md'],
       render: (_, __, index) => (
         <span className="text-gray-500">
           {((pagination?.current || 1) - 1) * (pagination?.pageSize || 15) +
@@ -377,6 +378,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
             dataIndex: ['employee', 'name'],
             key: 'employee_name',
             width: 180,
+            responsive: ['sm' as const],
             render: (name: string, record: RequestForm) => (
               <div>
                 <div className="text-sm font-medium">{name}</div>
@@ -412,6 +414,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       key: 'supervisor_approval',
       width: 150,
       align: 'center',
+      responsive: ['lg'],
       render: (record: RequestForm) => {
         // Đặc biệt cho đơn Giấy ủy quyền
         if (record.type === 'giay_uy_quyen') {
@@ -569,6 +572,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       key: 'manager_approval',
       width: 150,
       align: 'center',
+      responsive: ['lg'],
       render: (record: RequestForm) => {
         // Đặc biệt cho đơn Giấy ủy quyền
         if (record.type === 'giay_uy_quyen') {
@@ -712,6 +716,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       dataIndex: 'created_at',
       key: 'created_at',
       width: 140,
+      responsive: ['md'],
       render: (date: string) => (
         <span className="whitespace-nowrap text-gray-600">
           {date ? dayjs(date).format('DD/MM/YYYY HH:mm') : '-'}
@@ -723,6 +728,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       dataIndex: 'approved_at',
       key: 'approved_at',
       width: 140,
+      responsive: ['md'],
       render: (date: string, record: RequestForm) => {
         const effectiveStatus = getEffectiveStatus(record);
         const createdBySupervisor = isRequestCreatedBySupervisor(record);
@@ -862,8 +868,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 120,
-      fixed: 'right',
+      width: 'auto',
       align: 'center',
       render: (_, record) => {
         // Đếm số lượng buttons hiển thị
@@ -879,7 +884,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
           <Space size="small">
             {buttonCount === 1 ? (
               // Chỉ có 1 button - hiển thị center
-              <Tooltip title="Xem chi tiết">
+              <Tooltip
+                title="Xem chi tiết"
+                mouseLeaveDelay={0}
+                destroyOnHidden
+                zIndex={99}
+              >
                 <Button
                   type="text"
                   size="small"
@@ -890,7 +900,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
             ) : (
               // Nhiều buttons - hiển thị tất cả
               <>
-                <Tooltip title="Xem chi tiết">
+                <Tooltip
+                  title="Xem chi tiết"
+                  mouseLeaveDelay={0}
+                  destroyOnHidden
+                  zIndex={99}
+                >
                   <Button
                     type="text"
                     size="small"
@@ -900,7 +915,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                 </Tooltip>
 
                 {canEdit(record) && (
-                  <Tooltip title="Chỉnh sửa">
+                  <Tooltip
+                    title="Chỉnh sửa"
+                    mouseLeaveDelay={0}
+                    destroyOnHidden
+                    zIndex={99}
+                  >
                     <Button
                       type="text"
                       size="small"
@@ -911,7 +931,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                 )}
 
                 {canDelete(record) && (
-                  <Tooltip title="Xóa">
+                  <Tooltip
+                    title="Xóa"
+                    mouseLeaveDelay={0}
+                    destroyOnHidden
+                    zIndex={99}
+                  >
                     <Button
                       type="text"
                       size="small"
@@ -923,7 +948,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                 )}
 
                 {!hideSignDelegation && canSignDelegation(record) && (
-                  <Tooltip title="Ký đơn ủy quyền">
+                  <Tooltip
+                    title="Ký đơn ủy quyền"
+                    mouseLeaveDelay={0}
+                    destroyOnHidden
+                    zIndex={99}
+                  >
                     <Button
                       type="text"
                       size="small"
@@ -935,7 +965,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                 )}
 
                 {canApprove(record) && (
-                  <Tooltip title="Duyệt đơn">
+                  <Tooltip
+                    title="Duyệt đơn"
+                    mouseLeaveDelay={0}
+                    destroyOnHidden
+                    zIndex={99}
+                  >
                     <Button
                       type="text"
                       size="small"
@@ -947,7 +982,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                 )}
 
                 {canReject(record) && (
-                  <Tooltip title="Từ chối">
+                  <Tooltip
+                    title="Từ chối"
+                    mouseLeaveDelay={0}
+                    destroyOnHidden
+                    zIndex={99}
+                  >
                     <Button
                       type="text"
                       size="small"
@@ -965,18 +1005,270 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
     }
   ];
 
+  const tablePagination = pagination
+    ? {
+        ...pagination,
+        size: 'default' as const,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '15', '20', '50', '100'],
+        showTotal: (total: number, range: [number, number]) =>
+          `Hiển thị ${range[0]}-${range[1]} (Tổng ${total})`,
+        position: ['topRight', 'bottomRight'] as ('topRight' | 'bottomRight')[]
+      }
+    : (false as const);
+
+  // ── Mobile Card View ──────────────────────────────────────────
+  const renderMobileCard = (record: RequestForm) => {
+    const effectiveStatus = getEffectiveStatus(record);
+    const createdBySupervisor = isRequestCreatedBySupervisor(record);
+    const isDelegation = record.type === 'giay_uy_quyen';
+
+    // Subtitle based on form type
+    const formData = record.form_data as Record<string, unknown>;
+    let subtitle = '';
+    if (record.type === 'don_xin_nghi_phep' && formData?.loai_nghi_phep) {
+      subtitle = String(formData.loai_nghi_phep);
+    } else if (
+      record.type === 'don_xin_di_tre_ve_som' &&
+      formData?.loai_di_tre_ve_som
+    ) {
+      subtitle =
+        formData.loai_di_tre_ve_som === 'di_tre'
+          ? 'Đi trễ'
+          : formData.loai_di_tre_ve_som === 've_som'
+            ? 'Về sớm'
+            : 'Cả hai';
+    } else if (isDelegation && formData?.authorization_scope) {
+      subtitle = String(formData.authorization_scope).substring(0, 50);
+    }
+
+    // Signature info
+    const sig1Done = isDelegation
+      ? !!(record.has_delegator_signature || record.digital_signature_delegator)
+      : !!(
+          record.has_supervisor_signature ||
+          record.digital_signature_supervisor ||
+          createdBySupervisor
+        );
+    const sig2Done = isDelegation
+      ? !!(
+          record.has_authorized_signature || record.digital_signature_authorized
+        )
+      : !!(record.has_manager_signature || record.digital_signature_manager);
+    const sig1Label = isDelegation ? 'Người UQ' : 'Tổ trưởng';
+    const sig2Label = isDelegation ? 'Người được UQ' : 'Quản lý';
+
+    // Approver info
+    const approverInfo =
+      record.approved_by && typeof record.approved_by === 'object'
+        ? (record.approved_by as { name: string }).name
+        : null;
+
+    return (
+      <div
+        key={record.id}
+        className="cursor-pointer rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-shadow hover:shadow-md active:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:active:bg-gray-700"
+        onClick={() => onView?.(record)}
+      >
+        {/* Row 1: Type + Status */}
+        <div className="mb-2 flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <Tag color="blue" className="!mb-0.5 !text-xs font-medium">
+              {REQUEST_FORM_TYPES[record.type]}
+            </Tag>
+            {subtitle && (
+              <div className="mt-0.5 truncate text-[11px] text-gray-500">
+                {subtitle}
+              </div>
+            )}
+          </div>
+          <Tag
+            color={getStatusColor(effectiveStatus)}
+            className="!m-0 shrink-0 !text-[11px] font-medium"
+          >
+            {REQUEST_FORM_STATUSES[effectiveStatus]}
+          </Tag>
+        </div>
+
+        {/* Row 2: Employee + Date */}
+        {isAdmin && record.employee?.name && (
+          <div className="mb-1.5 text-xs text-gray-700 dark:text-gray-300">
+            <span className="text-gray-400">NV: </span>
+            <span className="font-medium">{record.employee.name}</span>
+            <span className="ml-1 text-gray-400">(#{record.employee.id})</span>
+          </div>
+        )}
+
+        {/* Row 3: Signatures */}
+        <div className="mb-1.5 flex items-center gap-3 text-[11px]">
+          <span className="flex items-center gap-1">
+            <span
+              className={`inline-block h-2 w-2 rounded-full ${sig1Done ? 'bg-emerald-500' : 'bg-gray-300'}`}
+            />
+            <span className={sig1Done ? 'text-emerald-600' : 'text-gray-400'}>
+              {sig1Label}
+            </span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span
+              className={`inline-block h-2 w-2 rounded-full ${sig2Done ? 'bg-emerald-500' : 'bg-gray-300'}`}
+            />
+            <span className={sig2Done ? 'text-emerald-600' : 'text-gray-400'}>
+              {sig2Label}
+            </span>
+          </span>
+        </div>
+
+        {/* Row 4: Dates */}
+        <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-500">
+          <span>
+            📅 Nộp:{' '}
+            {record.created_at
+              ? dayjs(record.created_at).format('DD/MM/YYYY HH:mm')
+              : '-'}
+          </span>
+          {effectiveStatus === 'approved' && record.approved_at && (
+            <span className="text-emerald-600">
+              ✅ Duyệt: {dayjs(record.approved_at).format('DD/MM/YY')}
+              {approverInfo && ` (${approverInfo})`}
+            </span>
+          )}
+          {effectiveStatus === 'rejected' && record.approved_at && (
+            <span className="text-red-500">
+              ❌ Từ chối: {dayjs(record.approved_at).format('DD/MM/YY')}
+              {approverInfo && ` (${approverInfo})`}
+            </span>
+          )}
+        </div>
+
+        {/* Rejection reason if rejected */}
+        {record.status === 'rejected' && record.rejection_reason && (
+          <div className="mb-2 rounded-md bg-red-50 px-2 py-1 text-[11px] text-red-600 dark:bg-red-900/20 dark:text-red-400">
+            Lý do: {record.rejection_reason}
+          </div>
+        )}
+
+        {/* Row 5: Actions */}
+        <div
+          className="flex items-center gap-1 border-t border-gray-100 pt-2 dark:border-gray-700"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button
+            type="text"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => onView?.(record)}
+          >
+            Xem
+          </Button>
+          {canEdit(record) && (
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => onEdit?.(record)}
+            />
+          )}
+          {canDelete(record) && (
+            <Button
+              type="text"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => onDelete?.(record)}
+            />
+          )}
+          {!hideSignDelegation && canSignDelegation(record) && (
+            <Button
+              type="text"
+              size="small"
+              style={{ color: '#1890ff' }}
+              icon={<FileTextOutlined />}
+              onClick={() => onSignDelegation?.(record)}
+            >
+              Ký
+            </Button>
+          )}
+          <div className="flex-1" />
+          {canApprove(record) && (
+            <Button
+              type="text"
+              size="small"
+              style={{ color: '#52c41a' }}
+              icon={<CheckOutlined />}
+              onClick={() => onApprove?.(record)}
+            >
+              Duyệt
+            </Button>
+          )}
+          {canReject(record) && (
+            <Button
+              type="text"
+              size="small"
+              danger
+              icon={<CloseOutlined />}
+              onClick={() => onReject?.(record)}
+            >
+              Từ chối
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const mobilePagination = pagination
+    ? {
+        current: pagination.current,
+        total: pagination.total,
+        pageSize: pagination.pageSize,
+        onChange: pagination.onChange,
+        size: 'small' as const,
+        showTotal: (total: number) => `${total} đơn`
+      }
+    : null;
+
   return (
-    <div className="overflow-x-auto">
-      <Table
-        columns={columns}
-        dataSource={data}
-        loading={loading}
-        rowKey="id"
-        pagination={pagination}
-        scroll={{ x: 'max-content', scrollToFirstRowOnChange: false }}
-        size="middle"
-        className="request-forms-table"
-      />
+    <div className="w-full">
+      {/* Mobile Card View */}
+      <div className="block md:hidden">
+        <Spin spinning={loading}>
+          <div className="space-y-2">
+            {data.length > 0 ? (
+              data.map(renderMobileCard)
+            ) : (
+              <div className="py-8 text-center text-sm text-gray-400">
+                Không có đơn yêu cầu nào
+              </div>
+            )}
+          </div>
+          {mobilePagination && data.length > 0 && (
+            <div className="mt-3 flex justify-center">
+              <Pagination {...mobilePagination} />
+            </div>
+          )}
+        </Spin>
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block">
+        <Table
+          columns={columns}
+          dataSource={data}
+          loading={loading}
+          rowKey="id"
+          pagination={tablePagination}
+          scroll={{ x: 600, scrollToFirstRowOnChange: false }}
+          bordered
+          size="small"
+          tableLayout="auto"
+          className="request-forms-table"
+          onRow={(record) => ({
+            onClick: () => onView?.(record),
+            style: { cursor: 'pointer' }
+          })}
+        />
+      </div>
     </div>
   );
 };

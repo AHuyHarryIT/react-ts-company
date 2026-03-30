@@ -14,7 +14,7 @@ import Header from '@partials/Header';
 import Sidebar from '@partials/Sidebar';
 import { fetchNotifications } from '@services/NotificationService';
 import { updateScreenSize } from '@stores/uiStore';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Route } from '@routes/__root';
 
 const { Content } = Layout;
@@ -39,7 +39,10 @@ function AppLayout() {
     queryKey: ['notifications'],
     queryFn: () => {
       return fetchNotifications({ 'filter[is_show]': 1 });
-    }
+    },
+    placeholderData: keepPreviousData,
+    // Notifications ít thay đổi, cache 2 phút
+    staleTime: 2 * 60 * 1000
   });
 
   // Use cleaning duty notification hook

@@ -255,6 +255,7 @@ function AuthorizedRequestFormsPage() {
       rowScope: 'row',
       align: 'center',
       width: 60,
+      responsive: ['md' as const],
       render: (_value, _record, index) => index + 1
     },
     {
@@ -320,6 +321,7 @@ function AuthorizedRequestFormsPage() {
       title: 'Ngày nộp đơn',
       dataIndex: 'created_at',
       width: 140,
+      responsive: ['sm' as const],
       render: (date: string) => (
         <span className="text-sm text-gray-600">
           {dayjs(date).format('DD/MM/YYYY HH:mm')}
@@ -330,6 +332,7 @@ function AuthorizedRequestFormsPage() {
       title: 'Ngày duyệt',
       dataIndex: 'approved_at',
       width: 140,
+      responsive: ['md' as const],
       render: (date: string, record: RequestForm) => {
         if (record.status === 'approved' && date) {
           const approverInfo =
@@ -391,7 +394,6 @@ function AuthorizedRequestFormsPage() {
       title: 'Thao tác',
       key: 'actions',
       width: 120,
-      fixed: 'right',
       align: 'center',
       render: (_, record) => (
         <Space size="small">
@@ -448,12 +450,106 @@ function AuthorizedRequestFormsPage() {
 
   return (
     <>
-      <div>
-        <div className="mb-4 flex flex-wrap gap-4">
+      <div className="space-y-5">
+        {/* ── Action Bar ──────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
           <RefreshButton isLoading={isFetching} refresh={refetch} />
+          <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+            <Tag color="blue" className="!m-0 !text-xs">
+              📋 Tổng: <strong>{totalCount}</strong> đơn ủy quyền
+            </Tag>
+          </div>
         </div>
 
-        <Table<RequestForm> {...tableProps} />
+        {/* ── Mobile Card View ───────────────────────────────── */}
+        <div className="block md:hidden">
+          {isLoading ? (
+            <div className="py-8 text-center text-sm text-gray-400">
+              Đang tải...
+            </div>
+          ) : requestForms.length > 0 ? (
+            <div className="space-y-2">
+              {requestForms.map((record) => (
+                <div
+                  key={record.id}
+                  className="cursor-pointer rounded-xl border border-gray-100 bg-white p-3 shadow-sm active:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:active:bg-gray-700"
+                  onClick={() => handleViewDetail(record)}
+                >
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <Tag color="blue" className="!mb-1 !text-xs font-medium">
+                        {REQUEST_FORM_TYPES[record.type]}
+                      </Tag>
+                      <div className="truncate text-xs text-gray-600">
+                        {record.employee?.name}
+                      </div>
+                    </div>
+                    <Tag
+                      color={getStatusColor(record.status)}
+                      className="!m-0 shrink-0 !text-[11px] font-medium"
+                    >
+                      {REQUEST_FORM_STATUSES[record.status]}
+                    </Tag>
+                  </div>
+                  <div className="mb-2 text-[11px] text-gray-500">
+                    {dayjs(record.created_at).format('DD/MM/YYYY HH:mm')}
+                  </div>
+                  <div
+                    className="flex items-center gap-1 border-t border-gray-50 pt-2 dark:border-gray-700"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EyeOutlined />}
+                      onClick={() => handleViewDetail(record)}
+                    >
+                      Xem
+                    </Button>
+                    {canApproveOrReject(record) && (
+                      <>
+                        <div className="flex-1" />
+                        <Button
+                          type="text"
+                          size="small"
+                          style={{ color: '#52c41a' }}
+                          icon={<CheckOutlined />}
+                          onClick={() => handleApprove(record)}
+                        >
+                          Duyệt
+                        </Button>
+                        <Button
+                          type="text"
+                          size="small"
+                          danger
+                          icon={<CloseOutlined />}
+                          onClick={() => handleReject(record)}
+                        >
+                          Từ chối
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-sm text-gray-400">
+              Không có đơn ủy quyền nào
+            </div>
+          )}
+        </div>
+
+        {/* ── Desktop Table ──────────────────────────────────── */}
+        <div className="hidden md:block">
+          <Table<RequestForm>
+            {...tableProps}
+            onRow={(record) => ({
+              onClick: () => handleViewDetail(record),
+              style: { cursor: 'pointer' }
+            })}
+          />
+        </div>
       </div>
 
       {/* Modal Xem chi tiết */}
@@ -469,7 +565,7 @@ function AuthorizedRequestFormsPage() {
             Đóng
           </Button>
         ]}
-        width={900}
+        width="min(900px, 95vw)"
       >
         {selectedRequest && <DetailView data={selectedRequest} />}
       </Modal>
@@ -483,7 +579,7 @@ function AuthorizedRequestFormsPage() {
         okText="Xác nhận duyệt"
         cancelText="Hủy"
         confirmLoading={approveMutation.isPending}
-        width={600}
+        width="min(600px, 95vw)"
         okButtonProps={{
           icon: <CheckOutlined />,
           disabled: !signatureData
@@ -552,7 +648,7 @@ function AuthorizedRequestFormsPage() {
         }}
         cancelText="Hủy"
         confirmLoading={rejectMutation.isPending}
-        width={600}
+        width="min(600px, 95vw)"
       >
         {selectedRequest && (
           <div className="mt-4 space-y-4">

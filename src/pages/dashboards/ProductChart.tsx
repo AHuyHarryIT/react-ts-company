@@ -1,6 +1,7 @@
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 import { Bar } from '@ant-design/plots';
-import { Card, Badge, Statistic } from 'antd';
+import { Card, Badge } from 'antd';
+import { FaArrowUp, FaArrowDown, FaChartBar, FaEquals } from 'react-icons/fa';
 
 type ProductDataType = {
   product: string;
@@ -36,20 +37,43 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
   const config = {
     data: chartData,
     isGroup: false,
-    xField: 'product', // Đổi lại: product ở trục X (ngang)
-    yField: 'quantity', // Đổi lại: quantity ở trục Y (dọc)
+    xField: 'product',
+    yField: 'quantity',
     height: 400,
-    color: '#3b82f6', // Single blue color
-    columnStyle: {
-      radius: [4, 4, 0, 0], // Đổi lại cho column chart dọc
-      cursor: 'pointer'
+    style: {
+      radiusTopLeft: 6,
+      radiusTopRight: 6,
+      radiusBottomLeft: 6,
+      radiusBottomRight: 6,
+      fill: 'linear-gradient(0deg, #93c5fd 0%, #3b82f6 50%, #2563eb 100%)',
+      fillOpacity: 0.9,
+      cursor: 'pointer',
+      maxWidth: 28
+    },
+    state: {
+      active: {
+        fillOpacity: 1,
+        stroke: '#1d4ed8',
+        strokeWidth: 1
+      },
+      inactive: {
+        fillOpacity: 0.4
+      }
     },
     legend: false,
     axis: {
       y: {
-        labelFormatter: (value: number) => {
-          return formatNumber(value);
-        }
+        labelFormatter: (value: number) => formatNumber(value),
+        title: false,
+        label: {
+          style: {
+            fill: '#9ca3af',
+            fontSize: 11
+          }
+        },
+        grid: true,
+        gridStroke: '#f3f4f6',
+        gridStrokeDasharray: '4,4'
       },
       x: {
         labelFormatter: (text: string) => {
@@ -57,29 +81,23 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
             return text.length > 12 ? `${text.slice(0, 12)}...` : text;
           }
           return text.length > 15 ? `${text.slice(0, 15)}...` : text;
+        },
+        label: {
+          style: {
+            fill: '#6b7280',
+            fontSize: 11,
+            fontWeight: 500
+          }
         }
       }
     },
     tooltip: {
-      title: (d: ProductDataType) => `Sản phẩm ${d.product}`,
-      showTitle: true,
-      domStyles: {
-        'g2-tooltip': {
-          background: 'rgba(0, 0, 0, 0.8)',
-          color: '#fff',
-          borderRadius: '6px',
-          padding: '8px 12px',
-          fontSize: '12px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-        }
-      },
+      title: (d: ProductDataType) => `${d.product}`,
       items: [
         {
           field: 'quantity',
-          name: 'Số lượng bán',
-          valueFormatter: (value: number) => {
-            return `${formatNumber(value)} sản phẩm`;
-          }
+          name: 'Số lượng',
+          valueFormatter: (value: number) => `${formatNumber(value)} sản phẩm`
         }
       ]
     },
@@ -87,17 +105,12 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
       appear: {
         animation: 'grow-in-y',
         duration: 800,
-        delay: (_: ProductDataType, index: number) => index * 100
+        delay: (_: ProductDataType, index: number) => index * 60
       }
     },
-    interactions: [
-      {
-        type: 'element-highlight-by-color'
-      },
-      {
-        type: 'active-region'
-      }
-    ]
+    interaction: {
+      elementHighlight: true
+    }
   };
 
   // Calculate statistics
@@ -108,21 +121,40 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
   const minQuantity =
     chartData.length > 0 ? chartData[chartData.length - 1].quantity : 0;
 
+  const statCards = [
+    {
+      label: 'Cao nhất',
+      value: maxQuantity,
+      icon: <FaArrowUp className="text-gray-400" />
+    },
+    {
+      label: 'Trung bình',
+      value: avgQuantity,
+      icon: <FaEquals className="text-gray-400" />
+    },
+    {
+      label: 'Tổng cộng',
+      value: totalQuantity,
+      icon: <FaChartBar className="text-gray-400" />
+    },
+    {
+      label: 'Thấp nhất',
+      value: minQuantity,
+      icon: <FaArrowDown className="text-gray-400" />
+    }
+  ];
+
   return (
     <div className="h-full w-full">
       <Card
-        className="h-full border-0 bg-white shadow-lg"
-        style={{
-          borderRadius: '12px',
-          overflow: 'hidden'
-        }}
+        className="!rounded-2xl !border-gray-100 !shadow-sm dark:!border-gray-700 dark:!bg-gray-800/50"
         title={
           <div className="flex items-center gap-3">
             <div>
-              <h3 className="font-semibol mb-1 text-lg text-gray-800 uppercase">
+              <h3 className="mb-1 text-lg font-bold text-gray-800 uppercase dark:text-white">
                 Top Sản Phẩm Sản Xuất
               </h3>
-              <p className="flex items-center gap-2 text-sm font-normal text-gray-500">
+              <p className="flex items-center gap-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                 <Badge count={chartData.length} showZero color="#6b7280" />
                 <span>
                   {chartData.length} sản phẩm hàng đầu theo số lượng sản xuất
@@ -134,94 +166,32 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
         }
         extra={
           <div className="hidden items-center gap-4 lg:flex">
-            <span className="rounded bg-gray-50 px-2 py-1 text-xs font-bold text-gray-600">
-              Top sản phẩm
+            <span className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 text-xs font-bold text-blue-600 dark:from-blue-900/30 dark:to-indigo-900/30 dark:text-blue-400">
+              📊 Top sản phẩm
             </span>
           </div>
         }
       >
-        {/* Top Stats Cards */}
-        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <Card
-            className="border border-gray-200 bg-white shadow-sm"
-            style={{ borderRadius: '8px' }}
-          >
-            <Statistic
-              title={
-                <span className="text-xs font-medium text-gray-600">
-                  Cao nhất
-                </span>
-              }
-              value={maxQuantity}
-              formatter={(value) => (
-                <span className="text-base font-semibold text-gray-900">
-                  {formatNumber(Number(value))}
-                </span>
-              )}
-            />
-          </Card>
-
-          <Card
-            className="border border-gray-200 bg-white shadow-sm"
-            style={{ borderRadius: '8px' }}
-          >
-            <Statistic
-              title={
-                <span className="text-xs font-medium text-gray-600">
-                  Trung bình
-                </span>
-              }
-              value={avgQuantity}
-              formatter={(value) => (
-                <span className="text-base font-semibold text-gray-900">
-                  {formatNumber(Number(value))}
-                </span>
-              )}
-            />
-          </Card>
-
-          <Card
-            className="border border-gray-200 bg-white shadow-sm"
-            style={{ borderRadius: '8px' }}
-          >
-            <Statistic
-              title={
-                <span className="text-xs font-medium text-gray-600">
-                  Tổng cộng
-                </span>
-              }
-              value={totalQuantity}
-              formatter={(value) => (
-                <span className="text-base font-semibold text-gray-900">
-                  {formatNumber(Number(value))}
-                </span>
-              )}
-            />
-          </Card>
-
-          <Card
-            className="border border-gray-200 bg-white shadow-sm"
-            style={{ borderRadius: '8px' }}
-          >
-            <Statistic
-              title={
-                <span className="text-xs font-medium text-gray-600">
-                  Thấp nhất
-                </span>
-              }
-              value={minQuantity}
-              formatter={(value) => (
-                <span className="text-base font-semibold text-gray-900">
-                  {formatNumber(Number(value))}
-                </span>
-              )}
-            />
-          </Card>
+        {/* Stats Cards */}
+        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {statCards.map((stat, i) => (
+            <div
+              key={i}
+              className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
+            >
+              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                {stat.icon} {stat.label}
+              </div>
+              <div className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
+                {formatNumber(stat.value)}
+              </div>
+            </div>
+          ))}
         </div>
 
+        {/* Chart */}
         <div className="relative">
-          {/* Chart container */}
-          <div className="w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="w-full rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/30">
             <div
               className="w-full"
               style={{ height: 'clamp(300px, 50vh, 400px)' }}
@@ -230,14 +200,13 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
             </div>
           </div>
 
-          {/* Empty state */}
           {chartData.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-gray-50">
+            <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800/80">
               <div className="p-6 text-center">
-                <p className="mb-1 text-base font-medium text-gray-600">
+                <p className="mb-1 text-base font-medium text-gray-600 dark:text-gray-300">
                   Chưa có dữ liệu sản phẩm
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Dữ liệu sản phẩm sẽ xuất hiện tại đây
                 </p>
               </div>
@@ -247,50 +216,34 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
 
         {/* Production Analysis */}
         {chartData.length > 0 && (
-          <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <h4 className="mb-3 text-sm font-medium text-gray-800">
-              Báo cáo sản lượng
+          <div className="mt-6 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+            <h4 className="mb-3 text-sm font-bold text-gray-800 dark:text-white">
+              📋 Báo cáo sản lượng
             </h4>
             <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
-              <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Sản phẩm chính:</span>
-                <span className="font-medium text-gray-900">
+              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Sản phẩm chính:
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
                   {chartData[0]?.product || 'N/A'}
                 </span>
               </div>
-              <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Sản lượng cao nhất:</span>
-                <span className="font-medium text-gray-900">
+              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Sản lượng cao nhất:
+                </span>
+                <span className="font-semibold text-emerald-600">
                   {formatNumber(maxQuantity)}
                 </span>
               </div>
-              <div className="flex items-center justify-between rounded border border-gray-100 bg-white p-3">
-                <span className="text-gray-600">Sản lượng thấp nhất:</span>
-                <span className="font-medium text-gray-900">
-                  {formatNumber(minQuantity)}
+              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Chênh lệch:
                 </span>
-              </div>
-            </div>
-
-            {/* Simple production summary */}
-            <div className="mt-3 rounded border border-gray-200 bg-white p-3">
-              <h5 className="mb-2 text-xs font-medium text-gray-700">
-                Tổng quan sản xuất
-              </h5>
-              <div className="space-y-1 text-xs text-gray-600">
-                <div>
-                  • Tổng cộng: <strong>{formatNumber(totalQuantity)}</strong>{' '}
-                  sản phẩm được sản xuất
-                </div>
-                <div>
-                  • Sản lượng trung bình:{' '}
-                  <strong>{formatNumber(avgQuantity)}</strong> sản phẩm/loại
-                </div>
-                <div>
-                  • Chênh lệch cao-thấp:{' '}
-                  <strong>{formatNumber(maxQuantity - minQuantity)}</strong> sản
-                  phẩm
-                </div>
+                <span className="font-semibold text-blue-600">
+                  {formatNumber(maxQuantity - minQuantity)}
+                </span>
               </div>
             </div>
           </div>

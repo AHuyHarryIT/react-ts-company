@@ -203,13 +203,11 @@ export function getSignatureLabel(
  * @param record - Request form record
  * @returns boolean
  */
-export function needsSignatures(record: RequestForm): boolean {
-  // Delegation forms don't need signatures
-  if (record.type === 'giay_uy_quyen') {
-    return false;
-  }
-
-  // Regular forms need both supervisor and manager signatures
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function needsSignatures(_record: RequestForm): boolean {
+  // All form types need signatures
+  // Regular forms: supervisor + manager
+  // Delegation forms: delegator + authorized
   return true;
 }
 
@@ -219,9 +217,14 @@ export function needsSignatures(record: RequestForm): boolean {
  * @returns boolean
  */
 export function areSignaturesComplete(record: RequestForm): boolean {
-  // Delegation forms don't need signatures
+  // Delegation forms need both delegator and authorized signatures
   if (record.type === 'giay_uy_quyen') {
-    return true;
+    const hasDelegatorSignature =
+      !!record.has_delegator_signature || !!record.digital_signature_delegator;
+    const hasAuthorizedSignature =
+      !!record.has_authorized_signature ||
+      !!record.digital_signature_authorized;
+    return hasDelegatorSignature && hasAuthorizedSignature;
   }
 
   // Check if request was created by supervisor (employee_id === supervisor_id)
@@ -268,6 +271,10 @@ export function getEffectiveStatus(record: RequestForm): RequestFormStatus {
 
   // For pending requests, check if signatures are actually complete
   if (record.status === 'pending' && areSignaturesComplete(record)) {
+    // Delegation forms use 'authorized_approved' status
+    if (record.type === 'giay_uy_quyen') {
+      return 'authorized_approved';
+    }
     return 'approved';
   }
 

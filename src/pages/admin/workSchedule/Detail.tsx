@@ -7,10 +7,19 @@ import {
   TableColumnsType,
   TableProps,
   Tabs,
-  TabsProps
+  TabsProps,
+  Tag
 } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
+import {
+  FaCalendarCheck,
+  FaUtensils,
+  FaTrashAlt,
+  FaFemale,
+  FaMale,
+  FaSearch
+} from 'react-icons/fa';
 
 import { workLegends } from '@/configs/legend/workLegends.config';
 import { QueryParams } from '@/types/queryParams';
@@ -164,13 +173,24 @@ export default function Detail() {
   const columnsDefault = [
     {
       title: 'Mã NV',
-      dataIndex: 'employee_id'
-      // fixed: 'left',
+      dataIndex: 'employee_id',
+      render: (value: string) => (
+        <Tag color="blue" className="!font-mono !text-xs">
+          {value}
+        </Tag>
+      )
     },
     {
       title: 'Họ và tên',
       dataIndex: 'employee_name',
-      fixed: 'left'
+      fixed: 'left',
+      render: (value: string) => (
+        <span className="font-medium text-gray-800 dark:text-white/90">
+          {value || (
+            <span className="text-gray-400 italic">Chưa có thông tin</span>
+          )}
+        </span>
+      )
     }
   ];
   const columnsHNHC: TableColumnsType<HnhcTableType> = [
@@ -313,50 +333,17 @@ export default function Detail() {
         wcTrashData.push(wcTrashRow);
       }
     });
-    eatRoomData.sort((a, b) => {
+    const sortFn = (a: WcTableType, b: WcTableType) => {
       for (let i = 1; i <= maxDay; i++) {
-        if (a[`day${i}`] && !b[`day${i}`]) {
-          return -1;
-        }
-        if (!a[`day${i}`] && b[`day${i}`]) {
-          return 1;
-        }
+        if (a[`day${i}`] && !b[`day${i}`]) return -1;
+        if (!a[`day${i}`] && b[`day${i}`]) return 1;
       }
       return 0;
-    });
-    wcMenData.sort((a, b) => {
-      for (let i = 1; i <= maxDay; i++) {
-        if (a[`day${i}`] && !b[`day${i}`]) {
-          return -1;
-        }
-        if (!a[`day${i}`] && b[`day${i}`]) {
-          return 1;
-        }
-      }
-      return 0;
-    });
-    wcWomenData.sort((a, b) => {
-      for (let i = 1; i <= maxDay; i++) {
-        if (a[`day${i}`] && !b[`day${i}`]) {
-          return -1;
-        }
-        if (!a[`day${i}`] && b[`day${i}`]) {
-          return 1;
-        }
-      }
-      return 0;
-    });
-    wcTrashData.sort((a, b) => {
-      for (let i = 1; i <= maxDay; i++) {
-        if (a[`day${i}`] && !b[`day${i}`]) {
-          return -1;
-        }
-        if (!a[`day${i}`] && b[`day${i}`]) {
-          return 1;
-        }
-      }
-      return 0;
-    });
+    };
+    eatRoomData.sort(sortFn);
+    wcMenData.sort(sortFn);
+    wcWomenData.sort(sortFn);
+    wcTrashData.sort(sortFn);
     return {
       eatRoomData,
       wcMenData,
@@ -368,13 +355,20 @@ export default function Detail() {
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: 'Hàng Nhật - Hàng Chợ',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaCalendarCheck className="text-blue-500" />
+          Hàng Nhật - Hàng Chợ
+        </span>
+      ),
       children: (
         <>
           {hnhcData?.map((category) => (
-            <div key={category.group_id}>
-              <div className="flex items-center justify-center bg-cyan-400 py-2">
-                <span className="text-md font-bold">{category.group_name}</span>
+            <div key={category.group_id} className="mb-4">
+              <div className="flex items-center justify-center rounded-t-lg bg-gradient-to-r from-cyan-400 to-cyan-500 py-2">
+                <span className="text-md font-bold text-white">
+                  {category.group_name}
+                </span>
               </div>
 
               <Table<HnhcTableType>
@@ -399,94 +393,106 @@ export default function Detail() {
     },
     {
       key: '2',
-      label: 'Trực phòng ăn',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaUtensils className="text-amber-500" />
+          Trực phòng ăn
+        </span>
+      ),
       children: (
-        <>
-          <Table<WcTableType>
-            columns={columnsWC}
-            dataSource={eatRoomData}
-            rowKey={(record) =>
-              [
-                'scheduleEatRoom',
-                record.category_schedule_id,
-                record.employee_id
-              ].join('-')
-            }
-            bordered
-            scroll={{ x: 'max-content' }}
-            pagination={false}
-            size="small"
-          />
-        </>
+        <Table<WcTableType>
+          columns={columnsWC}
+          dataSource={eatRoomData}
+          rowKey={(record) =>
+            [
+              'scheduleEatRoom',
+              record.category_schedule_id,
+              record.employee_id
+            ].join('-')
+          }
+          bordered
+          scroll={{ x: 'max-content' }}
+          pagination={false}
+          size="small"
+        />
       )
     },
     {
       key: '3',
-      label: 'Đổ rác WC',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaTrashAlt className="text-emerald-500" />
+          Đổ rác WC
+        </span>
+      ),
       children: (
-        <>
-          <Table<WcTableType>
-            columns={columnsTrashWC}
-            dataSource={wcTrashData}
-            rowKey={(record) =>
-              [
-                'scheduleEatRoom',
-                record.category_schedule_id,
-                record.employee_id
-              ].join('-')
-            }
-            bordered
-            scroll={{ x: 'max-content' }}
-            pagination={false}
-            size="small"
-          />
-        </>
+        <Table<WcTableType>
+          columns={columnsTrashWC}
+          dataSource={wcTrashData}
+          rowKey={(record) =>
+            [
+              'scheduleEatRoom',
+              record.category_schedule_id,
+              record.employee_id
+            ].join('-')
+          }
+          bordered
+          scroll={{ x: 'max-content' }}
+          pagination={false}
+          size="small"
+        />
       )
     },
     {
       key: '4',
-      label: 'Trực WC nữ',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaFemale className="text-pink-500" />
+          Trực WC nữ
+        </span>
+      ),
       children: (
-        <>
-          <Table<WcTableType>
-            columns={columnsWC}
-            dataSource={wcWomenData}
-            rowKey={(record) =>
-              [
-                'scheduleWCWomen',
-                record.category_schedule_id,
-                record.employee_id
-              ].join('-')
-            }
-            bordered
-            scroll={{ x: 'max-content' }}
-            pagination={false}
-            size="small"
-          />
-        </>
+        <Table<WcTableType>
+          columns={columnsWC}
+          dataSource={wcWomenData}
+          rowKey={(record) =>
+            [
+              'scheduleWCWomen',
+              record.category_schedule_id,
+              record.employee_id
+            ].join('-')
+          }
+          bordered
+          scroll={{ x: 'max-content' }}
+          pagination={false}
+          size="small"
+        />
       )
     },
     {
       key: '5',
-      label: 'Trực WC nam',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaMale className="text-blue-500" />
+          Trực WC nam
+        </span>
+      ),
       children: (
-        <>
-          <Table<WcTableType>
-            columns={columnsWC}
-            dataSource={wcMenData}
-            rowKey={(record) =>
-              [
-                'scheduleWCMen',
-                record.category_schedule_id,
-                record.employee_id
-              ].join('-')
-            }
-            bordered
-            scroll={{ x: 'max-content' }}
-            pagination={false}
-            size="small"
-          />
-        </>
+        <Table<WcTableType>
+          columns={columnsWC}
+          dataSource={wcMenData}
+          rowKey={(record) =>
+            [
+              'scheduleWCMen',
+              record.category_schedule_id,
+              record.employee_id
+            ].join('-')
+          }
+          bordered
+          scroll={{ x: 'max-content' }}
+          pagination={false}
+          size="small"
+        />
       )
     }
   ];
@@ -501,37 +507,60 @@ export default function Detail() {
             : `Chi tiết lịch làm việc tháng ${currentDate?.format('MM-YYYY')}`
         }
       >
-        <div className="space-y-6">
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-5">
+          {/* ── Legends ──────────────────────────────────────────── */}
+          <div className="flex flex-wrap gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             {Object.entries(workLegends).map(([key, legend]) => (
-              <div key={key}>
+              <div
+                key={key}
+                className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800"
+              >
                 {legend.icon}
-                <span>{legend.label}</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {legend.label}
+                </span>
               </div>
             ))}
           </div>
-          <Input.Search
-            placeholder="Tìm kiếm nhân viên"
-            allowClear
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              if (/^\d+$/.test(inputValue)) {
-                handleSearch(inputValue, 'code');
-              } else {
-                handleSearch(inputValue, 'name');
-              }
-            }}
-          />
-        </div>
-        <Spin tip="Đang tải..." spinning={queryResult.isLoading}>
-          {queryResult.isError ? (
-            <div className="flex items-center justify-center">
-              <span className="text-red-500">Không tìm thấy lịch làm việc</span>
+
+          {/* ── Filter Bar ──────────────────────────────────────── */}
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaSearch className="mr-1 inline-block text-gray-400" />
+                  Tìm kiếm nhân viên
+                </label>
+                <Input.Search
+                  placeholder="Mã hoặc tên nhân viên..."
+                  allowClear
+                  className="!rounded-lg"
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    if (/^\d+$/.test(inputValue)) {
+                      handleSearch(inputValue, 'code');
+                    } else {
+                      handleSearch(inputValue, 'name');
+                    }
+                  }}
+                />
+              </div>
             </div>
-          ) : (
-            <Tabs items={items} size="middle" type="card" animated />
-          )}
-        </Spin>
+          </div>
+
+          {/* ── Tabs ────────────────────────────────────────────── */}
+          <Spin tip="Đang tải..." spinning={queryResult.isLoading}>
+            {queryResult.isError ? (
+              <div className="flex items-center justify-center rounded-xl border border-red-100 bg-red-50 p-8 dark:border-red-900/50 dark:bg-red-900/20">
+                <span className="text-red-500">
+                  Không tìm thấy lịch làm việc
+                </span>
+              </div>
+            ) : (
+              <Tabs items={items} size="large" type="card" animated />
+            )}
+          </Spin>
+        </div>
       </ComponentCard>
     </>
   );

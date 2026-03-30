@@ -115,13 +115,10 @@ export const checkDuplicateStamps = async (params: {
     )) as DuplicateCheckResponse;
 
     return data;
-  } catch {
-    // Return safe default if API fails
-    return {
-      isDuplicate: false,
-      duplicates: [],
-      message: 'API error'
-    };
+  } catch (error) {
+    // Rethrow so the mutation's onError handler can decide what to do
+    console.error('checkDuplicateStamps API error:', error);
+    throw error;
   }
 };
 
@@ -141,12 +138,9 @@ export const checkDuplicateStampsForEmployee = async (params: {
     )) as DuplicateCheckResponse;
 
     return data;
-  } catch {
-    // Return safe default if API fails
-    return {
-      isDuplicate: false,
-      duplicates: [],
-      message: 'API error'
-    };
+  } catch (error) {
+    // Rethrow so the mutation's onError handler can decide what to do
+    console.error('checkDuplicateStampsForEmployee API error:', error);
+    throw error;
   }
 };

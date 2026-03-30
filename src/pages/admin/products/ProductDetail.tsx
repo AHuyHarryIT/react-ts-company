@@ -11,11 +11,19 @@ import {
   TableColumnsType,
   TableProps,
   Tabs,
-  TabsProps
+  TabsProps,
+  Tag
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import {
+  FaCalendarAlt,
+  FaIndustry,
+  FaCheckCircle,
+  FaTruck,
+  FaExclamationTriangle
+} from 'react-icons/fa';
 import { DeleteModal, EditModal } from './ActionModal';
 import { UpdateQuantityModal } from './UpdateQuantityModal';
 
@@ -42,32 +50,53 @@ export const ProductDetail = () => {
     {
       title: 'STT',
       align: 'center',
-      render: (_value, _record, index) => index + 1
+      width: 60,
+      render: (_value, _record, index) => (
+        <span className="font-mono text-xs text-gray-500">{index + 1}</span>
+      )
     },
     {
       title: 'Tên nhân viên',
       key: 'employeeName',
-      dataIndex: ['employee', 'name']
+      dataIndex: ['employee', 'name'],
+      render: (value) => (
+        <span className="font-medium text-gray-800 dark:text-white/90">
+          {value || (
+            <span className="text-gray-400 italic">Chưa có thông tin</span>
+          )}
+        </span>
+      )
     },
     {
       title: 'Mã nhân viên',
       align: 'center',
       key: 'employeeCode',
-      dataIndex: ['employee', 'id']
+      dataIndex: ['employee', 'id'],
+      render: (value) => (
+        <Tag color="blue" className="!font-mono !text-xs">
+          {value}
+        </Tag>
+      )
     },
     {
       title: 'Thời gian cập nhật',
       align: 'center',
       key: 'date',
       dataIndex: ['date'],
-      render: (value) => dayjs(value).format('YYYY-MM-DD')
+      render: (value) => (
+        <span className="text-sm">{dayjs(value).format('YYYY-MM-DD')}</span>
+      )
     },
     {
-      title: 'Thời gian cuối cùng cập nhật',
+      title: 'Lần cuối cập nhật',
       key: 'lastUpdate',
       align: 'center',
       dataIndex: ['updated_at'],
-      render: (value) => dayjs(value).format('YYYY-MM-DD HH:mm:ss')
+      render: (value) => (
+        <span className="text-xs text-gray-500">
+          {dayjs(value).format('YYYY-MM-DD HH:mm:ss')}
+        </span>
+      )
     },
     {
       title: 'Số lượng',
@@ -75,14 +104,19 @@ export const ProductDetail = () => {
       key: 'quantity',
       dataIndex: ['quantity'],
       render: (value) => {
-        if (!value) return '-';
-        return (value || 0).toLocaleString();
+        if (!value) return <span className="text-gray-300">—</span>;
+        return (
+          <span className="font-semibold text-blue-600">
+            {(value || 0).toLocaleString()}
+          </span>
+        );
       }
     },
     {
       title: 'Hành động',
       key: 'actions',
       align: 'center',
+      width: 200,
       render: (_value, record, index) => (
         <div className="flex justify-center gap-2">
           <EditModal
@@ -124,55 +158,99 @@ export const ProductDetail = () => {
   const productTabs: TabsProps['items'] = [
     {
       key: 'status1',
-      label: 'Lịch sử sản xuất (100%)',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaIndustry className="text-emerald-500" />
+          Sản xuất (100%)
+        </span>
+      ),
       children: <Table {...tableProps} />
     },
     {
       key: 'status2',
-      label: 'Lịch sử hàng kiểm (200%)',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaCheckCircle className="text-cyan-500" />
+          Kiểm (200%)
+        </span>
+      ),
       children: <Table {...tableProps} />
     },
     {
       key: 'status3',
-      label: 'Lịch sử xuất hàng (200%)',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaTruck className="text-amber-500" />
+          Xuất hàng (200%)
+        </span>
+      ),
       children: <Table {...tableProps} />
     },
     {
       key: 'status6',
-      label: 'Lịch sử hàng lỗi',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaExclamationTriangle className="text-red-500" />
+          Hàng lỗi
+        </span>
+      ),
       children: <Table {...tableProps} />
     }
   ];
+
   return (
     <>
       <BackButton to="/admin/products" />
-      <ComponentCard title="Danh Sách Lịch Sử Cập Nhật Sản Phẩm">
-        <div className="text-lg">
-          <div>
-            <span className="font-semibold">Tên sản phẩm: </span>
-            {productHistoryDetail?.product.name ?? 'N/A'}
+      <ComponentCard title="Lịch sử cập nhật sản phẩm">
+        <div className="space-y-5">
+          {/* ── Product Info Header ─────────────────────────────────── */}
+          <div className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 dark:border-gray-700 dark:from-blue-900/20 dark:to-indigo-900/20">
+            <div className="space-y-2">
+              <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                {productHistoryDetail?.product.name ?? 'N/A'}
+              </h4>
+              <div className="flex items-center gap-2">
+                <Tag color="blue" className="!font-mono">
+                  {productHistoryDetail?.product.code ?? 'N/A'}
+                </Tag>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {productHistoryDetail?.product && (
+                <UpdateQuantityModal product={productHistoryDetail.product} />
+              )}
+            </div>
           </div>
-          <div>
-            <span className="font-semibold">Mã sản phẩm: </span>
-            {productHistoryDetail?.product.code ?? 'N/A'}
+
+          {/* ── Filter Bar ─────────────────────────────────────────── */}
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaCalendarAlt className="mr-1 inline-block text-blue-500" />
+                  Tháng
+                </label>
+                <DatePicker
+                  value={month}
+                  picker="month"
+                  className="!rounded-lg"
+                  onChange={(date) =>
+                    date ? setMonth(date) : setMonth(dayjs())
+                  }
+                />
+              </div>
+            </div>
           </div>
-        </div>
-        {productHistoryDetail?.product && (
-          <UpdateQuantityModal product={productHistoryDetail.product} />
-        )}
-        <div>
-          <DatePicker
-            value={month}
-            picker="month"
-            onChange={(date) => (date ? setMonth(date) : setMonth(dayjs()))}
+
+          {/* ── Tabs ───────────────────────────────────────────────── */}
+          <Tabs
+            items={productTabs}
+            type="card"
+            size="large"
+            animated
+            onChange={(setKey) => setSelectTab(setKey)}
           />
         </div>
-
-        <Tabs
-          items={productTabs}
-          type="card"
-          onChange={(setKey) => setSelectTab(setKey)}
-        />
       </ComponentCard>
     </>
   );

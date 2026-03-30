@@ -141,6 +141,26 @@ export function useDynamicCrudForm<
       onError?.(err);
     }
   });
+  const forceDeleteMutation = useMutation({
+    mutationFn: () => {
+      if (!service.forceDelete) {
+        return Promise.reject(new Error('ForceDelete service is not defined'));
+      }
+      return service.forceDelete(id!);
+    },
+    onSuccess: () => {
+      message.success('Xoá vĩnh viễn thành công');
+      onSuccess?.();
+      queryClient.invalidateQueries();
+    },
+    onError: (err) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      message.error(
+        axiosErr?.response?.data?.message || 'Xoá vĩnh viễn thất bại'
+      );
+      onError?.(err);
+    }
+  });
 
   return {
     form: activeForm,
@@ -150,6 +170,8 @@ export function useDynamicCrudForm<
     deleteItem: deleteMutation.mutate,
     isRestoring: restoreMutation.isPending,
     restoreItem: restoreMutation.mutate,
+    isForceDeleting: forceDeleteMutation.isPending,
+    forceDeleteItem: forceDeleteMutation.mutate,
     refetch,
     resetForm: () => activeForm.resetFields()
   };

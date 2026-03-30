@@ -5,9 +5,9 @@ import { UserInfo } from '@components/UserInfo';
 import { fetchTodoList, updateTodoQuantity } from '@services/TodoService';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Button, Form, InputNumber, message, Select } from 'antd';
+import { Form, InputNumber, message, Select } from 'antd';
 import { FormProps } from 'antd/lib';
-import { BsArrowLeft } from 'react-icons/bs';
+import { FaBoxOpen, FaEdit } from 'react-icons/fa';
 import { IoWarning } from 'react-icons/io5';
 
 interface FormValues {
@@ -51,90 +51,119 @@ export const UpdateQuantity = () => {
       mutate(values);
     }
   };
+
   return (
     <>
-      <ComponentCard title="Cập Nhật Sản Lượng Sản Phẩm">
-        <div className="flex flex-col flex-wrap items-center gap-4 lg:flex-row">
-          <Link to="/employee/todo/add-product">
-            <Button variant="solid" color="blue" icon={<BsArrowLeft />}>
-              NHẬP SẢN PHẨM
-            </Button>
-          </Link>
-          <Link to="/employee/todo/history">
-            <Button variant="solid" color="gold" icon={<IconHistory />}>
-              LỊCH SỬ
-            </Button>
-          </Link>
-          <Link to="/employee/todo/update-quantity-error">
-            <Button variant="solid" color="danger" icon={<IoWarning />}>
-              CẬP NHẬT HÀNG LỖI
-            </Button>
-          </Link>
-        </div>
-        <div className="rounded-lg border bg-gray-200 p-4">
-          <h2 className="text-2xl font-bold">Lưu ý</h2>
-          <p className="font-semibold">
-            Nhân viên nhập sản lượng thì kiểm tra lịch sử trong phần{' '}
-            <Link to="/employee/todo/history">
-              <span className="text-blue-500 uppercase underline">
-                Lịch sử cập nhật sản lượng
-              </span>{' '}
+      <ComponentCard
+        title={
+          <div className="flex items-center gap-3">
+            <FaEdit className="text-emerald-500" />
+            <span>Cập Nhật Sản Lượng Sản Phẩm</span>
+          </div>
+        }
+      >
+        <div className="space-y-5">
+          {/* ── Action Bar ─────────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+            <Link to="/employee/todo/add-product">
+              <button className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-[0.97]">
+                <FaBoxOpen className="text-xs" />
+                NHẬP SẢN PHẨM
+              </button>
             </Link>
-            .
-          </p>
-          <p className="font-semibold">
-            Nhân viên nhập hàng lỗi thì phải chọn vào ô
+            <Link to="/employee/todo/history">
+              <button className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition-all hover:bg-amber-100 hover:shadow-md active:scale-[0.97] dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                <IconHistory />
+                LỊCH SỬ
+              </button>
+            </Link>
             <Link to="/employee/todo/update-quantity-error">
-              {' '}
-              <span className="text-green-500 uppercase underline">
-                Cập Nhật hàng lỗi
-              </span>{' '}
+              <button className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-red-600 hover:shadow-md active:scale-[0.97]">
+                <IoWarning className="text-xs" />
+                CẬP NHẬT HÀNG LỖI
+              </button>
             </Link>
-            sau đó kiểm tra{' '}
-            <Link to="/employee/todo/history">
-              <span className="text-red-500 uppercase underline">
-                Lịch sử cập nhật sản lượng
-              </span>{' '}
-            </Link>
-            .
-          </p>
-        </div>
-        <div className="space-y-6 lg:w-1/2">
-          <UserInfo />
-          <Form<FormValues> {...formProps}>
-            <Form.Item<FormValues>
-              label="Chọn sản phẩm"
-              name="productId"
-              rules={[{ required: true, message: 'Vui lòng chọn sản phẩm' }]}
-            >
-              <Select
-                options={todoOptions}
-                allowClear
-                showSearch
-                placeholder="Chọn sản phẩm"
-              />
-            </Form.Item>
-            <Form.Item<FormValues>
-              label="Số lượng sản phẩm"
-              name="quantity"
-              rules={[
-                { required: true, message: 'Vui lòng nhập số lượng sản phẩm' },
-                { type: 'number', message: 'Số lượng phải lớn hơn 0' }
-              ]}
-            >
-              <InputNumber min={1} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item>
-              <Button
-                variant="solid"
-                color="green"
-                htmlType="submit"
-                loading={isPending}
-              >
-                Cập nhật
-              </Button>
-            </Form.Item>
-          </Form>
+          </div>
+
+          {/* ── Notice ─────────────────────────────────────────── */}
+          <div className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 dark:border-amber-800 dark:from-amber-900/20 dark:to-orange-900/20">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-800 dark:text-amber-300">
+              ⚠️ Lưu ý
+            </h3>
+            <div className="mt-2 space-y-1.5 text-sm text-amber-700 dark:text-amber-400">
+              <p>
+                Nhân viên nhập sản lượng thì kiểm tra lịch sử trong phần{' '}
+                <Link to="/employee/todo/history">
+                  <span className="font-semibold text-blue-600 underline hover:text-blue-700 dark:text-blue-400">
+                    Lịch sử cập nhật sản lượng
+                  </span>
+                </Link>
+                .
+              </p>
+              <p>
+                Nhân viên nhập hàng lỗi thì phải chọn vào ô{' '}
+                <Link to="/employee/todo/update-quantity-error">
+                  <span className="font-semibold text-emerald-600 underline hover:text-emerald-700 dark:text-emerald-400">
+                    Cập nhật hàng lỗi
+                  </span>
+                </Link>{' '}
+                sau đó kiểm tra{' '}
+                <Link to="/employee/todo/history">
+                  <span className="font-semibold text-red-600 underline hover:text-red-700 dark:text-red-400">
+                    Lịch sử cập nhật sản lượng
+                  </span>
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-6 lg:w-1/2">
+            {/* ── User Info ───────────────────────────────────── */}
+            <UserInfo />
+
+            {/* ── Form ────────────────────────────────────────── */}
+            <div className="rounded-xl border border-gray-100 bg-white/80 p-5 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+              <Form<FormValues> {...formProps}>
+                <Form.Item<FormValues>
+                  label="Chọn sản phẩm"
+                  name="productId"
+                  rules={[
+                    { required: true, message: 'Vui lòng chọn sản phẩm' }
+                  ]}
+                >
+                  <Select
+                    options={todoOptions}
+                    allowClear
+                    showSearch
+                    placeholder="Chọn sản phẩm"
+                  />
+                </Form.Item>
+                <Form.Item<FormValues>
+                  label="Số lượng sản phẩm"
+                  name="quantity"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng nhập số lượng sản phẩm'
+                    },
+                    { type: 'number', message: 'Số lượng phải lớn hơn 0' }
+                  ]}
+                >
+                  <InputNumber min={1} style={{ width: '100%' }} />
+                </Form.Item>
+                <Form.Item>
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97] disabled:opacity-50"
+                  >
+                    {isPending ? 'Đang cập nhật...' : 'Cập nhật'}
+                  </button>
+                </Form.Item>
+              </Form>
+            </div>
+          </div>
         </div>
       </ComponentCard>
     </>

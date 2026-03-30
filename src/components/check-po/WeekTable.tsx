@@ -12,17 +12,19 @@ interface WeekTableProps {
   month: Dayjs;
   startDate: Dayjs;
   endDate: Dayjs;
+  search?: string;
 }
 
 export const WeekTable: React.FC<WeekTableProps> = ({
   month,
   startDate,
-  endDate
+  endDate,
+  search
 }) => {
   const [dataSource, setDataSource] = useState<WeekTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
   const [total, setTotal] = useState(0);
 
   const {
@@ -31,7 +33,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
     queryResult
   } = useCrudList({
     service: productService,
-    queryKey: 'products',
+    queryKey: 'products-weekly',
     initialFilters: {
       page: page,
       limit: limit,
@@ -65,10 +67,16 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   useEffect(() => {
     if (!tableData.length) return;
 
-    const data = weeklyDataSource(tableData, startDate, endDate);
+    let data = weeklyDataSource(tableData, startDate, endDate);
+
+    // Client-side search filter
+    if (search) {
+      const keyword = search.toLowerCase().trim();
+      data = data.filter((item) => item.name?.toLowerCase().includes(keyword));
+    }
 
     setDataSource(data);
-  }, [endDate, startDate, tableData]);
+  }, [endDate, startDate, tableData, search]);
 
   const dateColumns: TableColumnsType<WeekTableType> = dayList.map(
     (date, index) => {

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Button, message, Modal, Alert, Spin, Tabs } from 'antd';
+import { message, Modal, Alert, Spin, Tabs, Tag } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { usePrefetchAuthorizableEmployees } from '@/hooks/useAuthorizedEmployee';
 import RefreshButton from '@components/common/RefreshButton';
+import ComponentCard from '@components/common/ComponentCard';
 import {
   DataTable,
   FilterPanel,
@@ -26,6 +27,7 @@ import {
 } from '@/types/requestFormType';
 import { SUPERVISOR_IDS } from '@/constants/supervisors';
 import { getUserApprovalType } from '@utils/authUtil';
+import { FaFileAlt, FaCheckDouble } from 'react-icons/fa';
 
 export default function RequestFormList() {
   const { user } = useAuth();
@@ -487,35 +489,53 @@ export default function RequestFormList() {
   const tabItems = [
     {
       key: 'my-requests',
-      label: 'Đơn của tôi',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaFileAlt className="text-blue-500" />
+          Đơn của tôi
+        </span>
+      ),
       children: (
-        <>
-          <div className="mb-4 flex flex-wrap gap-4">
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
+        <div className="space-y-5">
+          {/* ── Action Bar ──────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+            <button
               onClick={() => setCreateModalVisible(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97]"
             >
+              <PlusOutlined />
               Tạo đơn mới
-            </Button>
+            </button>
             <RefreshButton isLoading={isFetching} refresh={refetch} />
+            <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+              <Tag color="blue" className="!m-0 !text-xs">
+                📋 Tổng: <strong>{data?.total ?? 0}</strong> đơn
+              </Tag>
+            </div>
           </div>
 
-          <FilterPanel
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            onClearFilters={handleClearFilters}
-            isAdmin={false}
-          />
-
-          {error && (
-            <Alert
-              message="Đã có lỗi xảy ra vui lòng thử lại sau"
-              type="error"
-              className="mb-4"
+          {/* ── Filter Panel ───────────────────────────────── */}
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <FilterPanel
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClearFilters={handleClearFilters}
+              isAdmin={false}
             />
+          </div>
+
+          {/* ── Error Alert ────────────────────────────────── */}
+          {error && (
+            <div className="rounded-xl border border-red-100 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-900/20">
+              <Alert
+                message="Đã có lỗi xảy ra vui lòng thử lại sau"
+                type="error"
+                showIcon
+              />
+            </div>
           )}
 
+          {/* ── Table ──────────────────────────────────────── */}
           <Spin spinning={isLoading}>
             <DataTable
               data={requestForms}
@@ -529,38 +549,56 @@ export default function RequestFormList() {
               hideSignDelegation={true}
             />
           </Spin>
-        </>
+        </div>
       )
     },
     ...(isSupervisor
       ? [
           {
             key: 'approval',
-            label: 'Duyệt đơn',
+            label: (
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <FaCheckDouble className="text-emerald-500" />
+                Duyệt đơn
+              </span>
+            ),
             children: (
-              <>
-                <div className="mb-4 flex items-center justify-between">
+              <div className="space-y-5">
+                {/* ── Action Bar ────────────────────────────── */}
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
                   <RefreshButton
                     isLoading={adminIsFetching}
                     refresh={adminRefetch}
                   />
+                  <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+                    <Tag color="blue" className="!m-0 !text-xs">
+                      📋 Tổng: <strong>{adminData?.total ?? 0}</strong> đơn
+                    </Tag>
+                  </div>
                 </div>
 
-                <FilterPanel
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  onClearFilters={handleClearFilters}
-                  isAdmin={true}
-                />
-
-                {adminError && (
-                  <Alert
-                    message="Đã có lỗi xảy ra vui lòng thử lại sau"
-                    type="error"
-                    className="mb-4"
+                {/* ── Filter Panel ─────────────────────────── */}
+                <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+                  <FilterPanel
+                    filters={filters}
+                    onFiltersChange={handleFiltersChange}
+                    onClearFilters={handleClearFilters}
+                    isAdmin={true}
                   />
+                </div>
+
+                {/* ── Error Alert ───────────────────────────── */}
+                {adminError && (
+                  <div className="rounded-xl border border-red-100 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-900/20">
+                    <Alert
+                      message="Đã có lỗi xảy ra vui lòng thử lại sau"
+                      type="error"
+                      showIcon
+                    />
+                  </div>
                 )}
 
+                {/* ── Table ────────────────────────────────── */}
                 <Spin spinning={adminIsLoading}>
                   <DataTable
                     data={adminRequestForms}
@@ -575,7 +613,7 @@ export default function RequestFormList() {
                     userType={userType || undefined}
                   />
                 </Spin>
-              </>
+              </div>
             )
           }
         ]
@@ -584,14 +622,23 @@ export default function RequestFormList() {
 
   return (
     <>
-      <div>
+      <ComponentCard
+        title={
+          <div className="flex items-center gap-3">
+            <FaFileAlt className="text-blue-500" />
+            <span>Quản lý đơn yêu cầu</span>
+          </div>
+        }
+      >
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
           items={tabItems}
           type="card"
+          size="large"
+          animated
         />
-      </div>
+      </ComponentCard>
 
       {/* Delete Confirmation Modal */}
       <ConfirmDeleteModal

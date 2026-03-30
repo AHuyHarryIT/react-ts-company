@@ -19,7 +19,8 @@ import {
   Input,
   message,
   Popconfirm,
-  Table
+  Table,
+  Tag
 } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import { useState } from 'react';
@@ -84,7 +85,6 @@ export const NotificationTable = () => {
         content: 'Cập nhật thông báo thành công!',
         key: 'updating'
       });
-      // Optimistically update the cache for the current page
       queryClient.setQueryData(
         ['notifications', params],
         (oldData: PaginatedResponse<NotificationType>) => {
@@ -101,7 +101,6 @@ export const NotificationTable = () => {
       );
       form.resetFields();
       setEditingKey('');
-      // Still refetch to ensure data consistency
       queryClient.invalidateQueries();
     },
     onError: () => {
@@ -125,7 +124,6 @@ export const NotificationTable = () => {
         content: 'Xóa thông báo thành công!',
         key: 'deleting'
       });
-      // Optimistically remove the notification from the cache for the current page
       queryClient.setQueryData(
         ['notifications', params],
         (oldData: PaginatedResponse<NotificationType> | undefined) => {
@@ -138,7 +136,6 @@ export const NotificationTable = () => {
           };
         }
       );
-      // Still refetch to ensure data consistency
       queryClient.invalidateQueries();
     },
     onError: () => {
@@ -189,14 +186,22 @@ export const NotificationTable = () => {
     {
       title: 'STT',
       align: 'center' as const,
-      render: (_value, _record, index) =>
-        index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
+      width: 60,
+      render: (_value, _record, index) => (
+        <span className="font-mono text-xs text-gray-500">
+          {index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)}
+        </span>
+      )
     },
     {
       title: 'Nội dung',
       key: 'message',
       dataIndex: 'message',
-      render: (value: string) => value,
+      render: (value: string) => (
+        <span className="text-sm text-gray-800 dark:text-white/90">
+          {value}
+        </span>
+      ),
       onCell: (record: TableColumns) => ({
         record,
         dataIndex: 'message',
@@ -208,12 +213,17 @@ export const NotificationTable = () => {
       title: 'Hiển thị',
       key: 'is_show',
       dataIndex: 'is_show',
+      align: 'center',
       filters: [
         { text: 'Có', value: true },
         { text: 'Không', value: false }
       ],
       render: (value: boolean) => {
-        return value ? 'Có' : 'Không';
+        return value ? (
+          <Tag color="green">Có</Tag>
+        ) : (
+          <Tag color="red">Không</Tag>
+        );
       },
       onCell: (record: TableColumns) => ({
         record,
@@ -226,11 +236,12 @@ export const NotificationTable = () => {
       title: 'Hành động',
       key: 'action',
       align: 'center',
+      width: 200,
       dataIndex: 'id',
       render: (_, record) => {
         const editable = isEditing(record);
         return editable ? (
-          <span className="flex justify-center gap-2">
+          <div className="flex justify-center gap-2">
             <Button
               variant="solid"
               color="green"
@@ -246,9 +257,9 @@ export const NotificationTable = () => {
             <Popconfirm title="Hủy thay đổi?" onConfirm={cancel}>
               <Button variant="solid">Hủy</Button>
             </Popconfirm>
-          </span>
+          </div>
         ) : (
-          <span className="flex justify-center gap-2">
+          <div className="flex justify-center gap-2">
             <Button
               variant="solid"
               color="blue"
@@ -256,7 +267,7 @@ export const NotificationTable = () => {
               onClick={() => edit(record)}
               disabled={editingKey !== ''}
             >
-              Chỉnh sửa
+              Sửa
             </Button>
             <Popconfirm
               title="Xóa thông báo?"
@@ -271,7 +282,7 @@ export const NotificationTable = () => {
                 Xóa
               </Button>
             </Popconfirm>
-          </span>
+          </div>
         );
       }
     }

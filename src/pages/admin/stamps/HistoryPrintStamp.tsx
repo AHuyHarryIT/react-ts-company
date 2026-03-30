@@ -8,7 +8,7 @@ import {
   HistoryPrintStampType,
   checkDuplicateStamps
 } from '@services/StampService';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { Route } from '@routes/_authenticated/stamps/history';
 import {
   Button,
@@ -23,6 +23,12 @@ import {
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState, useEffect, useRef } from 'react';
+import {
+  FaCalendarAlt,
+  FaClock,
+  FaExchangeAlt,
+  FaCheckCircle
+} from 'react-icons/fa';
 import { PrintBagStamp } from '@components/print/PrintBagStamp';
 import { PrintBoxStamp } from '@components/print/PrintBoxStamp';
 import { RejectModal } from './RejectModal';
@@ -45,7 +51,8 @@ export default function HistoryPrintStamp() {
 
   const queryResult = useQuery({
     queryKey: ['historyPrintStamp', params],
-    queryFn: async () => await getStampHistory(params)
+    queryFn: async () => await getStampHistory(params),
+    placeholderData: keepPreviousData
   });
 
   const { data: response } = queryResult;
@@ -77,7 +84,6 @@ export default function HistoryPrintStamp() {
           title: 'Cảnh báo: Phát hiện tem trùng lặp',
           content: (
             <div>
-              {/* <p>Các tem sau đã được in trước đó với trạng thái "Đã in" và mục đích "In mới":</p> */}
               <pre className="mt-2 rounded border border-yellow-200 bg-yellow-50 p-2 text-sm">
                 {duplicateInfo}
               </pre>
@@ -120,7 +126,6 @@ export default function HistoryPrintStamp() {
 
   // Function to handle print button click
   const handlePrintClick = (record: HistoryPrintStampType) => {
-    // Validate required fields
     if (
       !record.product_id ||
       !record.date ||
@@ -136,18 +141,16 @@ export default function HistoryPrintStamp() {
       return;
     }
 
-    // Prepare request data with proper types
     const requestData = {
-      product_id: String(record.product_id), // Ensure string
-      date: dayjs(record.date).format('YYYY-MM-DD'), // Ensure correct date format
+      product_id: String(record.product_id),
+      date: dayjs(record.date).format('YYYY-MM-DD'),
       shift: record.shift,
-      binStart: String(record.binStart), // Ensure string
-      binCount: Number(record.binCount), // Ensure number
+      binStart: String(record.binStart),
+      binCount: Number(record.binCount),
       type: record.type,
       record: record
     };
 
-    // Check for duplicates first
     checkDuplicate(requestData);
   };
 
@@ -164,7 +167,7 @@ export default function HistoryPrintStamp() {
             block: 'center'
           });
         }
-      }, 500); // Delay để đảm bảo table đã render
+      }, 500);
 
       return () => clearTimeout(timer);
     }
@@ -174,24 +177,36 @@ export default function HistoryPrintStamp() {
     {
       title: 'STT',
       rowScope: 'row',
-      minWidth: 50,
+      width: 60,
       align: 'center',
-      render: (_value, _record, index) =>
-        index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)
+      render: (_value, _record, index) => (
+        <span className="font-mono text-xs text-gray-500">
+          {index + 1 + (params.limit ?? 10) * ((params.page ?? 1) - 1)}
+        </span>
+      )
     },
     {
       title: 'Tên sản phẩm',
       key: 'product_name',
-      dataIndex: ['product', 'name']
+      dataIndex: ['product', 'name'],
+      render: (value) => (
+        <span className="font-medium text-gray-800 dark:text-white/90">
+          {value || <span className="text-gray-400 italic">Chưa có</span>}
+        </span>
+      )
     },
     {
-      title: 'Tên nhân viên gửi',
+      title: 'NV gửi',
       key: 'name',
       dataIndex: ['employee', 'name'],
       minWidth: 200,
-      render: (value) => {
-        return value || 'Chưa có thông tin';
-      }
+      render: (value) => (
+        <span className="font-medium text-gray-800 dark:text-white/90">
+          {value || (
+            <span className="text-gray-400 italic">Chưa có thông tin</span>
+          )}
+        </span>
+      )
     },
     {
       title: 'Số Lot',
@@ -199,53 +214,71 @@ export default function HistoryPrintStamp() {
       dataIndex: ['date'],
       minWidth: 100,
       align: 'center',
-      render: (value) => {
-        return dayjs(value).format('DD-MM-YYYY');
-      }
+      render: (value) => (
+        <span className="text-sm">{dayjs(value).format('DD-MM-YYYY')}</span>
+      )
     },
     {
       title: 'Ca',
       key: 'shift',
       dataIndex: 'shift',
       align: 'center',
-      minWidth: 100
+      minWidth: 80,
+      render: (value) => {
+        if (value === 1) return <Tag color="blue">Ca 1</Tag>;
+        if (value === 2) return <Tag color="purple">Ca 2</Tag>;
+        return <span className="text-gray-300">—</span>;
+      }
     },
     {
-      title: 'Số lượng in',
+      title: 'SL in',
       key: 'print_quantity',
       dataIndex: 'binCount',
       align: 'center',
-      minWidth: 100
+      minWidth: 80,
+      render: (value) => (
+        <span className="font-semibold text-blue-600">{value}</span>
+      )
     },
     {
-      title: 'Bắt đầu từ tem số',
+      title: 'Tem bắt đầu',
       key: 'bin_start',
       dataIndex: 'binStart',
       align: 'center',
-      minWidth: 100
+      minWidth: 100,
+      render: (value) => (
+        <Tag color="geekblue" className="!font-mono !text-xs">
+          {value}
+        </Tag>
+      )
     },
     {
       title: 'Loại tem',
       key: 'stamp_type',
       dataIndex: 'type',
       render: (value) => {
-        if (value === 'bag') return 'Tem Bịch';
-        if (value === 'box') return 'Tem Thùng';
-        return value;
+        if (value === 'bag') return <Tag color="orange">Tem Bịch</Tag>;
+        if (value === 'box') return <Tag color="cyan">Tem Thùng</Tag>;
+        return <Tag>{value}</Tag>;
       }
     },
     {
-      title: 'Mục đích in',
+      title: 'Mục đích',
       key: 'purpose',
       dataIndex: 'purpose',
       render: (value) => {
-        if (!value) return '-';
-        const purposeMap: Record<string, string> = {
-          new: 'In mới',
-          additional: 'In thêm',
-          reprint: 'In lại'
+        if (!value) return <span className="text-gray-300">—</span>;
+        const purposeMap: Record<string, { label: string; color: string }> = {
+          new: { label: 'In mới', color: 'green' },
+          additional: { label: 'In thêm', color: 'blue' },
+          reprint: { label: 'In lại', color: 'orange' }
         };
-        return purposeMap[value] || value;
+        const item = purposeMap[value];
+        return item ? (
+          <Tag color={item.color}>{item.label}</Tag>
+        ) : (
+          <Tag>{value}</Tag>
+        );
       }
     },
     {
@@ -253,35 +286,38 @@ export default function HistoryPrintStamp() {
       key: 'print_day',
       dataIndex: 'created_at',
       align: 'center',
-      render: (value) => {
-        return dayjs(value).format('DD/MM/YYYY');
-      }
+      render: (value) => (
+        <div className="text-center">
+          <div className="text-sm">{dayjs(value).format('DD/MM/YYYY')}</div>
+          <div className="text-xs text-gray-400">
+            {dayjs(value).format('HH:mm:ss')}
+          </div>
+        </div>
+      )
     },
     {
-      title: 'Thời gian gửi',
-      key: 'print_time',
-      dataIndex: 'created_at',
-      render: (value) => {
-        return dayjs(value).format('HH:mm:ss');
-      }
-    },
-    {
-      title: 'Tên nhân viên in',
+      title: 'NV in',
       key: 'name',
       dataIndex: ['manager', 'name'],
       align: 'center',
-      render: (value) => {
-        return value || '-';
-      }
+      render: (value) => (
+        <span className="text-sm">
+          {value || <span className="text-gray-300">—</span>}
+        </span>
+      )
     },
     {
-      title: 'Thời gian in',
+      title: 'Giờ in',
       key: 'manager_time',
       dataIndex: 'manager_time',
       align: 'center',
       render: (value) => {
-        if (!value) return '-';
-        return dayjs(value, 'HH:mm:ss').format('HH:mm:ss');
+        if (!value) return <span className="text-gray-300">—</span>;
+        return (
+          <Tag color="green" className="!text-xs">
+            {dayjs(value, 'HH:mm:ss').format('HH:mm:ss')}
+          </Tag>
+        );
       }
     },
     {
@@ -358,7 +394,6 @@ export default function HistoryPrintStamp() {
     dataSource: dataSource,
     loading: queryResult.isLoading,
     rowClassName: (record) => {
-      // Highlight dòng nếu record.id trùng với highlightId - màu vàng sáng
       return record.id === highlightId
         ? 'bg-yellow-100 border-l-4 border-l-yellow-500 shadow-md'
         : '';
@@ -385,190 +420,227 @@ export default function HistoryPrintStamp() {
 
   return (
     <>
-      <ComponentCard
-        title={`Lịch sử in tem${lotDate ? ` - Số Lot: ${lotDate.format('DD/MM/YYYY')}` : createdDate ? ` - ${createdDate.format('DD/MM/YYYY')}` : ''}`}
-      >
-        <RefreshButton
-          isLoading={queryResult.isFetching}
-          refresh={queryResult.refetch}
-        />
-        <section className="flex flex-wrap gap-2">
-          <DatePicker
-            placeholder="Chọn Số Lot"
-            format="DD/MM/YYYY"
-            value={lotDate}
-            allowClear
-            onChange={(value) => {
-              setLotDate(value);
-              const newParams: QueryParams = {
-                page: 1,
-                limit: params.limit || 50,
-                include: ['employee', 'manager', 'product']
-              };
+      <ComponentCard title="Lịch sử in tem">
+        <div className="space-y-5">
+          {/* ── Action Bar ── */}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+            <RefreshButton
+              isLoading={queryResult.isFetching}
+              refresh={queryResult.refetch}
+            />
+            <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+              <span className="text-xs text-gray-500">
+                {lotDate
+                  ? `🏷️ Lot: ${lotDate.format('DD/MM/YYYY')}`
+                  : createdDate
+                    ? `📅 ${createdDate.format('DD/MM/YYYY')}`
+                    : '📅 Tất cả'}
+              </span>
+            </div>
+          </div>
 
-              if (value) {
-                // Khi chọn Số Lot, xóa filter created_at
-                newParams['filter[date]'] = dayjs(value).format('YYYY-MM-DD');
-                setCreatedDate(null);
-              } else if (createdDate) {
-                // Khi clear Số Lot, giữ lại created_at nếu có
-                newParams['filter[created_at]'] =
-                  createdDate.format('YYYY-MM-DD');
-              }
+          {/* ── Filter Bar ── */}
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaCalendarAlt className="mr-1 inline-block text-blue-500" />
+                  Số Lot
+                </label>
+                <DatePicker
+                  placeholder="Chọn Số Lot"
+                  format="DD/MM/YYYY"
+                  value={lotDate}
+                  allowClear
+                  className="!rounded-lg"
+                  onChange={(value) => {
+                    setLotDate(value);
+                    const newParams: QueryParams = {
+                      page: 1,
+                      limit: params.limit || 50,
+                      include: ['employee', 'manager', 'product']
+                    };
 
-              // Giữ lại các filter khác (shift, status)
-              if (params['filter[shift]']) {
-                newParams['filter[shift]'] = params['filter[shift]'];
-              }
-              if (params['filter[status]']) {
-                newParams['filter[status]'] = params['filter[status]'];
-              }
+                    if (value) {
+                      newParams['filter[date]'] =
+                        dayjs(value).format('YYYY-MM-DD');
+                      setCreatedDate(null);
+                    } else if (createdDate) {
+                      newParams['filter[created_at]'] =
+                        createdDate.format('YYYY-MM-DD');
+                    }
 
-              setParams(newParams);
-            }}
-          />
-          <DatePicker
-            placeholder="Chọn ngày gửi"
-            format="DD/MM/YYYY"
-            value={createdDate}
-            allowClear
-            onChange={(value) => {
-              setCreatedDate(value);
-              const newParams: QueryParams = {
-                page: 1,
-                limit: params.limit || 50,
-                include: ['employee', 'manager', 'product']
-              };
+                    if (params['filter[shift]']) {
+                      newParams['filter[shift]'] = params['filter[shift]'];
+                    }
+                    if (params['filter[status]']) {
+                      newParams['filter[status]'] = params['filter[status]'];
+                    }
 
-              if (value) {
-                // Khi chọn ngày gửi, xóa filter date
-                newParams['filter[created_at]'] =
-                  dayjs(value).format('YYYY-MM-DD');
-                setLotDate(null);
-              } else if (lotDate) {
-                // Khi clear ngày gửi, giữ lại date nếu có
-                newParams['filter[date]'] = lotDate.format('YYYY-MM-DD');
-              }
+                    setParams(newParams);
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaClock className="mr-1 inline-block text-purple-500" />
+                  Ngày gửi
+                </label>
+                <DatePicker
+                  placeholder="Chọn ngày gửi"
+                  format="DD/MM/YYYY"
+                  value={createdDate}
+                  allowClear
+                  className="!rounded-lg"
+                  onChange={(value) => {
+                    setCreatedDate(value);
+                    const newParams: QueryParams = {
+                      page: 1,
+                      limit: params.limit || 50,
+                      include: ['employee', 'manager', 'product']
+                    };
 
-              // Giữ lại các filter khác (shift, status)
-              if (params['filter[shift]']) {
-                newParams['filter[shift]'] = params['filter[shift]'];
-              }
-              if (params['filter[status]']) {
-                newParams['filter[status]'] = params['filter[status]'];
-              }
+                    if (value) {
+                      newParams['filter[created_at]'] =
+                        dayjs(value).format('YYYY-MM-DD');
+                      setLotDate(null);
+                    } else if (lotDate) {
+                      newParams['filter[date]'] = lotDate.format('YYYY-MM-DD');
+                    }
 
-              setParams(newParams);
-            }}
-          />
-          <Select
-            className="min-w-24"
-            placeholder="Chọn ca"
-            options={[
-              { value: '1', label: 'Ca 1' },
-              { value: '2', label: 'Ca 2' }
-            ]}
-            allowClear
-            onChange={(value) => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[shift]': value
-              }));
-            }}
-          />
-          <Select
-            className="min-w-24"
-            placeholder="Chọn trạng thái"
-            options={[
-              { value: 'pending', label: 'Chờ in' },
-              { value: 'approve', label: 'Đã in' },
-              { value: 'rejected', label: 'Đã hủy' }
-            ]}
-            allowClear
-            onChange={(value) => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[status]': value
-              }));
-            }}
-          />
-        </section>
+                    if (params['filter[shift]']) {
+                      newParams['filter[shift]'] = params['filter[shift]'];
+                    }
+                    if (params['filter[status]']) {
+                      newParams['filter[status]'] = params['filter[status]'];
+                    }
 
-        <Table {...tableProps} />
+                    setParams(newParams);
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaExchangeAlt className="mr-1 inline-block text-emerald-500" />
+                  Ca làm việc
+                </label>
+                <Select
+                  placeholder="Chọn ca"
+                  options={[
+                    { value: '1', label: 'Ca 1' },
+                    { value: '2', label: 'Ca 2' }
+                  ]}
+                  allowClear
+                  className="!rounded-lg"
+                  onChange={(value) => {
+                    setParams((prev) => ({
+                      ...prev,
+                      'filter[shift]': value
+                    }));
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaCheckCircle className="mr-1 inline-block text-orange-500" />
+                  Trạng thái
+                </label>
+                <Select
+                  placeholder="Chọn trạng thái"
+                  options={[
+                    { value: 'pending', label: 'Chờ in' },
+                    { value: 'approve', label: 'Đã in' },
+                    { value: 'rejected', label: 'Đã hủy' }
+                  ]}
+                  allowClear
+                  className="!rounded-lg"
+                  onChange={(value) => {
+                    setParams((prev) => ({
+                      ...prev,
+                      'filter[status]': value
+                    }));
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Table ── */}
+          <Table {...tableProps} />
+        </div>
       </ComponentCard>
 
       {/* Print Preview Section */}
       {selectedRecord && (
         <div ref={printPreviewRef} className="mt-8">
           <ComponentCard title="Xem trước khi in">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                <p>
-                  <strong>Sản phẩm:</strong> {selectedRecord.product.name}
-                </p>
-                <p>
-                  <strong>Nhân viên yêu cầu:</strong>{' '}
-                  {selectedRecord.employee?.name || 'Chưa có thông tin'}
-                </p>
-                <p>
-                  <strong>Ngày:</strong>{' '}
-                  {dayjs(selectedRecord.date).format('DD-MM-YYYY')}
-                </p>
-                <p>
-                  <strong>Ca:</strong> {selectedRecord.shift}
-                </p>
-                <p>
-                  <strong>Số lượng:</strong> {selectedRecord.binCount}
-                </p>
+            <div className="space-y-5">
+              {/* Print Info Header */}
+              <div className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 dark:border-gray-700 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <div className="space-y-2">
+                  <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                    {selectedRecord.product.name}
+                  </h4>
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Tag color="blue">
+                      NV: {selectedRecord.employee?.name || 'Chưa có thông tin'}
+                    </Tag>
+                    <Tag color="geekblue">
+                      {dayjs(selectedRecord.date).format('DD-MM-YYYY')}
+                    </Tag>
+                    <Tag color="purple">Ca {selectedRecord.shift}</Tag>
+                    <Tag color="cyan">SL: {selectedRecord.binCount}</Tag>
+                  </div>
+                </div>
+                <Button
+                  color="red"
+                  variant="outlined"
+                  onClick={() => setSelectedRecord(null)}
+                >
+                  Đóng
+                </Button>
               </div>
-              <Button
-                color="red"
-                variant="outlined"
-                onClick={() => setSelectedRecord(null)}
-              >
-                Đóng
-              </Button>
+
+              {(selectedRecord.type === 'box' ||
+                selectedRecord.type === 'Tem Thùng') && (
+                <PrintBoxStamp
+                  product={selectedRecord.product}
+                  startStamp={selectedRecord.binStart}
+                  totalStamp={
+                    selectedRecord.binStart &&
+                    selectedRecord.binStart.includes(',')
+                      ? selectedRecord.binStart
+                          .split(',')
+                          .filter((item) => item.trim() !== '').length
+                      : selectedRecord.binCount
+                  }
+                  shift={selectedRecord.shift}
+                  date={dayjs(selectedRecord.date)}
+                  employee_id={selectedRecord.employee_id}
+                  stamp_id={selectedRecord.id}
+                />
+              )}
+
+              {(selectedRecord.type === 'bag' ||
+                selectedRecord.type === 'Tem Bịch') && (
+                <PrintBagStamp
+                  product={selectedRecord.product}
+                  startStamp={selectedRecord.binStart}
+                  totalStamp={
+                    selectedRecord.binStart &&
+                    selectedRecord.binStart.includes(',')
+                      ? selectedRecord.binStart
+                          .split(',')
+                          .filter((item) => item.trim() !== '').length
+                      : selectedRecord.binCount
+                  }
+                  shift={selectedRecord.shift}
+                  date={dayjs(selectedRecord.date)}
+                  employee_id={selectedRecord.employee_id}
+                  stamp_id={selectedRecord.id}
+                />
+              )}
             </div>
-
-            {(selectedRecord.type === 'box' ||
-              selectedRecord.type === 'Tem Thùng') && (
-              <PrintBoxStamp
-                product={selectedRecord.product}
-                startStamp={selectedRecord.binStart}
-                totalStamp={
-                  selectedRecord.binStart &&
-                  selectedRecord.binStart.includes(',')
-                    ? selectedRecord.binStart
-                        .split(',')
-                        .filter((item) => item.trim() !== '').length
-                    : selectedRecord.binCount
-                }
-                shift={selectedRecord.shift}
-                date={dayjs(selectedRecord.date)}
-                employee_id={selectedRecord.employee_id}
-                stamp_id={selectedRecord.id}
-              />
-            )}
-
-            {(selectedRecord.type === 'bag' ||
-              selectedRecord.type === 'Tem Bịch') && (
-              <PrintBagStamp
-                product={selectedRecord.product}
-                startStamp={selectedRecord.binStart}
-                totalStamp={
-                  selectedRecord.binStart &&
-                  selectedRecord.binStart.includes(',')
-                    ? selectedRecord.binStart
-                        .split(',')
-                        .filter((item) => item.trim() !== '').length
-                    : selectedRecord.binCount
-                }
-                shift={selectedRecord.shift}
-                date={dayjs(selectedRecord.date)}
-                employee_id={selectedRecord.employee_id}
-                stamp_id={selectedRecord.id}
-              />
-            )}
           </ComponentCard>
         </div>
       )}

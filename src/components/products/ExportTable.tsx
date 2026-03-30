@@ -60,11 +60,17 @@ export const ExportTable: React.FC<ExportTableProps> = ({
       .date(index + 1)
       .format('DD-MM-YYYY');
     return {
-      title: date,
+      title: (
+        <span className="text-xs">
+          {dayjs(month)
+            .date(index + 1)
+            .format('DD/MM')}
+        </span>
+      ),
       align: 'center',
       dataIndex: ['times', date, 'quantity'],
       key: `${date}_quantity`,
-      minWidth: 100,
+      width: 75,
       className: index % 2 === 0 ? 'bg-indigo-200' : '',
       render: (value) => {
         if (!value) return '0';
@@ -79,16 +85,18 @@ export const ExportTable: React.FC<ExportTableProps> = ({
     {
       title: <div className="capitalize">STT</div>,
       rowScope: 'row',
-      minWidth: 50,
+      width: 50,
       align: 'center',
+      responsive: ['md'],
       render: (_value, _record, index) =>
         index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
-      minWidth: 100,
+      width: 120,
       fixed: 'left',
       dataIndex: 'name',
+      ellipsis: true,
       render: (value, record) => {
         return (
           <Link to={'/admin/products/$id'} params={{ id: record.id }}>
@@ -98,16 +106,16 @@ export const ExportTable: React.FC<ExportTableProps> = ({
       }
     },
     {
-      title: <div>Mã sản phẩm</div>,
-      minWidth: 100,
-      dataIndex: 'code'
+      title: <div>Mã SP</div>,
+      width: 90,
+      dataIndex: 'code',
+      responsive: ['lg']
     },
     {
-      title: <div>Tổng cộng</div>,
-      minWidth: 100,
+      title: <div className="text-xs">Tổng</div>,
+      width: 70,
       align: 'center',
       dataIndex: 'total',
-      fixed: 'left',
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({

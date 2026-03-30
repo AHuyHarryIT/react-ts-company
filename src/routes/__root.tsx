@@ -1,16 +1,15 @@
 import { AuthContext } from '@/hooks/useAuth';
 import { User } from '@/types/authType';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { queryClient } from '@/lib/queryClient';
 
 type RouterContext = {
   user: User | null;
   authenticated: AuthContext;
 };
-
-const queryClient = new QueryClient();
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => (

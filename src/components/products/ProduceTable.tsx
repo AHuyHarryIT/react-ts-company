@@ -61,9 +61,15 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
       .date(index + 1)
       .format('DD-MM-YYYY');
     return {
-      title: date,
+      title: (
+        <span className="text-xs">
+          {dayjs(month)
+            .date(index + 1)
+            .format('DD/MM')}
+        </span>
+      ),
       align: 'center',
-      minWidth: 100,
+      width: 90,
       children: [
         {
           title: 'Ca 1',
@@ -71,7 +77,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
           dataIndex: ['times', date, 'shift1'],
           align: 'center',
           className: index % 2 === 0 ? 'bg-indigo-200' : '',
-          minWidth: 50,
+          minWidth: 45,
           render: (value) => {
             if (!value) return '0';
             return value.toLocaleString({
@@ -85,7 +91,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
           dataIndex: ['times', date, 'shift2'],
           align: 'center',
           className: index % 2 === 0 ? 'bg-indigo-200' : '',
-          minWidth: 50,
+          minWidth: 45,
           render: (value) => {
             if (!value) return '0';
             return value.toLocaleString({
@@ -100,8 +106,9 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
   const columns: TableColumnsType<ProduceTableType> = [
     {
       title: <div className="capitalize">STT</div>,
-      minWidth: 50,
+      width: 50,
       align: 'center',
+      responsive: ['md'],
       render: (_value, _record, index) =>
         index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
@@ -109,8 +116,9 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
       title: <div>Tên sản phẩm</div>,
       key: 'name',
       dataIndex: 'name',
-      minWidth: 100,
+      width: 120,
       fixed: 'left',
+      ellipsis: true,
       render: (value, record) => {
         return (
           <Link to={'/admin/products/$id'} params={{ id: record.id }}>
@@ -120,16 +128,16 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
       }
     },
     {
-      title: <div>Mã sản phẩm</div>,
-      minWidth: 100,
-      dataIndex: 'code'
+      title: <div>Mã SP</div>,
+      width: 90,
+      dataIndex: 'code',
+      responsive: ['lg']
     },
     {
-      title: <div>Tổng cộng</div>,
+      title: <div className="text-xs">Tổng</div>,
       key: 'total',
       dataIndex: 'total',
-      minWidth: 100,
-      fixed: 'left',
+      width: 70,
       align: 'center',
       render: (value) => {
         if (!value) return 0;

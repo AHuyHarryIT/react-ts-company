@@ -1,7 +1,13 @@
-import { Button, DatePicker, Tabs, TabsProps } from 'antd';
+import { Button, DatePicker, Input, Tabs, TabsProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import {
+  FaCalendarDay,
+  FaExclamationTriangle,
+  FaCalendarWeek,
+  FaSearch
+} from 'react-icons/fa';
 
 import { DailyTable } from '@components/check-po/DailyTable';
 import { ErrorTable } from '@components/check-po/ErrorTable';
@@ -10,12 +16,23 @@ import ComponentCard from '@components/common/ComponentCard';
 import { getWeeksInMonth } from '@utils/weeksInMonth';
 
 import { IconAdd, IconHistory } from '@components/icons';
-import { Link } from '@tanstack/react-router';
 import { FaTruck, FaWarehouse } from 'react-icons/fa6';
 import { ExportPoModal } from './ExportPoModal';
+import { AddQuantityModal } from './AddQuantityModal';
+import { AddExportQuantityModal } from './AddExportQuantityModal';
+import { InventoryQuantityModal } from './InventoryQuantityModal';
+import { PoHistoryModal } from './PoHistoryModal';
+import { ExcelToCsvModal } from './ExcelToCsvModal';
 
 export const PoList = () => {
   const [month, setMonth] = useState<Dayjs>(dayjs());
+  const [search, setSearch] = useState('');
+
+  // ── Modal States ──────────────────────────────────────────
+  const [addQuantityOpen, setAddQuantityOpen] = useState(false);
+  const [addExportOpen, setAddExportOpen] = useState(false);
+  const [addInventoryOpen, setAddInventoryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const { weeksInMonth, startOfMonth, endOfMonth } = getWeeksInMonth(month);
 
@@ -32,7 +49,13 @@ export const PoList = () => {
 
       return {
         key: `week-${index + 1}`,
-        label: `Tuần ${index + 1} (${weekStart.format('DD/MM')} - ${weekEnd.format('DD/MM')})`,
+        label: (
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <FaCalendarWeek className="text-blue-500" />
+            Tuần {index + 1} ({weekStart.format('DD/MM')} -{' '}
+            {weekEnd.format('DD/MM')})
+          </span>
+        ),
         children: (
           <div className="space-y-2">
             <div className="text-center text-lg font-semibold uppercase">
@@ -40,7 +63,12 @@ export const PoList = () => {
               <br />
               {`(${weekStart.format('DD/MM/YYYY')} - ${weekEnd.format('DD/MM/YYYY')})`}
             </div>
-            <WeekTable month={month} startDate={weekStart} endDate={weekEnd} />
+            <WeekTable
+              month={month}
+              startDate={weekStart}
+              endDate={weekEnd}
+              search={search}
+            />
           </div>
         )
       };
@@ -51,7 +79,12 @@ export const PoList = () => {
     ...weekTabs,
     {
       key: 'daily',
-      label: 'Hàng ngày',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaCalendarDay className="text-emerald-500" />
+          Hàng ngày
+        </span>
+      ),
       children: (
         <div className="space-y-2">
           <div className="text-center text-lg font-semibold uppercase">
@@ -59,13 +92,18 @@ export const PoList = () => {
             <br />
             Tháng {month.format('MM-YYYY')}
           </div>
-          <DailyTable month={month} />
+          <DailyTable month={month} search={search} />
         </div>
       )
     },
     {
       key: 'error',
-      label: 'Hàng lỗi',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaExclamationTriangle className="text-red-500" />
+          Hàng lỗi
+        </span>
+      ),
       children: (
         <div className="space-y-2">
           <div className="text-center text-lg font-semibold uppercase">
@@ -73,46 +111,104 @@ export const PoList = () => {
             <br />
             Tháng {month.format('MM-YYYY')}
           </div>
-          <ErrorTable month={month} />
+          <ErrorTable month={month} search={search} />
         </div>
       )
     }
   ];
 
   return (
-    <ComponentCard title="Danh sách PO">
-      <div className="flex flex-wrap justify-between gap-2">
-        <div className="flex flex-wrap gap-2">
-          <Link to="/admin/check-po/add">
-            <Button variant="solid" color="green" icon={<IconAdd />}>
-              Thêm sản lượng
-            </Button>
-          </Link>
-          <Link to="/admin/check-po/add-export">
-            <Button variant="solid" color="blue" icon={<FaTruck />}>
-              Thêm PO xuất hàng
-            </Button>
-          </Link>
-          <Link to="/admin/check-po/add-inventory">
-            <Button variant="solid" color="blue" icon={<FaWarehouse />}>
-              Thêm tồn đầu kỳ
-            </Button>
-          </Link>
-          <Link to="/admin/check-po/history">
-            <Button variant="solid" color="blue" icon={<IconHistory />}>
-              Lịch sử nhập PO
-            </Button>
-          </Link>
+    <ComponentCard title="Quản lý PO">
+      <div className="space-y-5">
+        {/* ── Action Bar ────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+          <Button
+            variant="solid"
+            color="green"
+            icon={<IconAdd />}
+            onClick={() => setAddQuantityOpen(true)}
+          >
+            Thêm sản lượng
+          </Button>
+          <Button
+            variant="solid"
+            color="blue"
+            icon={<FaTruck />}
+            onClick={() => setAddExportOpen(true)}
+          >
+            Thêm PO xuất hàng
+          </Button>
+          <Button
+            variant="solid"
+            color="blue"
+            icon={<FaWarehouse />}
+            onClick={() => setAddInventoryOpen(true)}
+          >
+            Thêm tồn đầu kỳ
+          </Button>
+          <Button
+            variant="solid"
+            color="blue"
+            icon={<IconHistory />}
+            onClick={() => setHistoryOpen(true)}
+          >
+            Lịch sử nhập PO
+          </Button>
           <ExportPoModal />
+          <ExcelToCsvModal />
+
+          <div className="ml-auto flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+              <FaSearch className="text-xs text-gray-400" />
+              <Input
+                placeholder="Tìm sản phẩm..."
+                allowClear
+                size="small"
+                className="!w-48 !border-0 !shadow-none"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+              <span className="mr-2 text-xs text-gray-500">📅 Tháng:</span>
+              <DatePicker
+                picker="month"
+                value={month}
+                size="small"
+                className="!rounded-lg"
+                onChange={(date) => (date ? setMonth(date) : setMonth(dayjs()))}
+              />
+            </div>
+          </div>
         </div>
-        <DatePicker
-          picker="month"
-          value={month}
-          onChange={(date) => (date ? setMonth(date) : setMonth(dayjs()))}
+
+        {/* ── Tabs ──────────────────────────────────────────────── */}
+        <Tabs
+          items={poTabs}
+          type="card"
+          size="large"
+          animated
+          destroyOnHidden
         />
       </div>
 
-      <Tabs items={poTabs} type="card" />
+      {/* ── Modals ────────────────────────────────────────────── */}
+      <AddQuantityModal
+        open={addQuantityOpen}
+        onClose={() => setAddQuantityOpen(false)}
+      />
+      <AddExportQuantityModal
+        open={addExportOpen}
+        onClose={() => setAddExportOpen(false)}
+      />
+      <InventoryQuantityModal
+        open={addInventoryOpen}
+        onClose={() => setAddInventoryOpen(false)}
+      />
+      <PoHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
     </ComponentCard>
   );
 };

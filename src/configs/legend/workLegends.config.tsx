@@ -18,7 +18,7 @@ export const workLegends = {
     )
   },
   X: {
-    label: 'Nghĩ',
+    label: 'Nghỉ',
     icon: (
       <Tag className="font-bold" color="red-inverse">
         X

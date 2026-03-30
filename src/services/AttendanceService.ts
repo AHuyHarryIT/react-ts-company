@@ -65,8 +65,8 @@ export const fetchAttendancesCalculated = async (params?: QueryParams) => {
   return await axiosPrivate.get<
     AttendanceResult,
     PaginatedResponse<AttendanceResult>
-  >([ENDPOINT, 'calculate'].join('/'), {
-    params
+  >(ENDPOINT, {
+    params: { ...params, include_calculation: 1 }
   });
 };
 
@@ -74,7 +74,7 @@ export const fetchEmpAttendancesCalculated = async (params?: QueryParams) => {
   return await axiosPrivate.get<
     AttendanceResult,
     PaginatedResponse<AttendanceResult>
-  >([EMP_ENDPOINT, 'calculate'].join('/'), {
-    params
+  >(EMP_ENDPOINT, {
+    params: { ...params, include_calculation: 1 }
   });
 };

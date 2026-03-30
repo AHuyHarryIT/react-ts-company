@@ -506,7 +506,7 @@ export const AdminActionModal: React.FC<AdminActionModalProps> = ({
         danger: mode === 'reject',
         type: mode === 'approve' ? 'primary' : 'default'
       }}
-      width={600}
+      width="min(600px, 95vw)"
       destroyOnHidden
     >
       <Form form={form} layout="vertical">

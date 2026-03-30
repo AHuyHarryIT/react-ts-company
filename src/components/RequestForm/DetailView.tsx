@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { Card, Row, Col, Tag, Space, Typography } from 'antd';
+import React from 'react';
+import { Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { STORAGE_URL } from '@/configs/environment.config';
 import {
@@ -290,15 +290,15 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
           </Text>
         </div>
 
-        {/* Mobile & Desktop Layout - 2 columns centered with proper spacing */}
-        <div className="flex items-start justify-center gap-8 sm:gap-64">
-          <div className="w-full max-w-[150px] text-center sm:max-w-[200px]">
-            <div className="mb-2 sm:mb-2">
-              <Text strong className="text-xs sm:text-base">
+        {/* Mobile: 2 columns stacked neatly | Desktop: 2 columns with wider spacing */}
+        <div className="grid grid-cols-2 gap-4 sm:gap-16 md:gap-32 lg:gap-48">
+          <div className="text-center">
+            <div className="mb-2">
+              <Text strong className="text-[11px] sm:text-base">
                 Bên được ủy quyền
               </Text>
             </div>
-            <div className="mb-2 flex h-[80px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-2 sm:h-[100px]">
+            <div className="mb-2 flex h-[70px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:h-[100px] sm:p-2">
               {data.digital_signature_authorized ? (
                 <img
                   src={getSignatureUrl(
@@ -315,8 +315,10 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
                   onError={(e) => {
                     const target = e.currentTarget;
                     target.style.display = 'none';
-                    target.parentElement!.innerHTML =
-                      '<span class="text-gray-400 text-xs sm:text-sm">[Lỗi]</span>';
+                    if (target.parentElement) {
+                      target.parentElement.innerHTML =
+                        '<span class="text-gray-400 text-xs sm:text-sm">[Lỗi]</span>';
+                    }
                   }}
                 />
               ) : (
@@ -325,20 +327,20 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
                 </Text>
               )}
             </div>
-            <div className="border-t border-gray-400 pt-2">
-              <Text className="text-xs font-medium sm:text-base">
+            <div className="border-t border-gray-400 pt-1 sm:pt-2">
+              <Text className="text-[11px] font-medium sm:text-base">
                 {authorizedName}
               </Text>
             </div>
           </div>
 
-          <div className="w-full max-w-[150px] text-center sm:max-w-[200px]">
-            <div className="mb-2 sm:mb-2">
-              <Text strong className="text-xs sm:text-base">
+          <div className="text-center">
+            <div className="mb-2">
+              <Text strong className="text-[11px] sm:text-base">
                 Bên ủy quyền
               </Text>
             </div>
-            <div className="mb-2 flex h-[80px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-2 sm:h-[100px]">
+            <div className="mb-2 flex h-[70px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:h-[100px] sm:p-2">
               {data.digital_signature_delegator ? (
                 <img
                   src={getSignatureUrl(
@@ -355,8 +357,10 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
                   onError={(e) => {
                     const target = e.currentTarget;
                     target.style.display = 'none';
-                    target.parentElement!.innerHTML =
-                      '<span class="text-gray-400 text-xs sm:text-sm">[Lỗi]</span>';
+                    if (target.parentElement) {
+                      target.parentElement.innerHTML =
+                        '<span class="text-gray-400 text-xs sm:text-sm">[Lỗi]</span>';
+                    }
                   }}
                 />
               ) : (
@@ -365,8 +369,8 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
                 </Text>
               )}
             </div>
-            <div className="border-t border-gray-400 pt-2">
-              <Text className="text-xs font-medium sm:text-base">
+            <div className="border-t border-gray-400 pt-1 sm:pt-2">
+              <Text className="text-[11px] font-medium sm:text-base">
                 {data.employee.name}
               </Text>
             </div>
@@ -835,66 +839,41 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
           </Text>
         </div>
 
-        {/* Mobile & Desktop Layout - Conditional columns based on supervisor and direct-to-manager */}
-        <div
-          className={`grid gap-2 sm:gap-8 ${isEmployeeSupervisor || canSubmitDirectToManager ? 'grid-cols-2' : 'grid-cols-3'}`}
-        >
-          <div className="text-center">
-            <div className="mb-2 sm:mb-3">
-              <Text strong className="text-xs sm:text-base">
-                {isEmployeeSupervisor ? 'Tổ trưởng làm đơn' : 'Người làm đơn'}
-              </Text>
-            </div>
-            <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
-              {data.digital_signature_applicant ? (
-                <img
-                  src={getSignatureUrl(
-                    data.digital_signature_applicant,
-                    data.updated_at
-                  )}
-                  alt="Chữ ký người làm đơn"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
-                    display: 'block'
-                  }}
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    target.style.display = 'none';
-                    target.parentElement!.innerHTML =
-                      '<span class="text-gray-400 text-xs">[Lỗi]</span>';
-                  }}
-                />
-              ) : (
-                <Text className="text-xs text-gray-400 sm:text-sm">
-                  [Vùng chữ ký]
-                </Text>
-              )}
-            </div>
-            <div className="border-t border-gray-400 pt-1 sm:pt-2">
-              <Text className="text-xs font-medium sm:text-base">
-                {data.employee.name}
-              </Text>
-            </div>
-          </div>
+        {/* Mobile: stack 2 cols on top + 1 below | Desktop: proper 2/3 columns side by side */}
+        {(() => {
+          const showSupervisor =
+            !isEmployeeSupervisor && !canSubmitDirectToManager;
+          const colCount = showSupervisor ? 3 : 2;
 
-          {/* Only show supervisor column if employee is not supervisor AND not direct-to-manager */}
-          {!isEmployeeSupervisor && !canSubmitDirectToManager && (
-            <div className="text-center">
-              <div className="mb-2 sm:mb-3">
-                <Text strong className="text-xs sm:text-base">
-                  Tổ trưởng
+          // Reusable signature block
+          const SignatureBlock = ({
+            label,
+            signaturePath,
+            name,
+            placeholder
+          }: {
+            label: string;
+            signaturePath?: string | null;
+            name: string;
+            placeholder: string;
+          }) => (
+            <div className="min-w-0 text-center">
+              <div className="mb-1.5 sm:mb-3">
+                <Text
+                  strong
+                  style={{
+                    fontSize: 'clamp(7px, 2.5vw, 16px)',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {label}
                 </Text>
               </div>
-              <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
-                {data.digital_signature_supervisor ? (
+              <div className="mb-1.5 flex h-[65px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
+                {signaturePath ? (
                   <img
-                    src={getSignatureUrl(
-                      data.digital_signature_supervisor,
-                      data.updated_at
-                    )}
-                    alt="Chữ ký tổ trưởng"
+                    src={getSignatureUrl(signaturePath, data.updated_at)}
+                    alt={label}
                     style={{
                       maxWidth: '100%',
                       maxHeight: '100%',
@@ -904,167 +883,400 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
                     onError={(e) => {
                       const target = e.currentTarget;
                       target.style.display = 'none';
-                      target.parentElement!.innerHTML =
-                        '<span class="text-gray-400 text-xs">[Lỗi]</span>';
+                      if (target.parentElement) {
+                        target.parentElement.innerHTML =
+                          '<span class="text-gray-400 text-xs">[Lỗi]</span>';
+                      }
                     }}
                   />
                 ) : (
-                  <Text className="text-xs text-gray-400 sm:text-sm">
-                    [Tổ trưởng ký]
+                  <Text className="text-[10px] text-gray-400 sm:text-sm">
+                    {placeholder}
                   </Text>
                 )}
               </div>
               <div className="border-t border-gray-400 pt-1 sm:pt-2">
-                <Text className="text-xs font-medium sm:text-base">
-                  {supervisorName || '__________'}
+                <Text
+                  className="font-medium"
+                  style={{
+                    fontSize: 'clamp(7px, 2.5vw, 16px)',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {name}
                 </Text>
               </div>
             </div>
-          )}
+          );
 
-          <div className="text-center">
-            <div className="mb-2 sm:mb-3">
-              <Text strong className="text-xs sm:text-base">
-                Quản lý nhà máy
-              </Text>
-            </div>
-            <div className="mb-2 flex h-[60px] items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50 p-1 sm:mb-4 sm:h-[100px] sm:p-2">
-              {data.digital_signature_manager ? (
-                <img
-                  src={getSignatureUrl(
-                    data.digital_signature_manager,
-                    data.updated_at
-                  )}
-                  alt="Chữ ký quản lý nhà máy"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
-                    display: 'block'
-                  }}
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    target.style.display = 'none';
-                    target.parentElement!.innerHTML =
-                      '<span class="text-gray-400 text-xs">[Lỗi]</span>';
-                  }}
+          return (
+            <div
+              className={`grid gap-3 sm:gap-8 ${
+                colCount === 3 ? 'grid-cols-3' : 'grid-cols-2'
+              }`}
+            >
+              <SignatureBlock
+                label={
+                  isEmployeeSupervisor ? 'Tổ trưởng làm đơn' : 'Người làm đơn'
+                }
+                signaturePath={data.digital_signature_applicant}
+                name={data.employee.name}
+                placeholder="[Vùng chữ ký]"
+              />
+
+              {showSupervisor && (
+                <SignatureBlock
+                  label="Tổ trưởng"
+                  signaturePath={data.digital_signature_supervisor}
+                  name={supervisorName || '__________'}
+                  placeholder="[Tổ trưởng ký]"
                 />
-              ) : (
-                <Text className="text-xs text-gray-400 sm:text-sm">
-                  [Quản lý nhà máy ký]
-                </Text>
               )}
+
+              <SignatureBlock
+                label="Quản lý nhà máy"
+                signaturePath={data.digital_signature_manager}
+                name="Nguyễn Được Thưởng"
+                placeholder="[Quản lý ký]"
+              />
             </div>
-            <div className="border-t border-gray-400 pt-1 sm:pt-2">
-              <Text className="text-xs font-medium sm:text-base">
-                Nguyễn Được Thưởng
-              </Text>
-            </div>
-          </div>
+          );
+        })()}
+      </div>
+    </div>
+  );
+};
+
+// ── Approval Stamp Component ─────────────────────────────────
+const ApprovalStamp: React.FC<{
+  status: 'approved' | 'rejected' | 'authorized_approved';
+  approvedAt?: string | null;
+  approverName?: string | null;
+}> = ({ status, approvedAt, approverName }) => {
+  const isApproved = status === 'approved' || status === 'authorized_approved';
+  const stampColor = isApproved ? '#dc2626' : '#6b7280';
+  const stampText = isApproved ? 'ĐÃ DUYỆT' : 'TỪ CHỐI';
+
+  return (
+    <div
+      className="pointer-events-none absolute"
+      style={{
+        top: '50%',
+        right: '8%',
+        transform: 'translate(0, -50%) rotate(-15deg)',
+        zIndex: 10,
+        opacity: 0.8
+      }}
+    >
+      <div
+        style={{
+          width: '200px',
+          height: '200px',
+          borderRadius: '50%',
+          border: `6px double ${stampColor}`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          background: 'transparent'
+        }}
+      >
+        {/* Inner circle */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: '8px',
+            borderRadius: '50%',
+            border: `2px solid ${stampColor}`
+          }}
+        />
+
+        {/* Top arc text - Company name */}
+        <svg
+          viewBox="0 0 200 200"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%'
+          }}
+        >
+          <defs>
+            <path id="stamp-arc-top" d="M 30,100 A 70,70 0 0,1 170,100" />
+            <path id="stamp-arc-bottom" d="M 170,108 A 70,70 0 0,1 30,108" />
+          </defs>
+          <text
+            fill={stampColor}
+            fontSize="11"
+            fontWeight="bold"
+            fontFamily="serif"
+            letterSpacing="2"
+          >
+            <textPath
+              href="#stamp-arc-top"
+              textAnchor="middle"
+              startOffset="50%"
+            >
+              VINH VINH PHÁT
+            </textPath>
+          </text>
+          <text
+            fill={stampColor}
+            fontSize="9"
+            fontWeight="bold"
+            fontFamily="serif"
+            letterSpacing="1"
+          >
+            <textPath
+              href="#stamp-arc-bottom"
+              textAnchor="middle"
+              startOffset="50%"
+            >
+              CÔNG TY TNHH MTV
+            </textPath>
+          </text>
+        </svg>
+
+        {/* Star */}
+        <div
+          style={{
+            color: stampColor,
+            fontSize: '18px',
+            lineHeight: 1,
+            marginBottom: '2px',
+            marginTop: '-10px'
+          }}
+        >
+          ★
         </div>
+
+        {/* Main status text */}
+        <div
+          style={{
+            color: stampColor,
+            fontSize: '22px',
+            fontWeight: 900,
+            letterSpacing: '3px',
+            lineHeight: 1,
+            fontFamily: 'serif'
+          }}
+        >
+          {stampText}
+        </div>
+
+        {/* Date */}
+        {approvedAt && (
+          <div
+            style={{
+              color: stampColor,
+              fontSize: '10px',
+              fontWeight: 600,
+              marginTop: '4px',
+              fontFamily: 'monospace'
+            }}
+          >
+            {dayjs(approvedAt).format('DD/MM/YYYY')}
+          </div>
+        )}
+
+        {/* Approver */}
+        {approverName && (
+          <div
+            style={{
+              color: stampColor,
+              fontSize: '8px',
+              fontWeight: 600,
+              marginTop: '2px',
+              maxWidth: '120px',
+              textAlign: 'center',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {approverName}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export const DetailView: React.FC<RequestFormDetailProps> = ({ data }) => {
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'warning';
+        return {
+          bg: 'bg-amber-50',
+          border: 'border-amber-200',
+          text: 'text-amber-700',
+          dot: 'bg-amber-400',
+          tagColor: 'warning' as const
+        };
       case 'approved':
-        return 'success';
+        return {
+          bg: 'bg-emerald-50',
+          border: 'border-emerald-200',
+          text: 'text-emerald-700',
+          dot: 'bg-emerald-400',
+          tagColor: 'success' as const
+        };
       case 'rejected':
-        return 'error';
+        return {
+          bg: 'bg-red-50',
+          border: 'border-red-200',
+          text: 'text-red-700',
+          dot: 'bg-red-400',
+          tagColor: 'error' as const
+        };
       case 'authorized_approved':
-        return 'cyan';
+        return {
+          bg: 'bg-cyan-50',
+          border: 'border-cyan-200',
+          text: 'text-cyan-700',
+          dot: 'bg-cyan-400',
+          tagColor: 'cyan' as const
+        };
       default:
-        return 'default';
+        return {
+          bg: 'bg-gray-50',
+          border: 'border-gray-200',
+          text: 'text-gray-700',
+          dot: 'bg-gray-400',
+          tagColor: 'default' as const
+        };
     }
   };
+
+  // Get approver name for stamp
+  const approverName = React.useMemo(() => {
+    if (data.managerApprovedBy?.name) return data.managerApprovedBy.name;
+    if (data.manager_approved_by_employee?.name)
+      return data.manager_approved_by_employee.name;
+    if (data.approvedBy?.name) return data.approvedBy.name;
+    if (data.approved_by_employee?.name) return data.approved_by_employee.name;
+    return null;
+  }, [data]);
+
+  const showStamp =
+    data.status === 'approved' ||
+    data.status === 'rejected' ||
+    data.status === 'authorized_approved';
+  const statusStyle = getStatusStyle(data.status);
 
   const renderFormContent = () => {
     if (data.type === 'giay_uy_quyen') {
       return <AuthorizationDetailView data={data} />;
     }
-
-    if (
-      [
-        'don_xin_tu_chuc',
-        'don_xin_nghi_viec',
-        'don_xin_nghi_phep',
-        'don_xin_di_tre_ve_som'
-      ].includes(data.type)
-    ) {
-      return <StandardDetailView data={data} />;
-    }
-
     return <StandardDetailView data={data} />;
   };
 
   return (
-    <div className="mx-auto max-w-4xl bg-white">
-      <Card className="no-print mb-4">
-        <Row gutter={[16, 12]}>
-          <Col xs={24} sm={24} md={24}>
-            <Space size="middle" wrap className="w-full">
-              <div>
-                <Text strong className="text-xs sm:text-sm">
-                  Loại đơn:{' '}
-                </Text>
-                <Tag color="blue" className="text-xs sm:text-sm">
-                  {REQUEST_FORM_TYPES[data.type]}
-                </Tag>
-              </div>
-              <div>
-                <Text strong className="text-xs sm:text-sm">
-                  Trạng thái:{' '}
-                </Text>
-                <Tag
-                  color={getStatusColor(data.status)}
-                  className="text-xs sm:text-sm"
-                >
-                  {REQUEST_FORM_STATUSES[data.status]}
-                </Tag>
-              </div>
-              <div>
-                <Text strong className="text-xs sm:text-sm">
-                  Ngày nộp:{' '}
-                </Text>
-                <Text className="text-xs sm:text-sm">
-                  {dayjs(data.submitted_at).format('DD/MM/YYYY HH:mm')}
-                </Text>
-              </div>
-              {data.approved_at && (
-                <div>
-                  <Text strong className="text-xs sm:text-sm">
-                    Ngày duyệt:{' '}
-                  </Text>
-                  <Text className="text-xs sm:text-sm">
-                    {dayjs(data.approved_at).format('DD/MM/YYYY HH:mm')}
-                  </Text>
-                </div>
-              )}
-            </Space>
-          </Col>
-          {data.status === 'rejected' && data.rejection_reason && (
-            <Col span={24}>
-              <div className="mt-2 rounded border border-red-200 bg-red-50 p-2 sm:mt-4 sm:p-3">
-                <div className="flex items-start gap-1 sm:items-center sm:gap-2">
-                  <Text strong className="text-xs text-red-700 sm:text-sm">
-                    Lý do từ chối:
-                  </Text>
-                  <Text className="text-xs text-gray-800 sm:text-sm">
-                    {data.rejection_reason}
-                  </Text>
-                </div>
-              </div>
-            </Col>
-          )}
-        </Row>
-      </Card>
+    <div className="mx-auto max-w-4xl">
+      {/* ── Metadata Header ─────────────────────────────────────── */}
+      <div
+        className={`no-print mb-4 rounded-xl border ${statusStyle.border} ${statusStyle.bg} p-3 sm:p-4`}
+      >
+        {/* Top row: status + form type */}
+        <div className="mb-2 flex flex-wrap items-center gap-2 sm:mb-3">
+          <div
+            className={`flex items-center gap-1.5 rounded-full border ${statusStyle.border} bg-white px-2.5 py-1 sm:px-3`}
+          >
+            <span
+              className={`inline-block h-2 w-2 rounded-full ${statusStyle.dot}`}
+              style={{
+                animation:
+                  data.status === 'pending' ? 'pulse 2s infinite' : 'none'
+              }}
+            />
+            <span
+              className={`text-xs font-semibold sm:text-sm ${statusStyle.text}`}
+            >
+              {REQUEST_FORM_STATUSES[data.status]}
+            </span>
+          </div>
+          <Tag color="blue" className="!m-0 !rounded-full !text-xs sm:!text-sm">
+            {REQUEST_FORM_TYPES[data.type]}
+          </Tag>
+        </div>
 
-      <div className="print-content">{renderFormContent()}</div>
+        {/* Info grid */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs sm:grid-cols-4 sm:text-sm">
+          <div>
+            <span className="text-gray-500">Nhân viên</span>
+            <p className="truncate font-medium text-gray-800">
+              {data.employee?.name}
+            </p>
+          </div>
+          <div>
+            <span className="text-gray-500">MSNV</span>
+            <p className="font-medium text-gray-800">{data.employee_id}</p>
+          </div>
+          <div>
+            <span className="text-gray-500">Ngày nộp</span>
+            <p className="font-medium text-gray-800">
+              {dayjs(data.submitted_at).format('DD/MM/YYYY HH:mm')}
+            </p>
+          </div>
+          {data.approved_at ? (
+            <div>
+              <span className="text-gray-500">Ngày duyệt</span>
+              <p className="font-medium text-gray-800">
+                {dayjs(data.approved_at).format('DD/MM/YYYY HH:mm')}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <span className="text-gray-500">Cập nhật</span>
+              <p className="font-medium text-gray-800">
+                {dayjs(data.updated_at).format('DD/MM/YYYY HH:mm')}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Rejection reason */}
+        {data.status === 'rejected' && data.rejection_reason && (
+          <div className="mt-2.5 flex items-start gap-2 rounded-lg border border-red-200 bg-white/80 p-2 sm:mt-3 sm:p-2.5">
+            <span className="mt-0.5 text-red-500">✕</span>
+            <div className="min-w-0 flex-1">
+              <span className="text-xs font-semibold text-red-600 sm:text-sm">
+                Lý do từ chối:
+              </span>
+              <p className="mt-0.5 text-xs text-gray-700 sm:text-sm">
+                {data.rejection_reason}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Document Content ────────────────────────────────────── */}
+      <div className="print-content relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        {renderFormContent()}
+        {showStamp && (
+          <ApprovalStamp
+            status={
+              data.status as 'approved' | 'rejected' | 'authorized_approved'
+            }
+            approvedAt={
+              data.approved_at ||
+              data.manager_approved_at ||
+              data.authorized_approved_at
+            }
+            approverName={approverName}
+          />
+        )}
+      </div>
+
+      {/* Pulse animation for pending status */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
     </div>
   );
 };

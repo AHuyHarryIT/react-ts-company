@@ -25,6 +25,11 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import {
+  FaCalendarAlt,
+  FaExpandArrowsAlt,
+  FaCompressArrowsAlt
+} from 'react-icons/fa';
 
 export default function DailySchedule() {
   const { isMobile } = useStore(uiStore);
@@ -65,43 +70,75 @@ export default function DailySchedule() {
       title: 'STT',
       rowScope: 'row',
       align: 'center',
-      render: (_value, _record, index) =>
-        index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
+      width: 60,
+      render: (_value, _record, index) => (
+        <span className="font-mono text-xs text-gray-500">
+          {index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)}
+        </span>
+      )
     },
     {
-      title: 'Mã lịch làm việc',
+      title: 'Mã lịch',
       key: 'id',
       dataIndex: 'id',
-      align: 'center'
+      align: 'center',
+      render: (value) => (
+        <Tag color="blue" className="!font-mono !text-xs">
+          {value}
+        </Tag>
+      )
     },
     {
       title: 'Mã nhân viên',
       key: 'employee_id',
       dataIndex: 'employee_id',
-      align: 'center'
+      align: 'center',
+      render: (value) => (
+        <Tag color="geekblue" className="!font-mono !text-xs">
+          {value}
+        </Tag>
+      )
     },
     {
       title: 'Tên nhân viên',
       key: 'name',
       dataIndex: ['employee', 'name'],
-      render: (value) => value || 'Chưa có thông tin'
+      render: (value) => (
+        <span className="font-medium text-gray-800 dark:text-white/90">
+          {value || (
+            <span className="text-gray-400 italic">Chưa có thông tin</span>
+          )}
+        </span>
+      )
     },
     {
       title: 'Tên sản phẩm',
       key: 'product_name',
-      dataIndex: ['product', 'name']
+      dataIndex: ['product', 'name'],
+      render: (value) => (
+        <span className="text-sm">
+          {value || <span className="text-gray-300">—</span>}
+        </span>
+      )
     },
     {
       title: 'Ca làm việc',
       dataIndex: 'shift',
-      align: 'center'
+      align: 'center',
+      render: (value) => {
+        if (value === 1) return <Tag color="blue">Ca 1</Tag>;
+        if (value === 2) return <Tag color="purple">Ca 2</Tag>;
+        return <span className="text-gray-300">—</span>;
+      }
     },
     {
       title: 'Ngày nhập',
       key: 'date',
       dataIndex: 'date',
       align: 'center',
-      render: (value) => dayjs(value).format('DD-MM-YYYY')
+      render: (value) => (
+        <span className="text-sm">{dayjs(value).format('DD-MM-YYYY')}</span>
+      )
     },
     {
       title: 'Trạng thái',
@@ -127,8 +164,9 @@ export default function DailySchedule() {
       title: 'Thao tác',
       key: 'action',
       align: 'center',
+      width: 120,
       render: (_value, record) => (
-        <div className="space-x-2">
+        <div className="flex items-center justify-center gap-2">
           <UpdateModal
             id={record.id}
             service={dailyScheduleService}
@@ -155,19 +193,26 @@ export default function DailySchedule() {
       title: 'Loại sản phẩm',
       key: 'working',
       dataIndex: ['status'],
-      render: (value) =>
-        productStatusOptions.find((item) => item.value === value)?.label ||
-        'Chưa xác định'
+      render: (value) => (
+        <Tag color="geekblue">
+          {productStatusOptions.find((item) => item.value === value)?.label ||
+            'Chưa xác định'}
+        </Tag>
+      )
     },
     {
       title: 'Số lượng',
       key: 'quantity',
       dataIndex: ['quantity'],
       render: (value) => {
-        if (!value) return '-';
-        return value.toLocaleString('en-US', {
-          maximumFractionDigits: 0
-        });
+        if (!value) return <span className="text-gray-300">—</span>;
+        return (
+          <span className="font-semibold text-blue-600">
+            {value.toLocaleString('en-US', {
+              maximumFractionDigits: 0
+            })}
+          </span>
+        );
       }
     },
     {
@@ -177,7 +222,7 @@ export default function DailySchedule() {
       dataIndex: ['created_at_formatted'],
       render: (value) => {
         return (
-          <Tag color="green-inverse" className="font-bold uppercase">
+          <Tag color="green" className="!text-xs">
             {dayjs(value, 'HH:mm:ss').format('HH:mm:ss')}
           </Tag>
         );
@@ -255,104 +300,150 @@ export default function DailySchedule() {
 
   return (
     <ComponentCard title="Danh sách nhân viên đang làm việc">
-      <div className="mb-4 flex flex-wrap items-end gap-4">
-        <div>
-          <label
-            htmlFor="admin-date-picker"
-            className="mb-1 block text-sm font-medium"
-          >
-            Chọn ngày
-          </label>
-          <DatePicker
-            id="admin-date-picker"
-            placeholder="Chọn ngày"
-            value={dayjs(params['filter[date]'])}
-            onChange={(date) => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[date]': date ? date.format('YYYY-MM-DD') : undefined
-              }));
-            }}
-          />
+      <div className="space-y-5">
+        {/* ── Action Bar ──────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+          {!isMobile && (
+            <Button
+              type={isAllExpanded ? 'default' : 'primary'}
+              onClick={handleToggleAll}
+              icon={
+                isAllExpanded ? <FaCompressArrowsAlt /> : <FaExpandArrowsAlt />
+              }
+              className="min-w-[120px]"
+            >
+              {isAllExpanded ? 'Đóng tất cả' : 'Mở tất cả'}
+            </Button>
+          )}
+          <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+            <span className="text-xs text-gray-500">
+              📅 {dayjs(params['filter[date]']).format('DD/MM/YYYY')}
+            </span>
+          </div>
         </div>
-        {!isMobile && (
-          <Button
-            type={isAllExpanded ? 'default' : 'primary'}
-            onClick={handleToggleAll}
-            className="min-w-[120px]"
-          >
-            {isAllExpanded ? 'Đóng tất cả' : 'Mở tất cả'}
-          </Button>
-        )}
-      </div>
-      {isMobile ? (
-        <Spin spinning={isLoading}>
-          <Pagination {...pagination} />
-          <div className="my-6 flex flex-col gap-4">
-            {response?.data && response.data.length > 0 ? (
-              response.data.map((item) => (
-                <div
-                  key={`admin_activity_card-${item.id}`}
-                  className="rounded border p-4 shadow"
-                >
-                  <div>
-                    <strong>Mã lịch làm việc:</strong> {item.id}
-                  </div>
-                  <div>
-                    <strong>Tên nhân viên:</strong>{' '}
-                    {item.employee?.name || 'Chưa có thông tin'}
-                  </div>
-                  <div>
-                    <strong>Tên sản phẩm:</strong>{' '}
-                    {item.product?.name || 'Chưa xác định'}
-                  </div>
-                  <div>
-                    <strong>Ca làm việc:</strong> {item.shift}
-                  </div>
-                  <div>
-                    <strong>Ngày nhập:</strong>{' '}
-                    {dayjs(item.date).format('DD-MM-YYYY')}
-                  </div>
-                  <div>
-                    <strong>Trạng thái:</strong>{' '}
-                    {(item.dailyQuantities?.length ?? 0) > 0 ? (
-                      <Tag
-                        color="green-inverse"
-                        className="font-bold uppercase"
-                      >
-                        Đã nhập
+
+        {/* ── Filter Bar ──────────────────────────────────────────── */}
+        <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                <FaCalendarAlt className="mr-1 inline-block text-blue-500" />
+                Chọn ngày
+              </label>
+              <DatePicker
+                id="admin-date-picker"
+                placeholder="Chọn ngày"
+                value={dayjs(params['filter[date]'])}
+                className="!rounded-lg"
+                onChange={(date) => {
+                  setParams((prev) => ({
+                    ...prev,
+                    'filter[date]': date ? date.format('YYYY-MM-DD') : undefined
+                  }));
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Content ─────────────────────────────────────────────── */}
+        {isMobile ? (
+          <Spin spinning={isLoading}>
+            <Pagination {...pagination} />
+            <div className="my-6 flex flex-col gap-4">
+              {response?.data && response.data.length > 0 ? (
+                response.data.map((item) => (
+                  <div
+                    key={`admin_activity_card-${item.id}`}
+                    className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                  >
+                    <div className="mb-2 flex items-center gap-2">
+                      <Tag color="blue" className="!font-mono !text-xs">
+                        {item.id}
                       </Tag>
-                    ) : (
-                      <Tag color="red-inverse" className="font-bold uppercase">
-                        Chưa nhập
-                      </Tag>
+                      {(item.dailyQuantities?.length ?? 0) > 0 ? (
+                        <Tag
+                          color="green-inverse"
+                          className="font-bold uppercase"
+                        >
+                          Đã nhập
+                        </Tag>
+                      ) : (
+                        <Tag
+                          color="red-inverse"
+                          className="font-bold uppercase"
+                        >
+                          Chưa nhập
+                        </Tag>
+                      )}
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      <div>
+                        <span className="font-medium text-gray-500">
+                          Nhân viên:
+                        </span>{' '}
+                        <span className="font-medium text-gray-800">
+                          {item.employee?.name || 'Chưa có thông tin'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-500">
+                          Sản phẩm:
+                        </span>{' '}
+                        {item.product?.name || 'Chưa xác định'}
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-500">Ca:</span>{' '}
+                        {Number(item.shift) === 1 ? (
+                          <Tag color="blue">Ca 1</Tag>
+                        ) : (
+                          <Tag color="purple">Ca 2</Tag>
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-500">Ngày:</span>{' '}
+                        {dayjs(item.date).format('DD-MM-YYYY')}
+                      </div>
+                    </div>
+                    {(item.dailyQuantities?.length ?? 0) > 0 && (
+                      <div className="mt-3 border-t border-gray-100 pt-3">
+                        <span className="text-xs font-medium text-gray-500">
+                          Sản lượng:
+                        </span>
+                        <ul className="mt-1 space-y-1">
+                          {item.dailyQuantities?.map((quantity) => (
+                            <li
+                              key={quantity.id}
+                              className="flex items-center gap-2 text-xs"
+                            >
+                              <Tag color="geekblue" className="!text-xs">
+                                {productStatusOptions.find(
+                                  (opt) => opt.value === quantity.status
+                                )?.label || 'Chưa xác định'}
+                              </Tag>
+                              <span className="font-semibold text-blue-600">
+                                {quantity.quantity}
+                              </span>
+                              <span className="text-gray-400">
+                                lúc {quantity.created_at_formatted}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <strong>Sản lượng:</strong>
-                    <ul>
-                      {item.dailyQuantities?.map((quantity) => (
-                        <li key={quantity.id}>
-                          {productStatusOptions.find(
-                            (opt) => opt.value === quantity.status
-                          )?.label || 'Chưa xác định'}
-                          : {quantity.quantity} lúc{' '}
-                          {quantity.created_at_formatted}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <Empty />
-            )}
-          </div>
-          <Pagination {...pagination} />
-        </Spin>
-      ) : (
-        <Table<DailyScheduleType> {...tableProps} />
-      )}
+                ))
+              ) : (
+                <Empty />
+              )}
+            </div>
+            <Pagination {...pagination} />
+          </Spin>
+        ) : (
+          <Table<DailyScheduleType> {...tableProps} />
+        )}
+      </div>
     </ComponentCard>
   );
 }

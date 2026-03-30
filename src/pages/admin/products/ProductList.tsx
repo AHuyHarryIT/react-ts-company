@@ -1,11 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 
-import { Button, DatePicker, Flex, Input, Select, Tabs, TabsProps } from 'antd';
+import { DatePicker, Input, Select, Tabs, TabsProps } from 'antd';
 import { useMemo, useState } from 'react';
+import { FaSearch, FaRulerCombined, FaTag } from 'react-icons/fa';
+import {
+  FaBox as FaBox6,
+  FaIndustry,
+  FaChartBar,
+  FaCheckDouble,
+  FaCircleXmark,
+  FaTruckFast,
+  FaTrashCan,
+  FaPlus
+} from 'react-icons/fa6';
 
 import axiosPrivate from '@/api/axiosInstance';
 import ComponentCard from '@components/common/ComponentCard';
@@ -17,12 +28,10 @@ import { ProduceTable } from '@components/products/ProduceTable';
 import { TotalTable } from '@components/products/TotalTable';
 
 import { QueryParams } from '@/types/queryParams';
-import { IconAdd, IconDelete } from '@components/icons';
 import { useCrudList } from '@hooks/useCrudList';
 import { ProductModelEnumOptions } from '@schemas/product/productModelEnum.enum';
 import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEnum.enum';
 import { productService } from '@services/ProductService';
-import { FaBox, FaIndustry } from 'react-icons/fa6';
 import { ExportModal } from './ExportModal';
 
 export default function ProductList() {
@@ -43,7 +52,10 @@ export default function ProductList() {
     queryKey: ['months'],
     queryFn: () => {
       return axiosPrivate.get('/api/products/month-list');
-    }
+    },
+    placeholderData: keepPreviousData,
+    // Month list ít thay đổi
+    staleTime: 5 * 60 * 1000
   });
 
   const { queryResult } = useCrudList({
@@ -64,7 +76,12 @@ export default function ProductList() {
   const productTabs: TabsProps['items'] = [
     {
       key: 'total',
-      label: 'Tổng quan',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaChartBar className="text-blue-500" />
+          Tổng quan
+        </span>
+      ),
       children: (
         <TotalTable
           months={months}
@@ -76,7 +93,12 @@ export default function ProductList() {
     },
     {
       key: 'produce',
-      label: 'Hàng sản xuất',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaIndustry className="text-emerald-500" />
+          Hàng sản xuất
+        </span>
+      ),
       children: (
         <ProduceTable
           month={month}
@@ -88,7 +110,12 @@ export default function ProductList() {
     },
     {
       key: 'check-200',
-      label: 'Hàng kiểm 200%',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaCheckDouble className="text-cyan-500" />
+          Hàng kiểm 200%
+        </span>
+      ),
       children: (
         <Check200Table
           month={month}
@@ -100,7 +127,12 @@ export default function ProductList() {
     },
     {
       key: 'error-200',
-      label: 'Hàng lỗi 200%',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaCircleXmark className="text-red-500" />
+          Hàng lỗi 200%
+        </span>
+      ),
       children: (
         <Error200Table
           month={month}
@@ -112,7 +144,12 @@ export default function ProductList() {
     },
     {
       key: 'export',
-      label: 'Xuất hàng',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaTruckFast className="text-amber-500" />
+          Xuất hàng
+        </span>
+      ),
       children: (
         <ExportTable
           month={month}
@@ -125,109 +162,143 @@ export default function ProductList() {
   ];
 
   return (
-    <>
-      <ComponentCard title="Danh sách sản phẩm">
-        {/* Actions */}
-        {/* TODO: implement actions */}
-        <RefreshButton
-          isLoading={queryResult.isFetching}
-          refresh={queryResult.refetch}
-        />
-        <div className="flex flex-col flex-wrap gap-2">
-          <Flex gap="small" wrap>
-            <Link to="/admin/products/add">
-              <Button variant="solid" color="green" icon={<IconAdd />}>
-                Thêm sản phẩm
-              </Button>
-            </Link>
+    <ComponentCard title="Quản lý sản phẩm">
+      <div className="space-y-5">
+        {/* ── Action Bar ───────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+          <RefreshButton
+            isLoading={queryResult.isFetching}
+            refresh={queryResult.refetch}
+          />
 
-            <Link to="/admin/products/quantity/add">
-              <Button variant="solid" color="blue" icon={<FaIndustry />}>
-                Thêm sản lượng sản xuất
-              </Button>
-            </Link>
-          </Flex>
-          <Flex gap="small" wrap>
-            <Link to="/admin/products/quantity/update">
-              <Button variant="solid" color="blue" icon={<FaBox />}>
-                Cập nhật sản lượng
-              </Button>
-            </Link>
-            <Link to="/admin/products/trash">
-              <Button variant="solid" color="gold" icon={<IconDelete />}>
-                Sản phẩm đã xóa
-              </Button>
-            </Link>
-          </Flex>
-          <div>
+          <Link to="/admin/products/add">
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+              <FaPlus className="text-[10px] text-gray-500" />
+              Thêm SP
+            </button>
+          </Link>
+
+          <Link to="/admin/products/quantity/add">
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+              <FaIndustry className="text-[10px] text-gray-500" />
+              Thêm SL
+            </button>
+          </Link>
+
+          <Link to="/admin/products/quantity/update">
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+              <FaBox6 className="text-[10px] text-gray-500" />
+              Cập nhật SL
+            </button>
+          </Link>
+
+          <Link to="/admin/products/trash">
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+              <FaTrashCan className="text-[10px] text-gray-500" />
+              Thùng rác
+            </button>
+          </Link>
+
+          <div className="ml-auto">
             <ExportModal />
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          <DatePicker
-            value={month}
-            picker="month"
-            placeholder="Chọn tháng"
-            onChange={(date) => {
-              const newMonth = date
-                ? date.startOf('month')
-                : dayjs().startOf('month');
-              setMonth(newMonth);
-              setParams((prev) => ({
-                ...prev,
-                month: newMonth.format('YYYY-MM')
-              }));
-            }}
-          />
-          <Select
-            options={ProductModelEnumOptions}
-            placeholder="Chọn mã thùng"
-            popupMatchSelectWidth={false}
-            allowClear
-            onSelect={(value) => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[binCode]': value
-              }));
-            }}
-            onClear={() => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[binCode]': undefined
-              }));
-            }}
-          />
-          <Select
-            options={ProductModelSizeEnumOptions}
-            placeholder="Chọn kích thước khuôn"
-            popupMatchSelectWidth={false}
-            allowClear
-            onSelect={(value) => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[moldSize]': value
-              }));
-            }}
-            onClear={() => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[moldSize]': undefined
-              }));
-            }}
-          />
-          <Input.Search
-            className="col-span-1"
-            placeholder="Tìm kiếm sản phẩm"
-            allowClear
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              handleSearch(inputValue);
-            }}
-          />
+
+        {/* ── Filter Bar ───────────────────────────────────────────── */}
+        <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                📅 Tháng
+              </label>
+              <DatePicker
+                value={month}
+                picker="month"
+                placeholder="Chọn tháng"
+                className="!rounded-lg"
+                onChange={(date) => {
+                  const newMonth = date
+                    ? date.startOf('month')
+                    : dayjs().startOf('month');
+                  setMonth(newMonth);
+                  setParams((prev) => ({
+                    ...prev,
+                    month: newMonth.format('YYYY-MM')
+                  }));
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                <FaTag className="mr-1 inline-block text-emerald-500" />
+                Mã thùng
+              </label>
+              <Select
+                options={ProductModelEnumOptions}
+                placeholder="Chọn mã thùng"
+                popupMatchSelectWidth={false}
+                allowClear
+                className="!rounded-lg"
+                onSelect={(value) => {
+                  setParams((prev) => ({
+                    ...prev,
+                    'filter[binCode]': value
+                  }));
+                }}
+                onClear={() => {
+                  setParams((prev) => ({
+                    ...prev,
+                    'filter[binCode]': undefined
+                  }));
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                <FaRulerCombined className="mr-1 inline-block text-orange-500" />
+                Kích thước khuôn
+              </label>
+              <Select
+                options={ProductModelSizeEnumOptions}
+                placeholder="Chọn kích thước"
+                popupMatchSelectWidth={false}
+                allowClear
+                className="!rounded-lg"
+                onSelect={(value) => {
+                  setParams((prev) => ({
+                    ...prev,
+                    'filter[moldSize]': value
+                  }));
+                }}
+                onClear={() => {
+                  setParams((prev) => ({
+                    ...prev,
+                    'filter[moldSize]': undefined
+                  }));
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                <FaSearch className="mr-1 inline-block text-gray-400" />
+                Tìm kiếm
+              </label>
+              <Input.Search
+                placeholder="Tìm kiếm sản phẩm..."
+                allowClear
+                className="!rounded-lg"
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  handleSearch(inputValue);
+                }}
+              />
+            </div>
+          </div>
         </div>
-        {/* Tabs */}
-        <Tabs items={productTabs} type="card" />
-      </ComponentCard>
-    </>
+
+        {/* ── Tabs ─────────────────────────────────────────────────── */}
+        <Tabs items={productTabs} type="card" size="large" animated />
+      </div>
+    </ComponentCard>
   );
 }

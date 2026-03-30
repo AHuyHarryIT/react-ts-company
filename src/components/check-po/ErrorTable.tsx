@@ -11,9 +11,10 @@ import { errorDataSource } from '@utils/poDataUtil';
 
 interface ErrorTableProps {
   month: Dayjs;
+  search?: string;
 }
 
-export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
+export const ErrorTable: React.FC<ErrorTableProps> = ({ month, search }) => {
   const [dataSource, setDataSource] = useState<ErrorTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
@@ -26,7 +27,7 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
     queryResult
   } = useCrudList({
     service: productService,
-    queryKey: 'products',
+    queryKey: 'products-error',
     initialFilters: {
       page: page,
       limit: limit,
@@ -56,9 +57,16 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month }) => {
 
   useEffect(() => {
     if (!tableData.length) return;
-    const data = errorDataSource(tableData);
+
+    let data = errorDataSource(tableData);
+
+    if (search) {
+      const keyword = search.toLowerCase().trim();
+      data = data.filter((item) => item.name?.toLowerCase().includes(keyword));
+    }
+
     setDataSource(data);
-  }, [tableData]);
+  }, [tableData, search]);
 
   const dateColumns: TableColumnsType<ErrorTableType> = dayList.map(
     (date, index) => {

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { QueryParams } from '@/types/queryParams';
 import { CrudServiceType } from '@utils/crudService';
@@ -24,7 +24,9 @@ export function useCrudList<TData, TCreateDto, TUpdateDto>({
       isTrash
         ? await service.listTrash(initialFilters)
         : await service.list(initialFilters),
-    enabled
+    enabled,
+    // Giữ data cũ hiển thị khi filter/search/paginate → không bị nhấp nháy trắng
+    placeholderData: keepPreviousData
   });
 
   const { data: response } = queryResult;

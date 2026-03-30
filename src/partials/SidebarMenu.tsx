@@ -3,7 +3,7 @@ import logo from '@assets/images/logo/logoAsset.svg';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 import { Link, useLocation } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import { Image, Menu } from 'antd';
+import { ConfigProvider, Image, Menu } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 
@@ -13,7 +13,7 @@ interface SidebarMenuProps {
 
 export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items }) => {
   const { pathname } = useLocation();
-  const { theme, isMobile } = useStore(uiStore);
+  const { theme, isMobile, isSidebarClose } = useStore(uiStore);
 
   const [openKeys, setOpenKeys] = React.useState<string[]>([]);
 
@@ -21,7 +21,6 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items }) => {
   const hoverItems = React.useMemo<MenuItem[]>(() => {
     if (isMobile) return items;
 
-    // Recursive: pass the "path" of parent keys to open the correct branch
     const wrap = (
       list?: MenuItem[],
       parentPath: string[] = []
@@ -39,7 +38,6 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items }) => {
         if (hasChildren && keyStr) {
           const originalLabel = it.label as React.ReactNode;
 
-          // Hover over parent title -> open the entire path (parent...-> current)
           const wrappedParentLabel = (
             <div
               onMouseEnter={() => {
@@ -51,15 +49,13 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items }) => {
             </div>
           );
 
-          // Recursive for children, update parentPath
           return {
             ...it,
             label: wrappedParentLabel,
-            children: wrap(it.children, [...parentPath, keyStr]) as MenuItem[] // [ ]: MenuItem[]
+            children: wrap(it.children, [...parentPath, keyStr]) as MenuItem[]
           };
         }
 
-        // Regular item -> keep unchanged
         return it;
       });
     };
@@ -73,35 +69,65 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items }) => {
 
   return (
     <>
-      <div className="flex items-center justify-center p-4">
-        <Link
-          to="/"
-          onClick={() => {
-            if (isMobile) {
-              toggleSidebar();
-            }
-          }}
+      {/* ── Logo Area ─────────────────────────────────────── */}
+      <div>
+        <div
+          className={`flex items-center justify-center ${isSidebarClose ? 'p-3' : 'p-5'}`}
         >
-          <Image className="w-full" src={logo} alt="Logo" preview={false} />
-        </Link>
+          <Link
+            to="/"
+            onClick={() => {
+              if (isMobile) {
+                toggleSidebar();
+              }
+            }}
+          >
+            <Image className="w-full" src={logo} alt="Logo" preview={false} />
+          </Link>
+        </div>
+        {/* Separator */}
+        <div className="mx-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-gray-700" />
       </div>
-      <IconContext.Provider value={{ size: '1.25rem' }}>
-        <Menu
-          theme={theme}
-          mode="inline"
-          items={hoverItems}
-          defaultSelectedKeys={['/']}
-          selectedKeys={[pathname]}
-          openKeys={isMobile ? undefined : openKeys}
-          onOpenChange={isMobile ? undefined : (keys) => setOpenKeys(keys)}
-          onClick={handleClick}
-          // Only close when the mouse leaves the entire Menu
-          onMouseLeave={() => {
-            if (!isMobile) setOpenKeys([]);
-          }}
-          className="[&_.ant-menu-submenu]:group [&_.ant-menu-item]:mx-2 [&_.ant-menu-item]:my-1.5 [&_.ant-menu-item]:rounded-lg [&_.ant-menu-item]:transition-all [&_.ant-menu-item]:duration-300 [&_.ant-menu-item]:ease-out [&_.ant-menu-item_svg]:transition-all [&_.ant-menu-item_svg]:duration-300 [&_.ant-menu-item-selected]:scale-[1.02] [&_.ant-menu-item-selected]:bg-blue-50/80 [&_.ant-menu-item-selected]:font-medium [&_.ant-menu-item-selected]:shadow-lg dark:[&_.ant-menu-item-selected]:bg-blue-500/20 [&_.ant-menu-item-selected_.ant-menu-title-content]:text-blue-600 dark:[&_.ant-menu-item-selected_.ant-menu-title-content]:text-blue-400 [&_.ant-menu-item:focus-visible]:ring-2 [&_.ant-menu-item:focus-visible]:ring-blue-500 [&_.ant-menu-item:focus-visible]:ring-offset-2 [&_.ant-menu-item:focus-visible]:outline-none [&_.ant-menu-item:hover]:translate-x-1 [&_.ant-menu-item:hover]:scale-[1.02] [&_.ant-menu-item:hover]:bg-black/5 [&_.ant-menu-item:hover]:shadow-md dark:[&_.ant-menu-item:hover]:bg-white/10 [&_.ant-menu-item:hover_.ant-menu-title-content]:translate-x-1 [&_.ant-menu-item:hover_.ant-menu-title-content]:text-blue-600 dark:[&_.ant-menu-item:hover_.ant-menu-title-content]:text-blue-400 [&_.ant-menu-item:hover_svg]:scale-125 [&_.ant-menu-item:hover_svg]:rotate-3 [&_.ant-menu-sub]:bg-transparent [&_.ant-menu-sub]:transition-opacity [&_.ant-menu-sub]:duration-300 [&_.ant-menu-sub_.ant-menu-item]:ml-4 [&_.ant-menu-sub_.ant-menu-item]:opacity-90 [&_.ant-menu-sub_.ant-menu-item:hover]:opacity-100 [&_.ant-menu-submenu-arrow]:transition-transform [&_.ant-menu-submenu-arrow]:duration-300 [&_.ant-menu-submenu-open_.ant-menu-submenu-arrow]:rotate-90 [&_.ant-menu-submenu-title]:mx-2 [&_.ant-menu-submenu-title]:my-1.5 [&_.ant-menu-submenu-title]:rounded-lg [&_.ant-menu-submenu-title]:transition-all [&_.ant-menu-submenu-title]:duration-300 [&_.ant-menu-submenu-title]:ease-out [&_.ant-menu-submenu-title_svg]:transition-all [&_.ant-menu-submenu-title_svg]:duration-300 [&_.ant-menu-submenu-title:hover]:translate-x-1 [&_.ant-menu-submenu-title:hover]:scale-[1.02] [&_.ant-menu-submenu-title:hover]:bg-black/5 [&_.ant-menu-submenu-title:hover]:shadow-md dark:[&_.ant-menu-submenu-title:hover]:bg-white/10 [&_.ant-menu-submenu-title:hover_.ant-menu-title-content]:translate-x-1 [&_.ant-menu-submenu-title:hover_.ant-menu-title-content]:text-blue-600 dark:[&_.ant-menu-submenu-title:hover_.ant-menu-title-content]:text-blue-400 [&_.ant-menu-submenu-title:hover_svg]:scale-125 [&_.ant-menu-submenu-title:hover_svg]:rotate-3 [&_.ant-menu-submenu:hover_.ant-menu-sub]:opacity-100"
-        />
-      </IconContext.Provider>
+
+      {/* ── Menu ──────────────────────────────────────────── */}
+      <div className="py-2">
+        <IconContext.Provider value={{ size: '1.25rem' }}>
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: '#475569' // slate-600
+              },
+              components: {
+                Menu: {
+                  itemSelectedBg: 'transparent',
+                  itemSelectedColor: '#334155', // slate-700
+                  itemHoverBg: 'transparent',
+                  itemHoverColor: '#475569', // slate-600
+                  itemActiveBg: 'transparent',
+                  subMenuItemBg: 'transparent',
+                  itemBg: 'transparent',
+                  iconSize: 20
+                }
+              }
+            }}
+          >
+            <Menu
+              theme={theme}
+              mode="inline"
+              items={hoverItems}
+              defaultSelectedKeys={['/']}
+              selectedKeys={[pathname]}
+              openKeys={isMobile ? undefined : openKeys}
+              onOpenChange={isMobile ? undefined : (keys) => setOpenKeys(keys)}
+              onClick={handleClick}
+              onMouseLeave={() => {
+                if (!isMobile) setOpenKeys([]);
+              }}
+              className="!border-none [&_.ant-menu-item]:mx-2.5 [&_.ant-menu-item]:my-[3px] [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:transition-all [&_.ant-menu-item]:duration-300 [&_.ant-menu-item]:ease-out [&_.ant-menu-item_.ant-menu-item-icon]:transition-colors [&_.ant-menu-item_.ant-menu-item-icon]:duration-300 [&_.ant-menu-item-selected]:bg-gradient-to-r [&_.ant-menu-item-selected]:from-slate-100 [&_.ant-menu-item-selected]:to-slate-100/40 [&_.ant-menu-item-selected]:font-semibold [&_.ant-menu-item-selected]:shadow-sm [&_.ant-menu-item-selected]:shadow-slate-200/50 dark:[&_.ant-menu-item-selected]:from-slate-500/15 dark:[&_.ant-menu-item-selected]:to-slate-500/5 dark:[&_.ant-menu-item-selected]:shadow-slate-500/10 [&_.ant-menu-item-selected_.ant-menu-item-icon]:text-slate-600 dark:[&_.ant-menu-item-selected_.ant-menu-item-icon]:text-slate-300 [&_.ant-menu-item-selected_.ant-menu-title-content]:text-slate-700 dark:[&_.ant-menu-item-selected_.ant-menu-title-content]:text-slate-300 [&_.ant-menu-item:active]:scale-[0.98] [&_.ant-menu-item:active]:bg-slate-100 dark:[&_.ant-menu-item:active]:bg-white/10 [&_.ant-menu-item:hover]:translate-x-0.5 [&_.ant-menu-item:hover]:bg-slate-50 [&_.ant-menu-item:hover]:shadow-sm dark:[&_.ant-menu-item:hover]:bg-white/5 [&_.ant-menu-item:hover_.ant-menu-item-icon]:text-slate-600 dark:[&_.ant-menu-item:hover_.ant-menu-item-icon]:text-slate-300 [&_.ant-menu-sub]:bg-transparent [&_.ant-menu-sub_.ant-menu-item]:ml-3 [&_.ant-menu-sub_.ant-menu-item]:text-[13px] [&_.ant-menu-sub_.ant-menu-item]:opacity-80 [&_.ant-menu-sub_.ant-menu-item:hover]:opacity-100 [&_.ant-menu-submenu-arrow]:transition-transform [&_.ant-menu-submenu-arrow]:duration-300 [&_.ant-menu-submenu-arrow]:ease-out [&_.ant-menu-submenu-title]:mx-2.5 [&_.ant-menu-submenu-title]:my-[3px] [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title]:transition-all [&_.ant-menu-submenu-title]:duration-300 [&_.ant-menu-submenu-title]:ease-out [&_.ant-menu-submenu-title_.ant-menu-item-icon]:transition-colors [&_.ant-menu-submenu-title_.ant-menu-item-icon]:duration-300 [&_.ant-menu-submenu-title:active]:scale-[0.98] [&_.ant-menu-submenu-title:active]:bg-slate-100 dark:[&_.ant-menu-submenu-title:active]:bg-white/10 [&_.ant-menu-submenu-title:hover]:translate-x-0.5 [&_.ant-menu-submenu-title:hover]:bg-slate-50 [&_.ant-menu-submenu-title:hover]:shadow-sm dark:[&_.ant-menu-submenu-title:hover]:bg-white/5 [&_.ant-menu-submenu-title:hover_.ant-menu-item-icon]:text-slate-600 dark:[&_.ant-menu-submenu-title:hover_.ant-menu-item-icon]:text-slate-300"
+            />
+          </ConfigProvider>
+        </IconContext.Provider>
+      </div>
     </>
   );
 };

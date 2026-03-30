@@ -129,7 +129,22 @@ export const PrintBoxStamp = ({
     },
     onError: (error) => {
       console.error('Error checking duplicates:', error);
-      message.error('Lỗi khi kiểm tra tem trùng lặp. Vui lòng thử lại.');
+      Modal.confirm({
+        title: 'Lỗi kiểm tra trùng lặp',
+        content: (
+          <p>
+            Không thể kiểm tra tem trùng lặp cho sản phẩm này.
+            <br />
+            <span className="font-semibold text-amber-600">
+              Bạn có muốn tiếp tục in không?
+            </span>
+          </p>
+        ),
+        okText: 'Tiếp tục in',
+        cancelText: 'Hủy',
+        okButtonProps: { danger: true },
+        onOk: () => performPrint()
+      });
     }
   });
 

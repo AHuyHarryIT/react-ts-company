@@ -7,19 +7,12 @@ import {
 } from '@schemas/maritalStatusEnum.schema';
 import { fetchProfile, updateProfile } from '@services/ProfileService';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  Button,
-  DatePicker,
-  Form,
-  FormProps,
-  Input,
-  message,
-  Select
-} from 'antd';
+import { DatePicker, Form, FormProps, Input, message, Select } from 'antd';
 import { useCallback, useEffect } from 'react';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { ProfileUpdateParams } from '@/types/profileType';
+import { FaUserEdit } from 'react-icons/fa';
 
 interface FormField {
   name: string;
@@ -109,150 +102,164 @@ export const ChangeInfo = () => {
 
   return (
     <>
-      <ComponentCard title="Hồ sơ cá nhân">
-        <Form<FormField> {...formProps}>
-          <Form.Item<FormField>
-            label="Họ và tên"
-            name={'name'}
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng nhập họ và tên'
-              }
-            ]}
-          >
-            <Input placeholder="Nhập họ và tên" />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="Số điện thoại"
-            name={'phone'}
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng nhập số điện thoại'
-              },
-              {
-                pattern: /^(0|\+84)[0-9]{9}$/,
-                message: 'Vui lòng nhập số điện thoại hợp lệ'
-              }
-            ]}
-          >
-            <Input placeholder="Nhập số điện thoại" />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="Email"
-            name={'email'}
-            rules={[
-              {
-                type: 'email',
-                message: 'Vui lòng nhập email hợp lệ. VD: example@gmail.com'
-              }
-            ]}
-          >
-            <Input placeholder="Nhập email" />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="Ngày sinh"
-            name={'birthday'}
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng nhập ngày sinh'
-              }
-            ]}
-          >
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="CCCD"
-            name={'CCCD'}
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng nhập CCCD'
-              },
-              {
-                pattern: /^\d{12}$/,
-                message: 'Vui lòng nhập số CCCD hợp lệ (12 chữ số)'
-              }
-            ]}
-          >
-            <Input placeholder="Nhập CCCD" />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="Địa chỉ"
-            name={'address'}
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng nhập địa chỉ'
-              }
-            ]}
-          >
-            <Input.TextArea placeholder="Nhập địa chỉ" />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="Quê quán"
-            name={'hometown'}
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng nhập quê quán'
-              }
-            ]}
-          >
-            <Input.TextArea placeholder="Nhập quê quán" />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="Giới tính"
-            name="gender"
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng chọn giới tính'
-              }
-            ]}
-          >
-            <Select options={GenderEnumOptions} placeholder="Chọn giới tính" />
-          </Form.Item>
-          <Form.Item<FormField>
-            label="Tình trạng hôn nhân"
-            name="maritalStatus"
-            rules={[
-              {
-                required: true,
-                message: 'Vui lòng chọn tình trạng hôn nhân'
-              }
-            ]}
-          >
-            <Select
-              options={MaritalStatusEnumOptions}
-              placeholder="Chọn tình trạng hôn nhân"
-            />
-          </Form.Item>
-          <Form.Item>
-            <div className="space-x-2">
-              <Button
-                htmlType="submit"
-                variant="solid"
-                color="blue"
-                loading={isLoading || isPending}
-              >
-                Lưu thay đổi
-              </Button>
-              <Button
-                variant="solid"
-                onClick={() => {
-                  if (profileData) {
-                    form.setFieldsValue(getFormFieldsFromProfile(profileData));
-                  }
-                }}
-              >
-                Đặt lại
-              </Button>
-            </div>
-          </Form.Item>
-        </Form>
+      <ComponentCard
+        title={
+          <div className="flex items-center gap-3">
+            <FaUserEdit className="text-blue-500" />
+            <span>Hồ sơ cá nhân</span>
+          </div>
+        }
+      >
+        <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+          <Form<FormField> {...formProps}>
+            <Form.Item<FormField>
+              label="Họ và tên"
+              name={'name'}
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng nhập họ và tên'
+                }
+              ]}
+            >
+              <Input placeholder="Nhập họ và tên" />
+            </Form.Item>
+            <Form.Item<FormField>
+              label="Số điện thoại"
+              name={'phone'}
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng nhập số điện thoại'
+                },
+                {
+                  pattern: /^(0|\+84)[0-9]{9}$/,
+                  message: 'Vui lòng nhập số điện thoại hợp lệ'
+                }
+              ]}
+            >
+              <Input placeholder="Nhập số điện thoại" />
+            </Form.Item>
+            <Form.Item<FormField>
+              label="Email"
+              name={'email'}
+              rules={[
+                {
+                  type: 'email',
+                  message: 'Vui lòng nhập email hợp lệ. VD: example@gmail.com'
+                }
+              ]}
+            >
+              <Input placeholder="Nhập email" />
+            </Form.Item>
+            <Form.Item<FormField>
+              label="Ngày sinh"
+              name={'birthday'}
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng nhập ngày sinh'
+                }
+              ]}
+            >
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item<FormField>
+              label="CCCD"
+              name={'CCCD'}
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng nhập CCCD'
+                },
+                {
+                  pattern: /^\d{12}$/,
+                  message: 'Vui lòng nhập số CCCD hợp lệ (12 chữ số)'
+                }
+              ]}
+            >
+              <Input placeholder="Nhập CCCD" />
+            </Form.Item>
+            <Form.Item<FormField>
+              label="Địa chỉ"
+              name={'address'}
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng nhập địa chỉ'
+                }
+              ]}
+            >
+              <Input.TextArea placeholder="Nhập địa chỉ" />
+            </Form.Item>
+            <Form.Item<FormField>
+              label="Quê quán"
+              name={'hometown'}
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng nhập quê quán'
+                }
+              ]}
+            >
+              <Input.TextArea placeholder="Nhập quê quán" />
+            </Form.Item>
+            <Form.Item<FormField>
+              label="Giới tính"
+              name="gender"
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng chọn giới tính'
+                }
+              ]}
+            >
+              <Select
+                options={GenderEnumOptions}
+                placeholder="Chọn giới tính"
+              />
+            </Form.Item>
+            <Form.Item<FormField>
+              label="Tình trạng hôn nhân"
+              name="maritalStatus"
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng chọn tình trạng hôn nhân'
+                }
+              ]}
+            >
+              <Select
+                options={MaritalStatusEnumOptions}
+                placeholder="Chọn tình trạng hôn nhân"
+              />
+            </Form.Item>
+            <Form.Item>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={isLoading || isPending}
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-[0.97] disabled:opacity-50"
+                >
+                  {isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                  onClick={() => {
+                    if (profileData) {
+                      form.setFieldsValue(
+                        getFormFieldsFromProfile(profileData)
+                      );
+                    }
+                  }}
+                >
+                  Đặt lại
+                </button>
+              </div>
+            </Form.Item>
+          </Form>
+        </div>
       </ComponentCard>
     </>
   );

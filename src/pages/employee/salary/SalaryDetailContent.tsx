@@ -1,0 +1,426 @@
+import { SalaryDetailTableType } from '@/types/salaryType';
+import { convertNumberToWords } from '@utils/number2Word';
+import { Alert, Spin, Tag } from 'antd';
+import dayjs from 'dayjs';
+import { FaUser, FaCalendarAlt, FaBriefcase } from 'react-icons/fa';
+import { SalaryTable, SalaryTableType } from './SalaryTable';
+
+interface SalaryDetailContentProps {
+  salaryDetails: SalaryDetailTableType | null | undefined;
+  isLoading: boolean;
+  error: unknown;
+}
+
+export const SalaryDetailContent = ({
+  salaryDetails,
+  isLoading,
+  error
+}: SalaryDetailContentProps) => {
+  const { employee, salary_manager } = salaryDetails || {};
+
+  const incomeData: SalaryTableType[] = [
+    {
+      key: 'day_shift_trial',
+      description: 'Lương ca ngày (thử việc)',
+      hours: salaryDetails?.number_of_work_days_trial || 0,
+      amount: salaryDetails?.day_shift_salary_trial || 0,
+      note: salaryDetails?.day_shift_salary_trial_notice || null
+    },
+    {
+      key: 'night_shift_trial',
+      description: 'Lương ca đêm (thử việc)',
+      hours: salaryDetails?.number_of_work_nights_trial || 0,
+      amount: salaryDetails?.night_shift_salary_trial || 0,
+      note: salaryDetails?.night_shift_salary_trial_notice || null
+    },
+    {
+      key: 'overtime_trial',
+      description: 'Lương tăng ca (thử việc)',
+      hours: salaryDetails?.overtime_hours_trial || 0,
+      amount: salaryDetails?.overtime_salary_trial || 0,
+      note: salaryDetails?.overtime_salary_trial_notice || null
+    },
+    {
+      key: 'allowance_apprentice',
+      description: 'Phụ cấp học việc',
+      hours: salaryDetails?.number_of_work || 0,
+      amount: salaryDetails?.allowance_apprentice_detail || 0,
+      note: salaryDetails?.allowance_apprentice_detail_notice || null
+    },
+    {
+      key: 'core_hours',
+      description: 'Số giờ chính',
+      hours: salaryDetails?.core_hours || 0,
+      amount: salaryDetails?.official_salary || 0,
+      note: salaryDetails?.official_salary_notice || null
+    },
+    {
+      key: 'allowance_diligence',
+      description: 'Chuyên cần',
+      hours: 0,
+      amount: salaryDetails?.allowance_diligence_detail || 0,
+      note: salaryDetails?.allowance_diligence_detail_notice || null
+    },
+    {
+      key: 'allowance_responsibility',
+      description: 'Trách Nhiệm',
+      hours: 0,
+      amount: salaryDetails?.allowance_responsibility_detail || 0,
+      note: salaryDetails?.allowance_responsibility_detail_notice || null
+    },
+    {
+      key: 'overtime_detail',
+      description: 'Số giờ tăng ca',
+      hours: salaryDetails?.overtime_hours_detail || 0,
+      amount: salaryDetails?.overtime_salary || 0,
+      note: salaryDetails?.overtime_salary_notice || null
+    },
+    {
+      key: 'allowance_rice',
+      description: 'Phụ cấp cơm ca ngày',
+      hours: salaryDetails?.number_of_work_days || 0,
+      amount: salaryDetails?.allowance_rice_detail || 0,
+      note: salaryDetails?.allowance_rice_detail_notice || null
+    },
+    {
+      key: 'allowance_shift_night',
+      description: 'Phụ cấp cơm ca đêm',
+      hours: salaryDetails?.number_of_work_nights || 0,
+      amount: salaryDetails?.allowance_shift_night || 0,
+      note: salaryDetails?.allowance_shift_night_notice || null
+    },
+    {
+      key: 'allowance_overtime',
+      description: 'Phụ cấp tăng ca',
+      hours: salaryDetails?.overtime_day_count_detail || 0,
+      amount: salaryDetails?.allowance_overtime_detail || 0,
+      note: salaryDetails?.allowance_overtime_detail_notice || null
+    },
+    {
+      key: 'holidays_money',
+      description: 'Tiền lễ tết',
+      hours: salaryDetails?.holidays_count_detail || 0,
+      amount: salaryDetails?.holidays_money || 0,
+      note: salaryDetails?.holidays_money_notice || null
+    },
+    {
+      key: 'paid_holidays_money',
+      description: 'Tiền phép năm',
+      hours: salaryDetails?.paid_holidays_count_detail || 0,
+      amount: salaryDetails?.paid_holidays_money || 0,
+      note: salaryDetails?.paid_holidays_money_notice || null
+    },
+    {
+      key: 'gcn_business_travel_salary',
+      description: 'Lương đi công tác GCN',
+      hours: salaryDetails?.business_travel_hours || 0,
+      amount: salaryDetails?.gcn_business_travel_salary || 0,
+      note: salaryDetails?.gcn_business_travel_salary_notice || null
+    },
+    {
+      key: 'allowance_gcn_business_fuel',
+      description: 'Phụ cấp xăng đi GCN',
+      hours: salaryDetails?.number_of_business_trips || 0,
+      amount: salaryDetails?.allowance_gcn_business_fuel || 0,
+      note: salaryDetails?.allowance_gcn_business_fuel_notice || null
+    },
+    {
+      key: 'money_referral_people',
+      description: 'Tiền giới thiệu người',
+      hours: 0,
+      amount: salaryDetails?.money_referral_people || 0,
+      note: salaryDetails?.money_referral_people_notice || null
+    },
+    {
+      key: 'allowance_diffrent',
+      description: 'Phụ cấp khác',
+      hours: 0,
+      amount: salaryDetails?.allowance_diffrent || 0,
+      note: salaryDetails?.allowance_diffrent_notice || null
+    },
+    {
+      key: 'bonuses_for_attendance',
+      description: 'Tiền thưởng đạt chuyên cần',
+      hours: 0,
+      amount: salaryDetails?.bonuses_for_attendance || 0,
+      note: salaryDetails?.bonuses_for_attendance_notice || null
+    },
+    {
+      key: 'birthday_money',
+      description: 'Tiền sinh nhật',
+      hours: 0,
+      amount: salaryDetails?.birthday_money || 0,
+      note: salaryDetails?.birthday_money_notice || null
+    },
+    {
+      key: 'previous_period_debt',
+      description: 'Tiền lương tháng trước bị thiếu',
+      hours: 0,
+      amount: salaryDetails?.previous_period_debt || 0,
+      note: salaryDetails?.previous_period_debt_notice || null
+    },
+    {
+      key: 'total_income',
+      description: 'Tổng thu nhập',
+      hours: 0,
+      amount: salaryDetails?.total_income || 0,
+      note: null
+    }
+  ];
+
+  const totalReduction =
+    (salaryDetails?.insurance_detail || 0) +
+    (salaryDetails?.advance_money || 0) +
+    (salaryDetails?.unicon_deduction || 0) +
+    (salaryDetails?.subtract_daysleave_allowed || 0) +
+    (salaryDetails?.subtract_daysleave_notallowed || 0) +
+    (salaryDetails?.subtract_error_serious || 0) +
+    (salaryDetails?.subtract_error_minor || 0) +
+    (salaryDetails?.kpi_subtraction || 0);
+
+  const deductionData: SalaryTableType[] = [
+    {
+      key: 'insurance_detail',
+      description: 'Khấu trừ BHXH (10.5%)',
+      hours: 0,
+      amount: salaryDetails?.insurance_detail || 0,
+      note: salaryDetails?.insurance_detail_notice || null
+    },
+    {
+      key: 'advance_money',
+      description: 'Tạm ứng',
+      hours: 0,
+      amount: salaryDetails?.advance_money || 0,
+      note: salaryDetails?.advance_money_notice || null
+    },
+    {
+      key: 'unicon_deduction',
+      description: 'Phí công đoàn 1%',
+      hours: salaryDetails?.number_of_violations || 0,
+      amount: salaryDetails?.unicon_deduction || 0,
+      note: salaryDetails?.unicon_deduction_notice || null
+    },
+    {
+      key: 'subtract_daysleave_allowed',
+      description: 'Nghỉ phép được',
+      hours: salaryDetails?.daysleave_allowed || 0,
+      amount: salaryDetails?.subtract_daysleave_allowed || 0,
+      note: salaryDetails?.subtract_daysleave_allowed_notice || null
+    },
+    {
+      key: 'subtract_daysleave_notallowed',
+      description: 'Nghỉ phép không được',
+      hours: salaryDetails?.daysleave_notallowed || 0,
+      amount: salaryDetails?.subtract_daysleave_notallowed || 0,
+      note: salaryDetails?.subtract_daysleave_notallowed_notice || null
+    },
+    {
+      key: 'subtract_error_serious',
+      description: 'Lỗi nặng',
+      hours: salaryDetails?.error_serious || 0,
+      amount: salaryDetails?.subtract_error_serious || 0,
+      note: salaryDetails?.subtract_error_serious_notice || null
+    },
+    {
+      key: 'subtract_error_minor',
+      description: 'Lỗi nhẹ',
+      hours: salaryDetails?.error_minor || 0,
+      amount: salaryDetails?.subtract_error_minor || 0,
+      note: salaryDetails?.subtract_error_minor_notice || null
+    },
+    {
+      key: 'kpi_subtraction',
+      description: 'Trừ KPI',
+      hours: 0,
+      amount: salaryDetails?.kpi_subtraction || 0,
+      note: salaryDetails?.kpi_subtraction_notice || null
+    },
+    {
+      key: 'totalReduction',
+      description: 'Tổng trừ',
+      hours: 0,
+      amount: totalReduction || 0,
+      note: null
+    }
+  ];
+
+  const formsOfPayment = salaryDetails?.forms_of_payment || 'Chưa có thông tin';
+  const actuallyReceived = salaryDetails?.actually_received || 0;
+  const companyInsuranceDetail = salaryDetails?.company_insurance_detail || 0;
+  const unionDeduction = salaryDetails?.unicon_deduction || 0;
+  const totalSalary =
+    actuallyReceived + unionDeduction * 2 + companyInsuranceDetail;
+
+  const otherNotes = '......';
+
+  return (
+    <div className="space-y-5">
+      {/* ── Error Alert ──────────────────────────────────────── */}
+      {!!error && (
+        <div className="rounded-xl border border-amber-100 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-900/20">
+          <Alert
+            type="warning"
+            showIcon
+            message="Bạn không có bảng lương này hoặc bảng lương đã bị xóa"
+          />
+        </div>
+      )}
+
+      <Spin spinning={isLoading}>
+        <div className="space-y-5">
+          {/* ── Header Info ────────────────────────────────── */}
+          <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 text-center dark:border-blue-900 dark:from-blue-950/30 dark:to-indigo-950/20">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90">
+              Thông tin bảng lương
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <FaCalendarAlt className="mr-1 inline-block text-blue-500" />
+              Từ {dayjs(salary_manager?.start_date).format(
+                'DD/MM/YYYY'
+              )} đến {dayjs(salary_manager?.end_date).format('DD/MM/YYYY')}
+            </p>
+          </div>
+
+          {/* ── Employee Info ──────────────────────────────── */}
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <FaUser className="flex-shrink-0 text-blue-500" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Tên nhân viên:
+                </span>
+                <span className="font-medium text-gray-800 dark:text-white/90">
+                  {employee?.name || 'Chưa có thông tin'}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Tag color="blue" className="!font-mono !text-xs">
+                  {employee?.id || '---'}
+                </Tag>
+                <span className="text-sm text-gray-500">Mã nhân viên</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <FaBriefcase className="flex-shrink-0 text-emerald-500" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Bộ phận:
+                </span>
+                <Tag color="geekblue">
+                  {employee?.role?.role_name || 'Chưa có thông tin'}
+                </Tag>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <FaCalendarAlt className="flex-shrink-0 text-amber-500" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Ngày nhận lương:
+                </span>
+                <Tag color="green">
+                  {dayjs(salary_manager?.date_show).format('DD/MM/YYYY')}
+                </Tag>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Income Table ──────────────────────────────── */}
+          <div className="rounded-xl border border-emerald-100 bg-white/80 p-4 backdrop-blur-sm dark:border-emerald-900/50 dark:bg-gray-800/50">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+              💰 Các khoản lương
+            </h3>
+            <SalaryTable data={incomeData} variant="income" />
+          </div>
+
+          {/* ── Deduction Table ───────────────────────────── */}
+          <div className="rounded-xl border border-red-100 bg-white/80 p-4 backdrop-blur-sm dark:border-red-900/50 dark:bg-gray-800/50">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+              📉 Các khoản trừ
+            </h3>
+            <SalaryTable data={deductionData} variant="deduction" />
+          </div>
+
+          {/* ── III. Tổng chi trả ─────────────────────────── */}
+          <div className="rounded-xl border border-amber-100 bg-white/80 p-4 backdrop-blur-sm dark:border-amber-900/50 dark:bg-gray-800/50">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-400">
+              🏢 Tổng chi trả tháng{' '}
+              {dayjs(salary_manager?.end_date).format('MM/YYYY')}
+            </h3>
+            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+              <div className="flex items-start justify-between gap-2 py-3 first:pt-0">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="mr-1.5 inline-block min-w-[18px] text-center font-mono text-xs text-gray-400">
+                    1.
+                  </span>
+                  Công ty phải đóng BHXH 21,5% cho người lao động:
+                </span>
+                <span className="flex-shrink-0 text-right text-sm font-semibold text-blue-600">
+                  {companyInsuranceDetail.toLocaleString('en-US', {
+                    maximumFractionDigits: 0
+                  })}
+                </span>
+              </div>
+              <div className="flex items-start justify-between gap-2 py-3">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="mr-1.5 inline-block min-w-[18px] text-center font-mono text-xs text-gray-400">
+                    2.
+                  </span>
+                  Công ty phải đóng Kinh phí công đoàn 2% cho người lao động:
+                </span>
+                <span className="flex-shrink-0 text-right text-sm font-semibold text-blue-600">
+                  {(unionDeduction * 2).toLocaleString('en-US', {
+                    maximumFractionDigits: 0
+                  })}
+                </span>
+              </div>
+              <div className="flex items-start justify-between gap-2 border-t-2 border-gray-300 pt-3 dark:border-gray-600">
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  Tổng chi
+                </span>
+                <span className="flex-shrink-0 text-right text-base font-bold text-red-600">
+                  {totalSalary.toLocaleString('en-US', {
+                    maximumFractionDigits: 0
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── IV. Thực nhận tiền lương ────────────────────── */}
+          <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 dark:border-blue-900 dark:from-blue-950/30 dark:to-indigo-950/20">
+            <div className="divide-y divide-blue-100 dark:divide-blue-800">
+              <div className="flex flex-wrap items-center justify-between gap-1 pb-3">
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  💰 Thực nhận tiền lương:
+                </span>
+                <span className="text-base font-bold text-emerald-600 sm:text-lg">
+                  {actuallyReceived.toLocaleString('en-US', {
+                    maximumFractionDigits: 0
+                  })}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="text-xs text-gray-500">Hình thức:</span>
+                  <Tag color="blue" className="!m-0 !text-xs">
+                    {formsOfPayment}
+                  </Tag>
+                </span>
+              </div>
+              <div className="pt-3">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  ➡️ Bằng chữ:{' '}
+                </span>
+                <span className="text-sm text-gray-700 italic dark:text-gray-300">
+                  {convertNumberToWords(actuallyReceived)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Notes ────────────────────────────────────── */}
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <strong className="text-sm text-gray-700 dark:text-gray-300">
+              📝 Ghi chú:
+            </strong>
+            <span className="ml-1 text-sm text-gray-500">{otherNotes}</span>
+          </div>
+        </div>
+      </Spin>
+    </div>
+  );
+};

@@ -1,16 +1,25 @@
 import {
   Button,
   DatePicker,
-  Flex,
   Form,
   FormProps,
   Input,
   InputNumber,
-  Radio,
-  Select
+  Select,
+  Tag
 } from 'antd';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
+import {
+  FaStamp,
+  FaCalendarAlt,
+  FaExchangeAlt,
+  FaBullseye,
+  FaHashtag,
+  FaPlayCircle,
+  FaBoxOpen
+} from 'react-icons/fa';
+import { FaPrint, FaRotateRight, FaClockRotateLeft } from 'react-icons/fa6';
 
 import { ProductType } from '@/types/productType';
 import { Shift } from '@/types/shift';
@@ -47,20 +56,40 @@ export default function StampForm() {
   const previewRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const stampLabel = type === 'box' ? 'thùng' : 'bịch';
-
-  // Disable shortcut for print (Ctrl + P or Cmd + P)
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Disable Ctrl+P / Cmd+P
       if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
         e.preventDefault();
         e.stopPropagation();
+      }
+
+      // Skip if user is typing in an input
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      // Press 1 → Tem Bịch, Press 2 → Tem Thùng
+      if (e.key === '1') {
+        setType('bag');
+        setStampData(undefined);
+        form.resetFields();
+      } else if (e.key === '2') {
+        setType('box');
+        setStampData(undefined);
+        form.resetFields();
+      }
+
+      // Enter → Submit form
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        form.submit();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [form]);
 
   const { data: productsData } = useCrudList({
     service: productService,
@@ -73,8 +102,14 @@ export default function StampForm() {
   const productOptions =
     productsData?.map((product) => ({
       value: product.code,
-      label: product.name
+      label: product.name,
+      searchText: `${product.code} ${product.name}`.toLowerCase()
     })) || [];
+
+  const watchedProductCode = Form.useWatch('productCode', form);
+  const selectedProduct = productsData?.find(
+    (product) => product.code === watchedProductCode
+  );
 
   const formProps: FormProps<FormFields> = {
     ...customFormProps,
@@ -111,177 +146,337 @@ export default function StampForm() {
 
   return (
     <>
-      <ComponentCard title="Tạo Tem">
-        <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium">Loại tem:</label>
-          <Radio.Group
-            value={type}
-            onChange={(e) => {
-              setType(e.target.value);
-              setStampData(undefined);
-              form.resetFields();
-            }}
-            className="flex gap-4"
-          >
-            <Radio value="bag">Tem Bịch</Radio>
-            <Radio value="box">Tem Thùng</Radio>
-          </Radio.Group>
-        </div>
-        <Form<FormFields> {...formProps}>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Form.Item<FormFields>
-              label="Ngày"
-              name="date"
-              rules={[{ required: true, message: 'Vui lòng chọn ngày' }]}
-            >
-              <DatePicker style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item<FormFields>
-              label="Ca"
-              name="shift"
-              rules={[{ required: true, message: 'Vui lòng chọn ca' }]}
-            >
-              <Select options={ShiftEnumOptions} placeholder="Chọn ca" />
-            </Form.Item>
-            <Form.Item<FormFields>
-              label="Mục đích in"
-              name="purpose"
-              rules={[{ required: true, message: 'Vui lòng chọn mục đích in' }]}
-              initialValue="new"
-            >
-              <Select
-                placeholder="Chọn mục đích in"
-                options={[
-                  { value: 'new', label: 'In mới' },
-                  { value: 'additional', label: 'In thêm' },
-                  { value: 'reprint', label: 'In lại' }
-                ]}
-              />
-            </Form.Item>
-            {!hasComma && (
-              <Form.Item<FormFields>
-                label="Số lượng tem"
-                name="totalStamp"
-                rules={[
-                  {
-                    required: !hasComma,
-                    message: 'Vui lòng nhập số lượng tem'
-                  }
-                ]}
-              >
-                <InputNumber
-                  placeholder="Nhập số lượng tem"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            )}
-            <Form.Item<FormFields>
-              label="Tem bắt đầu"
-              name="startStamp"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tem bắt đầu' },
-                {
-                  pattern: /^[0-9]+(,[0-9]+)*$/,
-                  message: 'Vui lòng nhập số tem hợp lệ (ví dụ: 1,2,3 hoặc 5)'
-                }
-              ]}
-              extra={
-                <>
-                  <p className="font-bold text-black">
-                    {!hasComma &&
-                      `Lưu ý: Trường hợp nếu cần in lại nhiều tem với số tem khác nhau thì nhập cách mỗi số tem dấu phẩy(,). ví dụ tem ${stampLabel} 1 và 2 thì nhập, ví dụ: 3,5`}
-                  </p>
-                </>
-              }
-            >
-              <Input
-                placeholder="Nhập tem bắt đầu"
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const hasCommaInValue = value.includes(',');
-                  setHasComma(hasCommaInValue);
-
-                  // If hasComma changed, reset totalStamp field
-                  if (hasCommaInValue !== hasComma) {
-                    form.setFieldValue('totalStamp', undefined);
-                  }
-                }}
-              />
-            </Form.Item>
-            <Form.Item<FormFields>
-              label="Sản phẩm"
-              name="productCode"
-              rules={[{ required: true, message: 'Vui lòng chọn sản phẩm' }]}
-              extra={(() => {
-                const selected = productsData.find(
-                  (product) =>
-                    product.code === form.getFieldValue('productCode')
-                );
-                return selected ? (
-                  <>
-                    <div>
-                      <strong>Code:</strong> {selected.code}
-                    </div>
-                    <div>
-                      <strong>PSC:</strong> {selected.quantity_per_package}
-                    </div>
-                  </>
-                ) : null;
-              })()}
-            >
-              <Select
-                options={productOptions}
-                placeholder="Chọn sản phẩm"
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label as string)
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-              />
-            </Form.Item>
+      <ComponentCard
+        title={
+          <div className="flex items-center gap-3">
+            <FaStamp className="text-indigo-500" />
+            <span>Tạo Tem</span>
           </div>
-          <Form.Item>
-            <Flex gap={8}>
-              <Button color="green" variant="solid" htmlType="submit">
-                Tạo Tem
-              </Button>
-              <Button color="primary" variant="solid" htmlType="reset">
-                Hủy
-              </Button>
-              <Button
-                color="default"
-                variant="outlined"
-                onClick={() => navigate({ to: '/stamps/history' })}
-              >
-                Xem Lịch Sử
-              </Button>
-            </Flex>
-          </Form.Item>
-        </Form>
+        }
+      >
+        <div className="space-y-5">
+          {/* ── Action Bar ─────────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+            <button
+              tabIndex={-1}
+              onClick={() => navigate({ to: '/stamps/history' })}
+              className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition-all hover:bg-amber-100 hover:shadow-md active:scale-[0.97] dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+            >
+              <FaClockRotateLeft />
+              Xem Lịch Sử In Tem
+            </button>
+
+            <div className="ml-auto flex items-center gap-2">
+              {/* ── Stamp Type Selector ── */}
+              <div className="flex items-center overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
+                <button
+                  tabIndex={-1}
+                  onClick={() => {
+                    setType('bag');
+                    setStampData(undefined);
+                    form.resetFields();
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-all ${
+                    type === 'bag'
+                      ? 'bg-indigo-500 text-white shadow-sm'
+                      : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300'
+                  }`}
+                >
+                  <FaStamp className="text-xs" />
+                  Tem Bịch
+                </button>
+                <button
+                  tabIndex={-1}
+                  onClick={() => {
+                    setType('box');
+                    setStampData(undefined);
+                    form.resetFields();
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-all ${
+                    type === 'box'
+                      ? 'bg-indigo-500 text-white shadow-sm'
+                      : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300'
+                  }`}
+                >
+                  <FaBoxOpen className="text-xs" />
+                  Tem Thùng
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Form Section ──────────────────────────────────── */}
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <Form<FormFields> {...formProps}>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {/* Date */}
+                <div className="flex flex-col gap-1">
+                  <label className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <FaCalendarAlt className="mr-1 inline-block text-blue-500" />
+                    Ngày
+                  </label>
+                  <Form.Item<FormFields>
+                    name="date"
+                    rules={[{ required: true, message: 'Vui lòng chọn ngày' }]}
+                    initialValue={dayjs()}
+                    className="!mb-0"
+                  >
+                    <DatePicker
+                      style={{ width: '100%' }}
+                      className="!rounded-lg"
+                      placeholder="Chọn ngày"
+                    />
+                  </Form.Item>
+                  <div className="mt-1 flex gap-1.5">
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => form.setFieldValue('date', dayjs())}
+                      className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-medium text-blue-600 transition-all hover:bg-blue-100 active:scale-95 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                    >
+                      Hôm nay
+                    </button>
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() =>
+                        form.setFieldValue('date', dayjs().subtract(1, 'day'))
+                      }
+                      className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-[11px] font-medium text-gray-600 transition-all hover:bg-gray-100 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                    >
+                      Hôm qua
+                    </button>
+                  </div>
+                </div>
+
+                {/* Shift */}
+                <div className="flex flex-col gap-1">
+                  <label className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <FaExchangeAlt className="mr-1 inline-block text-emerald-500" />
+                    Ca làm việc
+                  </label>
+                  <Form.Item<FormFields>
+                    name="shift"
+                    rules={[{ required: true, message: 'Vui lòng chọn ca' }]}
+                    className="!mb-0"
+                  >
+                    <Select
+                      options={ShiftEnumOptions}
+                      placeholder="Chọn ca"
+                      className="!rounded-lg"
+                    />
+                  </Form.Item>
+                </div>
+
+                {/* Purpose */}
+                <div className="flex flex-col gap-1">
+                  <label className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <FaBullseye className="mr-1 inline-block text-orange-500" />
+                    Mục đích in
+                  </label>
+                  <Form.Item<FormFields>
+                    name="purpose"
+                    rules={[
+                      { required: true, message: 'Vui lòng chọn mục đích in' }
+                    ]}
+                    initialValue="new"
+                    className="!mb-0"
+                  >
+                    <Select
+                      placeholder="Chọn mục đích in"
+                      className="!rounded-lg"
+                      options={[
+                        { value: 'new', label: 'In mới' },
+                        { value: 'additional', label: 'In thêm' },
+                        { value: 'reprint', label: 'In lại' }
+                      ]}
+                    />
+                  </Form.Item>
+                </div>
+
+                {/* Total stamp (hidden when comma mode) */}
+                {!hasComma && (
+                  <div className="flex flex-col gap-1">
+                    <label className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                      <FaHashtag className="mr-1 inline-block text-cyan-500" />
+                      Số lượng tem
+                    </label>
+                    <Form.Item<FormFields>
+                      name="totalStamp"
+                      rules={[
+                        {
+                          required: !hasComma,
+                          message: 'Vui lòng nhập số lượng tem'
+                        }
+                      ]}
+                      className="!mb-0"
+                    >
+                      <InputNumber
+                        placeholder="Nhập số lượng tem"
+                        style={{ width: '100%' }}
+                        className="!rounded-lg"
+                        min={1}
+                      />
+                    </Form.Item>
+                  </div>
+                )}
+
+                {/* Start stamp */}
+                <div className="flex flex-col gap-1">
+                  <label className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <FaPlayCircle className="mr-1 inline-block text-purple-500" />
+                    Tem bắt đầu
+                  </label>
+                  <Form.Item<FormFields>
+                    name="startStamp"
+                    rules={[
+                      { required: true, message: 'Vui lòng nhập tem bắt đầu' },
+                      {
+                        pattern: /^[0-9]+(,[0-9]+)*$/,
+                        message:
+                          'Vui lòng nhập số tem hợp lệ (ví dụ: 1,2,3 hoặc 5)'
+                      }
+                    ]}
+                    className="!mb-0"
+                  >
+                    <Input
+                      placeholder="Nhập tem bắt đầu"
+                      className="!rounded-lg"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const hasCommaInValue = value.includes(',');
+                        setHasComma(hasCommaInValue);
+
+                        // If hasComma changed, reset totalStamp field
+                        if (hasCommaInValue !== hasComma) {
+                          form.setFieldValue('totalStamp', undefined);
+                        }
+                      }}
+                    />
+                  </Form.Item>
+                  {!hasComma && (
+                    <p className="mt-1 text-[11px] leading-relaxed text-amber-600 dark:text-amber-400">
+                      💡 Nếu cần in lại nhiều tem khác nhau thì nhập cách bằng
+                      dấu phẩy, ví dụ: <strong>3,5</strong>
+                    </p>
+                  )}
+                </div>
+
+                {/* Product */}
+                <div className="flex flex-col gap-1">
+                  <label className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <FaBoxOpen className="mr-1 inline-block text-teal-500" />
+                    Sản phẩm
+                  </label>
+                  <Form.Item<FormFields>
+                    name="productCode"
+                    rules={[
+                      { required: true, message: 'Vui lòng chọn sản phẩm' }
+                    ]}
+                    className="!mb-0"
+                  >
+                    <Select
+                      options={productOptions}
+                      placeholder="Chọn sản phẩm"
+                      showSearch
+                      className="!rounded-lg"
+                      filterOption={(input, option) =>
+                        (option?.searchText as string)?.includes(
+                          input.toLowerCase()
+                        ) ?? false
+                      }
+                    />
+                  </Form.Item>
+                  {selectedProduct && (
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <Tag color="blue" className="!font-mono !text-xs">
+                        {selectedProduct.code}
+                      </Tag>
+                      <Tag color="geekblue" className="!text-xs">
+                        PSC: {selectedProduct.quantity_per_package}
+                      </Tag>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Submit Actions ──────────────────────────────── */}
+              <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-5 dark:border-gray-700">
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97]"
+                >
+                  <FaPrint className="text-xs" />
+                  Tạo Tem
+                </button>
+                <Button
+                  htmlType="reset"
+                  className="!rounded-lg"
+                  icon={<FaRotateRight className="text-xs" />}
+                >
+                  Hủy
+                </Button>
+              </div>
+            </Form>
+          </div>
+        </div>
       </ComponentCard>
+
+      {/* ── Preview Section ──────────────────────────────────── */}
       {stampData && (
-        <div ref={previewRef}>
+        <div ref={previewRef} className="mt-4">
           <ComponentCard title="Xem trước khi in">
-            {type === 'bag' ? (
-              <PrintBagStamp
-                product={stampData.product}
-                startStamp={stampData.startStamp}
-                totalStamp={stampData.totalStamp}
-                shift={stampData.shift}
-                date={stampData.date}
-                purpose={stampData.purpose}
-              />
-            ) : (
-              <PrintBoxStamp
-                product={stampData.product}
-                startStamp={stampData.startStamp}
-                totalStamp={stampData.totalStamp}
-                shift={stampData.shift}
-                date={stampData.date}
-                purpose={stampData.purpose}
-              />
-            )}
+            <div className="space-y-5">
+              {/* Print Info Header */}
+              <div className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 dark:border-gray-700 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <div className="space-y-2">
+                  <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                    {stampData.product.name}
+                  </h4>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Tag color="blue" className="!font-mono">
+                      {stampData.product.code}
+                    </Tag>
+                    <Tag color="geekblue">
+                      {stampData.date.format('DD/MM/YYYY')}
+                    </Tag>
+                    <Tag color="purple">Ca {stampData.shift}</Tag>
+                    <Tag color="cyan">SL: {stampData.totalStamp}</Tag>
+                    <Tag color={type === 'bag' ? 'orange' : 'lime'}>
+                      {type === 'bag' ? 'Tem Bịch' : 'Tem Thùng'}
+                    </Tag>
+                  </div>
+                </div>
+                <Button
+                  color="red"
+                  variant="outlined"
+                  onClick={() => setStampData(undefined)}
+                >
+                  Đóng
+                </Button>
+              </div>
+
+              {/* Stamp Preview */}
+              {type === 'bag' ? (
+                <PrintBagStamp
+                  product={stampData.product}
+                  startStamp={stampData.startStamp}
+                  totalStamp={stampData.totalStamp}
+                  shift={stampData.shift}
+                  date={stampData.date}
+                  purpose={stampData.purpose}
+                />
+              ) : (
+                <PrintBoxStamp
+                  product={stampData.product}
+                  startStamp={stampData.startStamp}
+                  totalStamp={stampData.totalStamp}
+                  shift={stampData.shift}
+                  date={stampData.date}
+                  purpose={stampData.purpose}
+                />
+              )}
+            </div>
           </ComponentCard>
         </div>
       )}

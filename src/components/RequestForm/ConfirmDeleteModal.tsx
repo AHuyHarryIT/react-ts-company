@@ -28,7 +28,7 @@ export const ConfirmDeleteModal: React.FC<DeleteConfirmModalProps> = ({
       }
       open={visible}
       onCancel={onCancel}
-      width={400}
+      width="min(400px, 92vw)"
       footer={[
         <Button key="cancel" onClick={onCancel}>
           Hủy

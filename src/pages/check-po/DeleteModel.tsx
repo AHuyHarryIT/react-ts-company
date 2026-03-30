@@ -50,7 +50,7 @@ export const DeleteModel: React.FC<DeleteModelProps> = ({ id, name }) => {
         icon={<IconDelete />}
         onClick={handleOpen}
       >
-        Xem
+        Xóa
       </Button>
 
       <Modal

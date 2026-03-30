@@ -7,8 +7,9 @@ import { productService } from '@services/ProductService';
 import { createTodo } from '@services/TodoService';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Button, Form, FormProps, message, Select } from 'antd';
+import { Form, FormProps, message, Select } from 'antd';
 import { FaEdit, FaHome } from 'react-icons/fa';
+import { FaBoxOpen } from 'react-icons/fa6';
 
 interface FormValues {
   productId: string;
@@ -71,70 +72,96 @@ export const ChooseProduct = () => {
   return (
     <>
       <BackButton to="/" />
-      <ComponentCard title="Cập Nhật Loại Sản Phẩm Cần Kiểm Hàng Hoặc Sản Xuất">
-        <div className="flex flex-col flex-wrap items-center gap-4 lg:flex-row">
-          <Link to="/">
-            <Button variant="solid" color="blue" icon={<FaHome />}>
-              TRANG CHỦ
-            </Button>
-          </Link>
-          <Link to="/employee/activity-schedule">
-            <Button variant="solid" color="gold" icon={<IconHistory />}>
-              LỊCH SỬ ĐÃ CHỌN
-            </Button>
-          </Link>
-          <Link to="/employee/todo/update-quantity">
-            <Button variant="solid" color="green" icon={<FaEdit />}>
-              CẬP NHẬT SẢN LƯỢNG
-            </Button>
-          </Link>
-        </div>
-        <div className="space-y-6 lg:w-1/2">
-          <div className="text-center text-xl font-bold">
-            Thông tin sản phẩm
+      <ComponentCard
+        title={
+          <div className="flex items-center gap-3">
+            <FaBoxOpen className="text-emerald-500" />
+            <span>Cập Nhật Loại Sản Phẩm</span>
           </div>
-          <UserInfo />
+        }
+        desc="Cập nhật loại sản phẩm cần kiểm hàng hoặc sản xuất"
+      >
+        <div className="space-y-5">
+          {/* ── Action Bar ─────────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+            <Link to="/">
+              <button className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-[0.97]">
+                <FaHome className="text-xs" />
+                TRANG CHỦ
+              </button>
+            </Link>
+            <Link to="/employee/activity-schedule">
+              <button className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition-all hover:bg-amber-100 hover:shadow-md active:scale-[0.97] dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                <IconHistory />
+                LỊCH SỬ ĐÃ CHỌN
+              </button>
+            </Link>
+            <Link to="/employee/todo/update-quantity">
+              <button className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97]">
+                <FaEdit className="text-xs" />
+                CẬP NHẬT SẢN LƯỢNG
+              </button>
+            </Link>
+          </div>
 
-          <Form<FormValues> {...formProps}>
-            <Form.Item<FormValues>
-              label="Chọn sản phẩm"
-              name="productId"
-              rules={[{ required: true, message: 'Vui lòng chọn sản phẩm' }]}
-            >
-              <Select
-                options={productOptions}
-                allowClear
-                showSearch
-                placeholder="Chọn sản phẩm"
-                filterOption={(input, option) => {
-                  if (!option?.searchText) return false;
-                  return option.searchText.includes(input.toLowerCase());
-                }}
-                optionFilterProp="label"
-              />
-            </Form.Item>
-            <Form.Item<FormValues>
-              label="Chọn ca làm việc"
-              name="shift"
-              rules={[{ required: true, message: 'Vui lòng chọn ca làm việc' }]}
-            >
-              <Select
-                options={shiftOptions}
-                allowClear
-                placeholder="Chọn ca làm việc"
-              />
-            </Form.Item>
-            <Form.Item>
-              <Button
-                variant="solid"
-                color="green"
-                htmlType="submit"
-                loading={isPending}
-              >
-                Cập nhật
-              </Button>
-            </Form.Item>
-          </Form>
+          <div className="space-y-6 lg:w-1/2">
+            {/* ── Form Title ──────────────────────────────────── */}
+            <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-3 text-center dark:border-blue-900 dark:from-blue-950/30 dark:to-indigo-950/20">
+              <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                📦 Thông tin sản phẩm
+              </span>
+            </div>
+
+            {/* ── User Info ───────────────────────────────────── */}
+            <UserInfo />
+
+            {/* ── Form ────────────────────────────────────────── */}
+            <div className="rounded-xl border border-gray-100 bg-white/80 p-5 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+              <Form<FormValues> {...formProps}>
+                <Form.Item<FormValues>
+                  label="Chọn sản phẩm"
+                  name="productId"
+                  rules={[
+                    { required: true, message: 'Vui lòng chọn sản phẩm' }
+                  ]}
+                >
+                  <Select
+                    options={productOptions}
+                    allowClear
+                    showSearch
+                    placeholder="Chọn sản phẩm"
+                    filterOption={(input, option) => {
+                      if (!option?.searchText) return false;
+                      return option.searchText.includes(input.toLowerCase());
+                    }}
+                    optionFilterProp="label"
+                  />
+                </Form.Item>
+                <Form.Item<FormValues>
+                  label="Chọn ca làm việc"
+                  name="shift"
+                  rules={[
+                    { required: true, message: 'Vui lòng chọn ca làm việc' }
+                  ]}
+                >
+                  <Select
+                    options={shiftOptions}
+                    allowClear
+                    placeholder="Chọn ca làm việc"
+                  />
+                </Form.Item>
+                <Form.Item>
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97] disabled:opacity-50"
+                  >
+                    {isPending ? 'Đang cập nhật...' : 'Cập nhật'}
+                  </button>
+                </Form.Item>
+              </Form>
+            </div>
+          </div>
         </div>
       </ComponentCard>
     </>

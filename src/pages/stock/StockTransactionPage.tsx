@@ -8,6 +8,8 @@ import {
 
 import ComponentCard from '@components/common/ComponentCard';
 import BarcodeScanner from '@/components/stock/BarcodeScanner';
+import { useAuth } from '@hooks/useAuth';
+import { isAdmin } from '@utils/authUtil';
 
 // Lazy load heavy components to prevent background API calls
 // from competing with scan operations
@@ -19,17 +21,25 @@ const CurrentStockDashboard = lazy(
 );
 
 const StockTransactionPage: React.FC = () => {
+  const { user } = useAuth();
+  const isAdminUser = isAdmin(user?.role?.name || '');
+
   const tabItems = [
-    {
-      key: 'scanner',
-      label: (
-        <span className="flex items-center gap-1.5">
-          <ScanOutlined />
-          Quét mã
-        </span>
-      ),
-      children: <BarcodeScanner />
-    },
+    // Only show scanner tab for non-admin users
+    ...(!isAdminUser
+      ? [
+          {
+            key: 'scanner',
+            label: (
+              <span className="flex items-center gap-1.5">
+                <ScanOutlined />
+                Quét mã
+              </span>
+            ),
+            children: <BarcodeScanner />
+          }
+        ]
+      : []),
     {
       key: 'history',
       label: (
@@ -75,10 +85,10 @@ const StockTransactionPage: React.FC = () => {
   return (
     <ComponentCard title="Quản lý Kho">
       <Tabs
-        defaultActiveKey="scanner"
+        defaultActiveKey={isAdminUser ? 'history' : 'scanner'}
         items={tabItems}
         type="card"
-        destroyInactiveTabPane
+        destroyOnHidden
       />
     </ComponentCard>
   );

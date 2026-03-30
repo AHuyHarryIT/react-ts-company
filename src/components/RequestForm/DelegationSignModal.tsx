@@ -200,7 +200,7 @@ export const DelegationSignModal: React.FC<DelegationSignModalProps> = ({
       }
       open={visible}
       onCancel={handleCancel}
-      width={800}
+      width="min(800px, 95vw)"
       footer={[
         <Button key="cancel" onClick={handleCancel}>
           Hủy
@@ -217,7 +217,7 @@ export const DelegationSignModal: React.FC<DelegationSignModalProps> = ({
     >
       {/* Request Form Info */}
       <Card className="mb-4" size="small">
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 sm:gap-4">
           <div>
             <Text strong>Loại đơn:</Text>
             <div>Đơn ủy quyền</div>

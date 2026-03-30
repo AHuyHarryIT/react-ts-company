@@ -1,0 +1,169 @@
+import { useQuery } from '@tanstack/react-query';
+import { Table, TableColumnsType, TableProps, Tag } from 'antd';
+import { useState } from 'react';
+import { FaCalendarAlt } from 'react-icons/fa';
+
+import ComponentCard from '@components/common/ComponentCard';
+import RefreshButton from '@components/common/RefreshButton';
+import { AddModal } from '@components/workScheduleCategories/AddModal';
+import { DeleteModal } from '@components/workScheduleCategories/DeleteModal';
+import { UpdateWorkScheduleCategory } from '@components/workScheduleCategories/UpdateModal';
+
+import { WorkScheduleCategoryType } from '@/types/workScheduleCategoryType';
+import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
+import { customTableProps } from '@components/custom/TableProps.custom';
+
+export default function WorkScheduleCategoryList() {
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ['workScheduleCategories', page, limit],
+    queryFn: () => fetchWorkScheduleCategories({ page, limit })
+  });
+
+  const { workScheduleCategories, total } = data || {
+    workScheduleCategories: [],
+    total: 0
+  };
+
+  const workScheduleCategoryColumns: TableColumnsType<WorkScheduleCategoryType> =
+    [
+      {
+        title: 'STT',
+        rowScope: 'row',
+        width: 60,
+        align: 'center',
+        render: (_value, _record, index) => (
+          <span className="font-mono text-xs text-gray-500">
+            {index + 1 + limit * (page - 1)}
+          </span>
+        )
+      },
+      {
+        title: 'Tên danh mục',
+        dataIndex: 'name',
+        render: (value) => (
+          <span className="font-medium text-gray-800 dark:text-white/90">
+            {value || <span className="text-gray-400 italic">Chưa có</span>}
+          </span>
+        )
+      },
+      {
+        title: 'Mã danh mục',
+        dataIndex: 'id',
+        align: 'center',
+        width: 120,
+        render: (value) => (
+          <Tag color="blue" className="!font-mono !text-xs">
+            {value}
+          </Tag>
+        )
+      },
+      {
+        title: 'Ngày tạo',
+        dataIndex: 'created_at',
+        align: 'center',
+        minWidth: 160,
+        render: (value) => (
+          <div className="text-center">
+            <div className="text-sm">
+              {new Date(value).toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              })}
+            </div>
+            <div className="text-xs text-gray-400">
+              {new Date(value).toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              })}
+            </div>
+          </div>
+        )
+      },
+      {
+        title: 'Ngày cập nhật',
+        dataIndex: 'updated_at',
+        align: 'center',
+        minWidth: 160,
+        render: (value) => (
+          <div className="text-center">
+            <div className="text-sm">
+              {new Date(value).toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              })}
+            </div>
+            <div className="text-xs text-gray-400">
+              {new Date(value).toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              })}
+            </div>
+          </div>
+        )
+      },
+      {
+        title: 'Hành động',
+        align: 'center',
+        width: 180,
+        render: (_value, _record) => {
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <UpdateWorkScheduleCategory
+                categoryId={_record.id}
+                categoryName={_record.name}
+              />
+              <DeleteModal id={_record.id} name={_record.name} />
+            </div>
+          );
+        }
+      }
+    ];
+
+  const tableProps: TableProps<WorkScheduleCategoryType> = {
+    ...(customTableProps as unknown as TableProps<WorkScheduleCategoryType>),
+    rowKey: (record) => ['workScheduleCategory', record.id].join('-'),
+    columns: workScheduleCategoryColumns,
+    dataSource: workScheduleCategories,
+    loading: isLoading,
+    pagination: {
+      ...customTableProps.pagination,
+      pageSize: limit,
+      total: total,
+      onShowSizeChange: (_current, size) => {
+        setLimit(size);
+      },
+      onChange: (page) => {
+        setPage(page);
+      },
+      current: page
+    }
+  };
+
+  return (
+    <ComponentCard title="Danh mục lịch làm việc">
+      <div className="space-y-5">
+        {/* ── Action Bar ────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+          <RefreshButton refresh={refetch} isLoading={isFetching} />
+          <AddModal />
+          <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+            <FaCalendarAlt className="text-xs text-blue-500" />
+            <span className="text-xs text-gray-500">
+              Tổng: <strong className="text-blue-600">{total}</strong> danh mục
+            </span>
+          </div>
+        </div>
+
+        {/* ── Table ────────────────────────────────────────────── */}
+        <Table<WorkScheduleCategoryType> {...tableProps} />
+      </div>
+    </ComponentCard>
+  );
+}

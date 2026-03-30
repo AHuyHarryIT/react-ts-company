@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client';
 
 import App from './App.tsx';
 import './index.css';
-import { ConfigProvider } from 'antd';
+import { App as AntApp, ConfigProvider } from 'antd';
 
 dayjs.locale('vi');
 
@@ -19,7 +19,9 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <ConfigProvider locale={viVN}>
-        <App />
+        <AntApp>
+          <App />
+        </AntApp>
       </ConfigProvider>
     </StrictMode>
   );

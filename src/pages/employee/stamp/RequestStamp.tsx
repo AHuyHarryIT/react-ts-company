@@ -28,6 +28,7 @@ import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { IoCloseOutline } from 'react-icons/io5';
+import { FaStamp } from 'react-icons/fa6';
 
 interface StampType {
   productId: string;
@@ -334,176 +335,214 @@ export const RequestStamp = () => {
   return (
     <>
       <BackButton to="/" />
-      <ComponentCard title="Gửi yêu cầu in tem">
-        <div>
-          <Link to="/employee/stamps/history">
-            <Button icon={<IconHistory />} variant="solid" color="gold">
-              KIỂM TRA YÊU CẦU IN TEM
-            </Button>
-          </Link>
-        </div>
-        <UserInfo />
-        <p className="text-center text-xl font-bold text-gray-500">Tạo tem</p>
+      <ComponentCard
+        title={
+          <div className="flex items-center gap-3">
+            <FaStamp className="text-indigo-500" />
+            <span>Gửi yêu cầu in tem</span>
+          </div>
+        }
+      >
+        <div className="space-y-5">
+          {/* ── Action Bar ─────────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+            <Link to="/employee/stamps/history">
+              <button className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition-all hover:bg-amber-100 hover:shadow-md active:scale-[0.97] dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                <IconHistory />
+                KIỂM TRA YÊU CẦU IN TEM
+              </button>
+            </Link>
+          </div>
 
-        <Form {...formProps}>
-          <Form.List name="stamps">
-            {(fields, { add, remove }) => (
-              <div className="flex flex-col gap-4">
-                {fields.map((field) => (
-                  <Card
-                    key={field.key}
-                    title={`Tem ${field.name + 1}`}
-                    extra={
-                      <IoCloseOutline onClick={() => remove(field.name)} />
-                    }
-                  >
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      <Form.Item
-                        label="Sản phẩm"
-                        name={[field.name, 'productId']}
-                        rules={[
-                          {
-                            required: true,
-                            message: 'Vui lòng chọn sản phẩm'
-                          }
-                        ]}
-                      >
-                        <Select
-                          options={productOptions}
-                          placeholder="Chọn sản phẩm"
-                          showSearch
-                          allowClear
-                          filterOption={(input, option) => {
-                            if (!option?.searchText) return false;
-                            return option.searchText.includes(
-                              input.toLowerCase()
-                            );
+          {/* ── User Info ──────────────────────────────────────── */}
+          <UserInfo />
+
+          {/* ── Form Title ─────────────────────────────────────── */}
+          <div className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-blue-50 p-3 text-center dark:border-indigo-900 dark:from-indigo-950/30 dark:to-blue-950/20">
+            <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+              📋 Tạo tem
+            </span>
+          </div>
+
+          {/* ── Form ───────────────────────────────────────────── */}
+          <Form {...formProps}>
+            <Form.List name="stamps">
+              {(fields, { add, remove }) => (
+                <div className="flex flex-col gap-4">
+                  {fields.map((field) => (
+                    <Card
+                      key={field.key}
+                      title={
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Tem {field.name + 1}
+                        </span>
+                      }
+                      extra={
+                        <IoCloseOutline
+                          className="cursor-pointer text-lg text-gray-400 transition-colors hover:text-red-500"
+                          onClick={() => remove(field.name)}
+                        />
+                      }
+                      className="!rounded-xl !border-gray-200 dark:!border-gray-700"
+                    >
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <Form.Item
+                          label="Sản phẩm"
+                          name={[field.name, 'productId']}
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Vui lòng chọn sản phẩm'
+                            }
+                          ]}
+                        >
+                          <Select
+                            options={productOptions}
+                            placeholder="Chọn sản phẩm"
+                            showSearch
+                            allowClear
+                            filterOption={(input, option) => {
+                              if (!option?.searchText) return false;
+                              return option.searchText.includes(
+                                input.toLowerCase()
+                              );
+                            }}
+                            optionFilterProp="label"
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          label="Ngày"
+                          name={[field.name, 'date']}
+                          rules={[
+                            { required: true, message: 'Vui lòng chọn ngày' }
+                          ]}
+                          initialValue={dayjs()}
+                        >
+                          <DatePicker style={{ width: '100%' }} />
+                        </Form.Item>
+                        <Form.Item
+                          label="Ca"
+                          name={[field.name, 'shift']}
+                          rules={[
+                            { required: true, message: 'Vui lòng chọn ca' }
+                          ]}
+                        >
+                          <Select
+                            options={shiftOptions}
+                            placeholder="Chọn ca"
+                          />
+                        </Form.Item>
+
+                        <Form.Item
+                          label="Loại"
+                          name={[field.name, 'type']}
+                          rules={[
+                            { required: true, message: 'Vui lòng chọn loại' }
+                          ]}
+                        >
+                          <Select
+                            options={stampTypeOptions}
+                            placeholder="Chọn loại tem"
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          label="Mục đích"
+                          name={[field.name, 'purpose']}
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Vui lòng chọn mục đích'
+                            }
+                          ]}
+                        >
+                          <Select
+                            options={purposeOptions}
+                            placeholder="Chọn mục đích"
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          noStyle
+                          shouldUpdate={(prevValues, currentValues) => {
+                            const prevBinStart =
+                              prevValues?.stamps?.[field.name]?.binStart;
+                            const currentBinStart =
+                              currentValues?.stamps?.[field.name]?.binStart;
+                            return prevBinStart !== currentBinStart;
                           }}
-                          optionFilterProp="label"
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="Ngày"
-                        name={[field.name, 'date']}
-                        rules={[
-                          { required: true, message: 'Vui lòng chọn ngày' }
-                        ]}
-                        initialValue={dayjs()}
-                      >
-                        <DatePicker style={{ width: '100%' }} />
-                      </Form.Item>
-                      <Form.Item
-                        label="Ca"
-                        name={[field.name, 'shift']}
-                        rules={[
-                          { required: true, message: 'Vui lòng chọn ca' }
-                        ]}
-                      >
-                        <Select options={shiftOptions} placeholder="Chọn ca" />
-                      </Form.Item>
+                        >
+                          {({ getFieldValue }) => {
+                            const binStart = getFieldValue([
+                              'stamps',
+                              field.name,
+                              'binStart'
+                            ]);
+                            const hasComma = binStart && binStart.includes(',');
 
-                      <Form.Item
-                        label="Loại"
-                        name={[field.name, 'type']}
-                        rules={[
-                          { required: true, message: 'Vui lòng chọn loại' }
-                        ]}
-                      >
-                        <Select
-                          options={stampTypeOptions}
-                          placeholder="Chọn loại tem"
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="Mục đích"
-                        name={[field.name, 'purpose']}
-                        rules={[
-                          { required: true, message: 'Vui lòng chọn mục đích' }
-                        ]}
-                      >
-                        <Select
-                          options={purposeOptions}
-                          placeholder="Chọn mục đích"
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        noStyle
-                        shouldUpdate={(prevValues, currentValues) => {
-                          const prevBinStart =
-                            prevValues?.stamps?.[field.name]?.binStart;
-                          const currentBinStart =
-                            currentValues?.stamps?.[field.name]?.binStart;
-                          return prevBinStart !== currentBinStart;
-                        }}
-                      >
-                        {({ getFieldValue }) => {
-                          const binStart = getFieldValue([
-                            'stamps',
-                            field.name,
-                            'binStart'
-                          ]);
-                          const hasComma = binStart && binStart.includes(',');
-
-                          return !hasComma ? (
-                            <Form.Item
-                              label="Số lượng tem"
-                              name={[field.name, 'binCount']}
-                              rules={[
-                                {
-                                  required: true,
-                                  message: 'Vui lòng nhập số lượng'
-                                }
-                              ]}
-                            >
-                              <InputNumber
-                                min={1}
-                                style={{ width: '100%' }}
-                                placeholder="Nhập số lượng tem"
-                              />
-                            </Form.Item>
-                          ) : null;
-                        }}
-                      </Form.Item>
-                      <Form.Item
-                        label="Bắt đầu từ tem số"
-                        name={[field.name, 'binStart']}
-                        rules={[
-                          {
-                            required: true,
-                            message: 'Vui lòng nhập số tem bắt đầu'
-                          },
-                          {
-                            pattern: /^[0-9]+(,[0-9]+)*$/,
-                            message:
-                              'Vui lòng nhập số hợp lệ, cách nhau bằng dấu phẩy (VD: 7,10,11)'
-                          }
-                        ]}
-                      >
-                        <Input
-                          style={{ width: '100%' }}
-                          placeholder="Nhập tem bắt đầu (VD: 7 hoặc 7,10,11)"
-                        />
-                      </Form.Item>
-                    </div>
-                  </Card>
-                ))}
-                <Button type="dashed" onClick={() => add()} block>
-                  <IconAdd /> Thêm tem
-                </Button>
-              </div>
-            )}
-          </Form.List>
-          <Form.Item style={{ marginTop: '16px', marginBottom: '0' }}>
-            <Button
-              variant="solid"
-              color="green"
-              loading={isSubmitting}
-              htmlType="submit"
-            >
-              Thêm
-            </Button>
-          </Form.Item>
-        </Form>
+                            return !hasComma ? (
+                              <Form.Item
+                                label="Số lượng tem"
+                                name={[field.name, 'binCount']}
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: 'Vui lòng nhập số lượng'
+                                  }
+                                ]}
+                              >
+                                <InputNumber
+                                  min={1}
+                                  style={{ width: '100%' }}
+                                  placeholder="Nhập số lượng tem"
+                                />
+                              </Form.Item>
+                            ) : null;
+                          }}
+                        </Form.Item>
+                        <Form.Item
+                          label="Bắt đầu từ tem số"
+                          name={[field.name, 'binStart']}
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Vui lòng nhập số tem bắt đầu'
+                            },
+                            {
+                              pattern: /^[0-9]+(,[0-9]+)*$/,
+                              message:
+                                'Vui lòng nhập số hợp lệ, cách nhau bằng dấu phẩy (VD: 7,10,11)'
+                            }
+                          ]}
+                        >
+                          <Input
+                            style={{ width: '100%' }}
+                            placeholder="Nhập tem bắt đầu (VD: 7 hoặc 7,10,11)"
+                          />
+                        </Form.Item>
+                      </div>
+                    </Card>
+                  ))}
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    block
+                    className="!rounded-lg"
+                  >
+                    <IconAdd /> Thêm tem
+                  </Button>
+                </div>
+              )}
+            </Form.List>
+            <Form.Item style={{ marginTop: '16px', marginBottom: '0' }}>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97] disabled:opacity-50"
+              >
+                {isSubmitting ? 'Đang gửi...' : 'Gửi yêu cầu'}
+              </button>
+            </Form.Item>
+          </Form>
+        </div>
       </ComponentCard>
     </>
   );

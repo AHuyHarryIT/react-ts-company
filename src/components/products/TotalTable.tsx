@@ -76,7 +76,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
             Đã xuất tháng {month}
           </div>
         ),
-        minWidth: 120,
+        minWidth: 100,
         align: 'center',
         className: 'bg-indigo-300',
         dataIndex: ['times', month, 'quantity'],
@@ -92,16 +92,18 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     {
       title: <div className="capitalize">STT</div>,
       rowScope: 'row',
-      minWidth: 50,
+      width: 50,
       align: 'center',
+      responsive: ['md'],
       render: (_value, _record, index) =>
         index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
-      minWidth: 100,
+      width: 120,
       fixed: 'left',
       dataIndex: 'name',
+      ellipsis: true,
       render: (value, record) => {
         return (
           <Link to={'/admin/products/$id'} params={{ id: record.id }}>
@@ -111,9 +113,10 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: <div>Mã sản phẩm</div>,
-      minWidth: 100,
-      dataIndex: 'code'
+      title: <div>Mã SP</div>,
+      width: 90,
+      dataIndex: 'code',
+      responsive: ['lg']
     },
     {
       title: (
