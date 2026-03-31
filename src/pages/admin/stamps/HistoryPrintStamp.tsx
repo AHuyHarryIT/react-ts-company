@@ -52,7 +52,8 @@ export default function HistoryPrintStamp() {
   const queryResult = useQuery({
     queryKey: ['historyPrintStamp', params],
     queryFn: async () => await getStampHistory(params),
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
+    refetchInterval: 5000 // Tự động load lại data mỗi 5 giây
   });
 
   const { data: response } = queryResult;

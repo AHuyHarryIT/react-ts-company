@@ -66,6 +66,10 @@ const parseLotInfo = (lot: string) => {
 
 const CurrentStockDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [tablePagination, setTablePagination] = useState({
+    current: 1,
+    pageSize: 50
+  });
   const [stockData, setStockData] = useState<CurrentStockApiResponse | null>(
     null
   );
@@ -146,9 +150,8 @@ const CurrentStockDashboard: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [loadCurrentStock]);
-
-  // Transform API response to table data (with client-side filtering)
-  const getGroupedStockItems = (): GroupedStockItem[] => {
+  // Transform API response to table data (lot-by-lot, memoized for stable pagination)
+  const groupedStockItems = useMemo((): GroupedStockItem[] => {
     if (!stockData?.stocks) return [];
 
     let items = stockData.stocks;
@@ -209,7 +212,7 @@ const CurrentStockDashboard: React.FC = () => {
           return b.lotDate.localeCompare(a.lotDate); // newest first
         })
     );
-  };
+  }, [stockData, filters]);
 
   const handleRefresh = () => {
     loadCurrentStock();
@@ -387,7 +390,7 @@ const CurrentStockDashboard: React.FC = () => {
             placeholder="Lọc sản phẩm"
             allowClear
             size="small"
-            style={{ width: 200 }}
+            className="!w-full sm:!w-[200px]"
             options={productOptions}
             onChange={(value) =>
               setFilters((prev) => ({ ...prev, productId: value || undefined }))
@@ -401,7 +404,7 @@ const CurrentStockDashboard: React.FC = () => {
             placeholder="Tìm lot..."
             allowClear
             size="small"
-            style={{ width: 160 }}
+            className="!w-full sm:!w-[160px]"
             onChange={(e) => handleLotSearch(e.target.value)}
           />
           <Button
@@ -415,22 +418,157 @@ const CurrentStockDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Stock Table */}
-      <Table
-        columns={stockColumns}
-        dataSource={getGroupedStockItems()}
-        rowKey="key"
-        loading={loading}
-        pagination={{
-          pageSize: 50,
-          showSizeChanger: true,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} của ${total} groups`,
-          size: 'small'
-        }}
-        size="small"
-        scroll={{ x: 800 }}
-      />
+      {/* Desktop: Table */}
+      <div className="hidden sm:block">
+        <Table
+          columns={stockColumns}
+          dataSource={groupedStockItems}
+          rowKey="key"
+          loading={loading}
+          pagination={{
+            current: tablePagination.current,
+            pageSize: tablePagination.pageSize,
+            showSizeChanger: true,
+            pageSizeOptions: ['20', '50', '100'],
+            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total}`,
+            size: 'small',
+            onChange: (page, pageSize) =>
+              setTablePagination({ current: page, pageSize })
+          }}
+          size="small"
+          scroll={{ x: 800 }}
+        />
+      </div>
+
+      {/* Mobile: Card list */}
+      <div className="block sm:hidden">
+        {loading ? (
+          <div className="py-8 text-center text-gray-400">Đang tải...</div>
+        ) : groupedStockItems.length === 0 ? (
+          <div className="py-8 text-center text-gray-400">Không có dữ liệu</div>
+        ) : (
+          <>
+            <div className="space-y-2">
+              {groupedStockItems
+                .slice(
+                  (tablePagination.current - 1) * tablePagination.pageSize,
+                  tablePagination.current * tablePagination.pageSize
+                )
+                .map((item) => (
+                  <div
+                    key={item.key}
+                    className="rounded-lg border border-gray-100 bg-white px-3 py-2.5"
+                  >
+                    {/* Row 1: Product name + quantity */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <Text strong className="text-sm">
+                          {item.product_name}
+                        </Text>
+                        <div className="text-[10px] text-gray-400">
+                          {item.product_code}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <Text
+                          strong
+                          style={{
+                            color:
+                              item.total_quantity > 0 ? '#52c41a' : '#f5222d',
+                            fontSize: '15px'
+                          }}
+                        >
+                          {Number(item.total_quantity || 0).toLocaleString(
+                            'vi-VN'
+                          )}
+                        </Text>
+                        <div className="text-[10px] text-gray-400">tồn kho</div>
+                      </div>
+                    </div>
+
+                    {/* Row 2: Lot + Date + Shift */}
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                      <span>
+                        Lot:{' '}
+                        <Text code className="!text-[13px] !font-semibold">
+                          {item.lot}
+                        </Text>
+                      </span>
+                      {item.lotDateDisplay && (
+                        <span>
+                          {item.lotDateDisplay}
+                          {item.shift ? ` · Ca ${item.shift}` : ''}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Row 3: Bins info */}
+                    <div className="mt-1.5 flex items-center gap-2 text-xs">
+                      <Text strong style={{ color: '#1890ff' }}>
+                        {item.bin_count} thùng
+                      </Text>
+                      {item.bins?.length > 0 && (
+                        <span className="text-[11px] text-purple-500">
+                          [{item.bins.sort((a, b) => a - b).join(', ')}]
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* Mobile pagination */}
+            {groupedStockItems.length > tablePagination.pageSize && (
+              <div className="flex items-center justify-between pt-3 text-xs text-gray-500">
+                <span>
+                  {(tablePagination.current - 1) * tablePagination.pageSize + 1}
+                  -
+                  {Math.min(
+                    tablePagination.current * tablePagination.pageSize,
+                    groupedStockItems.length
+                  )}{' '}
+                  / {groupedStockItems.length}
+                </span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="small"
+                    disabled={tablePagination.current <= 1}
+                    onClick={() =>
+                      setTablePagination((p) => ({
+                        ...p,
+                        current: p.current - 1
+                      }))
+                    }
+                  >
+                    ‹
+                  </Button>
+                  <span className="px-1.5 text-xs font-medium text-gray-600">
+                    {tablePagination.current} /{' '}
+                    {Math.ceil(
+                      groupedStockItems.length / tablePagination.pageSize
+                    )}
+                  </span>
+                  <Button
+                    size="small"
+                    disabled={
+                      tablePagination.current * tablePagination.pageSize >=
+                      groupedStockItems.length
+                    }
+                    onClick={() =>
+                      setTablePagination((p) => ({
+                        ...p,
+                        current: p.current + 1
+                      }))
+                    }
+                  >
+                    ›
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

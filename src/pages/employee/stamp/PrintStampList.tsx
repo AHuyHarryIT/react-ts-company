@@ -11,7 +11,7 @@ import {
 import { uiStore } from '@stores/uiStore';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@tanstack/react-store';
-import { DatePicker, Spin, Table, TableColumnsType, Tag } from 'antd';
+import { DatePicker, Spin, Table, TableColumnsType, Tag, Empty } from 'antd';
 import { TableProps } from 'antd/lib';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -102,15 +102,27 @@ export const PrintStampList = () => {
       )
     },
     {
-      title: 'Tem bắt đầu',
+      title: 'Tem từ',
       key: 'bin_start',
       dataIndex: 'binStart',
       align: 'center',
-      render: (value) => (
-        <Tag color="geekblue" className="!font-mono !text-xs">
-          {value}
-        </Tag>
-      )
+      render: (value, record) => {
+        const startStr = String(value || '');
+        if (!startStr) return <span className="text-gray-300">—</span>;
+        let display = startStr;
+        if (!startStr.includes(',')) {
+          const startNum = Number(startStr);
+          const countNum = Number(record.binCount || 1);
+          if (!isNaN(startNum) && !isNaN(countNum) && countNum > 1) {
+            display = `${startNum} → ${startNum + countNum - 1}`;
+          }
+        }
+        return (
+          <Tag color="geekblue" className="!font-mono !text-xs">
+            {display}
+          </Tag>
+        );
+      }
     },
     {
       title: 'Loại tem',
@@ -165,19 +177,7 @@ export const PrintStampList = () => {
         <Tag className="!text-xs">{dayjs(value).format('HH:mm:ss')}</Tag>
       )
     },
-    {
-      title: 'Mã nhân duyệt',
-      key: 'manager_id',
-      dataIndex: 'manager_id',
-      render: (value) =>
-        value ? (
-          <Tag color="blue" className="!font-mono !text-xs">
-            {value}
-          </Tag>
-        ) : (
-          <span className="text-gray-300">—</span>
-        )
-    },
+
     {
       title: 'Tên nhân viên duyệt',
       key: 'name',
@@ -292,14 +292,14 @@ export const PrintStampList = () => {
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <RefreshButton isLoading={isFetching} refresh={refetch} />
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-1 items-center gap-2">
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 <FaCalendarAlt className="mr-1 inline-block text-blue-500" />
                 Ngày:
               </label>
               <DatePicker
                 value={date}
-                className="!rounded-lg"
+                className="!w-full !rounded-lg sm:!w-auto"
                 onChange={(value) => {
                   if (value) {
                     setParams((prev) => ({
@@ -326,62 +326,78 @@ export const PrintStampList = () => {
             </div>
           </div>
 
-          {/* ── Pending Stamps ─────────────────────────────────── */}
-          <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-            <SectionHeader
-              icon={<FaClock className="text-gray-500" />}
-              label="Tem đang chờ in"
-              count={pendingData.length}
-              colorClass="border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-300"
-            />
-            {isMobile ? (
-              <div className="p-3">
-                <Spin spinning={isLoading}>
-                  <StampDetailCard data={pendingData} />
-                </Spin>
+          {/* ── Empty State ────────────────────────────────────── */}
+          {!isLoading &&
+            pendingData.length === 0 &&
+            approvedData.length === 0 &&
+            rejectedData.length === 0 && (
+              <div className="rounded-xl border border-gray-100 bg-white p-8 text-center dark:border-gray-800 dark:bg-gray-800/50">
+                <Empty description="Không có dữ liệu in tem cho ngày này" />
               </div>
-            ) : (
-              <Table {...createTableProps(pendingData)} />
             )}
-          </div>
+
+          {/* ── Pending Stamps ─────────────────────────────────── */}
+          {(isLoading || pendingData.length > 0) && (
+            <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+              <SectionHeader
+                icon={<FaClock className="text-gray-500" />}
+                label="Tem đang chờ in"
+                count={pendingData.length}
+                colorClass="border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-300"
+              />
+              {isMobile ? (
+                <div className="p-3">
+                  <Spin spinning={isLoading}>
+                    <StampDetailCard data={pendingData} />
+                  </Spin>
+                </div>
+              ) : (
+                <Table {...createTableProps(pendingData)} />
+              )}
+            </div>
+          )}
 
           {/* ── Approved Stamps ────────────────────────────────── */}
-          <div className="overflow-hidden rounded-xl border border-emerald-200 dark:border-emerald-800">
-            <SectionHeader
-              icon={<FaCheckCircle className="text-emerald-500" />}
-              label="Tem đã in"
-              count={approvedData.length}
-              colorClass="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300"
-            />
-            {isMobile ? (
-              <div className="p-3">
-                <Spin spinning={isLoading}>
-                  <StampDetailCard data={approvedData} />
-                </Spin>
-              </div>
-            ) : (
-              <Table {...createTableProps(approvedData)} />
-            )}
-          </div>
+          {(isLoading || approvedData.length > 0) && (
+            <div className="overflow-hidden rounded-xl border border-emerald-200 dark:border-emerald-800">
+              <SectionHeader
+                icon={<FaCheckCircle className="text-emerald-500" />}
+                label="Tem đã in"
+                count={approvedData.length}
+                colorClass="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300"
+              />
+              {isMobile ? (
+                <div className="p-3">
+                  <Spin spinning={isLoading}>
+                    <StampDetailCard data={approvedData} />
+                  </Spin>
+                </div>
+              ) : (
+                <Table {...createTableProps(approvedData)} />
+              )}
+            </div>
+          )}
 
           {/* ── Rejected Stamps ────────────────────────────────── */}
-          <div className="overflow-hidden rounded-xl border border-red-200 dark:border-red-800">
-            <SectionHeader
-              icon={<FaTimesCircle className="text-red-500" />}
-              label="Tem bị từ chối"
-              count={rejectedData.length}
-              colorClass="border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
-            />
-            {isMobile ? (
-              <div className="p-3">
-                <Spin spinning={isLoading}>
-                  <StampDetailCard data={rejectedData} />
-                </Spin>
-              </div>
-            ) : (
-              <Table {...createTableProps(rejectedData)} />
-            )}
-          </div>
+          {(isLoading || rejectedData.length > 0) && (
+            <div className="overflow-hidden rounded-xl border border-red-200 dark:border-red-800">
+              <SectionHeader
+                icon={<FaTimesCircle className="text-red-500" />}
+                label="Tem bị từ chối"
+                count={rejectedData.length}
+                colorClass="border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+              />
+              {isMobile ? (
+                <div className="p-3">
+                  <Spin spinning={isLoading}>
+                    <StampDetailCard data={rejectedData} />
+                  </Spin>
+                </div>
+              ) : (
+                <Table {...createTableProps(rejectedData)} />
+              )}
+            </div>
+          )}
         </div>
       </ComponentCard>
     </>

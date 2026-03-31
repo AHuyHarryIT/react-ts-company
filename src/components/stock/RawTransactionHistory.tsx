@@ -54,6 +54,24 @@ interface ApiFilters {
 const RawTransactionHistory: React.FC = () => {
   const [allTransactions, setAllTransactions] = useState<TransactionRow[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // ── Server-side pagination meta from API ──
+  const [paginationMeta, setPaginationMeta] = useState<{
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+  }>({
+    current_page: 1,
+    last_page: 1,
+    per_page: 20,
+    total: 0,
+    from: 0,
+    to: 0
+  });
+
   const [apiFilters, setApiFilters] = useState<ApiFilters>({
     from_date: dayjs().startOf('month').format('YYYY-MM-DD'),
     to_date: dayjs().format('YYYY-MM-DD')
@@ -80,39 +98,53 @@ const RawTransactionHistory: React.FC = () => {
     }));
   }, [allTransactions]);
 
-  const loadTransactions = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: TransactionListParams = {
-        page: 1,
-        per_page: 200,
-        ...apiFilters
-      };
+  const loadTransactions = useCallback(
+    async (page = 1, pageSize = paginationMeta.per_page) => {
+      setLoading(true);
+      try {
+        const params: TransactionListParams = {
+          page,
+          per_page: pageSize,
+          ...apiFilters,
+          ...(searchText ? { search: searchText } : {})
+        };
 
-      const response = await StockTransactionService.getTransactions(params);
+        const response = await StockTransactionService.getTransactions(params);
 
-      if ('success' in response && response.success === false) {
-        message.error(
-          (response as ApiErrorResponse).message ||
-            'Có lỗi xảy ra khi tải dữ liệu'
+        if ('success' in response && response.success === false) {
+          message.error(
+            (response as ApiErrorResponse).message ||
+              'Có lỗi xảy ra khi tải dữ liệu'
+          );
+          return;
+        }
+
+        const transactionResponse = response as TransactionListResponse;
+        setAllTransactions(
+          (transactionResponse.data || []) as unknown as TransactionRow[]
         );
-        return;
-      }
 
-      const transactionResponse = response as TransactionListResponse;
-      setAllTransactions(
-        (transactionResponse.data || []) as unknown as TransactionRow[]
-      );
-    } catch (error) {
-      console.error('Error loading transactions:', error);
-      message.error('Không thể tải danh sách hoạt động');
-    } finally {
-      setLoading(false);
-    }
-  }, [apiFilters]);
+        // Store pagination meta from API
+        setPaginationMeta({
+          current_page: transactionResponse.current_page ?? 1,
+          last_page: transactionResponse.last_page ?? 1,
+          per_page: transactionResponse.per_page ?? pageSize,
+          total: transactionResponse.total ?? 0,
+          from: transactionResponse.from ?? 0,
+          to: transactionResponse.to ?? 0
+        });
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+        message.error('Không thể tải danh sách hoạt động');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiFilters, searchText, paginationMeta.per_page]
+  );
 
   useEffect(() => {
-    loadTransactions();
+    loadTransactions(1);
   }, [loadTransactions]);
 
   const handleDelete = useCallback(
@@ -121,7 +153,7 @@ const RawTransactionHistory: React.FC = () => {
         const res = await StockTransactionService.deleteTransaction(id);
         if ('success' in res && res.success) {
           message.success(res.message || 'Đã xoá giao dịch');
-          loadTransactions();
+          loadTransactions(paginationMeta.current_page);
         } else {
           message.error(
             (res as { message?: string }).message || 'Xoá thất bại'
@@ -131,29 +163,14 @@ const RawTransactionHistory: React.FC = () => {
         message.error('Có lỗi xảy ra khi xoá');
       }
     },
-    [loadTransactions]
+    [loadTransactions, paginationMeta.current_page]
   );
 
+  // Client-side product filter (API doesn't support product_id filter)
   const filtered = useMemo(() => {
-    let result = [...allTransactions];
-    if (searchText) {
-      const s = searchText.toLowerCase();
-      result = result.filter(
-        (tx) =>
-          tx.product_name?.toLowerCase().includes(s) ||
-          tx.product_code?.toLowerCase().includes(s) ||
-          tx.lot?.toLowerCase().includes(s) ||
-          tx.barcode?.toLowerCase().includes(s)
-      );
-    }
-    if (filterProductId) {
-      result = result.filter((tx) => tx.product_id === filterProductId);
-    }
-    return result.sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }, [allTransactions, searchText, filterProductId]);
+    if (!filterProductId) return allTransactions;
+    return allTransactions.filter((tx) => tx.product_id === filterProductId);
+  }, [allTransactions, filterProductId]);
 
   const summary = useMemo(() => {
     let totalIn = 0;
@@ -192,13 +209,70 @@ const RawTransactionHistory: React.FC = () => {
     return `${d.toLocaleDateString('vi-VN')} ${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
   };
 
+  // ── Dynamic column widths based on actual data ──
+  const colWidths = useMemo(() => {
+    const CHAR_PX = 8;
+    const PADDING = 24;
+
+    const measure = (values: string[], minW: number, headerLen: number) => {
+      const maxLen = values.reduce(
+        (max, v) => Math.max(max, (v || '').length),
+        headerLen
+      );
+      return Math.max(minW, maxLen * CHAR_PX + PADDING);
+    };
+
+    const data = filtered.length > 0 ? filtered : allTransactions;
+
+    const productW = measure(
+      data.flatMap((tx) => [tx.product_name || '', tx.product_code || '']),
+      80,
+      6
+    );
+
+    const qtyW = measure(
+      data.map((tx) => `+${tx.quantity}`),
+      50,
+      2
+    );
+
+    const lotW = measure(
+      data.map((tx) => tx.lot || ''),
+      80,
+      3
+    );
+
+    const binW = measure(
+      data.map((tx) => (tx.bin != null ? String(tx.bin) : '-')),
+      50,
+      4
+    );
+
+    const empW = measure(
+      data.map((tx) => tx.employee_name || 'N/A'),
+      60,
+      2
+    );
+
+    const timeW = Math.max(90, 10 * CHAR_PX + PADDING);
+
+    return { productW, qtyW, lotW, binW, empW, timeW };
+  }, [filtered, allTransactions]);
+
   // Desktop table columns
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns: any[] = [
     {
+      title: 'STT',
+      key: 'index',
+      width: 50,
+      align: 'center' as const,
+      render: (_: unknown, __: unknown, index: number) => index + 1
+    },
+    {
       title: 'Sản phẩm',
       key: 'product',
-      ellipsis: true,
+      width: colWidths.productW,
       render: (_: unknown, r: TransactionRow) => (
         <div className="min-w-0">
           <Text strong className="text-sm">
@@ -224,7 +298,7 @@ const RawTransactionHistory: React.FC = () => {
       title: 'SL',
       dataIndex: 'quantity',
       key: 'quantity',
-      width: 60,
+      width: colWidths.qtyW,
       align: 'center' as const,
       sorter: (a: TransactionRow, b: TransactionRow) => a.quantity - b.quantity,
       render: (v: number, r: TransactionRow) => (
@@ -242,7 +316,7 @@ const RawTransactionHistory: React.FC = () => {
       title: 'Lot',
       dataIndex: 'lot',
       key: 'lot',
-      width: 160,
+      width: colWidths.lotW,
       align: 'center' as const,
       render: (lot: string) => (
         <Text code className="!text-sm !font-medium whitespace-nowrap">
@@ -254,7 +328,7 @@ const RawTransactionHistory: React.FC = () => {
       title: 'Thùng',
       dataIndex: 'bin',
       key: 'bin',
-      width: 60,
+      width: colWidths.binW,
       align: 'center' as const,
       render: (v: number) => (
         <Text className="text-xs">{v != null ? v : '-'}</Text>
@@ -264,16 +338,15 @@ const RawTransactionHistory: React.FC = () => {
       title: 'NV',
       dataIndex: 'employee_name',
       key: 'employee_name',
-      width: 100,
+      width: colWidths.empW,
       align: 'center' as const,
-      ellipsis: true,
       render: (v: string) => <Text className="text-xs">{v || 'N/A'}</Text>
     },
     {
       title: 'Thời gian',
       dataIndex: 'created_at',
       key: 'created_at',
-      width: 100,
+      width: colWidths.timeW,
       align: 'center' as const,
       sorter: (a: TransactionRow, b: TransactionRow) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
@@ -317,6 +390,11 @@ const RawTransactionHistory: React.FC = () => {
       )
     }
   ];
+
+  const totalScrollX = useMemo(() => {
+    const { productW, qtyW, lotW, binW, empW, timeW } = colWidths;
+    return productW + 50 + 65 + qtyW + lotW + binW + empW + timeW + 40;
+  }, [colWidths]);
 
   // Mobile card for each transaction
   const MobileCard = ({ tx }: { tx: TransactionRow }) => (
@@ -371,14 +449,6 @@ const RawTransactionHistory: React.FC = () => {
     </div>
   );
 
-  // Pagination for mobile
-  const [mobilePage, setMobilePage] = useState(1);
-  const mobilePageSize = 20;
-  const mobileData = filtered.slice(
-    (mobilePage - 1) * mobilePageSize,
-    mobilePage * mobilePageSize
-  );
-
   return (
     <div className="space-y-3">
       {/* Summary + Filters */}
@@ -404,7 +474,7 @@ const RawTransactionHistory: React.FC = () => {
           <div>
             <span className="text-xs text-gray-400">GD</span>
             <span className="ml-1 text-xs font-semibold text-gray-700">
-              {filtered.length}
+              {paginationMeta.total}
             </span>
           </div>
         </div>
@@ -472,7 +542,7 @@ const RawTransactionHistory: React.FC = () => {
             />
             <Button
               icon={<ReloadOutlined />}
-              onClick={() => loadTransactions()}
+              onClick={() => loadTransactions(paginationMeta.current_page)}
               loading={loading}
               size="small"
             />
@@ -488,13 +558,17 @@ const RawTransactionHistory: React.FC = () => {
           rowKey="id"
           loading={loading}
           pagination={{
-            pageSize: 20,
+            current: paginationMeta.current_page,
+            pageSize: paginationMeta.per_page,
+            total: paginationMeta.total,
             showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
             showTotal: (total, range) => `${range[0]}-${range[1]} / ${total}`,
-            size: 'small'
+            size: 'small',
+            onChange: (page, pageSize) => loadTransactions(page, pageSize)
           }}
           size="small"
-          scroll={{ x: 700 }}
+          scroll={{ x: totalScrollX }}
         />
       </div>
 
@@ -507,29 +581,37 @@ const RawTransactionHistory: React.FC = () => {
         ) : (
           <>
             <div className="rounded-lg border border-gray-100 bg-white">
-              {mobileData.map((tx) => (
+              {filtered.map((tx) => (
                 <MobileCard key={tx.id} tx={tx} />
               ))}
             </div>
-            {filtered.length > mobilePageSize && (
+            {paginationMeta.last_page > 1 && (
               <div className="flex items-center justify-between pt-2 text-xs text-gray-500">
                 <span>
-                  {(mobilePage - 1) * mobilePageSize + 1}-
-                  {Math.min(mobilePage * mobilePageSize, filtered.length)} /{' '}
-                  {filtered.length}
+                  {paginationMeta.from}-{paginationMeta.to} /{' '}
+                  {paginationMeta.total}
                 </span>
-                <div className="flex gap-1">
+                <div className="flex items-center gap-1">
                   <Button
                     size="small"
-                    disabled={mobilePage <= 1}
-                    onClick={() => setMobilePage((p) => p - 1)}
+                    disabled={paginationMeta.current_page <= 1}
+                    onClick={() =>
+                      loadTransactions(paginationMeta.current_page - 1)
+                    }
                   >
                     ‹
                   </Button>
+                  <span className="px-1.5 text-xs font-medium text-gray-600">
+                    {paginationMeta.current_page} / {paginationMeta.last_page}
+                  </span>
                   <Button
                     size="small"
-                    disabled={mobilePage * mobilePageSize >= filtered.length}
-                    onClick={() => setMobilePage((p) => p + 1)}
+                    disabled={
+                      paginationMeta.current_page >= paginationMeta.last_page
+                    }
+                    onClick={() =>
+                      loadTransactions(paginationMeta.current_page + 1)
+                    }
                   >
                     ›
                   </Button>

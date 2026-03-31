@@ -385,10 +385,11 @@ export const RequestStamp = () => {
                       }
                       className="!rounded-xl !border-gray-200 dark:!border-gray-700"
                     >
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-2 md:grid-cols-2 lg:grid-cols-3">
                         <Form.Item
                           label="Sản phẩm"
                           name={[field.name, 'productId']}
+                          className="col-span-2 !mb-0"
                           rules={[
                             {
                               required: true,
@@ -413,9 +414,8 @@ export const RequestStamp = () => {
                         <Form.Item
                           label="Ngày"
                           name={[field.name, 'date']}
-                          rules={[
-                            { required: true, message: 'Vui lòng chọn ngày' }
-                          ]}
+                          className="col-span-1 !mb-0"
+                          rules={[{ required: true, message: 'Vui chọn ngày' }]}
                           initialValue={dayjs()}
                         >
                           <DatePicker style={{ width: '100%' }} />
@@ -423,9 +423,8 @@ export const RequestStamp = () => {
                         <Form.Item
                           label="Ca"
                           name={[field.name, 'shift']}
-                          rules={[
-                            { required: true, message: 'Vui lòng chọn ca' }
-                          ]}
+                          className="col-span-1 !mb-0"
+                          rules={[{ required: true, message: 'Vui chọn ca' }]}
                         >
                           <Select
                             options={shiftOptions}
@@ -436,28 +435,28 @@ export const RequestStamp = () => {
                         <Form.Item
                           label="Loại"
                           name={[field.name, 'type']}
-                          rules={[
-                            { required: true, message: 'Vui lòng chọn loại' }
-                          ]}
+                          className="col-span-1 !mb-0"
+                          rules={[{ required: true, message: 'Vui chọn loại' }]}
                         >
                           <Select
                             options={stampTypeOptions}
-                            placeholder="Chọn loại tem"
+                            placeholder="Loại tem"
                           />
                         </Form.Item>
                         <Form.Item
                           label="Mục đích"
                           name={[field.name, 'purpose']}
+                          className="col-span-1 !mb-0"
                           rules={[
                             {
                               required: true,
-                              message: 'Vui lòng chọn mục đích'
+                              message: 'Vui chọn mục đích'
                             }
                           ]}
                         >
                           <Select
                             options={purposeOptions}
-                            placeholder="Chọn mục đích"
+                            placeholder="Mục đích"
                           />
                         </Form.Item>
                         <Form.Item
@@ -482,6 +481,7 @@ export const RequestStamp = () => {
                               <Form.Item
                                 label="Số lượng tem"
                                 name={[field.name, 'binCount']}
+                                className="col-span-2 !mb-0 md:col-span-1 lg:col-span-1"
                                 rules={[
                                   {
                                     required: true,
@@ -501,6 +501,7 @@ export const RequestStamp = () => {
                         <Form.Item
                           label="Bắt đầu từ tem số"
                           name={[field.name, 'binStart']}
+                          className="col-span-2 !mb-0 md:col-span-1 lg:col-span-1"
                           rules={[
                             {
                               required: true,

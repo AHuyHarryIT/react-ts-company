@@ -773,7 +773,7 @@ export const AttendancePage = () => {
                   }
                   options={[
                     { value: 'month', label: 'Tháng' },
-                    { value: 'payroll', label: '16→15' }
+                    { value: 'payroll', label: 'Từ 16→15 sau' }
                   ]}
                 />
               </div>

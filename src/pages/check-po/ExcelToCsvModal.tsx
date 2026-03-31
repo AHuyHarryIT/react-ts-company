@@ -72,7 +72,7 @@ export const ExcelToCsvModal = () => {
         return false;
       }
 
-      const sheetInfos: SheetInfo[] = wb.SheetNames.map((name) => {
+      const sheetInfos: SheetInfo[] = wb.SheetNames.map((name: string) => {
         const ws = wb.Sheets[name];
         const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
         return {

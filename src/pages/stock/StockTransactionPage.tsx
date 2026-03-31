@@ -3,7 +3,8 @@ import { Tabs, Spin } from 'antd';
 import {
   ScanOutlined,
   HistoryOutlined,
-  DatabaseOutlined
+  DatabaseOutlined,
+  PieChartOutlined
 } from '@ant-design/icons';
 
 import ComponentCard from '@components/common/ComponentCard';
@@ -19,6 +20,9 @@ const RawTransactionHistory = lazy(
 const CurrentStockDashboard = lazy(
   () => import('@/components/stock/CurrentStockDashboard')
 );
+const ProductStockSummary = lazy(
+  () => import('@/components/stock/ProductStockSummary')
+);
 
 const StockTransactionPage: React.FC = () => {
   const { user } = useAuth();
@@ -33,7 +37,7 @@ const StockTransactionPage: React.FC = () => {
             label: (
               <span className="flex items-center gap-1.5">
                 <ScanOutlined />
-                Quét mã
+                <span>Quét mã</span>
               </span>
             ),
             children: <BarcodeScanner />
@@ -45,7 +49,8 @@ const StockTransactionPage: React.FC = () => {
       label: (
         <span className="flex items-center gap-1.5">
           <HistoryOutlined />
-          Lịch sử xuất nhập
+          <span className="hidden sm:inline">Lịch sử xuất nhập</span>
+          <span className="inline sm:hidden">Lịch sử</span>
         </span>
       ),
       children: (
@@ -65,7 +70,8 @@ const StockTransactionPage: React.FC = () => {
       label: (
         <span className="flex items-center gap-1.5">
           <DatabaseOutlined />
-          Tồn kho hiện tại
+          <span className="hidden sm:inline">Tồn kho hiện tại</span>
+          <span className="inline sm:hidden">Tồn kho</span>
         </span>
       ),
       children: (
@@ -79,6 +85,27 @@ const StockTransactionPage: React.FC = () => {
           <CurrentStockDashboard />
         </Suspense>
       )
+    },
+    {
+      key: 'summary',
+      label: (
+        <span className="flex items-center gap-1.5">
+          <PieChartOutlined />
+          <span className="hidden sm:inline">Tổng hợp SP</span>
+          <span className="inline sm:hidden">Tổng hợp</span>
+        </span>
+      ),
+      children: (
+        <Suspense
+          fallback={
+            <div className="py-10 text-center">
+              <Spin size="large" />
+            </div>
+          }
+        >
+          <ProductStockSummary />
+        </Suspense>
+      )
     }
   ];
 
@@ -89,6 +116,7 @@ const StockTransactionPage: React.FC = () => {
         items={tabItems}
         type="card"
         destroyOnHidden
+        size="small"
       />
     </ComponentCard>
   );

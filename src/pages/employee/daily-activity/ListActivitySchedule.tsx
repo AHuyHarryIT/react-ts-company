@@ -261,27 +261,78 @@ export const ListActivity = () => {
           {/* ── Table / Mobile Cards ───────────────────────────── */}
           {isMobile ? (
             <Spin spinning={isLoading}>
-              <div className="flex flex-col gap-4">
-                {response?.data && response.data.length > 0 ? (
-                  response.data.map((item) => (
-                    <ActivityCard
-                      key={`activity_card-${item.id}`}
-                      id={item.id}
-                      productName={item.product?.name || 'Chưa xác định'}
-                      shift={item.shift}
-                      startDate={dayjs(item.date).format('DD-MM-YYYY')}
-                      isStatus={(item.dailyQuantities?.length ?? 0) > 0}
-                      quantities={item.dailyQuantities?.map((quantity) => ({
-                        type: quantity.status,
-                        quantity: quantity.quantity,
-                        time: quantity.created_at_formatted ?? ''
-                      }))}
-                    />
-                  ))
-                ) : (
-                  <Empty description="Không có dữ liệu" />
-                )}
-              </div>
+              {response?.data && response.data.length > 0 ? (
+                <>
+                  <div className="flex flex-col gap-2.5">
+                    {response.data.map((item) => (
+                      <ActivityCard
+                        key={`activity_card-${item.id}`}
+                        id={item.id}
+                        productName={item.product?.name || 'Chưa xác định'}
+                        shift={item.shift}
+                        startDate={dayjs(item.date).format('DD-MM-YYYY')}
+                        isStatus={(item.dailyQuantities?.length ?? 0) > 0}
+                        quantities={item.dailyQuantities?.map((quantity) => ({
+                          type: quantity.status,
+                          quantity: quantity.quantity,
+                          time: quantity.created_at_formatted ?? ''
+                        }))}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Mobile pagination */}
+                  {(response?.total || 0) > (params.limit ?? 10) && (
+                    <div className="flex items-center justify-between pt-3 text-xs text-gray-500">
+                      <span>
+                        {((params.page ?? 1) - 1) * (params.limit ?? 10) + 1}-
+                        {Math.min(
+                          (params.page ?? 1) * (params.limit ?? 10),
+                          response?.total || 0
+                        )}{' '}
+                        / {response?.total || 0}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          className="rounded border border-gray-200 px-2.5 py-1 text-xs disabled:opacity-40 dark:border-gray-600"
+                          disabled={(params.page ?? 1) <= 1}
+                          onClick={() =>
+                            setParams((prev) => ({
+                              ...prev,
+                              page: (prev.page ?? 1) - 1
+                            }))
+                          }
+                        >
+                          ‹
+                        </button>
+                        <span className="px-1.5 text-xs font-medium text-gray-600 dark:text-gray-300">
+                          {params.page ?? 1} /{' '}
+                          {Math.ceil(
+                            (response?.total || 0) / (params.limit ?? 10)
+                          )}
+                        </span>
+                        <button
+                          className="rounded border border-gray-200 px-2.5 py-1 text-xs disabled:opacity-40 dark:border-gray-600"
+                          disabled={
+                            (params.page ?? 1) * (params.limit ?? 10) >=
+                            (response?.total || 0)
+                          }
+                          onClick={() =>
+                            setParams((prev) => ({
+                              ...prev,
+                              page: (prev.page ?? 1) + 1
+                            }))
+                          }
+                        >
+                          ›
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Empty description="Không có dữ liệu" />
+              )}
             </Spin>
           ) : (
             <Table<DailyScheduleType> {...tableProps} />

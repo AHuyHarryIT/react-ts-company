@@ -277,22 +277,22 @@ export default function Dashboard() {
       let pool: { text: string; emoji: string }[];
 
       if (h >= 5 && h < 12) {
-        // Morning - start the workday
+        // Morning
         if (isRainy)
           pool = [
             { text: 'Mưa rồi, tập trung làm việc thôi nào', emoji: '🌧️' },
-            { text: 'Trời mưa mát mẻ, năng suất hơn nè', emoji: '💪' },
-            { text: 'Mưa ngoài kia, bên trong mình cày thôi', emoji: '💻' }
+            { text: 'Trời mưa mát mẻ, năng suất hơn nè', emoji: '☔' },
+            { text: 'Mưa ngoài kia, bên trong mình cày thôi', emoji: '🌧️' }
           ];
         else if (isStormy)
           pool = [
-            { text: 'Giông bão ngoài kia, bên trong vẫn on fire', emoji: '🔥' },
-            { text: 'Trời giông nhưng tinh thần vẫn cao nha', emoji: '💪' }
+            { text: 'Giông bão ngoài kia, bên trong vẫn ổn', emoji: '⛈️' },
+            { text: 'Trời giông nhưng tinh thần vẫn cao nha', emoji: '⛈️' }
           ];
         else if (isFoggy)
           pool = [
-            { text: 'Sương mù nhưng mục tiêu vẫn rõ ràng', emoji: '🎯' },
-            { text: 'Trời mờ nhưng kế hoạch phải sáng', emoji: '💡' }
+            { text: 'Sương mù nhưng mục tiêu vẫn rõ ràng', emoji: '🌫️' },
+            { text: 'Trời mờ nhưng kế hoạch phải sáng', emoji: '🌫️' }
           ];
         else if (isSunny)
           pool = [
@@ -302,80 +302,77 @@ export default function Dashboard() {
             },
             {
               text: 'Nắng đẹp, năng lượng đầy, cùng làm việc thôi',
-              emoji: '🚀'
+              emoji: '🌤️'
             },
-            { text: 'Ngày mới rực rỡ, cùng chinh phục mục tiêu', emoji: '🎯' }
+            {
+              text: 'Ngày mới tươi sáng, chúc bạn một ngày tốt lành',
+              emoji: '☀️'
+            }
           ];
         else if (isCloudy)
           pool = [
-            { text: 'Trời mát dễ chịu, làm việc năng suất nha', emoji: '💪' },
-            { text: 'Thời tiết lý tưởng để tập trung công việc', emoji: '💻' }
+            { text: 'Trời mát dễ chịu, làm việc năng suất nha', emoji: '⛅' },
+            { text: 'Thời tiết lý tưởng để tập trung công việc', emoji: '☁️' }
           ];
         else
           pool = [
-            { text: 'Bắt đầu ngày mới đầy năng lượng', emoji: '⚡' },
-            { text: 'Sẵn sàng cho một ngày làm việc hiệu quả', emoji: '🚀' },
-            { text: 'Cùng chinh phục mục tiêu hôm nay', emoji: '🎯' },
+            { text: 'Bắt đầu ngày mới đầy năng lượng', emoji: '🌅' },
+            { text: 'Sẵn sàng cho một ngày làm việc hiệu quả', emoji: '☀️' },
+            { text: 'Chúc bạn một ngày suôn sẻ', emoji: '🌿' },
             { text: 'Ngày mới, cơ hội mới', emoji: '✨' }
           ];
       } else if (h >= 12 && h < 18) {
-        // Afternoon - keep pushing
+        // Afternoon
         if (isRainy)
           pool = [
             {
               text: 'Mưa chiều, ngồi trong làm việc hiệu quả luôn',
               emoji: '🌧️'
             },
-            {
-              text: 'Chiều mưa mát, tăng tốc hoàn thành công việc nha',
-              emoji: '💪'
-            }
+            { text: 'Chiều mưa mát, hoàn thành nốt công việc nha', emoji: '☔' }
           ];
         else if (isStormy)
           pool = [
             {
-              text: 'Trời giông, an toàn trong nhà và hoàn thành task thôi',
-              emoji: '🔥'
+              text: 'Trời giông, an toàn trong nhà và hoàn thành việc thôi',
+              emoji: '⛈️'
             }
           ];
         else if (isSunny)
           pool = [
-            { text: 'Nắng chiều ấm, cố gắng chút nữa nha', emoji: '💪' },
-            { text: 'Còn vài tiếng nữa, sprint cuối thôi', emoji: '🏃' }
+            { text: 'Nắng chiều ấm, cố gắng chút nữa nha', emoji: '🌤️' },
+            { text: 'Còn vài tiếng nữa, hoàn thành nốt nhé', emoji: '☀️' }
           ];
         else if (isCloudy)
           pool = [
-            { text: 'Trời mát, tập trung nốt công việc còn lại', emoji: '💻' },
-            { text: 'Chiều mát mẻ, hoàn thành nốt task nha', emoji: '✅' }
+            { text: 'Trời mát, tập trung nốt công việc còn lại', emoji: '⛅' },
+            { text: 'Chiều mát mẻ, hoàn thành nốt task nha', emoji: '☁️' }
           ];
         else
           pool = [
-            { text: 'Cố lên, sắp xong rồi', emoji: '💪' },
-            { text: 'Buổi chiều năng suất nào', emoji: '🚀' },
-            { text: 'Tập trung sprint cuối ngày', emoji: '🏃' },
-            { text: 'Keep going, bạn làm tốt lắm rồi', emoji: '👍' }
+            { text: 'Cố lên, sắp xong rồi', emoji: '☀️' },
+            { text: 'Buổi chiều năng suất nào', emoji: '🌤️' },
+            { text: 'Chúc buổi chiều vui vẻ', emoji: '🌿' },
+            { text: 'Bạn đang làm rất tốt rồi', emoji: '✨' }
           ];
       } else if (h >= 18 && h < 22) {
-        // Evening - wrap up
+        // Evening
         if (isRainy)
           pool = [
-            {
-              text: 'Mưa tối rồi, nghỉ ngơi sau ngày làm việc vất vả nha',
-              emoji: '🌧️'
-            }
+            { text: 'Mưa tối rồi, nghỉ ngơi sau ngày dài nha', emoji: '🌧️' }
           ];
         else
           pool = [
             { text: 'Hết giờ rồi, nghỉ ngơi xứng đáng nha', emoji: '🌙' },
-            { text: 'Một ngày làm việc hiệu quả, good job', emoji: '🌟' },
+            { text: 'Một ngày làm việc hiệu quả, tuyệt vời', emoji: '🌟' },
             { text: 'Thư giãn sau ngày dài làm việc', emoji: '☕' },
-            { text: 'Nghỉ ngơi để mai lại chiến tiếp', emoji: '💪' }
+            { text: 'Nghỉ ngơi để mai lại tiếp tục nha', emoji: '🌆' }
           ];
       } else {
         pool = [
-          { text: 'Khuya rồi, nghỉ ngơi giữ sức nha', emoji: '🌜' },
-          { text: 'Ngủ sớm để mai làm việc hiệu quả', emoji: '😴' },
-          { text: 'Sức khỏe là số 1, nghỉ thôi nào', emoji: '💤' },
+          { text: 'Khuya rồi, nghỉ ngơi giữ sức nha', emoji: '🌙' },
+          { text: 'Ngủ sớm để mai làm việc hiệu quả', emoji: '🌙' },
+          { text: 'Sức khỏe là số 1, nghỉ thôi nào', emoji: '🌜' },
           { text: 'Đừng thức khuya quá, giữ gìn sức khỏe', emoji: '🌙' }
         ];
       }
@@ -390,6 +387,7 @@ export default function Dashboard() {
   }, [weather]);
 
   // Fetch weather using Open-Meteo (free, no API key, accurate)
+  // Uses fixed coordinates (Biên Hòa / HCM) — no geolocation prompt needed
   useEffect(() => {
     // WMO weather code → Vietnamese description
     const weatherDesc: Record<number, string> = {
@@ -435,19 +433,8 @@ export default function Dashboard() {
       }
     };
 
-    // Default: Vietnam (Ho Chi Minh City)
-    const defaultLat = 10.82;
-    const defaultLon = 106.63;
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-        () => fetchWeather(defaultLat, defaultLon),
-        { timeout: 5000 }
-      );
-    } else {
-      fetchWeather(defaultLat, defaultLon);
-    }
+    // Fixed: Biên Hòa / Ho Chi Minh City area — no location sharing required
+    fetchWeather(10.82, 106.63);
   }, []);
 
   // Current date formatted

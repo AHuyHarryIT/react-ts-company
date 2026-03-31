@@ -106,8 +106,8 @@ export const TodoHistory = () => {
 
             {/* ── Data Table ────────────────────────────────────── */}
             <div className="rounded-xl border border-gray-100 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
-              {/* Header Row */}
-              <div className="grid grid-cols-3 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+              {/* Header Row - Desktop only */}
+              <div className="hidden border-b border-gray-200 bg-gray-50 px-4 py-3 sm:grid sm:grid-cols-3 dark:border-gray-700 dark:bg-gray-800">
                 <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                   Ngày
                 </span>
@@ -123,25 +123,50 @@ export const TodoHistory = () => {
                 {histories?.data && histories.data.length > 0 ? (
                   <div className="divide-y divide-gray-100 dark:divide-gray-700">
                     {histories.data.map((history) => (
-                      <div
-                        key={history.id}
-                        className="grid grid-cols-3 px-4 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/30"
-                      >
-                        <span className="text-sm text-gray-700 dark:text-gray-300">
-                          {dayjs(history.date).format('DD/MM/YYYY')}
-                        </span>
-                        <span>
-                          <Tag color="blue" className="!text-xs">
-                            {
-                              productStatusOptions.find(
-                                (item) => item.value === history.status
-                              )?.label
-                            }
-                          </Tag>
-                        </span>
-                        <span className="font-semibold text-blue-600">
-                          {history.quantity}
-                        </span>
+                      <div key={history.id}>
+                        {/* Desktop row */}
+                        <div className="hidden px-4 py-3 transition-colors hover:bg-gray-50 sm:grid sm:grid-cols-3 dark:hover:bg-gray-800/30">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            {dayjs(history.date).format('DD/MM/YYYY')}
+                          </span>
+                          <span>
+                            <Tag color="blue" className="!text-xs">
+                              {
+                                productStatusOptions.find(
+                                  (item) => item.value === history.status
+                                )?.label
+                              }
+                            </Tag>
+                          </span>
+                          <span className="font-semibold text-blue-600">
+                            {Number(history.quantity || 0).toLocaleString(
+                              'vi-VN'
+                            )}
+                          </span>
+                        </div>
+
+                        {/* Mobile row */}
+                        <div className="flex items-center justify-between gap-2 px-3 py-2.5 sm:hidden">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                                {dayjs(history.date).format('DD/MM/YYYY')}
+                              </span>
+                              <Tag color="blue" className="!m-0 !text-[11px]">
+                                {
+                                  productStatusOptions.find(
+                                    (item) => item.value === history.status
+                                  )?.label
+                                }
+                              </Tag>
+                            </div>
+                          </div>
+                          <span className="shrink-0 text-sm font-bold text-blue-600">
+                            {Number(history.quantity || 0).toLocaleString(
+                              'vi-VN'
+                            )}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
