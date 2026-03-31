@@ -1,8 +1,10 @@
 import { useStampNotification } from '@hooks/useStampNotification';
 import { useFeedbackNotification } from '@hooks/useFeedbackNotification';
 import { useAdminFeedbackNotification } from '@hooks/useAdminFeedbackNotification';
+import { useEmployeeNotification } from '@hooks/useEmployeeNotification';
 import { useAuth } from '@hooks/useAuth';
 import { removeFeedbackNotification } from '@stores/feedbackNotificationStore';
+import { removeEmployeeNotification } from '@stores/employeeNotificationStore';
 import { Link } from '@tanstack/react-router';
 import { Badge } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -94,6 +96,14 @@ export default function NotificationDropdown() {
   // Merge: employee sees reply notifs, admin sees new feedback notifs
   const allFeedbackNotifs = isEmployee ? feedbackNotifs : adminFeedbackNotifs;
   const allFeedbackUnread = isEmployee ? feedbackUnread : adminFeedbackUnread;
+
+  // Broadcast notifications (salary & schedule) — employee only
+  const {
+    notifications: employeeNotifs,
+    unreadCount: employeeUnread,
+    clearAll: clearAllEmployee
+  } = useEmployeeNotification(isEmployee);
+
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -165,7 +175,7 @@ export default function NotificationDropdown() {
     );
   }, [stampItems]);
 
-  const count = stampItems.length + allFeedbackUnread;
+  const count = stampItems.length + allFeedbackUnread + employeeUnread;
 
   // Time ago for feedback
   function fbTimeAgo(dateStr: string): string {
@@ -216,6 +226,7 @@ export default function NotificationDropdown() {
                   handleClearNotifications();
                   clearAllFeedback();
                   clearAllAdminFeedback();
+                  clearAllEmployee();
                 }}
                 className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-red-500 transition-colors duration-200 active:bg-red-50 dark:text-red-400"
               >
@@ -230,7 +241,8 @@ export default function NotificationDropdown() {
           {/* ── Notification List ── */}
           <div className="scrollbar-thin max-h-72 overflow-y-auto">
             {groupedNotifications.length === 0 &&
-            allFeedbackNotifs.length === 0 ? (
+            allFeedbackNotifs.length === 0 &&
+            employeeNotifs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800">
                   <FaRegBell className="text-base text-gray-300 dark:text-gray-600" />
@@ -278,6 +290,57 @@ export default function NotificationDropdown() {
                     </p>
                   </Link>
                 ))}
+
+                {/* ── Employee Notifications (Salary & Schedule) ── */}
+                {employeeNotifs.map((n) => {
+                  const itemId = n.id.replace(/^(salary|schedule)-/, '');
+                  return (
+                    <Link
+                      key={n.id}
+                      to={
+                        n.type === 'salary'
+                          ? '/employee/salaries'
+                          : '/employee/schedules'
+                      }
+                      search={{ openId: itemId }}
+                      onClick={() => {
+                        removeEmployeeNotification(n.id);
+                        setOpen(false);
+                      }}
+                      className={`block cursor-pointer px-3.5 py-2.5 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5 ${
+                        !n.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5 px-0.5">
+                        {/* Color indicator */}
+                        <div
+                          className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                            n.type === 'salary'
+                              ? 'bg-emerald-500'
+                              : 'bg-blue-500'
+                          }`}
+                        />
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-[12px] font-semibold text-gray-800 dark:text-gray-200">
+                              {n.title}
+                            </p>
+                            {!n.read && (
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+                            )}
+                          </div>
+                          <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                            {n.message}
+                          </p>
+                          <p className="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                            {fbTimeAgo(n.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
 
                 {/* ── Stamp Notifications ── */}
                 {groupedNotifications.map((n, index) => (

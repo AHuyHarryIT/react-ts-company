@@ -23,6 +23,7 @@ import type { FormProps } from 'antd';
 import { Button, Form, Input, message } from 'antd';
 
 import { authLogin } from '@services/AuthService';
+import logo from '@assets/images/logo/logoAsset.svg';
 
 import { FaRegUser } from 'react-icons/fa';
 import { IoLockClosedOutline } from 'react-icons/io5';
@@ -39,67 +40,84 @@ type LoginSearch = {
 /**
  * Trigger the browser's native "Save password?" prompt.
  *
- * 1. Try the modern Credential Management API (Chrome 51+, Edge 79+).
- * 2. Fallback: submit a hidden `<form>` targeting a hidden `<iframe>` so
- *    older browsers / Firefox still see a "real" form submission and offer
- *    to save credentials.
+ * Works on:
+ * - Chrome/Edge desktop & Android (Credential Management API)
+ * - Safari desktop & iOS (hidden form submit)
+ * - Firefox (hidden form submit)
  */
 const triggerBrowserSavePassword = (
   username: string,
   password: string,
   redirectTo: string
 ) => {
-  // --- Modern API ---
+  // --- Modern API (Chrome 51+, Edge 79+, Android Chrome) ---
   if (window.PasswordCredential) {
     const PC = window.PasswordCredential;
     const cred = new PC({
       id: username,
       password: password
     });
-    navigator.credentials.store(cred).finally(() => {
-      window.location.href = redirectTo;
-    });
+    navigator.credentials
+      .store(cred)
+      .then(() => {
+        window.location.href = redirectTo;
+      })
+      .catch(() => {
+        window.location.href = redirectTo;
+      });
     return;
   }
 
-  // --- Fallback: hidden form submit ---
-  // Create a tiny invisible iframe as the form target
+  // --- Fallback: hidden form submit (iOS Safari, Firefox) ---
   const iframe = document.createElement('iframe');
   iframe.name = '__saveCredFrame';
-  iframe.style.display = 'none';
+  iframe.style.cssText =
+    'position:absolute;width:0;height:0;border:0;opacity:0;';
   document.body.appendChild(iframe);
 
-  // Build a real <form> with proper autocomplete attributes
   const hiddenForm = document.createElement('form');
   hiddenForm.method = 'POST';
-  hiddenForm.action = window.location.href; // same page – the iframe swallows the response
+  hiddenForm.action = window.location.href;
   hiddenForm.target = '__saveCredFrame';
-  hiddenForm.style.display = 'none';
+  hiddenForm.style.cssText =
+    'position:absolute;width:0;height:0;overflow:hidden;';
 
   const uInput = document.createElement('input');
   uInput.type = 'text';
   uInput.name = 'username';
+  uInput.id = '__save_username';
   uInput.autocomplete = 'username';
   uInput.value = username;
 
   const pInput = document.createElement('input');
   pInput.type = 'password';
   pInput.name = 'password';
+  pInput.id = '__save_password';
   pInput.autocomplete = 'current-password';
   pInput.value = password;
 
+  // Submit button required by iOS Safari to recognize as login form
+  const submitBtn = document.createElement('input');
+  submitBtn.type = 'submit';
+  submitBtn.value = 'Login';
+
   hiddenForm.appendChild(uInput);
   hiddenForm.appendChild(pInput);
+  hiddenForm.appendChild(submitBtn);
   document.body.appendChild(hiddenForm);
 
   hiddenForm.submit();
 
-  // Redirect shortly after – gives the browser time to process
+  // Longer timeout for mobile connections
   setTimeout(() => {
-    document.body.removeChild(hiddenForm);
-    document.body.removeChild(iframe);
+    try {
+      document.body.removeChild(hiddenForm);
+      document.body.removeChild(iframe);
+    } catch {
+      /* already removed */
+    }
     window.location.href = redirectTo;
-  }, 500);
+  }, 800);
 };
 
 export const Route = createFileRoute('/(auth)/login')({
@@ -231,22 +249,31 @@ function RouteComponent() {
   };
 
   return (
-    <div>
-      <div className="mb-5 sm:mb-8">
-        <h1 className="mb-2 text-3xl font-semibold text-gray-800 sm:text-4xl dark:text-white/90">
+    <div className="flex flex-col items-center">
+      {/* ── Logo ── */}
+      <div className="mb-8">
+        <img src={logo} alt="Logo" className="mx-auto h-28" />
+      </div>
+
+      {/* ── Title ── */}
+      <div className="mb-6 text-center">
+        <h1 className="mb-1 text-2xl font-bold text-black dark:text-white">
           Đăng Nhập
         </h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Vui lòng nhập thông tin tài khoản để tiếp tục
+        <p className="text-sm text-black/40 dark:text-gray-500">
+          Nhập thông tin tài khoản để tiếp tục
         </p>
       </div>
-      <div>
+
+      {/* ── Form ── */}
+      <div className="w-full">
         <Form
           form={form}
           name="auth-login"
           onFinish={onFinish}
           layout="vertical"
           autoComplete="on"
+          className="space-y-1"
         >
           <Form.Item<FieldType>
             name="username"
@@ -255,10 +282,13 @@ function RouteComponent() {
             ]}
           >
             <Input
+              id="username"
               placeholder="Số điện thoại hoặc tên đăng nhập"
-              prefix={<FaRegUser />}
+              prefix={<FaRegUser className="text-lg text-black/30" />}
               disabled={isPending}
               autoComplete="username"
+              size="large"
+              className="!rounded-xl !border-gray-200 !bg-gray-50/50 !py-3 !text-black placeholder:!text-black/30 hover:!border-gray-300 focus:!border-blue-400 dark:!border-gray-700 dark:!bg-gray-800/50 dark:!text-white"
             />
           </Form.Item>
 
@@ -267,26 +297,46 @@ function RouteComponent() {
             rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
           >
             <Input.Password
+              id="current-password"
               placeholder="Mật khẩu"
-              prefix={<IoLockClosedOutline />}
+              prefix={<IoLockClosedOutline className="text-lg text-black/30" />}
               disabled={isPending}
               autoComplete="current-password"
+              size="large"
+              className="!rounded-xl !border-gray-200 !bg-gray-50/50 !py-3 !text-black placeholder:!text-black/30 hover:!border-gray-300 focus:!border-blue-400 dark:!border-gray-700 dark:!bg-gray-800/50 dark:!text-white"
             />
           </Form.Item>
 
-          <Form.Item>
+          <Form.Item className="!mt-4">
             <Button
               block
               type="primary"
               htmlType="submit"
               loading={isPending}
               disabled={isPending}
+              size="large"
+              className="!h-12 !rounded-xl !border-0 !bg-blue-600 !text-base !font-semibold !shadow-none hover:!bg-blue-700 active:!scale-[0.98]"
             >
               Đăng Nhập
             </Button>
           </Form.Item>
         </Form>
       </div>
+
+      {/* ── Notice ── */}
+      <p className="mt-4 text-center text-xs leading-relaxed text-black/50 dark:text-gray-400">
+        Khi đăng nhập thành công, trình duyệt sẽ hỏi bạn có muốn lưu mật khẩu.
+        Nhấn{' '}
+        <span className="inline-block rounded bg-black/5 px-1.5 py-0.5 font-bold text-black/70 dark:bg-white/10 dark:text-gray-200">
+          "Lưu"
+        </span>{' '}
+        để đăng nhập nhanh hơn lần sau.
+      </p>
+
+      {/* ── Footer ── */}
+      <p className="mt-6 text-center text-xs text-black/25 dark:text-gray-600">
+        VINH VINH PHAT ONE MEMBER CO.,LTD
+      </p>
     </div>
   );
 }

@@ -44,6 +44,7 @@ import { Route as AuthenticatedAdminWorkScheduleCategoriesIndexImport } from './
 import { Route as AuthenticatedAdminSalariesIndexImport } from './routes/_authenticated/admin/salaries/index'
 import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authenticated/admin/roles/index'
 import { Route as AuthenticatedAdminRequestFormsIndexImport } from './routes/_authenticated/admin/request-forms/index'
+import { Route as AuthenticatedAdminRegistryIndexImport } from './routes/_authenticated/admin/registry/index'
 import { Route as AuthenticatedAdminRbacIndexImport } from './routes/_authenticated/admin/rbac/index'
 import { Route as AuthenticatedAdminProductsIndexImport } from './routes/_authenticated/admin/products/index'
 import { Route as AuthenticatedAdminHistoryIndexImport } from './routes/_authenticated/admin/history/index'
@@ -281,6 +282,13 @@ const AuthenticatedAdminRequestFormsIndexRoute =
   AuthenticatedAdminRequestFormsIndexImport.update({
     id: '/request-forms/',
     path: '/request-forms/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminRegistryIndexRoute =
+  AuthenticatedAdminRegistryIndexImport.update({
+    id: '/registry/',
+    path: '/registry/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
@@ -775,6 +783,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRbacIndexImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/admin/registry/': {
+      id: '/_authenticated/admin/registry/'
+      path: '/registry'
+      fullPath: '/admin/registry'
+      preLoaderRoute: typeof AuthenticatedAdminRegistryIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
     '/_authenticated/admin/request-forms/': {
       id: '/_authenticated/admin/request-forms/'
       path: '/request-forms'
@@ -964,6 +979,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminFeedbacksIndexRoute: typeof AuthenticatedAdminFeedbacksIndexRoute
   AuthenticatedAdminHistoryIndexRoute: typeof AuthenticatedAdminHistoryIndexRoute
   AuthenticatedAdminRbacIndexRoute: typeof AuthenticatedAdminRbacIndexRoute
+  AuthenticatedAdminRegistryIndexRoute: typeof AuthenticatedAdminRegistryIndexRoute
   AuthenticatedAdminRequestFormsIndexRoute: typeof AuthenticatedAdminRequestFormsIndexRoute
   AuthenticatedAdminRolesIndexRoute: typeof AuthenticatedAdminRolesIndexRoute
   AuthenticatedAdminWorkScheduleCategoriesIndexRoute: typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
@@ -993,6 +1009,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
       AuthenticatedAdminFeedbacksIndexRoute,
     AuthenticatedAdminHistoryIndexRoute: AuthenticatedAdminHistoryIndexRoute,
     AuthenticatedAdminRbacIndexRoute: AuthenticatedAdminRbacIndexRoute,
+    AuthenticatedAdminRegistryIndexRoute: AuthenticatedAdminRegistryIndexRoute,
     AuthenticatedAdminRequestFormsIndexRoute:
       AuthenticatedAdminRequestFormsIndexRoute,
     AuthenticatedAdminRolesIndexRoute: AuthenticatedAdminRolesIndexRoute,
@@ -1189,6 +1206,7 @@ export interface FileRoutesByFullPath {
   '/admin/history': typeof AuthenticatedAdminHistoryIndexRoute
   '/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
   '/admin/rbac': typeof AuthenticatedAdminRbacIndexRoute
+  '/admin/registry': typeof AuthenticatedAdminRegistryIndexRoute
   '/admin/request-forms': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
@@ -1241,6 +1259,7 @@ export interface FileRoutesByTo {
   '/admin/history': typeof AuthenticatedAdminHistoryIndexRoute
   '/admin/products': typeof AuthenticatedAdminProductsIndexRoute
   '/admin/rbac': typeof AuthenticatedAdminRbacIndexRoute
+  '/admin/registry': typeof AuthenticatedAdminRegistryIndexRoute
   '/admin/request-forms': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
@@ -1302,6 +1321,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/history/': typeof AuthenticatedAdminHistoryIndexRoute
   '/_authenticated/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
   '/_authenticated/admin/rbac/': typeof AuthenticatedAdminRbacIndexRoute
+  '/_authenticated/admin/registry/': typeof AuthenticatedAdminRegistryIndexRoute
   '/_authenticated/admin/request-forms/': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/_authenticated/admin/roles/': typeof AuthenticatedAdminRolesIndexRoute
   '/_authenticated/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
@@ -1363,6 +1383,7 @@ export interface FileRouteTypes {
     | '/admin/history'
     | '/admin/products/'
     | '/admin/rbac'
+    | '/admin/registry'
     | '/admin/request-forms'
     | '/admin/roles'
     | '/admin/salaries/'
@@ -1414,6 +1435,7 @@ export interface FileRouteTypes {
     | '/admin/history'
     | '/admin/products'
     | '/admin/rbac'
+    | '/admin/registry'
     | '/admin/request-forms'
     | '/admin/roles'
     | '/admin/salaries'
@@ -1473,6 +1495,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/history/'
     | '/_authenticated/admin/products/'
     | '/_authenticated/admin/rbac/'
+    | '/_authenticated/admin/registry/'
     | '/_authenticated/admin/request-forms/'
     | '/_authenticated/admin/roles/'
     | '/_authenticated/admin/salaries/'
@@ -1562,6 +1585,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/feedbacks/",
         "/_authenticated/admin/history/",
         "/_authenticated/admin/rbac/",
+        "/_authenticated/admin/registry/",
         "/_authenticated/admin/request-forms/",
         "/_authenticated/admin/roles/",
         "/_authenticated/admin/work-schedule-categories/",
@@ -1760,6 +1784,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/rbac/": {
       "filePath": "_authenticated/admin/rbac/index.tsx",
+      "parent": "/_authenticated/admin"
+    },
+    "/_authenticated/admin/registry/": {
+      "filePath": "_authenticated/admin/registry/index.tsx",
       "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/request-forms/": {

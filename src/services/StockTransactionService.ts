@@ -329,6 +329,24 @@ export class StockTransactionService {
       data: error
     };
   }
+  /**
+   * Xoá giao dịch kho theo ID
+   * DELETE /api/stock-transactions/{id}
+   */
+  static async deleteTransaction(
+    id: number
+  ): Promise<{ success: boolean; message: string } | ApiErrorResponse> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const body = (await axiosPrivate.delete(`${this.baseUrl}/${id}`)) as any;
+      return {
+        success: true,
+        message: body?.message || 'Xoá giao dịch thành công'
+      };
+    } catch (error: unknown) {
+      return this.handleError(error);
+    }
+  }
 }
 
 export default StockTransactionService;

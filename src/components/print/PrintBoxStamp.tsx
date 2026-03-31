@@ -243,7 +243,7 @@ export const PrintBoxStamp = ({
               alt="logo"
               width={80}
               preview={false}
-              title="VINH VINH PHAT ONE MEMBER CO.LTD"
+              title="VINH VINH PHAT ONE MEMBER CO.,LTD"
             />
           </td>
           <td colSpan={5}>

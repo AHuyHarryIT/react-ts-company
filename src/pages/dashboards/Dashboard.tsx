@@ -19,6 +19,7 @@ import { MdApproval } from 'react-icons/md';
 import { SUPERVISOR_IDS } from '@/constants/supervisors';
 import { ProductChart } from './ProductChart';
 import { SalaryChart } from './SalaryChart';
+import { motion } from 'framer-motion';
 
 // ─── FA class → react-icons mapper (shared with Sidebar) ─────────────────────
 
@@ -191,7 +192,7 @@ export default function Dashboard() {
       .map((perm) => {
         const widget: WidgetType = {
           title: capitalizeWords(perm.name),
-          icon: renderIcon(perm.icon),
+          icon: renderIcon(perm.icon ?? undefined),
           value: valueMap[perm.key],
           navLink: (perm.url || undefined) as LinkProps['to'] | undefined
         };
@@ -240,156 +241,402 @@ export default function Dashboard() {
   });
 
   // ── Dynamic Greeting ──
-  const [greeting, setGreeting] = useState('');
-  const [weather, setWeather] = useState<{ temp: string; desc: string } | null>(
-    null
-  );
+  const [greeting, setGreeting] = useState<{ text: string; emoji: string }>({
+    text: '',
+    emoji: '👋'
+  });
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Live clock - ticks every second
+  useEffect(() => {
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(clockTimer);
+  }, []);
+
+  // Weather state (declared before greeting effect which depends on it)
+  const [weather, setWeather] = useState<{
+    temp: string;
+    desc: string;
+    code: number;
+  } | null>(null);
 
   useEffect(() => {
-    const morningGreetings = [
-      'Chào buổi sáng ☀️',
-      'Sáng nay tràn đầy năng lượng ☀️',
-      'Một ngày mới bắt đầu rồi 🌅',
-      'Chúc bạn ngày mới tốt lành ☀️',
-      'Sáng nay thật đẹp trời ☀️'
-    ];
-    const afternoonGreetings = [
-      'Chào buổi chiều 🌤️',
-      'Buổi chiều vui vẻ nhé 🌤️',
-      'Chiều nay làm việc hiệu quả nha 💪',
-      'Cố lên, sắp hết giờ rồi 🌤️',
-      'Buổi chiều năng động 🌤️'
-    ];
-    const eveningGreetings = [
-      'Chào buổi tối 🌙',
-      'Buổi tối thư giãn nhé 🌙',
-      'Tối nay nghỉ ngơi sớm nha 🌙',
-      'Một ngày dài đã qua 🌆',
-      'Chúc buổi tối vui vẻ 🌙'
-    ];
-    const lateNightGreetings = [
-      'Khuya rồi, nghỉ ngơi thôi 🌜',
-      'Đêm khuya rồi, giữ sức khỏe nhé 🌜',
-      'Làm việc muộn quá rồi 🌜',
-      'Khuya lắm rồi, ngủ sớm nha 😴'
-    ];
-
     const pickGreeting = () => {
       const h = new Date().getHours();
-      let pool: string[];
-      if (h >= 5 && h < 12) pool = morningGreetings;
-      else if (h >= 12 && h < 18) pool = afternoonGreetings;
-      else if (h >= 18 && h < 22) pool = eveningGreetings;
-      else pool = lateNightGreetings;
-      setGreeting(pool[Math.floor(Math.random() * pool.length)]);
+      const wCode = weather?.code;
+
+      // Weather-aware greetings
+      const isSunny = wCode !== undefined && wCode <= 1;
+      const isCloudy = wCode !== undefined && (wCode === 2 || wCode === 3);
+      const isRainy =
+        wCode !== undefined &&
+        ((wCode >= 51 && wCode <= 65) || (wCode >= 80 && wCode <= 82));
+      const isStormy = wCode !== undefined && wCode >= 95;
+      const isFoggy = wCode !== undefined && (wCode === 45 || wCode === 48);
+
+      let pool: { text: string; emoji: string }[];
+
+      if (h >= 5 && h < 12) {
+        // Morning - start the workday
+        if (isRainy)
+          pool = [
+            { text: 'Mưa rồi, tập trung làm việc thôi nào', emoji: '🌧️' },
+            { text: 'Trời mưa mát mẻ, năng suất hơn nè', emoji: '💪' },
+            { text: 'Mưa ngoài kia, bên trong mình cày thôi', emoji: '💻' }
+          ];
+        else if (isStormy)
+          pool = [
+            { text: 'Giông bão ngoài kia, bên trong vẫn on fire', emoji: '🔥' },
+            { text: 'Trời giông nhưng tinh thần vẫn cao nha', emoji: '💪' }
+          ];
+        else if (isFoggy)
+          pool = [
+            { text: 'Sương mù nhưng mục tiêu vẫn rõ ràng', emoji: '🎯' },
+            { text: 'Trời mờ nhưng kế hoạch phải sáng', emoji: '💡' }
+          ];
+        else if (isSunny)
+          pool = [
+            {
+              text: 'Trời đẹp, bắt đầu ngày làm việc hiệu quả nào',
+              emoji: '☀️'
+            },
+            {
+              text: 'Nắng đẹp, năng lượng đầy, cùng làm việc thôi',
+              emoji: '🚀'
+            },
+            { text: 'Ngày mới rực rỡ, cùng chinh phục mục tiêu', emoji: '🎯' }
+          ];
+        else if (isCloudy)
+          pool = [
+            { text: 'Trời mát dễ chịu, làm việc năng suất nha', emoji: '💪' },
+            { text: 'Thời tiết lý tưởng để tập trung công việc', emoji: '💻' }
+          ];
+        else
+          pool = [
+            { text: 'Bắt đầu ngày mới đầy năng lượng', emoji: '⚡' },
+            { text: 'Sẵn sàng cho một ngày làm việc hiệu quả', emoji: '🚀' },
+            { text: 'Cùng chinh phục mục tiêu hôm nay', emoji: '🎯' },
+            { text: 'Ngày mới, cơ hội mới', emoji: '✨' }
+          ];
+      } else if (h >= 12 && h < 18) {
+        // Afternoon - keep pushing
+        if (isRainy)
+          pool = [
+            {
+              text: 'Mưa chiều, ngồi trong làm việc hiệu quả luôn',
+              emoji: '🌧️'
+            },
+            {
+              text: 'Chiều mưa mát, tăng tốc hoàn thành công việc nha',
+              emoji: '💪'
+            }
+          ];
+        else if (isStormy)
+          pool = [
+            {
+              text: 'Trời giông, an toàn trong nhà và hoàn thành task thôi',
+              emoji: '🔥'
+            }
+          ];
+        else if (isSunny)
+          pool = [
+            { text: 'Nắng chiều ấm, cố gắng chút nữa nha', emoji: '💪' },
+            { text: 'Còn vài tiếng nữa, sprint cuối thôi', emoji: '🏃' }
+          ];
+        else if (isCloudy)
+          pool = [
+            { text: 'Trời mát, tập trung nốt công việc còn lại', emoji: '💻' },
+            { text: 'Chiều mát mẻ, hoàn thành nốt task nha', emoji: '✅' }
+          ];
+        else
+          pool = [
+            { text: 'Cố lên, sắp xong rồi', emoji: '💪' },
+            { text: 'Buổi chiều năng suất nào', emoji: '🚀' },
+            { text: 'Tập trung sprint cuối ngày', emoji: '🏃' },
+            { text: 'Keep going, bạn làm tốt lắm rồi', emoji: '👍' }
+          ];
+      } else if (h >= 18 && h < 22) {
+        // Evening - wrap up
+        if (isRainy)
+          pool = [
+            {
+              text: 'Mưa tối rồi, nghỉ ngơi sau ngày làm việc vất vả nha',
+              emoji: '🌧️'
+            }
+          ];
+        else
+          pool = [
+            { text: 'Hết giờ rồi, nghỉ ngơi xứng đáng nha', emoji: '🌙' },
+            { text: 'Một ngày làm việc hiệu quả, good job', emoji: '🌟' },
+            { text: 'Thư giãn sau ngày dài làm việc', emoji: '☕' },
+            { text: 'Nghỉ ngơi để mai lại chiến tiếp', emoji: '💪' }
+          ];
+      } else {
+        pool = [
+          { text: 'Khuya rồi, nghỉ ngơi giữ sức nha', emoji: '🌜' },
+          { text: 'Ngủ sớm để mai làm việc hiệu quả', emoji: '😴' },
+          { text: 'Sức khỏe là số 1, nghỉ thôi nào', emoji: '💤' },
+          { text: 'Đừng thức khuya quá, giữ gìn sức khỏe', emoji: '🌙' }
+        ];
+      }
+
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      setGreeting(pick);
     };
 
     pickGreeting();
-    const timer = setInterval(pickGreeting, 60_000); // update every minute
+    const timer = setInterval(pickGreeting, 60_000);
     return () => clearInterval(timer);
-  }, []);
+  }, [weather]);
 
-  // Fetch weather (free, no API key)
+  // Fetch weather using Open-Meteo (free, no API key, accurate)
   useEffect(() => {
-    const fetchWeather = async () => {
+    // WMO weather code → Vietnamese description
+    const weatherDesc: Record<number, string> = {
+      0: 'Trời quang',
+      1: 'Gần như quang',
+      2: 'Có mây rải rác',
+      3: 'Nhiều mây',
+      45: 'Sương mù',
+      48: 'Sương mù đóng băng',
+      51: 'Mưa phùn nhẹ',
+      53: 'Mưa phùn',
+      55: 'Mưa phùn dày',
+      61: 'Mưa nhẹ',
+      63: 'Mưa vừa',
+      65: 'Mưa to',
+      71: 'Tuyết nhẹ',
+      73: 'Tuyết vừa',
+      75: 'Tuyết dày',
+      80: 'Mưa rào nhẹ',
+      81: 'Mưa rào',
+      82: 'Mưa rào to',
+      95: 'Giông bão',
+      96: 'Giông kèm mưa đá',
+      99: 'Giông mưa đá lớn'
+    };
+
+    const fetchWeather = async (lat: number, lon: number) => {
       try {
-        const res = await fetch('https://wttr.in/?format=%t|%C&lang=vi');
-        const text = await res.text();
-        const [temp, desc] = text.split('|').map((s) => s.trim());
-        if (temp && desc) setWeather({ temp, desc });
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+        );
+        const data = await res.json();
+        if (data?.current_weather) {
+          const { temperature, weathercode } = data.current_weather;
+          setWeather({
+            temp: `${Math.round(temperature)}°C`,
+            desc: weatherDesc[weathercode] || 'N/A',
+            code: weathercode
+          });
+        }
       } catch {
-        // silently ignore weather errors
+        // silently ignore
       }
     };
-    fetchWeather();
+
+    // Default: Vietnam (Ho Chi Minh City)
+    const defaultLat = 10.82;
+    const defaultLon = 106.63;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+        () => fetchWeather(defaultLat, defaultLon),
+        { timeout: 5000 }
+      );
+    } else {
+      fetchWeather(defaultLat, defaultLon);
+    }
   }, []);
+
+  // Current date formatted
+  const currentDate = currentTime.toLocaleDateString('vi-VN', {
+    weekday: 'long',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+
+  // Live clock formatted
+  const clockDisplay = currentTime.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  // Weather-based emoji (fallback to time-based if weather not loaded)
+  const weatherEmoji = useMemo(() => {
+    if (weather) {
+      const c = weather.code;
+      if (c === 0) return '☀️';
+      if (c === 1) return '🌤️';
+      if (c === 2) return '⛅';
+      if (c === 3) return '☁️';
+      if (c === 45 || c === 48) return '🌫️';
+      if (c >= 51 && c <= 55) return '🌦️';
+      if (c >= 61 && c <= 65) return '🌧️';
+      if (c >= 71 && c <= 75) return '❄️';
+      if (c >= 80 && c <= 82) return '🌧️';
+      if (c >= 95) return '⛈️';
+      return '🌤️';
+    }
+    // Fallback: time-based
+    const h = currentTime.getHours();
+    if (h >= 5 && h < 8) return '🌅';
+    if (h >= 8 && h < 17) return '☀️';
+    if (h >= 17 && h < 19) return '🌆';
+    if (h >= 19 && h < 22) return '🌙';
+    return '🌜';
+  }, [weather, currentTime]);
 
   return (
     <div className="space-y-6">
       {/* ── Slide Carousel ─────────────────────────────────────── */}
       {imageList?.data && imageList.data.length > 0 && (
-        <div className="overflow-hidden rounded-2xl shadow-lg">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="overflow-hidden rounded-2xl shadow-sm"
+        >
           <SlideCarousel images={imageList.data} />
-        </div>
+        </motion.div>
       )}
 
       {/* ── Welcome Header ─────────────────────────────────────── */}
-      <div className="rounded-2xl border border-gray-100 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 px-5 py-4 dark:border-gray-700 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
         {/* Mobile logo */}
         <div className="mb-3 flex justify-center sm:hidden">
           <img src={logo} alt="Logo" className="h-20" />
         </div>
-        <div className="flex flex-col items-center gap-1 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {greeting || 'Xin chào'}
+
+        {/* Main header row */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Left: Greeting */}
+          <div className="text-center sm:text-left">
+            <p className="text-sm font-semibold text-black/60 dark:text-gray-500">
+              Xin chào
             </p>
-            <h1 className="text-xl font-bold text-gray-800 sm:text-2xl dark:text-white">
-              {user?.name?.replace(/[()]/g, '').split(' ').pop() || 'Bạn'} 👋
+            <h1 className="mt-0.5 text-2xl font-bold text-black sm:text-3xl dark:text-white">
+              {user?.name?.replace(/[()]/g, '').split(' ').pop() || 'Bạn'}{' '}
+              <span className="inline-block">{greeting.emoji}</span>
             </h1>
-          </div>
-          <div className="mt-2 flex items-center gap-2 sm:mt-0">
-            {weather && (
-              <span className="rounded-lg border border-gray-200 bg-white/80 px-3 py-1.5 text-xs text-gray-600 dark:border-gray-600 dark:bg-gray-800/80 dark:text-gray-300">
-                🌡️ {weather.temp} · {weather.desc}
-              </span>
+            {greeting.text && (
+              <p className="mt-1 text-sm font-semibold text-black/50 dark:text-gray-500">
+                {greeting.text}
+              </p>
             )}
-            <span className="rounded-lg border border-gray-200 bg-white/80 px-3 py-1.5 text-xs text-gray-500 dark:border-gray-600 dark:bg-gray-800/80">
-              📅{' '}
-              {new Date().toLocaleDateString('vi-VN', {
-                weekday: 'short',
-                day: '2-digit',
-                month: '2-digit'
-              })}
-            </span>
+          </div>
+
+          {/* Right: Live clock + info */}
+          <div className="flex flex-col items-center sm:items-end">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-2xl font-bold tracking-wide text-black tabular-nums sm:text-3xl dark:text-white">
+                {clockDisplay}
+              </span>
+              <span className="text-2xl sm:text-3xl">{weatherEmoji}</span>
+            </div>
+            <p className="mt-1 text-xs font-semibold text-black/50 dark:text-gray-500">
+              {currentDate}
+              {weather && ` · ${weather.temp} · ${weather.desc}`}
+            </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* ── Widget Grid ────────────────────────────────────────── */}
       {finalWidgetList.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
-          {finalWidgetList.map((widget, index) => (
-            <DashboardWidget
-              key={`dashboard-widget-${index}`}
-              title={widget.title}
-              icon={widget.icon}
-              value={widget.value}
-              navLink={widget.navLink as LinkProps['to']}
-              onClick={widget.onClick}
-            />
-          ))}
+        <div>
+          {/* Section label */}
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mb-4 flex items-center gap-2"
+          >
+            <div className="h-4 w-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <h2 className="text-xs font-bold tracking-wide text-black/60 uppercase dark:text-gray-500">
+              Truy cập nhanh
+            </h2>
+            <span className="text-xs font-semibold text-black/40 dark:text-gray-600">
+              ({finalWidgetList.length})
+            </span>
+          </motion.div>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            {finalWidgetList.map((widget, index) => (
+              <div
+                key={`dashboard-widget-${index}`}
+                className="w-[calc(50%-0.5rem)] sm:w-[calc(20%-0.8rem)]"
+              >
+                <DashboardWidget
+                  title={widget.title}
+                  icon={widget.icon}
+                  value={widget.value}
+                  navLink={widget.navLink as LinkProps['to']}
+                  onClick={widget.onClick}
+                  index={index}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       {/* ── Charts ─────────────────────────────────────────────── */}
       {(showSalaryChart || showProductChart) && (
-        <div className="grid grid-cols-12 items-stretch gap-5">
-          {showSalaryChart && (
-            <div
-              className={`col-span-12 ${chartColSpan} [&>div]:h-full [&>div>div.ant-card]:h-full [&>div>div.ant-card>.ant-card-body]:flex [&>div>div.ant-card>.ant-card-body]:flex-col`}
-            >
-              <SalaryChart data={salaryTableData} />
-            </div>
-          )}
-          {showProductChart && (
-            <div
-              className={`col-span-12 ${chartColSpan} [&>div]:h-full [&>div>div.ant-card]:h-full [&>div>div.ant-card>.ant-card-body]:flex [&>div>div.ant-card>.ant-card-body]:flex-col`}
-            >
-              <ProductChart data={productData || []} />
-            </div>
-          )}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          {/* Section label */}
+          <div className="mb-4 flex items-center gap-2">
+            <div className="h-4 w-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <h2 className="text-xs font-bold tracking-wide text-black/60 uppercase dark:text-gray-500">
+              Biểu đồ thống kê
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-12 items-stretch gap-5">
+            {showSalaryChart && (
+              <div
+                className={`col-span-12 ${chartColSpan} [&>div]:h-full [&>div>div.ant-card]:h-full [&>div>div.ant-card>.ant-card-body]:flex [&>div>div.ant-card>.ant-card-body]:flex-col`}
+              >
+                <SalaryChart data={salaryTableData} />
+              </div>
+            )}
+            {showProductChart && (
+              <div
+                className={`col-span-12 ${chartColSpan} [&>div]:h-full [&>div>div.ant-card]:h-full [&>div>div.ant-card>.ant-card-body]:flex [&>div>div.ant-card>.ant-card-body]:flex-col`}
+              >
+                <ProductChart data={productData || []} />
+              </div>
+            )}
+          </div>
+        </motion.div>
       )}
 
       {/* ── Empty State ────────────────────────────────────────── */}
       {finalWidgetList.length === 0 &&
         !showSalaryChart &&
         !showProductChart && (
-          <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-800/50">
-            <div className="text-gray-400 dark:text-gray-500">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="rounded-2xl border border-gray-100 bg-white p-16 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800"
+          >
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-700">
               <svg
-                className="mx-auto mb-4 h-16 w-16"
+                className="h-8 w-8 text-gray-300 dark:text-gray-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -402,13 +649,13 @@ export default function Dashboard() {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
+            <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-white">
               Chào mừng bạn đến Dashboard
             </h3>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="mx-auto max-w-sm text-sm text-gray-400 dark:text-gray-500">
               Hệ thống đang chuẩn bị quyền truy cập cho tài khoản của bạn.
             </p>
-          </div>
+          </motion.div>
         )}
     </div>
   );

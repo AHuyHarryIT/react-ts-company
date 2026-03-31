@@ -18,9 +18,10 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaSearch, FaCalendarAlt, FaCalendarCheck } from 'react-icons/fa';
 import { ScheduleDetailContent } from './ScheduleDetailContent';
+import { useSearch } from '@tanstack/react-router';
 
 export const ScheduleList = () => {
   const [params, setParams] = useState<QueryParams>({
@@ -30,6 +31,15 @@ export const ScheduleList = () => {
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
     null
   );
+  const search = useSearch({ strict: false }) as { openId?: string };
+
+  // Auto-open detail from notification
+  useEffect(() => {
+    if (search.openId) {
+      setSelectedScheduleId(search.openId);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [search.openId]);
 
   const {
     data,

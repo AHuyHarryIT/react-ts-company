@@ -52,6 +52,7 @@ export interface PermissionPayload {
   url?: string;
   sort_order?: number;
   type: 'admin' | 'employee' | 'both';
+  module: string;
   display_area: 'sidebar' | 'home' | 'both';
 }
 

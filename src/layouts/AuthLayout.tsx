@@ -15,7 +15,7 @@ export default function AuthLayout() {
           <GridShape />
           <div className="flex max-w-xs flex-col items-center">
             <p className="text-center text-gray-200 dark:text-white/60">
-              VINH VINH PHAT ONE MEMBER CO.LTD
+              VINH VINH PHAT ONE MEMBER CO.,LTD
             </p>
           </div>
         </div>

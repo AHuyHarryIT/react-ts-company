@@ -73,32 +73,42 @@ export default function UserDropdown() {
 
       {open && (
         <div
-          className="absolute top-full right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+          className="absolute top-full right-0 z-50 mt-3 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
           style={{ animation: 'slideDown 0.2s ease-out' }}
         >
           {/* ── User Info ── */}
-          <div className="flex items-center gap-2.5 px-4 py-3">
-            <Avatar src={user?.image_url} size={32} icon={<FaUser />} />
+          <div className="flex items-center gap-3 px-4 py-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+              {user?.image_url ? (
+                <img
+                  src={user.image_url}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <FaUser className="text-sm text-black/40 dark:text-gray-400" />
+              )}
+            </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-gray-800 dark:text-white">
+              <p className="truncate text-sm font-semibold text-black dark:text-white">
                 {firstName}
               </p>
-              <p className="truncate text-[11px] text-gray-400 dark:text-gray-500">
+              <p className="truncate text-xs text-black/40 dark:text-gray-500">
                 {user?.role?.name || 'Nhân viên'}
               </p>
             </div>
           </div>
 
-          <div className="mx-3 h-px bg-gray-100 dark:bg-gray-700" />
+          <div className="mx-4 h-px bg-gray-100 dark:bg-gray-800" />
 
           {/* ── Menu ── */}
-          <div className="py-1">
+          <div className="p-2">
             <Link
               to="/profile"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] !text-black/80 no-underline transition-all duration-200 hover:bg-gray-50 hover:!text-black active:scale-[0.98] dark:!text-gray-200 dark:hover:bg-white/5 dark:hover:!text-white"
             >
-              <FaUserCircle className="text-sm text-gray-400" />
+              <FaUserCircle className="text-base text-black/50 dark:text-gray-400" />
               <span>Hồ sơ</span>
             </Link>
 
@@ -106,24 +116,24 @@ export default function UserDropdown() {
               <Link
                 to="/employee/request-forms"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] !text-black/80 no-underline transition-all duration-200 hover:bg-gray-50 hover:!text-black active:scale-[0.98] dark:!text-gray-200 dark:hover:bg-white/5 dark:hover:!text-white"
               >
-                <FaFileAlt className="text-sm text-gray-400" />
+                <FaFileAlt className="text-base text-black/50 dark:text-gray-400" />
                 <span>Đơn yêu cầu</span>
               </Link>
             )}
           </div>
 
-          <div className="mx-3 h-px bg-gray-100 dark:bg-gray-700" />
+          <div className="mx-4 h-px bg-gray-100 dark:bg-gray-800" />
 
           {/* ── Logout ── */}
-          <div className="py-1">
+          <div className="p-2">
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 active:scale-[0.98] disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/15"
             >
-              <IconLogOut className="text-sm text-gray-400" />
+              <IconLogOut className="text-base" />
               <span>{isLoggingOut ? 'Đang xuất...' : 'Đăng xuất'}</span>
             </button>
           </div>

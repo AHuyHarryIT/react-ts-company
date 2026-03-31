@@ -364,31 +364,44 @@ export const AttendancePage = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('calculate');
   const [month, setMonth] = useState<Dayjs>(dayjs());
   const [forgottenDays, setForgottenDays] = useState<boolean>(false);
+  const [cycleMode, setCycleMode] = useState<'month' | 'payroll'>('month');
+
+  // Payroll cycle helper: 16th this month → 15th next month
+  const getPayrollRange = (d: Dayjs) => {
+    const from = d.date(16).format('YYYY-MM-DD');
+    const to = d.add(1, 'month').date(15).format('YYYY-MM-DD');
+    return `${from},${to}`;
+  };
+
+  const getMonthRange = (d: Dayjs) => {
+    const today = dayjs();
+    const end = d.isSame(today, 'month')
+      ? today.format('YYYY-MM-DD')
+      : d.endOf('month').format('YYYY-MM-DD');
+    return `${d.startOf('month').format('YYYY-MM-DD')},${end}`;
+  };
+
+  const getDateRange = (d: Dayjs, mode: 'month' | 'payroll') =>
+    mode === 'payroll' ? getPayrollRange(d) : getMonthRange(d);
+
   const [historyParams, setHistoryParams] = useState<QueryParams>({
     page: 1,
     limit: 15,
-    'filter[date_between]':
-      dayjs().startOf('month').format('YYYY-MM-DD') +
-      ',' +
-      dayjs().endOf('month').format('YYYY-MM-DD')
+    'filter[date_between]': getMonthRange(dayjs())
   });
 
   const { isMobile } = useStore(uiStore);
 
+  const calculateDateRange = getDateRange(month, cycleMode);
+
   // ── Calculate data (include_calculation=1, no pagination) ────────────────
   const { data: calcResponse, isLoading: calcLoading } = useQuery({
-    queryKey: ['emp-attendance', 'calculate', month.format('MM-YYYY')],
+    queryKey: ['emp-attendance', 'calculate', calculateDateRange],
     queryFn: async () => {
-      const today = dayjs();
-      const endDate = month.isSame(today, 'month')
-        ? today.format('YYYY-MM-DD')
-        : month.endOf('month').format('YYYY-MM-DD');
-
       return await fetchEmpAttendances({
         include_calculation: 1,
         limit: 0,
-        'filter[date_between]':
-          month.startOf('month').format('YYYY-MM-DD') + ',' + endDate
+        'filter[date_between]': calculateDateRange
       });
     },
     enabled: activeTab === 'calculate',
@@ -703,12 +716,26 @@ export const AttendancePage = () => {
     setHistoryParams((prev) => ({
       ...prev,
       page: 1,
-      'filter[date_between]':
-        d.startOf('month').format('YYYY-MM-DD') +
-        ',' +
-        d.endOf('month').format('YYYY-MM-DD')
+      'filter[date_between]': getDateRange(d, cycleMode)
     }));
   };
+
+  const handleCycleModeChange = (mode: 'month' | 'payroll') => {
+    setCycleMode(mode);
+    setHistoryParams((prev) => ({
+      ...prev,
+      page: 1,
+      'filter[date_between]': getDateRange(month, mode)
+    }));
+  };
+
+  // Label for current range
+  const rangeLabel = useMemo(() => {
+    if (cycleMode === 'payroll') {
+      return `${month.date(16).format('DD/MM')} → ${month.add(1, 'month').date(15).format('DD/MM')}`;
+    }
+    return month.format('MM/YYYY');
+  }, [month, cycleMode]);
 
   return (
     <>
@@ -726,17 +753,30 @@ export const AttendancePage = () => {
           <div className="space-y-2">
             {/* Row 1: Month picker + forgotten switch */}
             <div className="flex items-center justify-between">
-              <DatePicker
-                id="att-month-picker"
-                placeholder="Chọn tháng"
-                value={month}
-                picker="month"
-                format="MM-YYYY"
-                onChange={handleMonthChange}
-                allowClear={false}
-                style={{ width: 130 }}
-                size="small"
-              />
+              <div className="flex items-center gap-1.5">
+                <DatePicker
+                  id="att-month-picker"
+                  placeholder="Chọn tháng"
+                  value={month}
+                  picker="month"
+                  format="MM-YYYY"
+                  onChange={handleMonthChange}
+                  allowClear={false}
+                  style={{ width: 110 }}
+                  size="small"
+                />
+                <Segmented
+                  size="small"
+                  value={cycleMode}
+                  onChange={(v) =>
+                    handleCycleModeChange(v as 'month' | 'payroll')
+                  }
+                  options={[
+                    { value: 'month', label: 'Tháng' },
+                    { value: 'payroll', label: '16→15' }
+                  ]}
+                />
+              </div>
               {activeTab === 'calculate' && (
                 <label
                   htmlFor="att-forgotten-switch"
@@ -754,7 +794,6 @@ export const AttendancePage = () => {
                       forgottenDays ? 'text-rose-500' : 'text-gray-400'
                     }
                   />
-                  Thiếu chấm công
                 </label>
               )}
             </div>
@@ -805,6 +844,22 @@ export const AttendancePage = () => {
                   allowClear={false}
                   style={{ width: 140 }}
                 />
+                <Segmented
+                  size="small"
+                  value={cycleMode}
+                  onChange={(v) =>
+                    handleCycleModeChange(v as 'month' | 'payroll')
+                  }
+                  options={[
+                    { value: 'month', label: 'Tháng' },
+                    { value: 'payroll', label: '16→15' }
+                  ]}
+                />
+                {cycleMode === 'payroll' && (
+                  <span className="text-xs text-gray-400">
+                    Kỳ: {rangeLabel}
+                  </span>
+                )}
               </div>
               <Segmented
                 value={activeTab}

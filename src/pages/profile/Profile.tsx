@@ -11,6 +11,9 @@ export const Profile = () => {
   const { user } = useAuth();
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
+  const roleName = (user?.role?.name || '').toLowerCase();
+  const isAdmin = roleName.includes('admin');
+
   const showAvatarModal = () => {
     setIsAvatarModalOpen(true);
   };
@@ -23,7 +26,7 @@ export const Profile = () => {
     <>
       <BackButton to="/" />
 
-      {/* ── User Profile Card ────────────────────────────────── */}
+      {/* ── User Profile Card ────────────────────────── */}
       <div className="mb-4 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
           <h3 className="flex items-center gap-3 text-lg font-medium text-gray-800 uppercase sm:text-2xl dark:text-white/90">
@@ -73,8 +76,8 @@ export const Profile = () => {
       </div>
 
       {/* ── Forms Grid ───────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <ChangeInfo />
+      <div className={isAdmin ? '' : 'grid grid-cols-1 gap-4 sm:grid-cols-2'}>
+        {!isAdmin && <ChangeInfo />}
         <ChangePassword />
       </div>
 

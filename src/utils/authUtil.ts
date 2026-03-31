@@ -177,3 +177,16 @@ export function hasPermissionKey(user: User | null, key: string): boolean {
   if (user.role.name.toLowerCase() === 'super admin') return true;
   return (user.permissions ?? []).some((p) => p.key === key);
 }
+
+/**
+ * Check user có bất kỳ permission nào thuộc module không?
+ * Đồng bộ với BE middleware: cùng module = cùng nhóm quyền.
+ */
+export function hasModulePermission(
+  user: User | null,
+  module: string
+): boolean {
+  if (!user) return false;
+  if (user.role.name.toLowerCase() === 'super admin') return true;
+  return (user.permissions ?? []).some((p) => p.module === module);
+}

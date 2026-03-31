@@ -141,7 +141,9 @@ function RolePermissionManager() {
     queryFn: () => fetchRBACData()
   });
 
-  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<Set<string>>(
+    new Set()
+  );
   const [checkedPermIds, setCheckedPermIds] = useState<Set<number>>(new Set());
   const [isDirty, setIsDirty] = useState(false);
 
@@ -158,26 +160,69 @@ function RolePermissionManager() {
     [rbacData]
   );
 
-  useEffect(() => {
-    if (!selectedRoleId || !rolePermissions) return;
-    const permIds = rolePermissions[selectedRoleId] ?? [];
-    setCheckedPermIds(new Set(Array.isArray(permIds) ? permIds : []));
-    setIsDirty(false);
-  }, [selectedRoleId, rolePermissions]);
+  const [partialPermIds, setPartialPermIds] = useState<Set<number>>(new Set());
 
+  // When selected roles change, compute union + partial state
   useEffect(() => {
-    if (roles.length > 0 && !selectedRoleId)
-      setSelectedRoleId(String(roles[0].id));
-  }, [roles, selectedRoleId]);
+    if (selectedRoleIds.size === 0 || !rolePermissions) {
+      setCheckedPermIds(new Set());
+      setPartialPermIds(new Set());
+      setIsDirty(false);
+      return;
+    }
+    const ids = Array.from(selectedRoleIds);
+    if (ids.length === 1) {
+      // Single role: load its permissions directly
+      const permIds = rolePermissions[ids[0]] ?? [];
+      setCheckedPermIds(new Set(Array.isArray(permIds) ? permIds : []));
+      setPartialPermIds(new Set());
+    } else {
+      // Multiple roles: union (all perms ANY role has) + track partial
+      const sets = ids.map((id) => new Set(rolePermissions[id] ?? []));
+      const union = new Set<number>();
+      const partial = new Set<number>();
+      // Collect all perm IDs across all selected roles
+      for (const s of sets) {
+        for (const permId of s) union.add(permId);
+      }
+      // Check which are partial (not ALL roles have them)
+      for (const permId of union) {
+        const allHave = sets.every((s) => s.has(permId));
+        if (!allHave) partial.add(permId);
+      }
+      setCheckedPermIds(union);
+      setPartialPermIds(partial);
+    }
+    setIsDirty(false);
+  }, [selectedRoleIds, rolePermissions]);
+
+  // Auto-select first role on load
+  useEffect(() => {
+    if (roles.length > 0 && selectedRoleIds.size === 0)
+      setSelectedRoleIds(new Set([String(roles[0].id)]));
+  }, [roles, selectedRoleIds.size]);
+
+  const toggleRoleSelection = (roleId: string) => {
+    setSelectedRoleIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(roleId)) {
+        next.delete(roleId);
+      } else {
+        next.add(roleId);
+      }
+      return next;
+    });
+  };
 
   const saveMutation = useMutation({
     mutationFn: () =>
       saveRBACData({
-        role_ids: [Number(selectedRoleId)],
+        role_ids: Array.from(selectedRoleIds).map(Number),
         permissions: Array.from(checkedPermIds)
       }),
     onSuccess: () => {
-      message.success('Đã lưu phân quyền!');
+      const count = selectedRoleIds.size;
+      message.success(`Đã lưu phân quyền cho ${count} vai trò!`);
       setIsDirty(false);
       queryClient.invalidateQueries({ queryKey: ['rbac-data'] });
       authCheck().catch(() => {});
@@ -190,6 +235,13 @@ function RolePermissionManager() {
       const next = new Set(prev);
       if (next.has(permId)) next.delete(permId);
       else next.add(permId);
+      return next;
+    });
+    // Clear partial state when user explicitly toggles
+    setPartialPermIds((prev) => {
+      if (!prev.has(permId)) return prev;
+      const next = new Set(prev);
+      next.delete(permId);
       return next;
     });
     setIsDirty(true);
@@ -215,20 +267,36 @@ function RolePermissionManager() {
     );
   if (!rbacData) return null;
 
-  const selectedRole = roles.find((r) => String(r.id) === selectedRoleId);
+  const selectedRoleNames = roles
+    .filter((r) => selectedRoleIds.has(String(r.id)))
+    .map((r) => r.role_name);
+
   const sorted = [...allPermissions].sort(
     (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id - b.id
   );
-  const grouped: Record<string, Permission[]> = {};
+
+  // 2-level grouping: display_area → module
+  const AREA_ORDER = ['sidebar', 'home', 'both'] as const;
+  const AREA_LABELS: Record<string, string> = {
+    sidebar: '📋 Sidebar',
+    home: '🏠 Trang Chủ',
+    both: '🔗 Cả Hai (Sidebar + Trang Chủ)'
+  };
+
+  type AreaGrouped = Record<string, Record<string, Permission[]>>;
+  const areaGrouped: AreaGrouped = {};
   for (const perm of sorted) {
     const area = perm.display_area || 'other';
-    if (!grouped[area]) grouped[area] = [];
-    grouped[area].push(perm);
+    const mod = perm.module || 'other';
+    if (!areaGrouped[area]) areaGrouped[area] = {};
+    if (!areaGrouped[area][mod]) areaGrouped[area][mod] = [];
+    areaGrouped[area][mod].push(perm);
   }
-  const areaLabels: Record<string, string> = {
-    home: 'Dashboard (Home)',
-    sidebar: 'Sidebar Menu',
-    both: 'Home + Sidebar'
+
+  // Flatten all perms for an entire area (for "toggle all" in area)
+  const getAreaPerms = (area: string) => {
+    const mods = areaGrouped[area] ?? {};
+    return Object.values(mods).flat();
   };
 
   return (
@@ -239,29 +307,32 @@ function RolePermissionManager() {
             <span className="text-sm font-bold text-gray-700 dark:text-white">
               Vai trò
             </span>
-            <Badge count={roles.length} showZero color="#6b7280" />
+            <span className="text-xs text-gray-400">
+              {selectedRoleIds.size > 0 && `${selectedRoleIds.size} đã chọn`}
+            </span>
           </div>
           <div>
             {roles.map((role) => {
-              const isSelected = String(role.id) === selectedRoleId;
-              const count = (rolePermissions[String(role.id)] ?? []).length;
+              const roleIdStr = String(role.id);
+              const isSelected = selectedRoleIds.has(roleIdStr);
+              const count = (rolePermissions[roleIdStr] ?? []).length;
               return (
                 <div
                   key={role.id}
-                  onClick={() => setSelectedRoleId(String(role.id))}
-                  className={`flex cursor-pointer items-center justify-between border-b border-gray-50 px-4 py-3 text-sm transition-all duration-200 last:border-b-0 dark:border-gray-700/50 ${isSelected ? 'border-l-3 border-l-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 font-semibold text-blue-700 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-400' : 'hover:bg-gray-50/80 dark:hover:bg-gray-700/30'}`}
+                  onClick={() => toggleRoleSelection(roleIdStr)}
+                  className={`flex cursor-pointer items-center justify-between border-b border-gray-50 px-4 py-3 text-sm transition-all duration-200 last:border-b-0 dark:border-gray-700/50 ${isSelected ? 'bg-blue-50/80 font-semibold text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' : 'hover:bg-gray-50/80 dark:hover:bg-gray-700/30'}`}
                 >
-                  <div>
-                    <div className="dark:text-gray-200">{role.role_name}</div>
-                    <div className="text-xs text-gray-400">ID: {role.id}</div>
+                  <div className="flex items-center gap-2.5">
+                    <Checkbox
+                      checked={isSelected}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => toggleRoleSelection(roleIdStr)}
+                    />
+                    <div>
+                      <div className="dark:text-gray-200">{role.role_name}</div>
+                      <div className="text-xs text-gray-400">{count} quyền</div>
+                    </div>
                   </div>
-                  <Badge
-                    count={count}
-                    showZero
-                    style={{
-                      backgroundColor: isSelected ? '#3b82f6' : '#d1d5db'
-                    }}
-                  />
                 </div>
               );
             })}
@@ -269,19 +340,24 @@ function RolePermissionManager() {
         </div>
       </Col>
       <Col xs={24} md={18}>
-        {!selectedRole ? (
-          <Empty description="Chọn một vai trò" />
+        {selectedRoleIds.size === 0 ? (
+          <Empty description="Chọn ít nhất một vai trò" />
         ) : (
           <div className="space-y-5">
             {/* Action Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
               <div className="text-sm">
                 <span className="font-bold text-gray-800 dark:text-white">
-                  {selectedRole.role_name}
+                  {selectedRoleNames.join(', ')}
                 </span>
                 <span className="ml-2 text-gray-500 dark:text-gray-400">
                   — {checkedPermIds.size}/{allPermissions.length} quyền
                 </span>
+                {selectedRoleIds.size > 1 && (
+                  <Tag color="blue" className="!ml-2 !rounded-lg !text-[10px]">
+                    {selectedRoleIds.size} vai trò
+                  </Tag>
+                )}
               </div>
               <Space>
                 {isDirty && (
@@ -300,69 +376,275 @@ function RolePermissionManager() {
                 </Button>
               </Space>
             </div>
-            {Object.entries(grouped).map(([area, perms]) => {
-              const areaChecked = perms.filter((p) =>
+
+            {/* Area → Module grouping */}
+            {AREA_ORDER.filter((area) => areaGrouped[area]).map((area) => {
+              const areaPerms = getAreaPerms(area);
+              const areaCheckedCount = areaPerms.filter((p) =>
                 checkedPermIds.has(p.id)
               ).length;
-              const allChecked = areaChecked === perms.length;
+              const areaAllChecked = areaCheckedCount === areaPerms.length;
+              const modules = areaGrouped[area];
+
               return (
-                <div key={area} className="mb-4">
-                  <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-2 dark:border-gray-700">
-                    <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
-                      {areaLabels[area] || area} ({areaChecked}/{perms.length})
-                    </span>
+                <div
+                  key={area}
+                  className="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/30"
+                >
+                  {/* Area header */}
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-bold text-black dark:text-white">
+                        {AREA_LABELS[area] || area}
+                      </span>
+                      <span className="text-sm text-gray-400 dark:text-gray-500">
+                        ({areaCheckedCount}/{areaPerms.length})
+                      </span>
+                    </div>
                     <Checkbox
-                      checked={allChecked}
-                      indeterminate={areaChecked > 0 && !allChecked}
-                      onChange={(e) => toggleGroup(perms, e.target.checked)}
+                      checked={areaAllChecked}
+                      indeterminate={areaCheckedCount > 0 && !areaAllChecked}
+                      onChange={(e) => toggleGroup(areaPerms, e.target.checked)}
                     >
-                      <span className="text-xs text-gray-500">Tất cả</span>
+                      <span className="text-xs font-semibold text-gray-500">
+                        Tất cả
+                      </span>
                     </Checkbox>
                   </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {perms.map((perm) => {
-                      const isChecked = checkedPermIds.has(perm.id);
-                      return (
-                        <label
-                          key={perm.id}
-                          className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm transition-all duration-200 ${isChecked ? 'border-blue-200 bg-blue-50/80 shadow-sm shadow-blue-100 dark:border-blue-700 dark:bg-blue-900/20' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/30 dark:hover:bg-gray-700/30'}`}
-                        >
+
+                  {/* Module sub-groups */}
+                  {Object.entries(modules).map(([mod, perms]) => {
+                    const modChecked = perms.filter((p) =>
+                      checkedPermIds.has(p.id)
+                    ).length;
+                    const modAllChecked = modChecked === perms.length;
+                    return (
+                      <div key={mod} className="mb-4 last:mb-0">
+                        <div className="mb-2 flex items-center justify-between border-b border-gray-200/60 pb-1.5 dark:border-gray-700">
+                          <span className="text-sm font-bold text-black/70 dark:text-gray-300">
+                            {mod} ({modChecked}/{perms.length})
+                          </span>
                           <Checkbox
-                            checked={isChecked}
-                            onChange={() => togglePermission(perm.id)}
-                            className="mt-0.5"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="font-medium text-gray-800 dark:text-white/90">
-                              {perm.name}
-                            </div>
-                            <div className="truncate text-xs text-gray-400">
-                              {perm.key}
-                            </div>
-                          </div>
-                          <Tag
-                            className="shrink-0 !rounded-md !text-[10px]"
-                            color={
-                              perm.type === 'admin'
-                                ? 'purple'
-                                : perm.type === 'employee'
-                                  ? 'green'
-                                  : 'gold'
+                            checked={modAllChecked}
+                            indeterminate={modChecked > 0 && !modAllChecked}
+                            onChange={(e) =>
+                              toggleGroup(perms, e.target.checked)
                             }
                           >
-                            {perm.type === 'admin'
-                              ? 'Admin'
-                              : perm.type === 'employee'
-                                ? 'Nhân viên'
-                                : 'Chung'}
-                          </Tag>
-                        </label>
-                      );
-                    })}
-                  </div>
+                            <span className="text-xs text-gray-500">
+                              Tất cả
+                            </span>
+                          </Checkbox>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                          {perms.map((perm, idx) => {
+                            const isChecked = checkedPermIds.has(perm.id);
+                            const isPartial = partialPermIds.has(perm.id);
+                            return (
+                              <label
+                                key={perm.id}
+                                className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm transition-all duration-200 ${isPartial ? 'border-orange-200 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-900/10' : isChecked ? 'border-blue-200 bg-blue-50/80 shadow-sm shadow-blue-100 dark:border-blue-700 dark:bg-blue-900/20' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/30 dark:hover:bg-gray-700/30'}`}
+                              >
+                                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 font-mono text-[10px] font-bold text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+                                  {idx + 1}
+                                </span>
+                                <Checkbox
+                                  checked={isChecked}
+                                  indeterminate={isPartial}
+                                  onChange={() => togglePermission(perm.id)}
+                                  className="mt-0.5"
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <div className="font-medium text-gray-800 dark:text-white/90">
+                                    {perm.name}
+                                  </div>
+                                  <div className="flex items-center gap-1.5 truncate text-xs text-gray-400">
+                                    <code className="text-[10px]">
+                                      {perm.key}
+                                    </code>
+                                  </div>
+                                  {/* Show role breakdown for partial perms */}
+                                  {isPartial && selectedRoleIds.size > 1 && (
+                                    <div className="mt-1.5 flex flex-wrap gap-1">
+                                      {roles
+                                        .filter((r) =>
+                                          selectedRoleIds.has(String(r.id))
+                                        )
+                                        .map((r) => {
+                                          const has = (
+                                            rolePermissions[String(r.id)] ?? []
+                                          ).includes(perm.id);
+                                          return (
+                                            <span
+                                              key={r.id}
+                                              className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${has ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400'}`}
+                                            >
+                                              {has ? '✓' : '✗'} {r.role_name}
+                                            </span>
+                                          );
+                                        })}
+                                    </div>
+                                  )}
+                                </div>
+                                <Tag
+                                  className="shrink-0 !rounded-md !text-[10px]"
+                                  color={
+                                    perm.type === 'admin'
+                                      ? 'purple'
+                                      : perm.type === 'employee'
+                                        ? 'green'
+                                        : 'gold'
+                                  }
+                                >
+                                  {perm.type === 'admin'
+                                    ? 'Admin'
+                                    : perm.type === 'employee'
+                                      ? 'Nhân viên'
+                                      : 'Chung'}
+                                </Tag>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
+
+            {/* Handle any areas not in AREA_ORDER (e.g. 'other') */}
+            {Object.keys(areaGrouped)
+              .filter(
+                (a) => !AREA_ORDER.includes(a as (typeof AREA_ORDER)[number])
+              )
+              .map((area) => {
+                const areaPerms = getAreaPerms(area);
+                const areaCheckedCount = areaPerms.filter((p) =>
+                  checkedPermIds.has(p.id)
+                ).length;
+                const areaAllChecked = areaCheckedCount === areaPerms.length;
+                const modules = areaGrouped[area];
+                return (
+                  <div
+                    key={area}
+                    className="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/30"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <span className="text-base font-bold text-black dark:text-white">
+                        📦 {area}
+                      </span>
+                      <Checkbox
+                        checked={areaAllChecked}
+                        indeterminate={areaCheckedCount > 0 && !areaAllChecked}
+                        onChange={(e) =>
+                          toggleGroup(areaPerms, e.target.checked)
+                        }
+                      >
+                        <span className="text-xs font-semibold text-gray-500">
+                          Tất cả
+                        </span>
+                      </Checkbox>
+                    </div>
+                    {Object.entries(modules).map(([mod, perms]) => {
+                      const modChecked = perms.filter((p) =>
+                        checkedPermIds.has(p.id)
+                      ).length;
+                      const modAllChecked = modChecked === perms.length;
+                      return (
+                        <div key={mod} className="mb-4 last:mb-0">
+                          <div className="mb-2 flex items-center justify-between border-b border-gray-200/60 pb-1.5 dark:border-gray-700">
+                            <span className="text-sm font-bold text-black/70 dark:text-gray-300">
+                              {mod} ({modChecked}/{perms.length})
+                            </span>
+                            <Checkbox
+                              checked={modAllChecked}
+                              indeterminate={modChecked > 0 && !modAllChecked}
+                              onChange={(e) =>
+                                toggleGroup(perms, e.target.checked)
+                              }
+                            >
+                              <span className="text-xs text-gray-500">
+                                Tất cả
+                              </span>
+                            </Checkbox>
+                          </div>
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {perms.map((perm, idx) => {
+                              const isChecked = checkedPermIds.has(perm.id);
+                              const isPartial = partialPermIds.has(perm.id);
+                              return (
+                                <label
+                                  key={perm.id}
+                                  className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm transition-all duration-200 ${isPartial ? 'border-orange-200 bg-orange-50/50 dark:border-orange-700 dark:bg-orange-900/10' : isChecked ? 'border-blue-200 bg-blue-50/80 shadow-sm shadow-blue-100 dark:border-blue-700 dark:bg-blue-900/20' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/30 dark:hover:bg-gray-700/30'}`}
+                                >
+                                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 font-mono text-[10px] font-bold text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+                                    {idx + 1}
+                                  </span>
+                                  <Checkbox
+                                    checked={isChecked}
+                                    indeterminate={isPartial}
+                                    onChange={() => togglePermission(perm.id)}
+                                    className="mt-0.5"
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <div className="font-medium text-gray-800 dark:text-white/90">
+                                      {perm.name}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 truncate text-xs text-gray-400">
+                                      <code className="text-[10px]">
+                                        {perm.key}
+                                      </code>
+                                    </div>
+                                    {isPartial && selectedRoleIds.size > 1 && (
+                                      <div className="mt-1.5 flex flex-wrap gap-1">
+                                        {roles
+                                          .filter((r) =>
+                                            selectedRoleIds.has(String(r.id))
+                                          )
+                                          .map((r) => {
+                                            const has = (
+                                              rolePermissions[String(r.id)] ??
+                                              []
+                                            ).includes(perm.id);
+                                            return (
+                                              <span
+                                                key={r.id}
+                                                className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${has ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400'}`}
+                                              >
+                                                {has ? '✓' : '✗'} {r.role_name}
+                                              </span>
+                                            );
+                                          })}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <Tag
+                                    className="shrink-0 !rounded-md !text-[10px]"
+                                    color={
+                                      perm.type === 'admin'
+                                        ? 'purple'
+                                        : perm.type === 'employee'
+                                          ? 'green'
+                                          : 'gold'
+                                    }
+                                  >
+                                    {perm.type === 'admin'
+                                      ? 'Admin'
+                                      : perm.type === 'employee'
+                                        ? 'Nhân viên'
+                                        : 'Chung'}
+                                  </Tag>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
           </div>
         )}
       </Col>
@@ -381,6 +663,7 @@ function PermissionsManager() {
   const [form] = Form.useForm();
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [areaFilter, setAreaFilter] = useState<string | null>(null);
+  const [moduleFilter, setModuleFilter] = useState<string | null>(null);
 
   // Inline sort_order editing
   const [editingSortId, setEditingSortId] = useState<number | null>(null);
@@ -438,8 +721,9 @@ function PermissionsManager() {
       : [];
     if (typeFilter) list = list.filter((p) => p.type === typeFilter);
     if (areaFilter) list = list.filter((p) => p.display_area === areaFilter);
+    if (moduleFilter) list = list.filter((p) => p.module === moduleFilter);
     return list;
-  }, [permData, typeFilter, areaFilter]);
+  }, [permData, typeFilter, areaFilter, moduleFilter]);
   const allPermissions = useMemo(
     () =>
       Array.isArray(permData?.all_permissions) ? permData.all_permissions : [],
@@ -535,6 +819,7 @@ function PermissionsManager() {
       url: perm.url || '',
       sort_order: perm.sort_order ?? 0,
       type: perm.type,
+      module: perm.module,
       display_area: perm.display_area
     });
     setDrawerOpen(true);
@@ -657,6 +942,27 @@ function PermissionsManager() {
       dataIndex: 'key',
       width: 180,
       render: (v: string) => <code className="text-xs">{v}</code>
+    },
+    {
+      title: 'Module',
+      dataIndex: 'module',
+      width: 120,
+      align: 'center',
+      filters: (() => {
+        const modules = [
+          ...new Set(allPermissions.map((p) => p.module).filter(Boolean))
+        ];
+        return modules.sort().map((m) => ({ text: m!, value: m! }));
+      })(),
+      onFilter: (value, record) => record.module === value,
+      render: (v: string) =>
+        v ? (
+          <Tag color="cyan" className="!rounded-md !text-[10px]">
+            {v}
+          </Tag>
+        ) : (
+          <span className="text-xs text-gray-300">—</span>
+        )
     },
     { title: 'Tên', dataIndex: 'name', ellipsis: true },
     {
@@ -787,6 +1093,19 @@ function PermissionsManager() {
           ]}
           className="!w-28"
         />
+        <Select
+          placeholder="Module"
+          allowClear
+          value={moduleFilter}
+          onChange={(v) => setModuleFilter(v ?? null)}
+          options={(() => {
+            const modules = [
+              ...new Set(allPermissions.map((p) => p.module).filter(Boolean))
+            ];
+            return modules.sort().map((m) => ({ label: m, value: m! }));
+          })()}
+          className="!w-36"
+        />
         <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
           <FaKey className="text-xs text-blue-500" />
           <span className="text-xs text-gray-500">
@@ -892,6 +1211,13 @@ function PermissionsManager() {
               </Form.Item>
             </Col>
           </Row>
+          <Form.Item
+            name="module"
+            label="Module"
+            tooltip="Nhóm quyền. VD: dashboard, schedule, products"
+          >
+            <Input placeholder="dashboard" />
+          </Form.Item>
           <Row gutter={12}>
             <Col span={12}>
               <Form.Item
@@ -1211,21 +1537,16 @@ function UserPermissionDrawer({
     setIsDirty(true);
   };
 
-  // Group permissions
+  // Group permissions by module
   const sorted = [...allPermissions].sort(
     (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id - b.id
   );
   const grouped: Record<string, Permission[]> = {};
   for (const perm of sorted) {
-    const area = perm.display_area || 'other';
-    if (!grouped[area]) grouped[area] = [];
-    grouped[area].push(perm);
+    const group = perm.module || perm.display_area || 'other';
+    if (!grouped[group]) grouped[group] = [];
+    grouped[group].push(perm);
   }
-  const areaLabels: Record<string, string> = {
-    home: 'Dashboard (Home)',
-    sidebar: 'Sidebar Menu',
-    both: 'Home + Sidebar'
-  };
 
   // Stats
   const totalEffective = checkedIds.size;
@@ -1393,7 +1714,7 @@ function UserPermissionDrawer({
                 <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-2 dark:border-gray-700">
                   <div>
                     <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
-                      {areaLabels[area] || area}
+                      {area}
                     </span>
                     <span className="ml-2 text-xs text-gray-400">
                       ({areaEffective}/{perms.length}
@@ -1418,7 +1739,7 @@ function UserPermissionDrawer({
                   </Checkbox>
                 </div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {perms.map((perm) => {
+                  {perms.map((perm, idx) => {
                     const isRole = rolePermIds.has(perm.id);
                     const isChecked = checkedIds.has(perm.id);
                     const isDenied = isRole && !isChecked; // Quyền role nhưng bị chặn
@@ -1449,6 +1770,9 @@ function UserPermissionDrawer({
                         key={perm.id}
                         className={`flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 text-sm transition-all duration-200 ${borderColor} ${bgColor}`}
                       >
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 font-mono text-[10px] font-bold text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+                          {idx + 1}
+                        </span>
                         <Checkbox
                           checked={isChecked}
                           onChange={() => togglePermission(perm.id)}

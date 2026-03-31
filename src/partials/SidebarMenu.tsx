@@ -3,131 +3,331 @@ import logo from '@assets/images/logo/logoAsset.svg';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 import { Link, useLocation } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import { ConfigProvider, Image, Menu } from 'antd';
 import React from 'react';
-import { IconContext } from 'react-icons';
+import { FaChevronDown } from 'react-icons/fa';
 
 interface SidebarMenuProps {
   items: MenuItem[];
+  headerSlot?: React.ReactNode;
 }
 
-export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items }) => {
+// ── Extract the actual link path from a MenuItem ──
+function extractPath(item: MenuItem): string | undefined {
+  if (!item || typeof item !== 'object') return undefined;
+  // 1. Check key
+  const key = 'key' in item ? String(item.key) : undefined;
+  if (key && key.startsWith('/')) return key;
+  // 2. Check label for <Link to="...">
+  if ('label' in item && React.isValidElement(item.label)) {
+    const props = item.label.props as { to?: string };
+    if (props.to && typeof props.to === 'string') return props.to;
+  }
+  return undefined;
+}
+
+// ── Extract label text from a MenuItem ──
+function extractLabel(item: MenuItem): React.ReactNode {
+  if (!item || typeof item !== 'object') return null;
+  if ('label' in item) {
+    const label = item.label;
+    // If label is a Link element, extract its text
+    if (React.isValidElement(label)) {
+      const children = (
+        label as React.ReactElement<{ children?: React.ReactNode }>
+      ).props.children;
+      if (React.isValidElement(children)) {
+        return (children as React.ReactElement<{ children?: React.ReactNode }>)
+          .props.children;
+      }
+      return children;
+    }
+    return label;
+  }
+  return null;
+}
+
+// ── Extract icon from a MenuItem ──
+function extractIcon(item: MenuItem): React.ReactNode {
+  if (!item || typeof item !== 'object') return null;
+  if ('icon' in item) return item.icon as React.ReactNode;
+  return null;
+}
+
+// ── Single Menu Item ──
+function SidebarItem({
+  item,
+  isActive,
+  isCollapsed,
+  onClick
+}: {
+  item: MenuItem;
+  isActive: boolean;
+  isCollapsed: boolean;
+  onClick?: () => void;
+}) {
+  const path = extractPath(item);
+  const label = extractLabel(item);
+  const icon = extractIcon(item);
+
+  const content = (
+    <div
+      className={`group mx-2.5 my-0.5 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-out ${
+        isActive
+          ? 'bg-blue-50/60 font-semibold text-black dark:bg-blue-900/20 dark:text-white'
+          : 'font-medium text-black hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/5 dark:hover:text-white'
+      }`}
+    >
+      {icon && (
+        <span
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl transition-colors duration-200 ${
+            isActive
+              ? 'text-blue-600 dark:text-blue-400'
+              : 'text-gray-600 group-hover:text-gray-800 dark:text-gray-400 dark:group-hover:text-gray-200'
+          } ${isCollapsed ? '!mx-auto !h-9 !w-9' : ''}`}
+        >
+          {icon}
+        </span>
+      )}
+      {!isCollapsed && (
+        <span className="truncate text-[13.5px] capitalize">{label}</span>
+      )}
+    </div>
+  );
+
+  if (path) {
+    return (
+      <Link to={path} onClick={onClick} className="block no-underline">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
+}
+
+// ── Submenu Item (with children) ──
+function SidebarSubmenu({
+  item,
+  pathname,
+  isCollapsed,
+  isOpen,
+  onToggle,
+  onClick
+}: {
+  item: MenuItem & { children?: MenuItem[] };
+  pathname: string;
+  isCollapsed: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
+  onClick?: () => void;
+}) {
+  const label = extractLabel(item);
+  const icon = extractIcon(item);
+  const children = ('children' in item ? item.children : []) as MenuItem[];
+  const hoverTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+
+  // Check if any child is active
+  const hasActiveChild = children.some((child) => {
+    const childPath = extractPath(child);
+    return childPath && pathname.startsWith(childPath);
+  });
+
+  const handleMouseEnter = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (!isOpen) {
+      hoverTimerRef.current = setTimeout(() => {
+        onToggle();
+      }, 150);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (isOpen) {
+      hoverTimerRef.current = setTimeout(() => {
+        onToggle();
+      }, 200);
+    }
+  };
+
+  return (
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      {/* Parent button */}
+      <button
+        onClick={onToggle}
+        className={`group mx-2.5 my-0.5 flex w-[calc(100%-20px)] items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-out ${
+          hasActiveChild
+            ? 'bg-blue-50/40 font-semibold text-black dark:bg-blue-900/15 dark:text-white'
+            : 'font-medium text-black hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/5 dark:hover:text-white'
+        }`}
+      >
+        {icon && (
+          <span
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl transition-colors duration-200 ${
+              hasActiveChild
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-600 group-hover:text-gray-800 dark:text-gray-400 dark:group-hover:text-gray-200'
+            } ${isCollapsed ? '!mx-auto !h-9 !w-9' : ''}`}
+          >
+            {icon}
+          </span>
+        )}
+        {!isCollapsed && (
+          <>
+            <span className="flex-1 truncate text-[13.5px] capitalize">
+              {label}
+            </span>
+            <FaChevronDown
+              className={`text-[9px] text-gray-400 transition-transform duration-300 ease-out dark:text-gray-600 ${
+                isOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </>
+        )}
+      </button>
+
+      {/* Children */}
+      {!isCollapsed && (
+        <div
+          className="overflow-hidden transition-all duration-300 ease-out"
+          style={{
+            maxHeight: isOpen ? `${children.length * 42 + 8}px` : '0px',
+            opacity: isOpen ? 1 : 0
+          }}
+        >
+          <div className="ml-5 border-l border-gray-100 py-1 dark:border-gray-700/50">
+            {children.map((child) => {
+              const childPath = extractPath(child);
+              const childLabel = extractLabel(child);
+              const childIcon = extractIcon(child);
+              const isChildActive = childPath
+                ? pathname.startsWith(childPath)
+                : false;
+
+              return (
+                <Link
+                  key={String(
+                    child && typeof child === 'object' && 'key' in child
+                      ? child.key
+                      : Math.random()
+                  )}
+                  to={(childPath || '/') as string}
+                  onClick={onClick}
+                  className="block no-underline"
+                >
+                  <div
+                    className={`mx-2 my-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 transition-all duration-200 ease-out ${
+                      isChildActive
+                        ? 'bg-blue-50/50 font-semibold text-black dark:bg-blue-900/15 dark:text-white'
+                        : 'font-medium text-black hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white'
+                    }`}
+                  >
+                    {childIcon && (
+                      <span className="text-[13px]">{childIcon}</span>
+                    )}
+                    <span className="truncate text-[12.5px] capitalize">
+                      {childLabel}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main SidebarMenu Component ──
+export const SidebarMenu: React.FC<SidebarMenuProps> = ({
+  items,
+  headerSlot
+}) => {
   const { pathname } = useLocation();
-  const { theme, isMobile, isSidebarClose } = useStore(uiStore);
+  const { isMobile, isSidebarClose } = useStore(uiStore);
 
-  const [openKeys, setOpenKeys] = React.useState<string[]>([]);
+  const [openKey, setOpenKey] = React.useState<string | null>(null);
 
-  // wrap the label for items with children to attach onMouseEnter for opening submenu
-  const hoverItems = React.useMemo<MenuItem[]>(() => {
-    if (isMobile) return items;
-
-    const wrap = (
-      list?: MenuItem[],
-      parentPath: string[] = []
-    ): MenuItem[] | undefined => {
-      if (!list) return list;
-
-      return list.map((it) => {
-        if (!it) return it;
-
-        const hasChildren =
-          'children' in it && it.children && it.children.length > 0;
-        const keyStr =
-          typeof it.key === 'string' ? (it.key as string) : undefined;
-
-        if (hasChildren && keyStr) {
-          const originalLabel = it.label as React.ReactNode;
-
-          const wrappedParentLabel = (
-            <div
-              onMouseEnter={() => {
-                setOpenKeys([...parentPath, keyStr]);
-              }}
-              className="relative flex items-center"
-            >
-              {originalLabel}
-            </div>
-          );
-
-          return {
-            ...it,
-            label: wrappedParentLabel,
-            children: wrap(it.children, [...parentPath, keyStr]) as MenuItem[]
-          };
-        }
-
-        return it;
-      });
-    };
-
-    return (wrap(items) || []) as MenuItem[];
-  }, [items, isMobile]);
+  const handleToggle = (key: string) => {
+    setOpenKey((prev) => (prev === key ? null : key));
+  };
 
   const handleClick = () => {
+    setOpenKey(null);
     if (isMobile) toggleSidebar();
   };
 
   return (
     <>
-      {/* ── Logo Area ─────────────────────────────────────── */}
+      {/* ── Logo ───────────────────────────────────────── */}
       <div>
         <div
-          className={`flex items-center justify-center ${isSidebarClose ? 'p-3' : 'p-5'}`}
+          className={`flex items-center justify-center ${isSidebarClose ? 'p-3' : 'px-5 py-6'}`}
         >
           <Link
             to="/"
             onClick={() => {
-              if (isMobile) {
-                toggleSidebar();
-              }
+              if (isMobile) toggleSidebar();
             }}
           >
-            <Image className="w-full" src={logo} alt="Logo" preview={false} />
+            <img
+              src={logo}
+              alt="Logo"
+              className={`transition-all duration-300 ${isSidebarClose ? 'h-12' : 'h-20'}`}
+            />
           </Link>
         </div>
-        {/* Separator */}
-        <div className="mx-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-gray-700" />
+        <div className="mx-5 h-px bg-gradient-to-r from-transparent via-gray-200/80 to-transparent dark:via-gray-700/60" />
       </div>
 
-      {/* ── Menu ──────────────────────────────────────────── */}
-      <div className="py-2">
-        <IconContext.Provider value={{ size: '1.25rem' }}>
-          <ConfigProvider
-            theme={{
-              token: {
-                colorPrimary: '#475569' // slate-600
-              },
-              components: {
-                Menu: {
-                  itemSelectedBg: 'transparent',
-                  itemSelectedColor: '#334155', // slate-700
-                  itemHoverBg: 'transparent',
-                  itemHoverColor: '#475569', // slate-600
-                  itemActiveBg: 'transparent',
-                  subMenuItemBg: 'transparent',
-                  itemBg: 'transparent',
-                  iconSize: 20
-                }
-              }
-            }}
-          >
-            <Menu
-              theme={theme}
-              mode="inline"
-              items={hoverItems}
-              defaultSelectedKeys={['/']}
-              selectedKeys={[pathname]}
-              openKeys={isMobile ? undefined : openKeys}
-              onOpenChange={isMobile ? undefined : (keys) => setOpenKeys(keys)}
+      {/* ── Header Slot (profile card on mobile) ── */}
+      {headerSlot}
+      {headerSlot && (
+        <div className="mx-5 h-px bg-gradient-to-r from-transparent via-gray-200/80 to-transparent dark:via-gray-700/60" />
+      )}
+
+      {/* ── Menu Items ─────────────────────────────────── */}
+      <nav className="py-3">
+        {items.map((item) => {
+          if (!item || typeof item !== 'object') return null;
+
+          const key = 'key' in item ? String(item.key) : '';
+          const hasChildren =
+            'children' in item &&
+            Array.isArray(item.children) &&
+            item.children.length > 0;
+
+          if (hasChildren) {
+            return (
+              <SidebarSubmenu
+                key={key}
+                item={item as MenuItem & { children?: MenuItem[] }}
+                pathname={pathname}
+                isCollapsed={isSidebarClose}
+                isOpen={openKey === key}
+                onToggle={() => handleToggle(key)}
+                onClick={handleClick}
+              />
+            );
+          }
+
+          const path = extractPath(item);
+          const isActive = path ? pathname === path : false;
+
+          return (
+            <SidebarItem
+              key={key}
+              item={item}
+              isActive={isActive}
+              isCollapsed={isSidebarClose}
               onClick={handleClick}
-              onMouseLeave={() => {
-                if (!isMobile) setOpenKeys([]);
-              }}
-              className="!border-none [&_.ant-menu-item]:mx-2.5 [&_.ant-menu-item]:my-[3px] [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:transition-all [&_.ant-menu-item]:duration-300 [&_.ant-menu-item]:ease-out [&_.ant-menu-item_.ant-menu-item-icon]:transition-colors [&_.ant-menu-item_.ant-menu-item-icon]:duration-300 [&_.ant-menu-item-selected]:bg-gradient-to-r [&_.ant-menu-item-selected]:from-slate-100 [&_.ant-menu-item-selected]:to-slate-100/40 [&_.ant-menu-item-selected]:font-semibold [&_.ant-menu-item-selected]:shadow-sm [&_.ant-menu-item-selected]:shadow-slate-200/50 dark:[&_.ant-menu-item-selected]:from-slate-500/15 dark:[&_.ant-menu-item-selected]:to-slate-500/5 dark:[&_.ant-menu-item-selected]:shadow-slate-500/10 [&_.ant-menu-item-selected_.ant-menu-item-icon]:text-slate-600 dark:[&_.ant-menu-item-selected_.ant-menu-item-icon]:text-slate-300 [&_.ant-menu-item-selected_.ant-menu-title-content]:text-slate-700 dark:[&_.ant-menu-item-selected_.ant-menu-title-content]:text-slate-300 [&_.ant-menu-item:active]:scale-[0.98] [&_.ant-menu-item:active]:bg-slate-100 dark:[&_.ant-menu-item:active]:bg-white/10 [&_.ant-menu-item:hover]:translate-x-0.5 [&_.ant-menu-item:hover]:bg-slate-50 [&_.ant-menu-item:hover]:shadow-sm dark:[&_.ant-menu-item:hover]:bg-white/5 [&_.ant-menu-item:hover_.ant-menu-item-icon]:text-slate-600 dark:[&_.ant-menu-item:hover_.ant-menu-item-icon]:text-slate-300 [&_.ant-menu-sub]:bg-transparent [&_.ant-menu-sub_.ant-menu-item]:ml-3 [&_.ant-menu-sub_.ant-menu-item]:text-[13px] [&_.ant-menu-sub_.ant-menu-item]:opacity-80 [&_.ant-menu-sub_.ant-menu-item:hover]:opacity-100 [&_.ant-menu-submenu-arrow]:transition-transform [&_.ant-menu-submenu-arrow]:duration-300 [&_.ant-menu-submenu-arrow]:ease-out [&_.ant-menu-submenu-title]:mx-2.5 [&_.ant-menu-submenu-title]:my-[3px] [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title]:transition-all [&_.ant-menu-submenu-title]:duration-300 [&_.ant-menu-submenu-title]:ease-out [&_.ant-menu-submenu-title_.ant-menu-item-icon]:transition-colors [&_.ant-menu-submenu-title_.ant-menu-item-icon]:duration-300 [&_.ant-menu-submenu-title:active]:scale-[0.98] [&_.ant-menu-submenu-title:active]:bg-slate-100 dark:[&_.ant-menu-submenu-title:active]:bg-white/10 [&_.ant-menu-submenu-title:hover]:translate-x-0.5 [&_.ant-menu-submenu-title:hover]:bg-slate-50 [&_.ant-menu-submenu-title:hover]:shadow-sm dark:[&_.ant-menu-submenu-title:hover]:bg-white/5 [&_.ant-menu-submenu-title:hover_.ant-menu-item-icon]:text-slate-600 dark:[&_.ant-menu-submenu-title:hover_.ant-menu-item-icon]:text-slate-300"
             />
-          </ConfigProvider>
-        </IconContext.Provider>
-      </div>
+          );
+        })}
+      </nav>
     </>
   );
 };

@@ -297,26 +297,21 @@ export default function HistoryPrintStamp() {
     },
     {
       title: 'NV in',
-      key: 'name',
-      dataIndex: ['manager', 'name'],
+      key: 'manager_info',
       align: 'center',
-      render: (value) => (
-        <span className="text-sm">
-          {value || <span className="text-gray-300">—</span>}
-        </span>
-      )
-    },
-    {
-      title: 'Giờ in',
-      key: 'manager_time',
-      dataIndex: 'manager_time',
-      align: 'center',
-      render: (value) => {
-        if (!value) return <span className="text-gray-300">—</span>;
+      render: (_: unknown, record: HistoryPrintStampType) => {
+        const name = record.manager?.name;
+        const time = record.manager_time;
+        if (!name && !time) return <span className="text-gray-300">—</span>;
         return (
-          <Tag color="green" className="!text-xs">
-            {dayjs(value, 'HH:mm:ss').format('HH:mm:ss')}
-          </Tag>
+          <div className="text-center">
+            {name && <div className="text-sm">{name}</div>}
+            {time && (
+              <Tag color="green" className="!mt-0.5 !text-xs">
+                {dayjs(time, 'HH:mm:ss').format('HH:mm')}
+              </Tag>
+            )}
+          </div>
         );
       }
     },

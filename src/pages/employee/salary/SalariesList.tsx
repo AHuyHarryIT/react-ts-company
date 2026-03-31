@@ -17,9 +17,10 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaSearch, FaMoneyBillWave, FaMoneyCheckAlt } from 'react-icons/fa';
 import { SalaryDetailContent } from './SalaryDetailContent';
+import { useSearch } from '@tanstack/react-router';
 
 export default function SalariesList() {
   const [params, setParams] = useState<QueryParams>({
@@ -27,6 +28,16 @@ export default function SalariesList() {
     limit: 12
   });
   const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
+  const search = useSearch({ strict: false }) as { openId?: string };
+
+  // Auto-open detail from notification
+  useEffect(() => {
+    if (search.openId) {
+      setSelectedSalaryId(search.openId);
+      // Clean URL param
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [search.openId]);
 
   const {
     data: salaries,
