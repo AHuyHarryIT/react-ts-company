@@ -1,9 +1,132 @@
 import { SalaryDetailTableType } from '@/types/salaryType';
 import { convertNumberToWords } from '@utils/number2Word';
-import { Alert, Spin, Tag } from 'antd';
+import { Alert, Spin, Tag, Statistic } from 'antd';
 import dayjs from 'dayjs';
-import { FaUser, FaCalendarAlt, FaBriefcase } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaBriefcase, FaClock } from 'react-icons/fa';
 import { SalaryTable, SalaryTableType } from './SalaryTable';
+import { useQuery } from '@tanstack/react-query';
+import { fetchEmpAttendances } from '@services/AttendanceService';
+import { useMemo } from 'react';
+
+function AttendanceComparisonWidget({
+  startDate,
+  endDate
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  const { data: calcResponse, isLoading } = useQuery({
+    queryKey: ['emp-attendance-comparison', startDate, endDate],
+    queryFn: async () => {
+      return await fetchEmpAttendances({
+        include_calculation: 1,
+        limit: 0,
+        'filter[date_between]': `${startDate},${endDate}`
+      });
+    },
+    enabled: !!startDate && !!endDate
+  });
+
+  const stats = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = (calcResponse?.data || []) as any[];
+    const workDays = data.filter((d) => d.shift > 0).length;
+    const totalHours = data.reduce((s, d) => s + (d.total_hours || 0), 0);
+    const otHours = data.reduce((s, d) => s + (d.overtime_hours || 0), 0);
+    const adminHours = data.reduce(
+      (s, d) => s + (d.administrative_hours || 0),
+      0
+    );
+    return { workDays, totalHours, otHours, adminHours };
+  }, [calcResponse]);
+
+  if (!startDate || !endDate) return null;
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+      <h3 className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <FaClock />
+        Tổng kết chấm công theo lương
+        <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
+          (Từ {dayjs(startDate).format('DD/MM/YYYY')} đến{' '}
+          {dayjs(endDate).format('DD/MM/YYYY')})
+        </span>
+      </h3>
+      {isLoading ? (
+        <div className="flex w-full justify-center p-4">
+          <Spin />
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 dark:border-blue-900/30 dark:bg-blue-900/10">
+            <Statistic
+              title={
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Ngày đi làm
+                </span>
+              }
+              value={stats.workDays}
+              suffix={<span className="text-[11px]">&nbsp;ngày</span>}
+              valueStyle={{
+                fontSize: '1.25rem',
+                fontWeight: 700,
+                color: '#2563eb'
+              }}
+            />
+          </div>
+          <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+            <Statistic
+              title={
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Tổng giờ làm
+                </span>
+              }
+              value={Math.round(stats.totalHours * 100) / 100}
+              suffix={<span className="text-[11px]">&nbsp;h</span>}
+              valueStyle={{
+                fontSize: '1.25rem',
+                fontWeight: 700,
+                color: '#059669'
+              }}
+            />
+          </div>
+          <div className="rounded-lg border border-purple-100 bg-purple-50 px-3 py-2 dark:border-purple-900/30 dark:bg-purple-900/10">
+            <Statistic
+              title={
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Hành chính
+                </span>
+              }
+              value={Math.round(stats.adminHours * 100) / 100}
+              suffix={<span className="text-[11px]">&nbsp;h</span>}
+              valueStyle={{
+                fontSize: '1.25rem',
+                fontWeight: 700,
+                color: '#7c3aed'
+              }}
+            />
+          </div>
+          <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 dark:border-amber-900/30 dark:bg-amber-900/10">
+            <Statistic
+              title={
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Tăng ca
+                </span>
+              }
+              value={Math.round(stats.otHours * 100) / 100}
+              suffix={<span className="text-[11px]">&nbsp;h</span>}
+              valueStyle={{
+                fontSize: '1.25rem',
+                fontWeight: 700,
+                color: '#d97706'
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface SalaryDetailContentProps {
   salaryDetails: SalaryDetailTableType | null | undefined;
@@ -319,6 +442,14 @@ export const SalaryDetailContent = ({
               </div>
             </div>
           </div>
+
+          {/* ── Attendance Comparison ─────────────────────── */}
+          {salary_manager?.start_date && salary_manager?.end_date && (
+            <AttendanceComparisonWidget
+              startDate={salary_manager.start_date}
+              endDate={salary_manager.end_date}
+            />
+          )}
 
           {/* ── Income Table ──────────────────────────────── */}
           <div className="rounded-xl border border-emerald-100 bg-white/80 p-4 backdrop-blur-sm dark:border-emerald-900/50 dark:bg-gray-800/50">
