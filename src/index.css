@@ -49,3 +49,14 @@
     transform: rotate(0deg);
   }
 }
+
+/* ── Mobile: shrink fixed-left product name column ───────────── */
+@media (max-width: 639px) {
+  .ant-table-cell-fix-left {
+    max-width: 110px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: keep-all;
+  }
+}

@@ -40,10 +40,23 @@ type LoginSearch = {
 /**
  * Trigger the browser's native "Save password?" prompt.
  *
- * Works on:
- * - Chrome/Edge desktop & Android (Credential Management API)
- * - Safari desktop & iOS (hidden form submit)
- * - Firefox (hidden form submit)
+ * Strategy per browser engine:
+ *
+ * 1. Chrome/Edge (Credential Management API)
+ *    → navigator.credentials.store() then redirect.
+ *
+ * 2. Safari desktop & iOS  (NO Credential Management API)
+ *    → Safari needs to observe a **real page navigation** from a form
+ *      containing username + password inputs with correct autocomplete
+ *      attributes. Submitting into an iframe does NOT work — Safari
+ *      explicitly ignores iframe-targeted form submissions for its
+ *      password-save heuristic.
+ *    → We create an off-screen form that submits via POST directly to
+ *      the redirect URL (no iframe target). This causes a full page
+ *      navigation, which Safari interprets as a login flow completion
+ *      and shows the "Save Password?" prompt.
+ *
+ * 3. Firefox — same hidden-form-with-navigation approach works.
  */
 const triggerBrowserSavePassword = (
   username: string,
@@ -68,56 +81,42 @@ const triggerBrowserSavePassword = (
     return;
   }
 
-  // --- Fallback: hidden form submit (iOS Safari, Firefox) ---
-  const iframe = document.createElement('iframe');
-  iframe.name = '__saveCredFrame';
-  iframe.style.cssText =
-    'position:absolute;width:0;height:0;border:0;opacity:0;';
-  document.body.appendChild(iframe);
-
-  const hiddenForm = document.createElement('form');
-  hiddenForm.method = 'POST';
-  hiddenForm.action = window.location.href;
-  hiddenForm.target = '__saveCredFrame';
-  hiddenForm.style.cssText =
-    'position:absolute;width:0;height:0;overflow:hidden;';
+  // --- Safari / Firefox fallback: real form submit → page navigation ---
+  // Safari requires the form to cause a MAIN-WINDOW navigation (no iframe).
+  // We use POST so credentials never appear in the URL / browser history.
+  // Since the target is a SPA client-side route, the server serves the same
+  // index.html for both GET and POST, so the page loads correctly.
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = redirectTo;
+  // Positioned off-screen but NOT hidden (display:none / visibility:hidden
+  // causes Safari to skip it).
+  form.style.cssText =
+    'position:fixed;top:-1000px;left:-1000px;width:1px;height:1px;overflow:hidden;';
 
   const uInput = document.createElement('input');
   uInput.type = 'text';
   uInput.name = 'username';
-  uInput.id = '__save_username';
   uInput.autocomplete = 'username';
   uInput.value = username;
 
   const pInput = document.createElement('input');
   pInput.type = 'password';
   pInput.name = 'password';
-  pInput.id = '__save_password';
   pInput.autocomplete = 'current-password';
   pInput.value = password;
 
-  // Submit button required by iOS Safari to recognize as login form
   const submitBtn = document.createElement('input');
   submitBtn.type = 'submit';
   submitBtn.value = 'Login';
 
-  hiddenForm.appendChild(uInput);
-  hiddenForm.appendChild(pInput);
-  hiddenForm.appendChild(submitBtn);
-  document.body.appendChild(hiddenForm);
+  form.appendChild(uInput);
+  form.appendChild(pInput);
+  form.appendChild(submitBtn);
+  document.body.appendChild(form);
 
-  hiddenForm.submit();
-
-  // Longer timeout for mobile connections
-  setTimeout(() => {
-    try {
-      document.body.removeChild(hiddenForm);
-      document.body.removeChild(iframe);
-    } catch {
-      /* already removed */
-    }
-    window.location.href = redirectTo;
-  }, 800);
+  // Submit triggers a full navigation → Safari detects credentials
+  form.submit();
 };
 
 export const Route = createFileRoute('/(auth)/login')({

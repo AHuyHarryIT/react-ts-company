@@ -211,179 +211,203 @@ export const PrintBoxStamp = ({
   // Use the custom hook for print shortcut
   usePrintShortcut(handleSavePrintLog);
 
-  // Helper function to format product name with line breaks at parentheses
+  // Helper function to format product name - keep on single line
   const formatProductName = (name: string) => {
-    const parts = name
-      .split(/(\([^)]*\))/g)
-      .filter((part) => part.trim() !== '');
-    return parts.map((part, index) => (
-      <span key={index}>
-        {part}
-        {index < parts.length - 1 && <br />}
-      </span>
-    ));
+    return <span>{name}</span>;
+  };
+
+  // Determine print font-size class based on product name length
+  const getProductNamePrintClass = (name: string) => {
+    const len = name.length;
+    // Tên sản phẩm luôn giữ cỡ chữ ~14px bằng với size của mã CODE
+    // Chỉ thu nhỏ font nếu tên quá quá dài (vượt biên độ dãn cột)
+    if (len <= 35) return 'print-name-sm'; // 14px (Vừa mọi sản phẩm <= 35 ký tự)
+    if (len <= 45) return 'print-name-xs'; // 12px
+    if (len <= 55) return 'print-name-xxs'; // 10px
+    return 'print-name-xxxs'; // 9px
   };
 
   // Helper function to render stamp table
-  const renderStampTable = (stamp: number | null) => (
-    <table className="has-barcode border border-black text-center text-[8.3px]">
-      <colgroup>
-        <col className="w-[80px]" />
-        <col className="w-[140px]" />
-        <col className="w-[80px]" />
-        <col className="w-[50px]" />
-        <col className="w-[100px]" />
-        <col className="w-[20px]" />
-      </colgroup>
-      <tbody>
-        <tr>
-          <td>
-            <Image
-              src={logo}
-              alt="logo"
-              width={80}
-              preview={false}
-              title="VINH VINH PHAT ONE MEMBER CO.,LTD"
-            />
-          </td>
-          <td colSpan={5}>
-            <div
-              className="w-auto text-left text-[6px] break-words whitespace-normal"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            >
-              VINH VINH PHAT ONE MEMBER CO., LTD
-              <br />
-              Address : 359 Ap Chien Luoc Street, Warter 2, Binh Hung Hoa Ward,
-              Ho Chi Minh City
-              <br />
-              Factory : No. 2861, National Highway 1, Hamlet 3, Binh Chanh
-              Commune, Ho Chi Minh City
-              <br />
-              Tel: 0283.620.4978 Fax: 0283.620.4978
-              <br />
-              Made in Viet Nam
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td className="text-start">
-            Tên sản phẩm
-            <br />
-            品名
-          </td>
-          <td colSpan={3}>
-            <p
-              className={`${product.name.length < 10 ? 'text-base' : 'text-sm'} font-bold`}
-            >
-              {formatProductName(product.name)}
-            </p>
-          </td>
-          <td>CODE</td>
-          <td>
-            <p className="text-sm font-bold">{product.code}</p>
-          </td>
-        </tr>
-        <tr>
-          <td className="text-start">
-            Nguyên liệu
-            <br />
-            原材料
-          </td>
-          <td colSpan={3} className="text-sm">
-            <p> {product.material}</p>
-          </td>
-          <td>Màu sắc 色</td>
-          <td className="text-sm">
-            <p> {product.color}</p>
-          </td>
-        </tr>
-        <tr>
-          <td className="text-start">
-            Lotno
-            <br />
-            ロット No
-          </td>
-          <td colSpan={5} className="text-sm font-bold">
-            <div className="mx-1 flex items-center justify-between">
-              <p>A</p>
-              <p>-</p>
-              <p>{date.format('DDMMYYYY')}</p>
-              <p>-</p>
-              <p>{shift}</p>
-              <p>-</p>
-              <p>
-                {(() => {
-                  if (stamp === null) return '';
-                  return stamp.toString().padStart(3, '0');
-                })()}
-              </p>
-            </div>
-          </td>
-        </tr>
-        <tr className="h-8">
-          <td className="py-0 text-start text-[8px] leading-tight">
-            Mã vạch
-            <br />
-            バーコード
-          </td>
-          <td colSpan={5} className="px-0 py-0">
-            <div className="flex items-center justify-center px-0 py-0">
-              <Barcode
-                className="max-w-[180px]"
-                width={1.5}
-                height={30}
-                format="CODE128"
-                displayValue={false}
-                margin={2}
-                fontSize={0}
-                textMargin={0}
-                background="#FFFFFF"
-                lineColor="#000000"
-                value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
-                  if (stamp === null) return '000';
-                  return stamp.toString().padStart(3, '0');
-                })()}`}
+  const renderStampTable = (stamp: number | null) => {
+    const isProductNameLong = product.name.length > 22;
+
+    return (
+      <table
+        className={`has-barcode border border-black text-center text-[8.3px] ${getProductNamePrintClass(product.name)}`}
+      >
+        <colgroup>
+          <col className="w-[80px]" />
+          <col className={isProductNameLong ? 'w-[200px]' : 'w-[160px]'} />
+          <col className="w-[80px]" />
+          <col className="w-[50px]" />
+          <col className={isProductNameLong ? 'w-[30px]' : 'w-[50px]'} />
+          <col className={isProductNameLong ? 'w-[60px]' : 'w-[50px]'} />
+        </colgroup>
+        <tbody>
+          <tr>
+            <td>
+              <Image
+                src={logo}
+                alt="logo"
+                width={80}
+                preview={false}
+                title="VINH VINH PHAT ONE MEMBER CO.,LTD"
               />
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td className="text-start">
-            Số lượng
-            <br />
-            数量
-          </td>
-          <td colSpan={3}>
-            <p className="text-sm font-bold">{product.quanEntityBin}PCS</p>
-          </td>
-          <td colSpan={2}>
-            Kiểm tra (Xuất hàng)
-            <br />
-            検査 (出荷)
-          </td>
-        </tr>
-        <tr>
-          <td className="h-18 text-start">Mộc 合格印 200%</td>
-          <td colSpan={3}></td>
-          <td colSpan={2} rowSpan={2}>
-            <div className="mx-auto h-14 w-8 border print:text-black"></div>
-          </td>
-        </tr>
-        <tr>
-          <td className="py-1 text-start text-[9px] leading-tight">
-            Người kiểm 検査 200%
-          </td>
-          <td colSpan={3} className="text-start text-[9px]"></td>
-        </tr>
-        <tr>
-          <td className="text-[6px]">(Thời gian) 時間</td>
-          <td colSpan={5} className="pl-[17%] text-left text-[6px]">
-            {date.format('DD/MM/YYYY')} {shift == 1 ? '07:30' : '19:30'}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  );
+            </td>
+            <td colSpan={5}>
+              <div
+                className="w-auto text-left text-[6px] break-words whitespace-normal"
+                style={{ fontFamily: 'Arial, sans-serif' }}
+              >
+                VINH VINH PHAT ONE MEMBER CO., LTD
+                <br />
+                Address : 359 Ap Chien Luoc Street, Warter 2, Binh Hung Hoa
+                Ward, Ho Chi Minh City
+                <br />
+                Factory : No. 2861, National Highway 1, Hamlet 3, Binh Chanh
+                Commune, Ho Chi Minh City
+                <br />
+                Tel: 0283.620.4978 Fax: 0283.620.4978
+                <br />
+                Made in Viet Nam
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td className="text-start">
+              Tên sản phẩm
+              <br />
+              品名
+            </td>
+            <td colSpan={3} className="product-name-cell">
+              <p className="font-bold">{formatProductName(product.name)}</p>
+            </td>
+            <td>CODE</td>
+            <td>
+              <p className="text-sm font-bold">{product.code}</p>
+            </td>
+          </tr>
+          <tr className={isProductNameLong ? 'leading-tight' : ''}>
+            <td
+              className={`text-start ${isProductNameLong ? 'py-0 leading-none' : ''}`}
+            >
+              Nguyên liệu
+              {isProductNameLong ? (
+                <>
+                  {' '}
+                  <span className="text-[8px]">原材料</span>
+                </>
+              ) : (
+                <>
+                  <br />
+                  原材料
+                </>
+              )}
+            </td>
+            <td
+              colSpan={3}
+              className={isProductNameLong ? 'py-0 text-[13px]' : 'text-sm'}
+            >
+              <p className={isProductNameLong ? 'm-0' : ''}>
+                {' '}
+                {product.material}
+              </p>
+            </td>
+            <td className={isProductNameLong ? 'py-0 leading-none' : ''}>
+              Màu sắc 色
+            </td>
+            <td className={isProductNameLong ? 'py-0 text-[13px]' : 'text-sm'}>
+              <p className={isProductNameLong ? 'm-0' : ''}> {product.color}</p>
+            </td>
+          </tr>
+          <tr>
+            <td className="text-start">
+              Lotno
+              <br />
+              ロット No
+            </td>
+            <td colSpan={5} className="text-sm font-bold">
+              <div className="mx-1 flex items-center justify-between">
+                <p>A</p>
+                <p>-</p>
+                <p>{date.format('DDMMYYYY')}</p>
+                <p>-</p>
+                <p>{shift}</p>
+                <p>-</p>
+                <p>
+                  {(() => {
+                    if (stamp === null) return '';
+                    return stamp.toString().padStart(3, '0');
+                  })()}
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr className="h-8">
+            <td className="py-0 text-start text-[8px] leading-tight">
+              Mã vạch
+              <br />
+              バーコード
+            </td>
+            <td colSpan={5} className="px-0 py-0">
+              <div className="flex items-center justify-center px-0 py-0">
+                <Barcode
+                  className="max-w-[180px]"
+                  width={1.5}
+                  height={30}
+                  format="CODE128"
+                  displayValue={false}
+                  margin={2}
+                  fontSize={0}
+                  textMargin={0}
+                  background="#FFFFFF"
+                  lineColor="#000000"
+                  value={`${product.id}a${date.format('DDMMYYYY')}${shift}${(() => {
+                    if (stamp === null) return '000';
+                    return stamp.toString().padStart(3, '0');
+                  })()}`}
+                />
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td className="text-start">
+              Số lượng
+              <br />
+              数量
+            </td>
+            <td colSpan={3}>
+              <p className="text-sm font-bold">{product.quanEntityBin}PCS</p>
+            </td>
+            <td colSpan={2}>
+              Kiểm tra (Xuất hàng)
+              <br />
+              検査 (出荷)
+            </td>
+          </tr>
+          <tr>
+            <td className="h-18 text-start">Mộc 合格印 200%</td>
+            <td colSpan={3}></td>
+            <td colSpan={2} rowSpan={2}>
+              <div className="mx-auto h-14 w-8 border print:text-black"></div>
+            </td>
+          </tr>
+          <tr>
+            <td className="py-1 text-start text-[9px] leading-tight">
+              Người kiểm 検査 200%
+            </td>
+            <td colSpan={3} className="text-start text-[9px]"></td>
+          </tr>
+          <tr>
+            <td className="text-[6px]">(Thời gian) 時間</td>
+            <td colSpan={5} className="pl-[17%] text-left text-[6px]">
+              {date.format('DD/MM/YYYY')} {shift == 1 ? '07:30' : '19:30'}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    );
+  };
 
   return (
     <>
@@ -391,12 +415,35 @@ export const PrintBoxStamp = ({
         {`
           .box-print-container td {
             border: 1px solid #232d42 !important;
-            // padding: 2px !important;
           }
           .box-print-container table {
             border-collapse: collapse !important;
             ${printMode === 'single' ? 'width: 98mm !important; height: 78mm !important;' : ''}
           }
+
+          /* Product name cell - single line, auto-fit */
+          .product-name-cell {
+            max-height: 2.8em;
+            overflow: hidden;
+            line-height: 1.2;
+            vertical-align: middle;
+            white-space: nowrap !important;
+            padding: 1px 2px !important;
+          }
+          .product-name-cell p {
+            margin: 0;
+            white-space: nowrap !important;
+          }
+
+          /* Dynamic font sizes for product name (apply to both UI preview and print) */
+          .print-name-xxl .product-name-cell p { font-size: 26px !important; line-height: 1.1 !important; }
+          .print-name-xl .product-name-cell p { font-size: 22px !important; line-height: 1.1 !important; }
+          .print-name-lg .product-name-cell p { font-size: 18px !important; line-height: 1.1 !important; }
+          .print-name-md .product-name-cell p { font-size: 16px !important; line-height: 1.15 !important; }
+          .print-name-sm .product-name-cell p { font-size: 14px !important; line-height: 1.15 !important; }
+          .print-name-xs .product-name-cell p { font-size: 12px !important; line-height: 1.2 !important; }
+          .print-name-xxs .product-name-cell p { font-size: 10px !important; line-height: 1.2 !important; }
+          .print-name-xxxs .product-name-cell p { font-size: 9px !important; line-height: 1.2 !important; }
 
           @media print {
             .box-print-container {
@@ -408,6 +455,7 @@ export const PrintBoxStamp = ({
               size: ${printMode === 'single' ? '100mm 80mm' : 'A4 landscape'} !important;
               margin: 0 !important;
             }
+
             ${
               printMode === 'single'
                 ? `
