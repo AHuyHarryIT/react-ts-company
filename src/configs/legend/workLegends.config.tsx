@@ -4,7 +4,7 @@ export const workLegends = {
   N: {
     label: 'Ca ngày',
     icon: (
-      <Tag className="font-bold" color="blue-inverse">
+      <Tag className="!m-0 font-bold" color="blue-inverse">
         N
       </Tag>
     )
@@ -12,7 +12,7 @@ export const workLegends = {
   D: {
     label: 'Ca đêm',
     icon: (
-      <Tag className="font-bold" color="#000">
+      <Tag className="!m-0 font-bold" color="#000">
         D
       </Tag>
     )
@@ -20,7 +20,7 @@ export const workLegends = {
   X: {
     label: 'Nghỉ',
     icon: (
-      <Tag className="font-bold" color="red-inverse">
+      <Tag className="!m-0 font-bold" color="red-inverse">
         X
       </Tag>
     )
@@ -28,7 +28,7 @@ export const workLegends = {
   TC: {
     label: 'Tăng cường đêm',
     icon: (
-      <Tag className="font-bold" color="red-inverse">
+      <Tag className="!m-0 font-bold" color="red-inverse">
         TC
       </Tag>
     )
@@ -36,7 +36,7 @@ export const workLegends = {
   LN: {
     label: 'Làm thêm ca ngày',
     icon: (
-      <Tag className="font-bold" color="red-inverse">
+      <Tag className="!m-0 font-bold" color="red-inverse">
         LN
       </Tag>
     )
@@ -44,7 +44,7 @@ export const workLegends = {
   VS: {
     label: 'Vệ sinh',
     icon: (
-      <Tag className="font-bold" color="yellow-inverse">
+      <Tag className="!m-0 font-bold" color="yellow-inverse">
         <span className="text-black">VS</span>
       </Tag>
     )

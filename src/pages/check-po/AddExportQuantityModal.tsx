@@ -22,6 +22,8 @@ import {
 } from 'antd';
 import type { TableColumnsType } from 'antd';
 import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useState, useCallback, useMemo } from 'react';
 import { FaTruck } from 'react-icons/fa6';
 import {
@@ -33,6 +35,8 @@ import {
   FaFilePdf
 } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
+
+dayjs.extend(customParseFormat);
 
 // Lazy-load pdfjs-dist only when needed (avoids Vite worker bundling issues)
 let _pdfjsLib: typeof import('pdfjs-dist') | null = null;
@@ -100,6 +104,216 @@ const tryMatchProduct = (
   );
 };
 
+// ── Date extraction helpers ───────────────────────────────────
+const DATE_FORMATS = [
+  'DD/MM/YYYY',
+  'D/M/YYYY',
+  'YYYY-MM-DD',
+  'YYYY/MM/DD',
+  'DD-MM-YYYY',
+  'DD.MM.YYYY',
+  'MM/DD/YYYY',
+  'D/M/YY',
+  'DD/MM/YY'
+];
+
+// Tier-1: Delivery-specific keywords — ALWAYS checked first across the entire file
+const DELIVERY_KEYWORDS = [
+  'delivery date',
+  'deliverydate',
+  'delivery request',
+  'deliveryrequest',
+  'ship date',
+  'shipdate',
+  'ngày xuất',
+  'ngay xuat'
+];
+
+// Tier-2: Generic date label keywords — checked only when no delivery keyword found
+const DATE_LABEL_KEYWORDS = [
+  ...DELIVERY_KEYWORDS,
+  'ngày',
+  'ngay',
+  'date',
+  'ngày tháng'
+];
+
+/** Try to parse a cell value (string or Date object) into a Dayjs */
+const tryCellAsDate = (cell: unknown): Dayjs | null => {
+  if (!cell) return null;
+  if (cell instanceof Date && !isNaN(cell.getTime())) {
+    const d = dayjs(cell);
+    return d.isValid() && d.year() > 2000 && d.year() < 2100 ? d : null;
+  }
+  const s = String(cell).trim();
+  if (!s || s.length < 6) return null;
+  // Must contain at least one separator to be a date string
+  if (!/[/.-]/.test(s) && !/\d{8}/.test(s)) return null;
+  for (const fmt of DATE_FORMATS) {
+    const d = dayjs(s, fmt, true);
+    if (d.isValid() && d.year() > 2000 && d.year() < 2100) return d;
+  }
+  return null;
+};
+
+/**
+ * Try to extract a date from a raw date-like string using regex.
+ * Handles: dd/mm/yyyy, yyyy-mm-dd, yyyy/m/d (non-padded), etc.
+ */
+const extractDateFromString = (text: string): Dayjs | null => {
+  // Try Vietnamese long format
+  const vnLong = text.match(
+    /ng[aà]y\s*(\d{1,2})\s*th[aá]ng\s*(\d{1,2})\s*n[aă]m\s*(\d{4})/i
+  );
+  if (vnLong) {
+    const d = dayjs(`${vnLong[1]}/${vnLong[2]}/${vnLong[3]}`, 'D/M/YYYY', true);
+    if (d.isValid() && d.year() > 2000 && d.year() < 2100) return d;
+  }
+  // YYYY-first: "2026/03/28", "2026-03-28", "2026/3/20" (non-padded month/day)
+  // Run BEFORE dd/mm regex. Use captured groups + padStart for zero-padding.
+  const isoRe = /(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/g;
+  for (const m of text.matchAll(isoRe)) {
+    const norm = `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+    const d = dayjs(norm, 'YYYY-MM-DD', true);
+    if (d.isValid() && d.year() > 2000 && d.year() < 2100) return d;
+  }
+  // dd/mm/yyyy and similar short patterns — normalize padding before parsing
+  const shortRe = /(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})/g;
+  for (const m of text.matchAll(shortRe)) {
+    const raw = `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`;
+    for (const fmt of DATE_FORMATS) {
+      const d = dayjs(raw, fmt, true);
+      if (d.isValid() && d.year() > 2000 && d.year() < 2100) return d;
+    }
+  }
+  return null;
+};
+
+/**
+ * Smart date extraction from a 2-D grid of cells.
+ *
+ * Priority (highest to lowest):
+ *   1. Rows with DELIVERY DATE / DELIVERY REQUEST keywords  ← always checked first
+ *   2. Rows with other generic date label keywords (ngày, date...)
+ *   3. General row scan — fallback for unlabelled dates / PDF fragmentation
+ *   4. Individual cell scan (skip pure integers)
+ */
+const extractDateFromRows = (rows: string[][]): Dayjs | null => {
+  // ── Tier 1: DELIVERY-specific keywords (top priority, scan entire file) ──────
+  // "DELIVERY DATE : 2026/03/28" must beat any other date found elsewhere.
+  for (let r = 0; r < rows.length; r++) {
+    const rowText = rows[r].join(' ');
+    const rowLower = rowText.toLowerCase();
+    const hasDelivery = DELIVERY_KEYWORDS.some((kw) => rowLower.includes(kw));
+    if (!hasDelivery) continue;
+
+    // Inline: "DELIVERY DATE : 2026/03/28" all in one cell/row
+    const d = extractDateFromString(rowText);
+    if (d) return d;
+
+    // Adjacent cell: label in one cell, date in next/below cell
+    for (let c = 0; c < rows[r].length; c++) {
+      const cell = String(rows[r][c] ?? '')
+        .trim()
+        .toLowerCase();
+      if (DELIVERY_KEYWORDS.some((kw) => cell.includes(kw))) {
+        const next = rows[r]?.[c + 1];
+        if (next) {
+          const d2 = tryCellAsDate(next);
+          if (d2) return d2;
+        }
+        const below = rows[r + 1]?.[c];
+        if (below) {
+          const d2 = tryCellAsDate(below);
+          if (d2) return d2;
+        }
+      }
+    }
+  }
+
+  // ── Tier 2: Generic date label keywords (ngày, date...) ─────────────────────────
+  for (let r = 0; r < rows.length; r++) {
+    const rowText = rows[r].join(' ');
+    const rowLower = rowText.toLowerCase();
+    const hasLabel = DATE_LABEL_KEYWORDS.some((kw) => rowLower.includes(kw));
+    if (!hasLabel) continue;
+
+    const d = extractDateFromString(rowText);
+    if (d) return d;
+
+    for (let c = 0; c < rows[r].length; c++) {
+      const cell = String(rows[r][c] ?? '')
+        .trim()
+        .toLowerCase();
+      if (DATE_LABEL_KEYWORDS.some((kw) => cell.includes(kw))) {
+        const next = rows[r]?.[c + 1];
+        if (next) {
+          const d2 = tryCellAsDate(next);
+          if (d2) return d2;
+        }
+        const below = rows[r + 1]?.[c];
+        if (below) {
+          const d2 = tryCellAsDate(below);
+          if (d2) return d2;
+        }
+      }
+    }
+  }
+
+  // ── Tier 3: General scan — join row text, for unlabelled dates & PDF fragments ─
+  for (const row of rows) {
+    const rowText = row.join(' ');
+    const d = extractDateFromString(rowText);
+    if (d) return d;
+  }
+
+  // ── Tier 4: Individual cell scan, skip pure integers ─────────────────────────
+  for (const row of rows) {
+    for (const cell of row) {
+      const s = String(cell ?? '').trim();
+      if (!s || /^\d+$/.test(s)) continue;
+      const d = tryCellAsDate(s);
+      if (d) return d;
+    }
+  }
+  return null;
+};
+
+/** Scan raw worksheet cells (Date type cells from xlxs) */
+const extractDateFromWorksheet = (ws: XLSX.WorkSheet): Dayjs | null => {
+  const ref = ws['!ref'];
+  if (!ref) return null;
+  const range = XLSX.utils.decode_range(ref);
+  for (let R = range.s.r; R <= range.e.r; R++) {
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const addr = XLSX.utils.encode_cell({ r: R, c: C });
+      const cell = ws[addr];
+      if (!cell) continue;
+      // Excel date cell (type='d')
+      if (cell.t === 'd' && cell.v instanceof Date) {
+        const d = tryCellAsDate(cell.v);
+        if (d) return d;
+      }
+    }
+  }
+  return null;
+};
+
+/** Last-resort: try extracting date from a filename like "...2026-04-01..." */
+const extractDateFromFilename = (filename: string): Dayjs | null => {
+  const m =
+    filename.match(/(\d{4})[-_](\d{2})[-_](\d{2})/) ??
+    filename.match(/(\d{2})[-_](\d{2})[-_](\d{4})/);
+  if (!m) return null;
+  // Try YYYY-MM-DD
+  const d1 = dayjs(`${m[1]}-${m[2]}-${m[3]}`, 'YYYY-MM-DD', true);
+  if (d1.isValid() && d1.year() > 2000) return d1;
+  // Try DD-MM-YYYY
+  const d2 = dayjs(`${m[1]}-${m[2]}-${m[3]}`, 'DD-MM-YYYY', true);
+  if (d2.isValid() && d2.year() > 2000) return d2;
+  return null;
+};
+
 // ── Component ────────────────────────────────────────────────
 export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
   open,
@@ -164,27 +378,112 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
       )[0][0];
       const productRows = colMatches.get(productCol)!;
 
-      // Step 2: Find quantity column (highest SUM)
+      // Step 2a: Try header-keyword detection first (most reliable)
+      // Quantity header keywords (Vietnamese + English)
+      const QTY_KEYWORDS = [
+        'sl',
+        'soluong',
+        'sốlượng',
+        'quantity',
+        'qty',
+        'pcs',
+        'số lượng',
+        'solg',
+        'amount'
+      ];
       let bestQtyCol = -1;
-      let bestSum = -1;
 
-      for (let col = 0; col < maxCols; col++) {
-        if (col === productCol) continue;
-        let sum = 0;
-        let numericCount = 0;
-
-        for (const pr of productRows) {
-          const raw = String(rows[pr.rowIdx]?.[col] ?? '').trim();
-          if (isNumeric(raw)) {
-            numericCount++;
-            sum += Math.abs(parseNumber(raw));
+      // Find the header row = closest non-empty row above first product row
+      const firstProductRowIdx = Math.min(
+        ...productRows.map((pr) => pr.rowIdx)
+      );
+      for (
+        let hr = firstProductRowIdx - 1;
+        hr >= Math.max(0, firstProductRowIdx - 5) && bestQtyCol === -1;
+        hr--
+      ) {
+        const headerRow = rows[hr];
+        if (!headerRow) continue;
+        for (let col = 0; col < headerRow.length; col++) {
+          const h = normalize(headerRow[col]);
+          if (
+            h &&
+            QTY_KEYWORDS.some(
+              (kw) => h === normalize(kw) || h.includes(normalize(kw))
+            )
+          ) {
+            bestQtyCol = col;
+            break;
           }
         }
+      }
 
-        if (numericCount < productRows.length * 0.3) continue;
-        if (sum > bestSum || (sum === bestSum && col > bestQtyCol)) {
-          bestSum = sum;
-          bestQtyCol = col;
+      // Step 2b: Stats-based detection when no header keyword found
+      if (bestQtyCol === -1) {
+        interface ColStats {
+          col: number;
+          sum: number;
+          mean: number;
+          min: number;
+          max: number;
+          cv: number;
+          isSequential: boolean; // values form a sequence (likely running index / code)
+          numericCount: number;
+        }
+        const colStats: ColStats[] = [];
+
+        for (let col = 0; col < maxCols; col++) {
+          if (col === productCol) continue;
+          const values: number[] = [];
+
+          for (const pr of productRows) {
+            const raw = String(rows[pr.rowIdx]?.[col] ?? '').trim();
+            if (isNumeric(raw)) values.push(Math.abs(parseNumber(raw)));
+          }
+
+          if (values.length < productRows.length * 0.3) continue;
+
+          const sorted = [...values].sort((a, b) => a - b);
+          const sum = values.reduce((a, b) => a + b, 0);
+          const mean = sum / values.length;
+          const min = sorted[0];
+          const max = sorted[sorted.length - 1];
+          const variance =
+            values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length;
+          const cv = mean > 0 ? Math.sqrt(variance) / mean : 0;
+
+          // Detect sequential columns: range ≈ count (e.g. 16707,16708,16709,...)
+          // A true sequential run has max - min ≈ count - 1
+          const isSequential =
+            values.length >= 3 && max - min <= values.length + 2 && cv < 0.05;
+
+          colStats.push({
+            col,
+            sum,
+            mean,
+            min,
+            max,
+            cv,
+            isSequential,
+            numericCount: values.length
+          });
+        }
+
+        // Filter out obvious code/index columns
+        const isCodeLike = (s: ColStats) =>
+          s.isSequential || // sequential run → row index / serial code
+          (s.cv < 0.05 && s.mean > 500) || // nearly uniform & large → static code
+          s.max > 100_000; // impossibly large single quantity
+
+        const candidateCols = colStats.filter((s) => !isCodeLike(s));
+
+        if (candidateCols.length > 0) {
+          // Among real candidates: pick highest sum (most total quantity)
+          bestQtyCol = candidateCols.sort((a, b) => b.sum - a.sum)[0].col;
+        } else if (colStats.length > 0) {
+          // All columns look like codes — pick the one with SMALLEST mean
+          // (real quantities are typically numerically smaller than product codes)
+          bestQtyCol = colStats.sort((a, b) => a.mean - b.mean)[0].col;
         }
       }
 
@@ -306,11 +605,15 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         const products = parseSheet(rows);
         if (products.length === 0) continue;
 
+        // Priority: smart row scan → filename
+        const pdfAutoDate =
+          extractDateFromRows(rows) ?? extractDateFromFilename(file.name);
+
         newBatches.push({
           id: `${Date.now()}-pdf-p${pageNum}-${Math.random().toString(36).slice(2, 7)}`,
           fileName: file.name,
           sheetName: pdf.numPages > 1 ? `Trang ${pageNum}` : '',
-          date: null,
+          date: pdfAutoDate,
           products
         });
       }
@@ -350,12 +653,22 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
 
           for (const sheetName of wb.SheetNames) {
             const ws = wb.Sheets[sheetName];
+
+            // Try to extract date from the worksheet before converting to string[][]
+            const autoDate = extractDateFromWorksheet(ws);
+
             const rows: string[][] = XLSX.utils.sheet_to_json(ws, {
               header: 1,
               defval: '',
               blankrows: false,
               raw: false
             }) as string[][];
+
+            // Priority: worksheet Date cell → smart row scan → filename
+            const finalDate =
+              autoDate ??
+              extractDateFromRows(rows) ??
+              extractDateFromFilename(file.name);
 
             const products = parseSheet(rows);
             if (products.length === 0) continue;
@@ -364,7 +677,7 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
               id: `${Date.now()}-${sheetName}-${Math.random().toString(36).slice(2, 7)}`,
               fileName: file.name,
               sheetName: wb.SheetNames.length > 1 ? sheetName : '',
-              date: null,
+              date: finalDate,
               products
             });
           }
@@ -408,7 +721,9 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
 
     const missingDate = batches.filter((b) => !b.date);
     if (missingDate.length > 0) {
-      message.warning(`Còn ${missingDate.length} bảng chưa chọn ngày!`);
+      message.warning(
+        `Còn ${missingDate.length} bảng chưa xác định được ngày — vui lòng chọn thủ công!`
+      );
       return;
     }
 

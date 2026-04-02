@@ -45,18 +45,14 @@ type LoginSearch = {
  * 1. Chrome/Edge (Credential Management API)
  *    → navigator.credentials.store() then redirect.
  *
- * 2. Safari desktop & iOS  (NO Credential Management API)
- *    → Safari needs to observe a **real page navigation** from a form
- *      containing username + password inputs with correct autocomplete
- *      attributes. Submitting into an iframe does NOT work — Safari
- *      explicitly ignores iframe-targeted form submissions for its
- *      password-save heuristic.
- *    → We create an off-screen form that submits via POST directly to
- *      the redirect URL (no iframe target). This causes a full page
- *      navigation, which Safari interprets as a login flow completion
- *      and shows the "Save Password?" prompt.
+ * 2. Safari desktop & iOS (no Credential Management API)
+ *    → Safari detects password-save more reliably when the submission
+ *      happens on a real, user-visible login form (not a detached/hidden form).
+ *    → Re-submit the existing login form with username/password + proper
+ *      autocomplete attributes to force a main-window navigation.
  *
- * 3. Firefox — same hidden-form-with-navigation approach works.
+ * 3. Firefox
+ *    → same real-form submit fallback also works.
  */
 const triggerBrowserSavePassword = (
   username: string,
@@ -81,42 +77,37 @@ const triggerBrowserSavePassword = (
     return;
   }
 
-  // --- Safari / Firefox fallback: real form submit → page navigation ---
-  // Safari requires the form to cause a MAIN-WINDOW navigation (no iframe).
-  // We use POST so credentials never appear in the URL / browser history.
-  // Since the target is a SPA client-side route, the server serves the same
-  // index.html for both GET and POST, so the page loads correctly.
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = redirectTo;
-  // Positioned off-screen but NOT hidden (display:none / visibility:hidden
-  // causes Safari to skip it).
-  form.style.cssText =
-    'position:fixed;top:-1000px;left:-1000px;width:1px;height:1px;overflow:hidden;';
+  // --- Safari / Firefox fallback: submit existing visible form ---
+  const existingForm = document.getElementById(
+    'auth-login-form'
+  ) as HTMLFormElement | null;
 
-  const uInput = document.createElement('input');
-  uInput.type = 'text';
-  uInput.name = 'username';
-  uInput.autocomplete = 'username';
-  uInput.value = username;
+  if (existingForm) {
+    const usernameInput = existingForm.querySelector(
+      'input[name="username"]'
+    ) as HTMLInputElement | null;
+    const passwordInput = existingForm.querySelector(
+      'input[name="password"]'
+    ) as HTMLInputElement | null;
 
-  const pInput = document.createElement('input');
-  pInput.type = 'password';
-  pInput.name = 'password';
-  pInput.autocomplete = 'current-password';
-  pInput.value = password;
+    if (usernameInput) {
+      usernameInput.value = username;
+      usernameInput.autocomplete = 'username';
+    }
 
-  const submitBtn = document.createElement('input');
-  submitBtn.type = 'submit';
-  submitBtn.value = 'Login';
+    if (passwordInput) {
+      passwordInput.value = password;
+      passwordInput.autocomplete = 'current-password';
+    }
 
-  form.appendChild(uInput);
-  form.appendChild(pInput);
-  form.appendChild(submitBtn);
-  document.body.appendChild(form);
+    existingForm.method = 'POST';
+    existingForm.action = redirectTo;
+    existingForm.submit();
+    return;
+  }
 
-  // Submit triggers a full navigation → Safari detects credentials
-  form.submit();
+  // Last fallback
+  window.location.href = redirectTo;
 };
 
 export const Route = createFileRoute('/(auth)/login')({
@@ -269,6 +260,7 @@ function RouteComponent() {
         <Form
           form={form}
           name="auth-login"
+          id="auth-login-form"
           onFinish={onFinish}
           layout="vertical"
           autoComplete="on"
@@ -282,6 +274,7 @@ function RouteComponent() {
           >
             <Input
               id="username"
+              name="username"
               placeholder="Số điện thoại hoặc tên đăng nhập"
               prefix={<FaRegUser className="text-lg text-black/30" />}
               disabled={isPending}
@@ -297,6 +290,7 @@ function RouteComponent() {
           >
             <Input.Password
               id="current-password"
+              name="password"
               placeholder="Mật khẩu"
               prefix={<IoLockClosedOutline className="text-lg text-black/30" />}
               disabled={isPending}

@@ -1,7 +1,9 @@
-import { Route } from '@routes/_authenticated/work-schedules/$id';
+import { useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
+  Drawer,
   Input,
+  Select,
   Spin,
   Table,
   TableColumnsType,
@@ -11,14 +13,15 @@ import {
   Tag
 } from 'antd';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import {
   FaCalendarCheck,
   FaUtensils,
   FaTrashAlt,
   FaFemale,
   FaMale,
-  FaSearch
+  FaSearch,
+  FaList
 } from 'react-icons/fa';
 
 import { workLegends } from '@/configs/legend/workLegends.config';
@@ -29,6 +32,7 @@ import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { useCrudList } from '@hooks/useCrudList';
 import { scheduleDetailService } from '@services/ScheduleDetailService';
+import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
 import { scheduleService } from '@services/workScheduleService';
 import { countDayOfWeekInMonth } from '@utils/countDayOfWeekInMonth';
 
@@ -54,8 +58,41 @@ interface HNHCGroupedData {
   data: HnhcTableType[];
 }
 
-export default function Detail() {
-  const { id } = Route.useParams();
+export function ScheduleDetailDrawer({
+  open,
+  onClose,
+  scheduleId
+}: {
+  open: boolean;
+  onClose: () => void;
+  scheduleId?: string | null;
+}) {
+  return (
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title="Chi tiết lịch làm việc"
+      width="100%"
+      placement="right"
+      destroyOnClose
+      styles={{ body: { padding: '16px' } }}
+    >
+      {scheduleId && <Detail scheduleId={scheduleId} isDrawer />}
+    </Drawer>
+  );
+}
+
+export default function Detail({
+  scheduleId,
+  isDrawer
+}: {
+  scheduleId?: string | null;
+  isDrawer?: boolean;
+}) {
+  const routeParams = useParams({ strict: false });
+  const id = (scheduleId ||
+    (routeParams as Record<string, string>)?.id) as string;
+
   const [params, setParams] = useState<QueryParams>();
   const [maxDay, setMaxDay] = useState<number>(0);
   const [totalSaturdays, setTotalSaturdays] = useState<number>(0);
@@ -64,9 +101,11 @@ export default function Detail() {
   const { data: schedule, isLoading: isLoadingSchedule } = useQuery({
     queryKey: ['schedule', id],
     queryFn: async () => {
-      const response = await scheduleService.get(id);
+      if (!id) return null;
+      const response = await scheduleService.get(id as string);
       return response as ScheduleType;
-    }
+    },
+    enabled: !!id
   });
 
   const { data: scheduleDetails, queryResult } = useCrudList({
@@ -76,11 +115,22 @@ export default function Detail() {
       limit: 0,
       include: ['employees', 'schedules', 'employees.calendarCategory'],
       sort: 'date',
-      'filter[schedule_id]': id,
+      'filter[schedule_id]': id || '',
       'fields[employees]': 'id,name,calendar_category_id',
       ...params
-    }
+    },
+    enabled: !!id
   });
+
+  const { data: categories } = useQuery({
+    queryKey: ['workScheduleCategories', { limit: 0 }],
+    queryFn: () => fetchWorkScheduleCategories({ limit: 0 })
+  });
+
+  const categoryOptions = categories?.workScheduleCategories.map((item) => ({
+    label: item.name,
+    value: item.id
+  }));
 
   const employees = scheduleDetails.reduce(
     (acc: { [key: string]: typeof scheduleDetails }, item) => {
@@ -94,26 +144,19 @@ export default function Detail() {
     {}
   );
 
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleSearch = (value: string, type: 'name' | 'code') => {
-    setParams((prev) => ({
-      ...prev,
-      'filter[employees.id]': undefined,
-      'filter[employee.name]': undefined
-    }));
-    if (!value) {
-      return;
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
-    if (type === 'name') {
+    searchTimeoutRef.current = setTimeout(() => {
       setParams((prev) => ({
         ...prev,
-        'filter[employee.name]': value ? value : undefined
+        'filter[employees.id]': type === 'code' && value ? value : undefined,
+        'filter[employees.name]': type === 'name' && value ? value : undefined
       }));
-    } else if (type === 'code') {
-      setParams((prev) => ({
-        ...prev,
-        'filter[employees.id]': value ? value : undefined
-      }));
-    }
+    }, 400);
   };
 
   useEffect(() => {
@@ -172,93 +215,137 @@ export default function Detail() {
 
   const columnsDefault = [
     {
-      title: 'Mã NV',
-      dataIndex: 'employee_id',
-      render: (value: string) => (
-        <Tag color="blue" className="!font-mono !text-xs">
-          {value}
-        </Tag>
-      )
-    },
-    {
-      title: 'Họ và tên',
-      dataIndex: 'employee_name',
+      title: 'Nhân viên',
+      key: 'employee',
       fixed: 'left',
-      render: (value: string) => (
-        <span className="font-medium text-gray-800 dark:text-white/90">
-          {value || (
-            <span className="text-gray-400 italic">Chưa có thông tin</span>
-          )}
-        </span>
+      width: 160,
+      render: (
+        _: unknown,
+        record: { employee_id: string; employee_name: string }
+      ) => (
+        <div className="flex w-full flex-col gap-1">
+          <span className="text-[13px] leading-snug font-medium text-gray-800 dark:text-white/90">
+            {record.employee_name || (
+              <span className="text-gray-400 italic">Chưa có</span>
+            )}
+          </span>
+          <div>
+            <Tag color="blue" className="!m-0 !font-mono !text-[10px]">
+              {record.employee_id}
+            </Tag>
+          </div>
+        </div>
       )
     }
   ];
   const columnsHNHC: TableColumnsType<HnhcTableType> = [
     ...(columnsDefault as TableColumnsType<HnhcTableType>),
-    ...Array.from({ length: maxDay }).map((_, index) => ({
-      title: () => {
-        const day = dayjs(currentDate).startOf('month').add(index, 'day');
+    ...Array.from({ length: maxDay }).map((_, index) => {
+      const day = dayjs(currentDate).startOf('month').add(index, 'day');
+      const isToday = day.isSame(dayjs(), 'day');
 
-        return (
-          <div className="flex flex-col items-center">
+      return {
+        title: () => (
+          <div
+            className={`flex flex-col items-center justify-center ${isToday ? 'text-[13px] font-black tracking-wide text-blue-700 dark:text-blue-300' : ''}`}
+          >
             <span className="text-center">
               {day.get('date').toString().padStart(2, '0')}
             </span>
-            <span className="text-center">{day.format('ddd')}</span>
+            <span
+              className={`text-center ${isToday ? 'text-[11px] uppercase' : 'text-[10px]'}`}
+            >
+              {day.format('ddd')}
+            </span>
           </div>
-        );
-      },
-      dataIndex: 'day' + (index + 1),
-      key: 'day' + (index + 1),
-      render: (value: string) => {
-        if (!value) return null;
-        return (
-          <center>
-            {workLegends[value as keyof typeof workLegends]?.icon || value}
-          </center>
-        );
-      }
-    }))
+        ),
+        dataIndex: 'day' + (index + 1),
+        key: 'day' + (index + 1),
+        align: 'center' as const,
+        className: isToday
+          ? '!bg-blue-100/70 dark:!bg-blue-900/40 !border-l-2 !border-r-2 !border-blue-400'
+          : '',
+        render: (value: string) => {
+          if (!value) return null;
+          return (
+            <div className="flex w-full items-center justify-center">
+              {workLegends[value as keyof typeof workLegends]?.icon || value}
+            </div>
+          );
+        }
+      };
+    })
   ];
   const columnsWC: TableProps<WcTableType>['columns'] = [
     ...(columnsDefault as TableColumnsType<WcTableType>),
-    ...Array.from({ length: maxDay }).map((_, index) => ({
-      title: () => {
-        const day = dayjs(currentDate).startOf('month').add(index, 'day');
+    ...Array.from({ length: maxDay }).map((_, index) => {
+      const day = dayjs(currentDate).startOf('month').add(index, 'day');
+      const isToday = day.isSame(dayjs(), 'day');
 
-        return (
-          <div className="flex flex-col items-center">
+      return {
+        title: () => (
+          <div
+            className={`flex flex-col items-center justify-center ${isToday ? 'text-[13px] font-black tracking-wide text-blue-700 dark:text-blue-300' : ''}`}
+          >
             <span className="text-center">
               {day.get('date').toString().padStart(2, '0')}
             </span>
-            <span className="text-center">{day.format('ddd')}</span>
+            <span
+              className={`text-center ${isToday ? 'text-[11px] uppercase' : 'text-[10px]'}`}
+            >
+              {day.format('ddd')}
+            </span>
           </div>
-        );
-      },
-      dataIndex: 'day' + (index + 1),
-      render: (value: boolean) => {
-        if (!value) return null;
-        return <center>{value && workLegends['VS'].icon}</center>;
-      }
-    }))
+        ),
+        dataIndex: 'day' + (index + 1),
+        align: 'center' as const,
+        className: isToday
+          ? '!bg-blue-100/70 dark:!bg-blue-900/40 !border-l-2 !border-r-2 !border-blue-400'
+          : '',
+        render: (value: boolean) => {
+          if (!value) return null;
+          return (
+            <div className="flex w-full items-center justify-center">
+              {value && workLegends['VS'].icon}
+            </div>
+          );
+        }
+      };
+    })
   ];
   const columnsTrashWC: TableProps<WcTableType>['columns'] = [
     ...(columnsDefault as TableColumnsType<WcTableType>),
     ...Array.from({ length: totalSaturdays }).map((_, index) => {
       const day = dayjs(currentDate).startOf('month').add(index, 'week').day(6);
+      const isToday = day.isSame(dayjs(), 'day');
+
       return {
         title: () => (
-          <div className="flex flex-col items-center">
+          <div
+            className={`flex flex-col items-center justify-center ${isToday ? 'text-[13px] font-black tracking-wide text-blue-700 dark:text-blue-300' : ''}`}
+          >
             <span className="text-center">
               {day.get('date').toString().padStart(2, '0')}
             </span>
-            <span className="text-center">{day.format('ddd')}</span>
+            <span
+              className={`text-center ${isToday ? 'text-[11px] uppercase' : 'text-[10px]'}`}
+            >
+              {day.format('ddd')}
+            </span>
           </div>
         ),
         dataIndex: 'day' + day.date(),
+        align: 'center' as const,
+        className: isToday
+          ? '!bg-blue-100/70 dark:!bg-blue-900/40 !border-l-2 !border-r-2 !border-blue-400'
+          : '',
         render: (value: boolean) => {
           if (!value) return null;
-          return <center>{value && (workLegends['VS'].icon || value)}</center>;
+          return (
+            <div className="flex w-full items-center justify-center">
+              {value && (workLegends['VS'].icon || value)}
+            </div>
+          );
         }
       };
     })
@@ -497,71 +584,102 @@ export default function Detail() {
     }
   ];
 
+  const mainContent = (
+    <div className={isDrawer ? 'flex flex-col gap-6' : 'space-y-5'}>
+      {/* ── Legends ──────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+        {Object.entries(workLegends).map(([key, legend]) => (
+          <div
+            key={key}
+            className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800"
+          >
+            {legend.icon}
+            <span className="text-gray-600 dark:text-gray-400">
+              {legend.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Filter Bar ──────────────────────────────────────── */}
+      <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <FaList className="mr-1 inline-block text-gray-400" />
+              Nhóm danh mục
+            </label>
+            <Select
+              options={categoryOptions}
+              placeholder="Chọn danh mục..."
+              className="w-full"
+              allowClear
+              onSelect={(value) => {
+                setParams((prev) => ({
+                  ...prev,
+                  'filter[employees.calendar_category_id]': value
+                }));
+              }}
+              onClear={() => {
+                setParams((prev) => ({
+                  ...prev,
+                  'filter[employees.calendar_category_id]': undefined
+                }));
+              }}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <FaSearch className="mr-1 inline-block text-gray-400" />
+              Tìm kiếm nhân viên
+            </label>
+            <Input.Search
+              placeholder="Mã hoặc tên nhân viên..."
+              allowClear
+              className="!rounded-lg"
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                if (/^\d+$/.test(inputValue)) {
+                  handleSearch(inputValue, 'code');
+                } else {
+                  handleSearch(inputValue, 'name');
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tabs ────────────────────────────────────────────── */}
+      <Spin tip="Đang tải..." spinning={queryResult.isLoading}>
+        {queryResult.isError ? (
+          <div className="flex items-center justify-center rounded-xl border border-red-100 bg-red-50 p-8 dark:border-red-900/50 dark:bg-red-900/20">
+            <span className="text-red-500">Không tìm thấy lịch làm việc</span>
+          </div>
+        ) : (
+          <Tabs items={items} size="large" type="card" animated />
+        )}
+      </Spin>
+    </div>
+  );
+
   return (
     <>
-      <BackButton />
-      <ComponentCard
-        title={
-          isLoadingSchedule
-            ? 'Chi tiết lịch làm việc'
-            : `Chi tiết lịch làm việc tháng ${currentDate?.format('MM-YYYY')}`
-        }
-      >
-        <div className="space-y-5">
-          {/* ── Legends ──────────────────────────────────────────── */}
-          <div className="flex flex-wrap gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
-            {Object.entries(workLegends).map(([key, legend]) => (
-              <div
-                key={key}
-                className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800"
-              >
-                {legend.icon}
-                <span className="text-gray-600 dark:text-gray-400">
-                  {legend.label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* ── Filter Bar ──────────────────────────────────────── */}
-          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  <FaSearch className="mr-1 inline-block text-gray-400" />
-                  Tìm kiếm nhân viên
-                </label>
-                <Input.Search
-                  placeholder="Mã hoặc tên nhân viên..."
-                  allowClear
-                  className="!rounded-lg"
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    if (/^\d+$/.test(inputValue)) {
-                      handleSearch(inputValue, 'code');
-                    } else {
-                      handleSearch(inputValue, 'name');
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Tabs ────────────────────────────────────────────── */}
-          <Spin tip="Đang tải..." spinning={queryResult.isLoading}>
-            {queryResult.isError ? (
-              <div className="flex items-center justify-center rounded-xl border border-red-100 bg-red-50 p-8 dark:border-red-900/50 dark:bg-red-900/20">
-                <span className="text-red-500">
-                  Không tìm thấy lịch làm việc
-                </span>
-              </div>
-            ) : (
-              <Tabs items={items} size="large" type="card" animated />
-            )}
-          </Spin>
-        </div>
-      </ComponentCard>
+      {!isDrawer && <BackButton />}
+      {isDrawer ? (
+        mainContent
+      ) : (
+        <ComponentCard
+          title={
+            isLoadingSchedule
+              ? 'Chi tiết lịch làm việc'
+              : `Chi tiết lịch làm việc tháng ${currentDate?.format('MM-YYYY')}`
+          }
+        >
+          {mainContent}
+        </ComponentCard>
+      )}
     </>
   );
 }

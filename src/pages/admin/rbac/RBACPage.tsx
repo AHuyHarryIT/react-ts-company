@@ -71,7 +71,17 @@ const mapFaClassToIconType = (faClass?: string): IconType | null => {
   if (!faClass) return null;
   const parts = faClass.split(/\s+/).filter(Boolean);
   const raw = parts.find(
-    (p) => p.startsWith('fa-') && !/^fa[brlsd]?$/i.test(p)
+    (p) =>
+      p.startsWith('fa-') &&
+      !/^fa[brlsd]?$/i.test(p) &&
+      ![
+        'fa-solid',
+        'fa-regular',
+        'fa-light',
+        'fa-thin',
+        'fa-duotone',
+        'fa-brands'
+      ].includes(p.toLowerCase())
   );
   if (!raw) return null;
   const base = raw.replace(/^fa-/, '');
@@ -656,6 +666,248 @@ function RolePermissionManager() {
 //  Tab 2: Quản lý quyền & Sidebar Items (merged)
 // ─────────────────────────────────────────────────────────────────────────────
 
+const suggestIconsForName = (name: string): string[] => {
+  if (!name) return [];
+  const lower = name.toLowerCase();
+  const suggestions: string[] = [];
+
+  if (
+    lower.includes('thêm') ||
+    lower.includes('tạo') ||
+    lower.includes('add') ||
+    lower.includes('create') ||
+    lower.includes('mới')
+  ) {
+    suggestions.push(
+      'fa-solid fa-plus',
+      'fa-solid fa-circle-plus',
+      'fa-solid fa-square-plus'
+    );
+  }
+  if (
+    lower.includes('xóa') ||
+    lower.includes('delete') ||
+    lower.includes('remove') ||
+    lower.includes('hủy')
+  ) {
+    suggestions.push(
+      'fa-solid fa-trash',
+      'fa-solid fa-trash-can',
+      'fa-solid fa-eraser'
+    );
+  }
+  if (
+    lower.includes('sửa') ||
+    lower.includes('chỉnh') ||
+    lower.includes('cập nhật') ||
+    lower.includes('edit') ||
+    lower.includes('update')
+  ) {
+    suggestions.push(
+      'fa-solid fa-pen',
+      'fa-solid fa-pen-to-square',
+      'fa-solid fa-wrench'
+    );
+  }
+  if (
+    lower.includes('xem') ||
+    lower.includes('view') ||
+    lower.includes('đọc') ||
+    lower.includes('read') ||
+    lower.includes('chi tiết')
+  ) {
+    suggestions.push('fa-solid fa-eye', 'fa-solid fa-list', 'fa-solid fa-book');
+  }
+  if (
+    lower.includes('quản lý') ||
+    lower.includes('manage') ||
+    lower.includes('danh sách')
+  ) {
+    suggestions.push(
+      'fa-solid fa-list-ul',
+      'fa-solid fa-list-check',
+      'fa-solid fa-clipboard-list'
+    );
+  }
+  if (
+    lower.includes('người') ||
+    lower.includes('nhân sự') ||
+    lower.includes('nhân viên') ||
+    lower.includes('user') ||
+    lower.includes('nhân công')
+  ) {
+    suggestions.push(
+      'fa-solid fa-user',
+      'fa-solid fa-users',
+      'fa-solid fa-user-gear'
+    );
+  }
+  if (
+    lower.includes('cài đặt') ||
+    lower.includes('cấu hình') ||
+    lower.includes('thiết lập') ||
+    lower.includes('setting')
+  ) {
+    suggestions.push(
+      'fa-solid fa-gear',
+      'fa-solid fa-gears',
+      'fa-solid fa-sliders'
+    );
+  }
+  if (
+    lower.includes('sản phẩm') ||
+    lower.includes('hàng hóa') ||
+    lower.includes('product') ||
+    lower.includes('item') ||
+    lower.includes('mã hàng')
+  ) {
+    suggestions.push(
+      'fa-solid fa-box',
+      'fa-solid fa-boxes-stacked',
+      'fa-solid fa-cubes'
+    );
+  }
+  if (lower.includes('nhập') || lower.includes('import')) {
+    suggestions.push('fa-solid fa-file-import', 'fa-solid fa-right-to-bracket');
+  }
+  if (lower.includes('xuất') || lower.includes('export')) {
+    suggestions.push(
+      'fa-solid fa-file-export',
+      'fa-solid fa-right-from-bracket'
+    );
+  }
+  if (lower.includes('in') || lower.includes('print')) {
+    suggestions.push('fa-solid fa-print');
+  }
+  if (
+    lower.includes('thống kê') ||
+    lower.includes('báo cáo') ||
+    lower.includes('report') ||
+    lower.includes('chart') ||
+    lower.includes('biểu đồ')
+  ) {
+    suggestions.push(
+      'fa-solid fa-chart-line',
+      'fa-solid fa-chart-pie',
+      'fa-solid fa-chart-simple'
+    );
+  }
+  if (
+    lower.includes('lịch') ||
+    lower.includes('kế hoạch') ||
+    lower.includes('schedule') ||
+    lower.includes('calendar') ||
+    lower.includes('thời gian')
+  ) {
+    suggestions.push(
+      'fa-solid fa-calendar',
+      'fa-solid fa-calendar-days',
+      'fa-solid fa-clock'
+    );
+  }
+  if (
+    lower.includes('quyền') ||
+    lower.includes('phân quyền') ||
+    lower.includes('permission') ||
+    lower.includes('role')
+  ) {
+    suggestions.push(
+      'fa-solid fa-shield-halved',
+      'fa-solid fa-key',
+      'fa-solid fa-user-shield'
+    );
+  }
+  if (
+    lower.includes('kho') ||
+    lower.includes('stock') ||
+    lower.includes('inventory') ||
+    lower.includes('lưu trữ')
+  ) {
+    suggestions.push('fa-solid fa-warehouse', 'fa-solid fa-pallet');
+  }
+  if (
+    lower.includes('lương') ||
+    lower.includes('salary') ||
+    lower.includes('tiền') ||
+    lower.includes('money')
+  ) {
+    suggestions.push(
+      'fa-solid fa-money-bill',
+      'fa-solid fa-coins',
+      'fa-solid fa-wallet'
+    );
+  }
+  if (
+    lower.includes('máy') ||
+    lower.includes('machine') ||
+    lower.includes('thiết bị') ||
+    lower.includes('device')
+  ) {
+    suggestions.push(
+      'fa-solid fa-desktop',
+      'fa-solid fa-laptop',
+      'fa-solid fa-microchip'
+    );
+  }
+  if (
+    lower.includes('dashboard') ||
+    lower.includes('tổng quan') ||
+    lower.includes('trang chủ')
+  ) {
+    suggestions.push(
+      'fa-solid fa-gauge',
+      'fa-solid fa-house',
+      'fa-solid fa-chart-pie'
+    );
+  }
+  if (
+    lower.includes('duyệt') ||
+    lower.includes('approve') ||
+    lower.includes('chấp nhận') ||
+    lower.includes('xác nhận')
+  ) {
+    suggestions.push(
+      'fa-solid fa-circle-check',
+      'fa-solid fa-check',
+      'fa-solid fa-clipboard-check'
+    );
+  }
+  if (
+    lower.includes('từ chối') ||
+    lower.includes('reject') ||
+    lower.includes('ban')
+  ) {
+    suggestions.push(
+      'fa-solid fa-circle-xmark',
+      'fa-solid fa-xmark',
+      'fa-solid fa-ban'
+    );
+  }
+  if (
+    lower.includes('ca làm việc') ||
+    lower.includes('chấm công') ||
+    lower.includes('attendance')
+  ) {
+    suggestions.push(
+      'fa-solid fa-user-clock',
+      'fa-solid fa-address-card',
+      'fa-solid fa-fingerprint'
+    );
+  }
+
+  // default suggestions if none match
+  if (suggestions.length === 0) {
+    suggestions.push(
+      'fa-solid fa-circle',
+      'fa-solid fa-star',
+      'fa-solid fa-layer-group',
+      'fa-solid fa-cube'
+    );
+  }
+
+  return Array.from(new Set(suggestions)).slice(0, 10);
+};
+
 function PermissionsManager() {
   const queryClient = useQueryClient();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -1172,20 +1424,85 @@ function PermissionsManager() {
             <Input placeholder="fas fa-box fa-lg" />
           </Form.Item>
           <Form.Item
-            shouldUpdate={(prev, cur) => prev.icon !== cur.icon}
+            shouldUpdate={(prev, cur) =>
+              prev.icon !== cur.icon || prev.name !== cur.name
+            }
             noStyle
           >
             {() => {
               const iconVal = form.getFieldValue('icon');
-              if (!iconVal) return null;
+              const nameVal = form.getFieldValue('name');
+              const suggestions = suggestIconsForName(nameVal || '');
+
               return (
-                <div className="mb-4 flex items-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-2">
-                  <span className="text-2xl">{renderIconPreview(iconVal)}</span>
-                  <span className="text-xs text-gray-400">
-                    {mapFaClassToIconType(iconVal)
-                      ? '✅ Mapped OK'
-                      : '⚠️ Dùng FA class trực tiếp'}
-                  </span>
+                <div className="mb-4">
+                  {iconVal && (
+                    <div className="mb-3 flex items-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-2">
+                      <span className="text-2xl">
+                        {renderIconPreview(iconVal)}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {mapFaClassToIconType(iconVal)
+                          ? '✅ Mapped OK'
+                          : '⚠️ Dùng FA class trực tiếp'}
+                      </span>
+                    </div>
+                  )}
+                  {suggestions.length > 0 && (
+                    <div className="mb-3">
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-500">
+                          Gợi ý icon (click để chọn):
+                        </span>
+                        <a
+                          href={
+                            nameVal
+                              ? `https://fontawesome.com/v5/search?q=${encodeURIComponent(nameVal)}&m=free`
+                              : 'https://fontawesome.com/v5/search?m=free'
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1 text-[11px] text-blue-500 hover:underline"
+                        >
+                          <FaIcons.FaExternalLinkAlt /> Tìm trên FontAwesome
+                        </a>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {suggestions.map((s) => (
+                          <div
+                            key={s}
+                            onClick={() => form.setFieldsValue({ icon: s })}
+                            className="flex h-8 cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 text-gray-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600"
+                            title={s}
+                          >
+                            <span className="text-base">
+                              {renderIconPreview(s)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {suggestions.length === 0 && (
+                    <div className="mb-3 flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2">
+                      <span className="text-xs text-gray-400">
+                        Không tìm thấy icon phù hợp.
+                      </span>
+                      <a
+                        href={
+                          nameVal
+                            ? `https://fontawesome.com/v5/search?q=${encodeURIComponent(nameVal)}&m=free`
+                            : 'https://fontawesome.com/v5/search?m=free'
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1 text-[11px] text-blue-500 hover:underline"
+                      >
+                        <FaIcons.FaExternalLinkAlt /> Tìm thủ công
+                      </a>
+                    </div>
+                  )}
                 </div>
               );
             }}

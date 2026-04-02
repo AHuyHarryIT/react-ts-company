@@ -1,22 +1,32 @@
-import { Link } from '@tanstack/react-router';
-import { Button, Table, TableColumnsType, TableProps, Tag } from 'antd';
+import { useIsMobile } from '@hooks/useIsMobile';
+import {
+  Button,
+  Table,
+  TableColumnsType,
+  TableProps,
+  Tag,
+  Pagination
+} from 'antd';
 import { useState } from 'react';
-import { FaCalendarCheck } from 'react-icons/fa';
-import { GoInfo } from 'react-icons/go';
+import { FaCalendarCheck, FaEye } from 'react-icons/fa';
 
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { AddWorkSchedule } from '@components/workSchedules/AddModal';
 import { DeleteModal } from '@components/workSchedules/DeleteModal';
 import { scheduleService } from '@services/workScheduleService';
+import { ScheduleDetailDrawer } from './Detail';
 
-import { QueryParams } from '@/types/queryParams';
-import { ScheduleType } from '@/types/scheduleType';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { useCrudList } from '@hooks/useCrudList';
+import { QueryParams } from '@/types/queryParams';
+import { ScheduleType } from '@/types/scheduleType';
 
 export default function WorkScheduleList() {
+  const isMobile = useIsMobile();
   const [params, setParams] = useState<QueryParams>({ limit: 10, page: 1 });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
     data,
@@ -67,20 +77,27 @@ export default function WorkScheduleList() {
       title: 'Hành động',
       align: 'center',
       width: 180,
-      render: (_value, _record) => {
+      render: (_value, record) => {
         return (
           <div className="flex items-center justify-center gap-2">
-            <Link
-              to={'/work-schedules/$id'}
-              params={{
-                id: _record.id
+            <Button
+              type="default"
+              className="!border-gray-800 !text-gray-800 hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400"
+              icon={<FaEye />}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedId(record.id);
+                setDrawerOpen(true);
               }}
             >
-              <Button color="primary" variant="solid" icon={<GoInfo />}>
-                Chi tiết
-              </Button>
-            </Link>
-            <DeleteModal id={_record.id} name={_record.title} />
+              Chi tiết
+            </Button>
+            <DeleteModal
+              id={record.id}
+              name={record.title}
+              transparent
+              isIconOnly
+            />
           </div>
         );
       }
@@ -103,7 +120,14 @@ export default function WorkScheduleList() {
       onChange: (page) => {
         setParams((prev) => ({ ...prev, page: page }));
       }
-    }
+    },
+    onRow: (record) => ({
+      onClick: () => {
+        setSelectedId(record.id);
+        setDrawerOpen(true);
+      },
+      className: 'cursor-pointer'
+    })
   };
 
   return (
@@ -125,9 +149,85 @@ export default function WorkScheduleList() {
           </div>
         </div>
 
-        {/* ── Table ────────────────────────────────────────────── */}
-        <Table<ScheduleType> {...tableProps} />
+        {/* ── Content ────────────────────────────────────────────── */}
+        {isMobile ? (
+          <div className="flex flex-col gap-3">
+            {data.map((item, index) => (
+              <div
+                key={item.id}
+                className="flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              >
+                <div
+                  className="group -mx-1 flex cursor-pointer items-start justify-between gap-3 rounded-lg p-1 transition-colors hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
+                  onClick={() => {
+                    setSelectedId(item.id);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  <div className="flex w-full flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                        {index +
+                          1 +
+                          (params.limit ?? 10) * ((params.page ?? 1) - 1)}
+                      </span>
+                      <span className="line-clamp-2 text-[15px] leading-tight font-semibold text-gray-800 dark:text-white/90">
+                        {item.title || 'Chưa có tên'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 pl-8 text-[13px] text-gray-500">
+                      <FaCalendarCheck className="text-blue-400" />
+                      {new Date(item.date).toLocaleDateString('vi-VN')}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Bar */}
+                <div className="mt-1 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700/50">
+                  <Button
+                    type="default"
+                    icon={<FaEye />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedId(item.id);
+                      setDrawerOpen(true);
+                    }}
+                    className="!border-gray-800 !text-gray-800 hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400"
+                  >
+                    Chi tiết
+                  </Button>
+                  <DeleteModal
+                    id={item.id}
+                    name={item.title}
+                    transparent
+                    isIconOnly
+                  />
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-end pt-2">
+              <Pagination
+                size="small"
+                current={pagination?.current}
+                pageSize={pagination?.pageSize}
+                total={pagination?.total}
+                onChange={(page, size) => {
+                  setParams((prev) => ({ ...prev, page, limit: size }));
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <Table<ScheduleType> {...tableProps} />
+        )}
       </div>
+
+      <ScheduleDetailDrawer
+        scheduleId={selectedId}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
     </ComponentCard>
   );
 }

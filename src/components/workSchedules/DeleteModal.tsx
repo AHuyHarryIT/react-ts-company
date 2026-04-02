@@ -9,9 +9,16 @@ import { BiTrash } from 'react-icons/bi';
 interface DeleteModalProps {
   id: string;
   name: string;
+  isIconOnly?: boolean;
+  transparent?: boolean;
 }
 
-export const DeleteModal: React.FC<DeleteModalProps> = ({ id, name }) => {
+export const DeleteModal: React.FC<DeleteModalProps> = ({
+  id,
+  name,
+  isIconOnly,
+  transparent
+}) => {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
@@ -25,11 +32,13 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({ id, name }) => {
     </p>
   );
 
-  const showModal = () => {
+  const showModal = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setOpen(true);
   };
 
-  const handleCancel = () => {
+  const handleCancel = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setOpen(false);
   };
 
@@ -57,19 +66,27 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({ id, name }) => {
     }
   });
 
-  const handleDelete = async () => {
+  const handleDelete = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     mutate(id);
   };
 
   return (
-    <>
+    <div onClick={(e) => e.stopPropagation()}>
       <Button
-        color="danger"
-        variant="solid"
+        danger={!transparent}
+        type={transparent ? 'default' : 'primary'}
+        color={transparent ? undefined : 'danger'}
+        variant={transparent ? 'outlined' : 'solid'}
+        className={
+          transparent
+            ? '!border-gray-800 !text-gray-800 hover:!border-red-500 hover:!text-red-500 dark:!border-gray-400 dark:!text-gray-400'
+            : ''
+        }
         icon={<BiTrash />}
         onClick={showModal}
       >
-        Xóa
+        {!isIconOnly && 'Xóa'}
       </Button>
       <Modal
         title="Xóa lịch làm việc"
@@ -84,6 +101,6 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({ id, name }) => {
       >
         {modalText}
       </Modal>
-    </>
+    </div>
   );
 };
