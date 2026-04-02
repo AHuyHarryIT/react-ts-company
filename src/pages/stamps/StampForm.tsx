@@ -54,6 +54,7 @@ export default function StampForm() {
   }>();
   const [hasComma, setHasComma] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
 
   // Keyboard shortcuts
@@ -385,6 +386,12 @@ export default function StampForm() {
                           input.toLowerCase()
                         ) ?? false
                       }
+                      onChange={() => {
+                        // Nhảy focus sang nút Submit khi chọn xong sản phẩm
+                        setTimeout(() => {
+                          submitBtnRef.current?.focus();
+                        }, 50);
+                      }}
                     />
                   </Form.Item>
                   {selectedProduct && (
@@ -404,6 +411,7 @@ export default function StampForm() {
               <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-5 dark:border-gray-700">
                 <button
                   type="submit"
+                  ref={submitBtnRef}
                   className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97]"
                 >
                   <FaPrint className="text-xs" />

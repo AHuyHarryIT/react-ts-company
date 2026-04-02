@@ -48,6 +48,8 @@ export default function ProductList() {
     month: dayjs().format('YYYY-MM')
   });
 
+  const [displayMode, setDisplayMode] = useState<string>('');
+
   const { data: monthList } = useQuery<{ months: string[] }>({
     queryKey: ['months'],
     queryFn: () => {
@@ -65,6 +67,16 @@ export default function ProductList() {
   });
 
   const months = useMemo(() => monthList?.months || [], [monthList]);
+
+  const years: string[] = useMemo(() => {
+    return Array.from(
+      new Set(months.map((m: string) => m.split('-')[1]).filter(Boolean))
+    )
+      .sort()
+      .reverse();
+  }, [months]);
+
+  const activeDisplayMode = displayMode || years[0] || dayjs().format('YYYY');
 
   const handleSearch = debounce((value: string) => {
     setParams((prev) => ({
@@ -88,6 +100,7 @@ export default function ProductList() {
           queryResult={queryResult}
           params={params}
           setParams={setParams}
+          displayMode={activeDisplayMode}
         />
       )
     },
@@ -206,7 +219,7 @@ export default function ProductList() {
 
         {/* ── Filter Bar ───────────────────────────────────────────── */}
         <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 📅 Tháng
@@ -226,6 +239,29 @@ export default function ProductList() {
                     month: newMonth.format('YYYY-MM')
                   }));
                 }}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                <FaChartBar className="mr-1 inline-block text-blue-500" />
+                Dữ liệu xuất hàng
+              </label>
+              <Select
+                value={activeDisplayMode}
+                onChange={setDisplayMode}
+                className="!rounded-lg"
+                options={[
+                  { value: 'hide', label: 'Ẩn xuất hàng' },
+                  ...(years.length === 0 && activeDisplayMode !== 'hide'
+                    ? [
+                        {
+                          value: activeDisplayMode,
+                          label: `Năm ${activeDisplayMode}`
+                        }
+                      ]
+                    : []),
+                  ...years.map((y) => ({ value: y, label: `Năm ${y}` }))
+                ]}
               />
             </div>
             <div className="flex flex-col gap-1">

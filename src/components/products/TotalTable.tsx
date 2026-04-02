@@ -52,6 +52,7 @@ interface TotalTableProps {
   queryResult: UseQueryResult<PaginatedResponse<ProductType>>;
   params: QueryParams;
   setParams: React.Dispatch<React.SetStateAction<QueryParams>>;
+  displayMode: string;
 }
 
 /* ── Mobile Stat Item ────────────────────────────────────────── */
@@ -73,7 +74,8 @@ const TotalMobileCard: React.FC<{
   record: TotalTableType;
   months?: string[];
   index: number;
-}> = ({ record, months, index }) => {
+  displayMode: string;
+}> = ({ record, months, index, displayMode }) => {
   const [expanded, setExpanded] = useState(false);
 
   const fmt = (v: number) => (v ? v.toLocaleString() : '0');
@@ -82,6 +84,7 @@ const TotalMobileCard: React.FC<{
 
   // Month export data (only months with data)
   const monthsWithData = (months ?? []).filter((m) => {
+    if (displayMode !== 'hide' && !m.endsWith(`-${displayMode}`)) return false;
     const entry = record.times[m];
     return entry && entry.quantity > 0;
   });
@@ -199,10 +202,10 @@ const TotalMobileCard: React.FC<{
             <StatItem label="Ngày tồn kho" value={fmtDec(record.storageTime)} />
           </div>
 
-          {monthsWithData.length > 0 && (
+          {displayMode !== 'hide' && monthsWithData.length > 0 && (
             <div className="pt-1">
               <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500">
-                Xuất theo tháng
+                Xuất theo từng tháng
               </div>
               <div className="mt-1 space-y-0.5">
                 {monthsWithData.map((m) => (
@@ -232,7 +235,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
   months,
   queryResult,
   params,
-  setParams
+  setParams,
+  displayMode
 }) => {
   const isMobile = useIsMobile();
 
@@ -277,6 +281,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
                   index={
                     index + (params.limit ?? 50) * ((params.page ?? 1) - 1)
                   }
+                  displayMode={displayMode}
                 />
               ))}
             </div>
@@ -322,6 +327,15 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       };
     }
   );
+
+  const monthlyCols = dateColumns
+    .filter(
+      (col) =>
+        typeof col.key === 'string' &&
+        col.key.includes(`-${displayMode}_quantity`)
+    )
+    .reverse();
+  const exportCols = displayMode !== 'hide' ? monthlyCols : [];
 
   const columns: TableColumnsType<TotalTableType> = [
     {
@@ -578,7 +592,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
         });
       }
     },
-    ...dateColumns.reverse(),
+    ...exportCols,
     {
       title: <div>Thao tác</div>,
       minWidth: 100,

@@ -18,7 +18,8 @@ import {
   Table,
   TableColumnsType,
   TableProps,
-  Tag
+  Tag,
+  Input
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -27,7 +28,9 @@ import {
   FaCalendarAlt,
   FaClock,
   FaExchangeAlt,
-  FaCheckCircle
+  FaCheckCircle,
+  FaSearch,
+  FaTags
 } from 'react-icons/fa';
 import { PrintBagStamp } from '@components/print/PrintBagStamp';
 import { PrintBoxStamp } from '@components/print/PrintBoxStamp';
@@ -45,6 +48,7 @@ export default function HistoryPrintStamp() {
   const [selectedRecord, setSelectedRecord] =
     useState<HistoryPrintStampType | null>(null);
   const printPreviewRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Get search params để highlight dòng cụ thể
   const { highlightId } = Route.useSearch();
@@ -437,7 +441,66 @@ export default function HistoryPrintStamp() {
 
           {/* ── Filter Bar ── */}
           <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaSearch className="mr-1 inline-block text-indigo-500" />
+                  Sản phẩm
+                </label>
+                <Input
+                  prefix={<FaSearch className="text-gray-400" />}
+                  placeholder="Tìm tên sản phẩm..."
+                  allowClear
+                  className="!rounded-lg"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (searchTimeoutRef.current) {
+                      clearTimeout(searchTimeoutRef.current);
+                    }
+                    searchTimeoutRef.current = setTimeout(() => {
+                      setParams((prev) => {
+                        const newParams: QueryParams = { ...prev, page: 1 };
+                        // Xóa các key rác từ phiên bản cũ bị kẹt trong state
+                        delete newParams.search;
+                        delete newParams['filter[search]'];
+
+                        if (value) {
+                          newParams['filter[product.name]'] = value;
+                        } else {
+                          delete newParams['filter[product.name]'];
+                        }
+                        return newParams;
+                      });
+                    }, 500);
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaTags className="mr-1 inline-block text-pink-500" />
+                  Loại tem
+                </label>
+                <Select
+                  placeholder="Chọn loại tem"
+                  options={[
+                    { value: 'box', label: 'Tem Thùng' },
+                    { value: 'bag', label: 'Tem Bịch' }
+                  ]}
+                  allowClear
+                  className="!rounded-lg"
+                  onChange={(value) => {
+                    setParams((prev) => {
+                      const newParams: QueryParams = { ...prev, page: 1 };
+                      if (value) {
+                        newParams['filter[type]'] = value;
+                      } else {
+                        delete newParams['filter[type]'];
+                      }
+                      return newParams;
+                    });
+                  }}
+                />
+              </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
                   <FaCalendarAlt className="mr-1 inline-block text-blue-500" />
@@ -451,29 +514,22 @@ export default function HistoryPrintStamp() {
                   className="!rounded-lg"
                   onChange={(value) => {
                     setLotDate(value);
-                    const newParams: QueryParams = {
-                      page: 1,
-                      limit: params.limit || 50,
-                      include: ['employee', 'manager', 'product']
-                    };
-
-                    if (value) {
-                      newParams['filter[date]'] =
-                        dayjs(value).format('YYYY-MM-DD');
-                      setCreatedDate(null);
-                    } else if (createdDate) {
-                      newParams['filter[created_at]'] =
-                        createdDate.format('YYYY-MM-DD');
-                    }
-
-                    if (params['filter[shift]']) {
-                      newParams['filter[shift]'] = params['filter[shift]'];
-                    }
-                    if (params['filter[status]']) {
-                      newParams['filter[status]'] = params['filter[status]'];
-                    }
-
-                    setParams(newParams);
+                    setParams((prev) => {
+                      const newParams: QueryParams = { ...prev, page: 1 };
+                      if (value) {
+                        newParams['filter[date]'] =
+                          dayjs(value).format('YYYY-MM-DD');
+                        delete newParams['filter[created_at]'];
+                        setCreatedDate(null);
+                      } else {
+                        delete newParams['filter[date]'];
+                        if (createdDate) {
+                          newParams['filter[created_at]'] =
+                            createdDate.format('YYYY-MM-DD');
+                        }
+                      }
+                      return newParams;
+                    });
                   }}
                 />
               </div>
@@ -490,28 +546,22 @@ export default function HistoryPrintStamp() {
                   className="!rounded-lg"
                   onChange={(value) => {
                     setCreatedDate(value);
-                    const newParams: QueryParams = {
-                      page: 1,
-                      limit: params.limit || 50,
-                      include: ['employee', 'manager', 'product']
-                    };
-
-                    if (value) {
-                      newParams['filter[created_at]'] =
-                        dayjs(value).format('YYYY-MM-DD');
-                      setLotDate(null);
-                    } else if (lotDate) {
-                      newParams['filter[date]'] = lotDate.format('YYYY-MM-DD');
-                    }
-
-                    if (params['filter[shift]']) {
-                      newParams['filter[shift]'] = params['filter[shift]'];
-                    }
-                    if (params['filter[status]']) {
-                      newParams['filter[status]'] = params['filter[status]'];
-                    }
-
-                    setParams(newParams);
+                    setParams((prev) => {
+                      const newParams: QueryParams = { ...prev, page: 1 };
+                      if (value) {
+                        newParams['filter[created_at]'] =
+                          dayjs(value).format('YYYY-MM-DD');
+                        delete newParams['filter[date]'];
+                        setLotDate(null);
+                      } else {
+                        delete newParams['filter[created_at]'];
+                        if (lotDate) {
+                          newParams['filter[date]'] =
+                            lotDate.format('YYYY-MM-DD');
+                        }
+                      }
+                      return newParams;
+                    });
                   }}
                 />
               </div>
@@ -529,10 +579,15 @@ export default function HistoryPrintStamp() {
                   allowClear
                   className="!rounded-lg"
                   onChange={(value) => {
-                    setParams((prev) => ({
-                      ...prev,
-                      'filter[shift]': value
-                    }));
+                    setParams((prev) => {
+                      const newParams: QueryParams = { ...prev, page: 1 };
+                      if (value) {
+                        newParams['filter[shift]'] = value;
+                      } else {
+                        delete newParams['filter[shift]'];
+                      }
+                      return newParams;
+                    });
                   }}
                 />
               </div>
@@ -551,10 +606,15 @@ export default function HistoryPrintStamp() {
                   allowClear
                   className="!rounded-lg"
                   onChange={(value) => {
-                    setParams((prev) => ({
-                      ...prev,
-                      'filter[status]': value
-                    }));
+                    setParams((prev) => {
+                      const newParams: QueryParams = { ...prev, page: 1 };
+                      if (value) {
+                        newParams['filter[status]'] = value;
+                      } else {
+                        delete newParams['filter[status]'];
+                      }
+                      return newParams;
+                    });
                   }}
                 />
               </div>

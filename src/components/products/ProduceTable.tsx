@@ -132,10 +132,10 @@ const ProduceMobileCard: React.FC<{
                         {d.format('DD/MM')}
                       </div>
                       <div className="text-center font-semibold text-blue-600 dark:text-blue-400">
-                        {entry?.shift1 || 0}
+                        {entry?.shift1 ? entry.shift1.toLocaleString() : 0}
                       </div>
                       <div className="text-center font-semibold text-indigo-600 dark:text-indigo-400">
-                        {entry?.shift2 || 0}
+                        {entry?.shift2 ? entry.shift2.toLocaleString() : 0}
                       </div>
                     </div>
                   );

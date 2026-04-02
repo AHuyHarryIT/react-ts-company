@@ -74,34 +74,122 @@ interface AddExportQuantityModalProps {
 }
 
 // ── Helpers ──────────────────────────────────────────────────
+
+/**
+ * Unicode-aware normalization that preserves Vietnamese diacritics.
+ * Removes only punctuation/symbols, not letters from any script.
+ */
 const normalize = (s: string): string =>
   s
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '')
-    .replace(/[^\w-]/g, '');
+    // Remove everything that is NOT a unicode letter, digit, or hyphen
+    .replace(/[^\p{L}\p{N}-]/gu, '');
+
+/**
+ * Aggressive normalization: strips diacritics entirely for fallback comparison.
+ * e.g. "Nắp đậy" → "napday"
+ */
+const normalizeAggressive = (s: string): string =>
+  normalize(s)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // strip combining diacritical marks
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
 
 const parseNumber = (val: string): number => {
-  const cleaned = String(val ?? '')
+  let s = String(val ?? '')
     .trim()
-    .replace(/,/g, '');
-  if (cleaned === '') return NaN;
-  return parseFloat(cleaned);
+    .replace(/[\s₫$€£]/g, '');
+  if (!s) return NaN;
+
+  const hasComma = s.includes(',');
+  const hasDot = s.includes('.');
+
+  if (hasComma && hasDot) {
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+      // 1.234.567,89 -> ',' is decimal
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else {
+      // 1,234,567.89 -> '.' is decimal
+      s = s.replace(/,/g, '');
+    }
+  } else if (hasComma) {
+    const parts = s.split(',');
+    if (parts.length > 2) {
+      // Multiple commas -> thousands separator (e.g. 1,234,567)
+      s = s.replace(/,/g, '');
+    } else {
+      const p0 = parts[0];
+      const p1 = parts[1];
+      // Ambiguous single comma (e.g. 0,41 vs 2,352)
+      // If decimal part is not exactly 3 digits, or the integer part is starting with 0, it MUST be a decimal.
+      if (p1.length !== 3 || p0 === '0' || p0 === '-0') {
+        s = p0 + '.' + p1;
+      } else {
+        // Assume English thousand separator for things like 2,352
+        s = p0 + p1;
+      }
+    }
+  }
+
+  return parseFloat(s);
 };
 
-const isNumeric = (val: string): boolean => !isNaN(parseNumber(val));
+const isNumeric = (val: string): boolean => {
+  const n = parseNumber(val);
+  return !isNaN(n) && isFinite(n);
+};
 
 const tryMatchProduct = (
   cellValue: string,
   products: ProductType[]
 ): ProductType | null => {
-  const n = normalize(cellValue);
+  const raw = cellValue.trim();
+  if (!raw || raw.length < 2) return null;
+
+  const n = normalize(raw);
+  const nAgg = normalizeAggressive(raw);
+
   if (!n || n.length < 2) return null;
-  return (
+
+  // Tier 1: Exact match (unicode-aware normalize)
+  const exact =
     products.find((p) => normalize(p.name) === n) ??
-    products.find((p) => normalize(p.code) === n) ??
-    null
-  );
+    products.find((p) => normalize(p.code) === n);
+  if (exact) return exact;
+
+  // Tier 2: Exact match with aggressive normalization (strip diacritics)
+  const exactAgg =
+    products.find((p) => normalizeAggressive(p.name) === nAgg) ??
+    products.find((p) => normalizeAggressive(p.code) === nAgg);
+  if (exactAgg) return exactAgg;
+
+  // Tier 3: Safe Substring Match (handles codes embedded in "Mã SP: PR-BAK030")
+  // Only do substring matching if the product's identifier is sufficiently distinct
+  const safeSubstringMatch = products.find((p) => {
+    const pCode = normalize(p.code);
+    const pName = normalize(p.name);
+    // Code must be at least 4 chars long to avoid matching random numbering like "001"
+    if (pCode.length >= 4 && n.includes(pCode)) return true;
+    // Name must be at least 5 chars long
+    if (pName.length >= 5 && n.includes(pName)) return true;
+    return false;
+  });
+  if (safeSubstringMatch) return safeSubstringMatch;
+
+  // Tier 4: Safe Substring Match with aggressive normalization
+  const safeAggSubstringMatch = products.find((p) => {
+    const pCode = normalizeAggressive(p.code);
+    const pName = normalizeAggressive(p.name);
+    if (pCode.length >= 4 && nAgg.includes(pCode)) return true;
+    if (pName.length >= 5 && nAgg.includes(pName)) return true;
+    return false;
+  });
+  if (safeAggSubstringMatch) return safeAggSubstringMatch;
+
+  return null;
 };
 
 // ── Date extraction helpers ───────────────────────────────────
@@ -168,6 +256,16 @@ const extractDateFromString = (text: string): Dayjs | null => {
   if (vnLong) {
     const d = dayjs(`${vnLong[1]}/${vnLong[2]}/${vnLong[3]}`, 'D/M/YYYY', true);
     if (d.isValid() && d.year() > 2000 && d.year() < 2100) return d;
+  }
+
+  // Try English textual dates (e.g., "Sep 03rd, 2025", "March 30, 2026")
+  const engRe = /([a-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?[\s,]+(\d{4})/gi;
+  for (const m of text.matchAll(engRe)) {
+    const month = m[1].charAt(0).toUpperCase() + m[1].slice(1, 3).toLowerCase();
+    // Pass 'en' locale explicitly, otherwise it fails if the global locale is set to 'vi'
+    const parsed = dayjs(`${month} ${m[2]} ${m[3]}`, 'MMM D YYYY', 'en');
+    if (parsed.isValid() && parsed.year() > 2000 && parsed.year() < 2100)
+      return parsed;
   }
   // YYYY-first: "2026/03/28", "2026-03-28", "2026/3/20" (non-padded month/day)
   // Run BEFORE dd/mm regex. Use captured groups + padStart for zero-padding.
@@ -320,6 +418,7 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
   onClose
 }) => {
   const [batches, setBatches] = useState<FileBatch[]>([]);
+  const [activeKeys, setActiveKeys] = useState<string[] | string>([]);
   const [submitting, setSubmitting] = useState(false);
   const queryClient = useQueryClient();
 
@@ -348,7 +447,7 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
 
       const maxCols = Math.max(...rows.map((r) => r.length));
 
-      // Step 1: Find product column
+      // Step 1: Find product column (column-based matching)
       const colMatches: Map<
         number,
         { rowIdx: number; product: ProductType; cellValue: string }[]
@@ -365,13 +464,94 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
           if (!cell) continue;
           const product = tryMatchProduct(cell, productList);
           if (product) {
-            matches.push({ rowIdx: row, product, cellValue: cell });
+            // Avoid duplicate product matches in same row (keep best match)
+            if (
+              !matches.some(
+                (m) => m.rowIdx === row && m.product.id === product.id
+              )
+            ) {
+              matches.push({ rowIdx: row, product, cellValue: cell });
+            }
           }
         }
         if (matches.length > 0) colMatches.set(col, matches);
       }
 
-      if (colMatches.size === 0) return [];
+      // Step 1b: Fallback — row-level text scan when no column-based match found
+      // Scan the full text of each row for product names
+      if (colMatches.size === 0) {
+        const rowMatches: {
+          rowIdx: number;
+          product: ProductType;
+          cellValue: string;
+        }[] = [];
+
+        for (let row = 0; row < rows.length; row++) {
+          const rowText = rows[row].join(' ').trim();
+          if (!rowText || rowText.length < 2) continue;
+
+          // Try matching the full row text
+          const product = tryMatchProduct(rowText, productList);
+          if (product) {
+            rowMatches.push({ rowIdx: row, product, cellValue: rowText });
+            continue;
+          }
+
+          // Try each cell individually (may have been merged differently)
+          for (const cell of rows[row]) {
+            const cellText = String(cell ?? '').trim();
+            if (!cellText || cellText.length < 2) continue;
+            const cellProduct = tryMatchProduct(cellText, productList);
+            if (cellProduct) {
+              rowMatches.push({
+                rowIdx: row,
+                product: cellProduct,
+                cellValue: cellText
+              });
+              break; // one product per row
+            }
+          }
+        }
+
+        if (rowMatches.length > 0) {
+          // For row-level matches, extract quantity from numeric values in the same row
+          const results: ParsedProduct[] = [];
+          for (let idx = 0; idx < rowMatches.length; idx++) {
+            const rm = rowMatches[idx];
+            // Find all numeric values in this row
+            const numericValues: number[] = [];
+            for (const cell of rows[rm.rowIdx]) {
+              const s = String(cell ?? '').trim();
+              if (isNumeric(s)) {
+                const v = parseNumber(s);
+                if (!isNaN(v) && v > 0 && v < 100_000) {
+                  numericValues.push(v);
+                }
+              }
+            }
+
+            // Pick the most likely quantity: prefer the last reasonable number
+            // (quantities often appear after the product name)
+            const qty =
+              numericValues.length > 0
+                ? numericValues[numericValues.length - 1]
+                : 0;
+
+            if (qty > 0) {
+              results.push({
+                key: `p-${idx}`,
+                csvName: rm.cellValue,
+                csvQuantity: qty,
+                matchedProductId: rm.product.id,
+                matchedProductName: rm.product.name
+              });
+            }
+          }
+          return results;
+        }
+
+        return [];
+      }
 
       const productCol = [...colMatches.entries()].sort(
         (a, b) => b[1].length - a[1].length
@@ -389,28 +569,52 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         'pcs',
         'số lượng',
         'solg',
-        'amount'
+        'amount',
+        'sốlượngđặt',
+        'orderqty',
+        'order qty',
+        'đặthàng',
+        'dathang'
       ];
       let bestQtyCol = -1;
 
-      // Find the header row = closest non-empty row above first product row
+      // Find the header row — scan broader range including all rows above first product
       const firstProductRowIdx = Math.min(
         ...productRows.map((pr) => pr.rowIdx)
       );
-      for (
-        let hr = firstProductRowIdx - 1;
-        hr >= Math.max(0, firstProductRowIdx - 5) && bestQtyCol === -1;
-        hr--
-      ) {
+
+      // Also scan all rows for header keywords (PDFs may place headers anywhere)
+      for (let hr = 0; hr < rows.length && bestQtyCol === -1; hr++) {
+        // Skip product rows themselves
+        if (
+          hr >= firstProductRowIdx &&
+          productRows.some((pr) => pr.rowIdx === hr)
+        )
+          continue;
+        // Only look at rows before or near the product area
+        if (hr > firstProductRowIdx + 1) break;
+
         const headerRow = rows[hr];
         if (!headerRow) continue;
         for (let col = 0; col < headerRow.length; col++) {
-          const h = normalize(headerRow[col]);
+          if (col === productCol) continue;
+
+          const rawH = String(headerRow[col] ?? '')
+            .trim()
+            .toLowerCase();
+          if (!rawH) continue;
+
+          const exactAggH = normalizeAggressive(rawH);
+
           if (
-            h &&
-            QTY_KEYWORDS.some(
-              (kw) => h === normalize(kw) || h.includes(normalize(kw))
-            )
+            QTY_KEYWORDS.some((kw) => {
+              const kwAgg = normalizeAggressive(kw);
+              // exact match after removing diacritics
+              if (exactAggH === kwAgg) return true;
+              // safe substring match on original text (with spaces intact)
+              if (rawH.includes(kw)) return true;
+              return false;
+            })
           ) {
             bestQtyCol = col;
             break;
@@ -487,13 +691,36 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         }
       }
 
+      // Step 2c: Last resort — find nearest numeric cell to the right of product cell
+      const getQtyForRow = (rowIdx: number): number => {
+        if (bestQtyCol >= 0) {
+          return parseNumber(String(rows[rowIdx]?.[bestQtyCol] ?? ''));
+        }
+        // Scan cells to the right of the product column
+        const row = rows[rowIdx];
+        if (!row) return 0;
+        for (let c = productCol + 1; c < row.length; c++) {
+          const val = String(row[c] ?? '').trim();
+          if (isNumeric(val)) {
+            const v = parseNumber(val);
+            if (!isNaN(v) && v > 0 && v < 100_000) return v;
+          }
+        }
+        // Scan left of product column
+        for (let c = productCol - 1; c >= 0; c--) {
+          const val = String(row[c] ?? '').trim();
+          if (isNumeric(val)) {
+            const v = parseNumber(val);
+            if (!isNaN(v) && v > 0 && v < 100_000) return v;
+          }
+        }
+        return 0;
+      };
+
       // Step 3: Build result (only qty > 0)
       return productRows
         .map((pr, idx) => {
-          const qty =
-            bestQtyCol >= 0
-              ? parseNumber(String(rows[pr.rowIdx]?.[bestQtyCol] ?? ''))
-              : 0;
+          const qty = getQtyForRow(pr.rowIdx);
           if (isNaN(qty) || qty <= 0) return null;
 
           return {
@@ -522,28 +749,48 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         const textContent = await page.getTextContent();
 
         // Collect text items with position info
+        // IMPORTANT: Filter out whitespace-only items — many PDFs (especially
+        // from Japanese/Vietnamese ERP systems) insert space-only text items
+        // between table cells. These have large widths that corrupt gap analysis.
         const items: {
           x: number;
           y: number;
+          width: number;
           fontSize: number;
           text: string;
         }[] = [];
         for (const item of textContent.items) {
-          if (!('str' in item) || !item.str) continue;
+          if (!('str' in item)) continue;
+          const text = item.str;
+          // Skip empty and whitespace-only items
+          if (!text || !text.trim()) continue;
+          const fontSize = Math.abs(item.transform[0]) || 10;
           items.push({
             x: item.transform[4],
             y: item.transform[5],
-            fontSize: Math.abs(item.transform[0]) || 10,
-            text: item.str
+            width:
+              'width' in item &&
+              typeof item.width === 'number' &&
+              item.width > 0
+                ? item.width
+                : text.length * fontSize * 0.55,
+            fontSize,
+            text
           });
         }
 
         if (items.length === 0) continue;
 
-        // Step 1: Cluster into rows by Y with tolerance
-        const Y_TOLERANCE = 5;
+        // Step 1: Dynamic Y_TOLERANCE based on actual font sizes
+        const fontSizes = items.map((it) => it.fontSize);
+        const sortedFontSizes = [...fontSizes].sort((a, b) => a - b);
+        const medianFontSize =
+          sortedFontSizes[Math.floor(sortedFontSizes.length / 2)] || 10;
+        const Y_TOLERANCE = Math.max(3, medianFontSize * 0.6);
+
         items.sort((a, b) => b.y - a.y);
 
+        // Cluster into rows
         const rowClusters: (typeof items)[] = [];
         let currentCluster: typeof items = [items[0]];
         let clusterY = items[0].y;
@@ -551,6 +798,9 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         for (let i = 1; i < items.length; i++) {
           if (Math.abs(items[i].y - clusterY) <= Y_TOLERANCE) {
             currentCluster.push(items[i]);
+            clusterY =
+              currentCluster.reduce((s, it) => s + it.y, 0) /
+              currentCluster.length;
           } else {
             rowClusters.push(currentCluster);
             currentCluster = [items[i]];
@@ -559,62 +809,132 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         }
         rowClusters.push(currentCluster);
 
-        // Step 2: Within each row, sort by X and merge ONLY truly adjacent fragments
-        // Use character width estimation (fontSize * 0.6 per char) to detect real gaps
-        const rows: string[][] = rowClusters
-          .map((cluster) => {
-            cluster.sort((a, b) => a.x - b.x);
+        // Step 2: Analyze gaps between NON-WHITESPACE items only
+        const allGaps: number[] = [];
+        for (const cluster of rowClusters) {
+          if (cluster.length < 2) continue;
+          const sorted = [...cluster].sort((a, b) => a.x - b.x);
+          for (let i = 1; i < sorted.length; i++) {
+            const prevEndX = sorted[i - 1].x + sorted[i - 1].width;
+            const gap = sorted[i].x - prevEndX;
+            if (gap > 0.5) allGaps.push(gap); // ignore sub-pixel gaps
+          }
+        }
 
-            const cells: string[] = [];
-            let currentText = cluster[0].text;
-            // Estimate where current text ends: x + (char count * avg char width)
-            let currentEndX =
-              cluster[0].x +
-              cluster[0].text.length * cluster[0].fontSize * 0.55;
+        allGaps.sort((a, b) => a - b);
 
-            for (let i = 1; i < cluster.length; i++) {
-              const item = cluster[i];
-              const gap = item.x - currentEndX;
-              // Merge threshold: only merge if gap is less than ~1 character width
-              const charWidth = item.fontSize * 0.55;
-
-              if (gap < charWidth) {
-                // Touching/overlapping fragments — part of same word or number
-                // If there's a tiny gap, it might be a space between words in the same cell
-                if (gap > charWidth * 0.3) {
-                  currentText += ' ' + item.text;
-                } else {
-                  currentText += item.text;
-                }
-                currentEndX = item.x + item.text.length * item.fontSize * 0.55;
-              } else {
-                // Real gap between cells
-                cells.push(currentText.trim());
-                currentText = item.text;
-                currentEndX = item.x + item.text.length * item.fontSize * 0.55;
-              }
+        // Compute a sensible merge threshold from gap distribution
+        let computedThreshold = medianFontSize * 2; // fallback
+        if (allGaps.length > 4) {
+          // Find the biggest relative jump in sorted gaps
+          let maxJumpRatio = 0;
+          let jumpIdx = Math.floor(allGaps.length / 2);
+          for (let i = 1; i < allGaps.length; i++) {
+            const ratio = allGaps[i] / Math.max(allGaps[i - 1], 0.1);
+            if (ratio > maxJumpRatio) {
+              maxJumpRatio = ratio;
+              jumpIdx = i;
             }
-            cells.push(currentText.trim());
+          }
+          computedThreshold = (allGaps[jumpIdx - 1] + allGaps[jumpIdx]) / 2;
+        } else if (allGaps.length > 0) {
+          computedThreshold = allGaps[Math.floor(allGaps.length / 2)];
+        }
 
-            return cells.filter(Boolean);
-          })
-          .filter((row) => row.length > 0);
+        // Build row strings from clusters using a given merge threshold
+        const buildRows = (threshold: number): string[][] =>
+          rowClusters
+            .map((cluster) => {
+              const sorted = [...cluster].sort((a, b) => a.x - b.x);
 
-        if (rows.length === 0) continue;
+              const cells: string[] = [];
+              let currentText = sorted[0].text;
+              let currentEndX = sorted[0].x + sorted[0].width;
 
-        const products = parseSheet(rows);
-        if (products.length === 0) continue;
+              for (let i = 1; i < sorted.length; i++) {
+                const item = sorted[i];
+                const gap = item.x - currentEndX;
 
-        // Priority: smart row scan → filename
+                if (gap < threshold) {
+                  // Same cell
+                  if (gap > medianFontSize * 0.2) {
+                    currentText += ' ' + item.text;
+                  } else {
+                    currentText += item.text;
+                  }
+                  currentEndX = item.x + item.width;
+                } else {
+                  // New cell
+                  cells.push(currentText.trim());
+                  currentText = item.text;
+                  currentEndX = item.x + item.width;
+                }
+              }
+              cells.push(currentText.trim());
+
+              return cells.filter(Boolean);
+            })
+            .filter((row) => row.length > 0);
+
+        // Try multiple thresholds — from tight (many cells) to loose (merged cells)
+        const strategies = [
+          medianFontSize * 0.5, // very tight — separate almost everything
+          medianFontSize * 1.0, // tight — words stay together
+          medianFontSize * 2.0, // moderate
+          computedThreshold, // computed from gap analysis
+          computedThreshold * 0.5, // half of computed
+          computedThreshold * 2 // double computed
+        ];
+        // Deduplicate and sort
+        const uniqueStrategies = [
+          ...new Set(strategies.map((s) => Math.round(s * 10) / 10))
+        ].sort((a, b) => a - b);
+
+        let bestProducts: ParsedProduct[] = [];
+        let bestRows: string[][] = [];
+
+        for (const threshold of uniqueStrategies) {
+          const rows = buildRows(threshold);
+          if (rows.length === 0) continue;
+
+          const products = parseSheet(rows);
+
+          if (products.length > bestProducts.length) {
+            bestProducts = products;
+            bestRows = rows;
+          }
+        }
+
+        // Last resort: each row as a single flat line
+        if (bestProducts.length === 0) {
+          const flatRows = rowClusters
+            .map((cluster) => {
+              const sorted = [...cluster].sort((a, b) => a.x - b.x);
+              return [sorted.map((it) => it.text).join(' ')];
+            })
+            .filter((row) => row[0].trim().length > 0);
+
+          const flatProducts = parseSheet(flatRows);
+          if (flatProducts.length > 0) {
+            bestProducts = flatProducts;
+            bestRows = flatRows;
+          }
+        }
+
+        if (bestProducts.length === 0) {
+          // Log first rows for debugging
+          continue;
+        }
+
         const pdfAutoDate =
-          extractDateFromRows(rows) ?? extractDateFromFilename(file.name);
+          extractDateFromRows(bestRows) ?? extractDateFromFilename(file.name);
 
         newBatches.push({
           id: `${Date.now()}-pdf-p${pageNum}-${Math.random().toString(36).slice(2, 7)}`,
           fileName: file.name,
           sheetName: pdf.numPages > 1 ? `Trang ${pageNum}` : '',
           date: pdfAutoDate,
-          products
+          products: bestProducts
         });
       }
 
@@ -691,11 +1011,11 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         }
 
         setBatches((prev) => [...prev, ...newBatches]);
+        setActiveKeys(newBatches.map((b) => b.id));
         message.success(
           `${file.name}: Thêm ${newBatches.length} bảng dữ liệu.`
         );
-      } catch (err) {
-        console.error('Parse error:', err);
+      } catch {
         message.error(`${file.name}: Không thể đọc file.`);
       }
       return false;
@@ -768,7 +1088,10 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
     }
   };
 
-  const handleReset = () => setBatches([]);
+  const handleReset = () => {
+    setBatches([]);
+    setActiveKeys([]);
+  };
   const handleCancel = () => {
     handleReset();
     onClose();
@@ -907,7 +1230,8 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
 
               {/* Batch list */}
               <Collapse
-                defaultActiveKey={batches.map((b) => b.id)}
+                activeKey={activeKeys}
+                onChange={(keys) => setActiveKeys(keys)}
                 className="!border-0 !bg-transparent"
                 items={batches.map((batch) => {
                   const batchQty = batch.products.reduce(
