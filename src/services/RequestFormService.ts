@@ -238,10 +238,11 @@ export const supervisorRequestFormService = {
     id: number,
     data: ApproveRequestFormDto
   ): Promise<RequestFormDetailResponse> => {
-    return await axiosPrivate.post(
-      `/api/employee/request-forms/as-supervisor/${id}/approve`,
-      data
-    );
+    const endpoint =
+      data.action === 'reject'
+        ? `/api/employee/request-forms/as-supervisor/${id}/reject`
+        : `/api/employee/request-forms/as-supervisor/${id}/approve`;
+    return await axiosPrivate.post(endpoint, data);
   },
 
   // Approve with supervisor signature
@@ -267,15 +268,15 @@ export const supervisorRequestFormService = {
       );
     }
 
-    return await axiosPrivate.post(
-      `/api/employee/request-forms/as-supervisor/${id}/approve`,
-      formData,
-      {
-        headers: {
-          'Content-Type': undefined
-        }
+    const endpoint =
+      data.action === 'reject'
+        ? `/api/employee/request-forms/as-supervisor/${id}/reject`
+        : `/api/employee/request-forms/as-supervisor/${id}/approve`;
+    return await axiosPrivate.post(endpoint, formData, {
+      headers: {
+        'Content-Type': undefined
       }
-    );
+    });
   }
 };
 
