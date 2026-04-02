@@ -1060,6 +1060,7 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
       try {
         await mutateAsync({
           date: batch.date!.format('YYYY-MM-DD'),
+          fileName: batch.fileName,
           products: batch.products.map((p) => ({
             productId: p.matchedProductId,
             quantity: p.csvQuantity

@@ -9,6 +9,7 @@ type ProductPo = {
 
 export type AddPoExportRequest = {
   date: string;
+  fileName: string;
   products: ProductPo[];
 };
 

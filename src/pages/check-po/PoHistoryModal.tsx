@@ -21,12 +21,12 @@ import {
 import {
   Button,
   DatePicker,
+  Drawer,
   Form,
   FormProps,
   Input,
   InputNumber,
   message,
-  Modal,
   Popconfirm,
   Spin,
   Table,
@@ -55,6 +55,7 @@ interface PoHistoryModalProps {
 interface BatchGroup {
   batchId: string;
   date: string;
+  fileName: string;
   employeeName: string;
   createdAt: string;
   productCount: number;
@@ -239,6 +240,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       .map(([batchId, records]) => ({
         batchId,
         date: records[0]?.date || '',
+        fileName: records[0]?.file_name || '',
         employeeName: records[0]?.employee?.name || '—',
         createdAt: records[0]?.updated_at || records[0]?.created_at || '',
         productCount: records.length,
@@ -269,6 +271,21 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
           {value}
         </Tag>
       )
+    },
+    {
+      title: 'Tên file',
+      key: 'fileName',
+      dataIndex: 'fileName',
+      ellipsis: true,
+      width: 160,
+      render: (value: string) =>
+        value ? (
+          <span className="text-xs text-gray-600 dark:text-gray-300">
+            {value}
+          </span>
+        ) : (
+          <span className="text-xs text-gray-300">—</span>
+        )
     },
     {
       title: 'Tổng SP',
@@ -552,7 +569,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
   };
 
   return (
-    <Modal
+    <Drawer
       title={
         <div className="flex items-center gap-2.5">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 text-blue-600">
@@ -569,17 +586,21 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
         </div>
       }
       open={open}
-      onCancel={handleCancel}
-      footer={null}
-      width={900}
-      destroyOnHidden
+      onClose={handleCancel}
+      width="100%"
+      destroyOnClose
       styles={{
-        body: { maxHeight: '75vh', overflowY: 'auto', padding: '16px 24px' }
+        body: {
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }
       }}
     >
-      <div className="space-y-4">
-        {/* ── Filter Bar ──────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="flex h-full flex-col overflow-hidden">
+        {/* ── Sticky Filter Bar ──────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-900">
           <DatePicker
             picker="month"
             value={month}
@@ -608,50 +629,54 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
         </div>
 
         {/* ── Content ─────────────────────────────────────────── */}
-        {!date ? (
-          <Table<BatchGroup> {...batchTableProps} />
-        ) : (
-          <Spin spinning={isLoadingProducts}>
-            <Form<FormFields> {...formProps}>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
-                {filteredProductList.map((product) => (
-                  <Form.Item<FormFields>
-                    key={`product_${product.id}_${date?.format('YYYY-MM-DD')}`}
-                    label={<div className="font-semibold">{product.name}</div>}
-                    name={`product_${product.id}_${date?.format('YYYY-MM-DD')}`}
-                    initialValue={product.daily_quantities_po?.[0]?.quantity}
-                    rules={[
-                      {
-                        type: 'number',
-                        min: 0,
-                        message: 'Số lượng phải lớn hơn hoặc bằng 0'
+        <div className="min-h-0 flex-1 overflow-auto px-6 py-4">
+          {!date ? (
+            <Table<BatchGroup> {...batchTableProps} />
+          ) : (
+            <Spin spinning={isLoadingProducts}>
+              <Form<FormFields> {...formProps}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+                  {filteredProductList.map((product) => (
+                    <Form.Item<FormFields>
+                      key={`product_${product.id}_${date?.format('YYYY-MM-DD')}`}
+                      label={
+                        <div className="font-semibold">{product.name}</div>
                       }
-                    ]}
-                  >
-                    <InputNumber
-                      min={0}
-                      style={{ width: '100%' }}
-                      placeholder="Nhập số lượng"
-                    />
+                      name={`product_${product.id}_${date?.format('YYYY-MM-DD')}`}
+                      initialValue={product.daily_quantities_po?.[0]?.quantity}
+                      rules={[
+                        {
+                          type: 'number',
+                          min: 0,
+                          message: 'Số lượng phải lớn hơn hoặc bằng 0'
+                        }
+                      ]}
+                    >
+                      <InputNumber
+                        min={0}
+                        style={{ width: '100%' }}
+                        placeholder="Nhập số lượng"
+                      />
+                    </Form.Item>
+                  ))}
+                </div>
+                {filteredProductList.length > 0 && (
+                  <Form.Item>
+                    <Button
+                      variant="solid"
+                      color="blue"
+                      loading={isPending}
+                      htmlType="submit"
+                    >
+                      Cập nhật
+                    </Button>
                   </Form.Item>
-                ))}
-              </div>
-              {filteredProductList.length > 0 && (
-                <Form.Item>
-                  <Button
-                    variant="solid"
-                    color="blue"
-                    loading={isPending}
-                    htmlType="submit"
-                  >
-                    Cập nhật
-                  </Button>
-                </Form.Item>
-              )}
-            </Form>
-          </Spin>
-        )}
+                )}
+              </Form>
+            </Spin>
+          )}
+        </div>
       </div>
-    </Modal>
+    </Drawer>
   );
 };
