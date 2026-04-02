@@ -155,7 +155,8 @@ export default function Dashboard() {
         dashboardData.totalRequestForms?.toLocaleString() || '0',
       view_po_list: `Tháng ${new Date().getMonth() + 1}`,
       view_labels_to_print: `Tháng ${new Date().getMonth() + 1}`,
-      view_export_warehouse: `Tháng ${new Date().getMonth() + 1}`
+      storage_export_product: `Tháng ${new Date().getMonth() + 1}`,
+      feed_back: dashboardData.totalFeedback?.toLocaleString() || '0'
     };
   }, [dashboardData]);
 
@@ -220,6 +221,14 @@ export default function Dashboard() {
     if (supervisorWidget) widgets.unshift(supervisorWidget);
     return widgets;
   }, [listWidget, supervisorWidget]);
+
+  // Tính số cột desktop động: chẵn → 2 hàng, lẻ → 3 hàng
+  const xlCols = useMemo(() => {
+    const count = finalWidgetList.length;
+    if (count <= 1) return 1;
+    if (count % 2 === 0) return Math.ceil(count / 2);
+    return Math.ceil(count / 3);
+  }, [finalWidgetList.length]);
 
   // ── Chart visibility (from home permissions) ──
   const showSalaryChart = homePermissions.some(
@@ -557,12 +566,15 @@ export default function Dashboard() {
             </span>
           </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-4">
+          <div
+            className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
+            style={{ '--xl-cols': xlCols } as React.CSSProperties}
+            // xl breakpoint: dynamic columns
+            // Tailwind can't do dynamic values, so we use a CSS custom property + arbitrary value
+          >
+            <style>{`@media (min-width: 1280px) { [style*="--xl-cols"] { grid-template-columns: repeat(var(--xl-cols), minmax(0, 1fr)) !important; } }`}</style>
             {finalWidgetList.map((widget, index) => (
-              <div
-                key={`dashboard-widget-${index}`}
-                className="w-[calc(50%-0.5rem)] sm:w-[calc(20%-0.8rem)]"
-              >
+              <div key={`dashboard-widget-${index}`}>
                 <DashboardWidget
                   title={widget.title}
                   icon={widget.icon}

@@ -15,6 +15,7 @@ type DashboardDataResponse = {
   totalRecord: number;
   totalCheckEmployee: number;
   totalRequestForms: number;
+  totalFeedback: number;
   salaryManagers: SalaryType[];
   celenders: CalendarType[];
 };
@@ -35,7 +36,8 @@ export const fetchDashboardData = async () => {
       totalPlan: response.totalPlan || 0,
       totalRecord: response.totalRecord || 0,
       totalCheckEmployee: response.totalCheckEmployee || 0,
-      totalRequestForms: response.totalRequestForms || 0
+      totalRequestForms: response.totalRequestForms || 0,
+      totalFeedback: response.totalFeedback || 0
     };
 
     const salaryTableData: SalaryType[] = response.salaryManagers || [];

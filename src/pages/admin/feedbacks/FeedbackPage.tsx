@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@hooks/useAuth';
+import { useIsMobile } from '@hooks/useIsMobile';
 import {
   useQuery,
   useMutation,
@@ -12,6 +13,8 @@ import {
   Input,
   Select,
   Space,
+  Spin,
+  Pagination,
   TableColumnsType,
   TableProps,
   Popconfirm,
@@ -81,26 +84,42 @@ const STATUS_OPTIONS = [
 export default function FeedbackPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const isSuperAdmin = (user?.role?.name || '')
     .toLowerCase()
     .includes('super admin');
+  const [anonymous, setAnonymous] = useState(false);
   const { highlightId } = Route.useSearch();
   const highlightHandled = useRef(false);
 
+  // Phím "1" toggle ẩn danh (chỉ super admin)
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === '1') setAnonymous((prev) => !prev);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isSuperAdmin]);
+
+  const showIdentity = isSuperAdmin && !anonymous;
+
   const displayName = useCallback(
     (name?: string, id?: string) => {
-      if (isSuperAdmin) return name || id || 'N/A';
+      if (showIdentity) return name || id || 'N/A';
       return 'Ẩn Danh';
     },
-    [isSuperAdmin]
+    [showIdentity]
   );
 
   const displayId = useCallback(
     (id: string) => {
-      if (isSuperAdmin) return id;
+      if (showIdentity) return id;
       return '••••••';
     },
-    [isSuperAdmin]
+    [showIdentity]
   );
 
   const [page, setPage] = useState(1);
@@ -386,8 +405,112 @@ export default function FeedbackPage() {
             </div>
           </div>
 
-          {/* ── Table ── */}
-          <Table {...tableProps} />
+          {/* ── Content ── */}
+          {isMobile ? (
+            <Spin spinning={isLoading}>
+              <div className="flex flex-col gap-3">
+                {feedbacks.map((record, index) => {
+                  const cfg = STATUS_CONFIG[record.status];
+                  const isHighlighted = String(record.id) === highlightId;
+                  return (
+                    <div
+                      key={record.id}
+                      data-row-key={record.id}
+                      className={`rounded-xl border bg-white p-4 shadow-sm dark:bg-gray-800 ${
+                        isHighlighted
+                          ? 'border-blue-300 ring-2 ring-blue-100 dark:border-blue-600 dark:ring-blue-900/30'
+                          : 'border-gray-100 dark:border-gray-700'
+                      }`}
+                    >
+                      {/* Card top: index + type + status */}
+                      <div className="mb-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                            {index + 1 + 20 * (page - 1)}
+                          </span>
+                          <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                            {TYPE_LABEL[record.type]}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`}
+                          />
+                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                            {cfg.label}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Subject */}
+                      <div
+                        className="cursor-pointer text-[15px] font-semibold text-gray-800 dark:text-white/90"
+                        onClick={() => openDetail(record)}
+                      >
+                        {record.subject}
+                      </div>
+
+                      {/* Sender + time */}
+                      <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-400">
+                        <span className="font-medium text-gray-600 dark:text-gray-300">
+                          {displayName(
+                            record.employee?.name,
+                            record.employee_id
+                          )}
+                        </span>
+                        <span>·</span>
+                        <span>
+                          {dayjs(record.created_at).format('DD/MM/YYYY')}
+                        </span>
+                        <span className="text-[10px]">
+                          ({dayjs(record.created_at).fromNow()})
+                        </span>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                        <Button
+                          size="small"
+                          icon={<FaEye className="text-xs" />}
+                          onClick={() => openDetail(record)}
+                        >
+                          Chi tiết
+                        </Button>
+                        <Popconfirm
+                          title="Xóa góp ý này?"
+                          onConfirm={() => deleteMutation.mutate(record.id)}
+                          okText="Xóa"
+                          cancelText="Hủy"
+                        >
+                          <Button
+                            size="small"
+                            danger
+                            icon={<FaTrashAlt className="text-xs" />}
+                          >
+                            Xóa
+                          </Button>
+                        </Popconfirm>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {total > 20 && (
+                <div className="mt-4 flex justify-center">
+                  <Pagination
+                    current={page}
+                    pageSize={20}
+                    total={total}
+                    onChange={(p) => setPage(p)}
+                    size="small"
+                    showTotal={(t, range) => `${range[0]}-${range[1]} / ${t}`}
+                  />
+                </div>
+              )}
+            </Spin>
+          ) : (
+            <Table {...tableProps} />
+          )}
         </div>
       </ComponentCard>
 
