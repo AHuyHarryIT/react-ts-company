@@ -88,7 +88,7 @@ export default function FeedbackPage() {
   const isSuperAdmin = (user?.role?.name || '')
     .toLowerCase()
     .includes('super admin');
-  const [anonymous, setAnonymous] = useState(false);
+  const [anonymous, setAnonymous] = useState(true);
   const { highlightId } = Route.useSearch();
   const highlightHandled = useRef(false);
 
