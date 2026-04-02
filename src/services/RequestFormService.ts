@@ -202,6 +202,83 @@ export const employeeRequestFormService = {
   }
 };
 
+// Supervisor RequestForm Service
+export const supervisorRequestFormService = {
+  // Get request forms assigned to supervisor
+  getList: async (
+    filters?: RequestFormFilters
+  ): Promise<RequestFormListResponse> => {
+    const params = new URLSearchParams();
+
+    if (filters?.type) params.append('type', filters.type);
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.from_date) params.append('from_date', filters.from_date);
+    if (filters?.to_date) params.append('to_date', filters.to_date);
+    if (filters?.per_page)
+      params.append('per_page', filters.per_page.toString());
+    if (filters?.page) params.append('page', filters.page.toString());
+
+    const queryString = params.toString();
+    const url = queryString
+      ? `/api/employee/request-forms/as-supervisor?${queryString}`
+      : '/api/employee/request-forms/as-supervisor';
+
+    return await axiosPrivate.get(url);
+  },
+
+  // Get detail of specific request form
+  getDetail: async (id: number): Promise<RequestFormDetailResponse> => {
+    return await axiosPrivate.get(
+      `/api/employee/request-forms/as-supervisor/${id}`
+    );
+  },
+
+  // Approve or reject request form
+  approveOrReject: async (
+    id: number,
+    data: ApproveRequestFormDto
+  ): Promise<RequestFormDetailResponse> => {
+    return await axiosPrivate.post(
+      `/api/employee/request-forms/as-supervisor/${id}/approve`,
+      data
+    );
+  },
+
+  // Approve with supervisor signature
+  approveOrRejectWithSignatures: async (
+    id: number,
+    data: {
+      action: 'approve' | 'reject';
+      digital_signature_supervisor?: File;
+      rejection_reason?: string;
+    }
+  ): Promise<RequestFormDetailResponse> => {
+    const formData = new FormData();
+    formData.append('action', data.action);
+
+    if (data.rejection_reason) {
+      formData.append('rejection_reason', data.rejection_reason);
+    }
+
+    if (data.digital_signature_supervisor) {
+      formData.append(
+        'digital_signature_supervisor',
+        data.digital_signature_supervisor
+      );
+    }
+
+    return await axiosPrivate.post(
+      `/api/employee/request-forms/as-supervisor/${id}/approve`,
+      formData,
+      {
+        headers: {
+          'Content-Type': undefined
+        }
+      }
+    );
+  }
+};
+
 // Admin RequestForm Service
 export const adminRequestFormService = {
   // Get all request forms with filters
@@ -288,8 +365,9 @@ export const adminRequestFormService = {
   }
 };
 
-// Export both services
+// Export all services
 export const requestFormService = {
   employee: employeeRequestFormService,
+  supervisor: supervisorRequestFormService,
   admin: adminRequestFormService
 };

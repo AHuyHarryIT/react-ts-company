@@ -1,9 +1,21 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Table, Button, Typography, message, Spin, Input, Select } from 'antd';
+import {
+  Table,
+  Button,
+  Typography,
+  message,
+  Spin,
+  Input,
+  Select,
+  Tooltip
+} from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
-import { ApiErrorResponse } from '@/types/stockTransaction.types';
+import {
+  ApiErrorResponse,
+  TransactionListResponse
+} from '@/types/stockTransaction.types';
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -43,6 +55,8 @@ interface GroupedStockItem {
   bins: number[];
   total_quantity: number;
   bin_count: number;
+  exported_quantity: number;
+  exported_bins: number[];
 }
 
 // Parse lot code "A-ddmmyyyy-shift" → { date, shift, sortableDate }
@@ -78,6 +92,9 @@ const CurrentStockDashboard: React.FC = () => {
     lot?: string;
     showEmpty?: boolean;
   }>({ showEmpty: false });
+  const [exportData, setExportData] = useState<
+    Map<string, { qty: number; bins: number[] }>
+  >(new Map());
 
   // Build product options for filter dropdown
   const productOptions = useMemo(() => {
@@ -150,6 +167,48 @@ const CurrentStockDashboard: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [loadCurrentStock]);
+
+  // Load export (out) transactions to show exported qty/bins per lot
+  const loadExportData = useCallback(async () => {
+    try {
+      const result = await StockTransactionService.getTransactions({
+        type: 'out',
+        per_page: 10000
+      });
+      if (
+        result &&
+        !('success' in result && (result as ApiErrorResponse).success === false)
+      ) {
+        const txData = (result as TransactionListResponse).data || [];
+        const map = new Map<string, { qty: number; bins: number[] }>();
+        txData.forEach((tx) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const flat = tx as any;
+          const pId = flat.product_id || tx.storage_product?.product_id;
+          const lot = flat.lot || tx.storage_product?.lot;
+          const bin = flat.bin ?? tx.storage_product?.bin;
+          const qty = Number(tx.quantity || 0);
+          if (pId && lot) {
+            const key = `${pId}_${lot}`;
+            const existing = map.get(key) || { qty: 0, bins: [] };
+            existing.qty += qty;
+            if (bin != null && !existing.bins.includes(Number(bin))) {
+              existing.bins.push(Number(bin));
+            }
+            map.set(key, existing);
+          }
+        });
+        setExportData(map);
+      }
+    } catch (error) {
+      console.error('Load export data error:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadExportData();
+  }, [loadExportData]);
+
   // Transform API response to table data (lot-by-lot, memoized for stable pagination)
   const groupedStockItems = useMemo((): GroupedStockItem[] => {
     if (!stockData?.stocks) return [];
@@ -183,6 +242,7 @@ const CurrentStockDashboard: React.FC = () => {
       items
         .map((item: CurrentStockRow) => {
           const lotInfo = parseLotInfo(item.lot);
+          const expInfo = exportData.get(`${item.product_id}_${item.lot}`);
           return {
             key: `${item.product_id}_${item.lot}`,
             product_id: item.product_id,
@@ -199,7 +259,9 @@ const CurrentStockDashboard: React.FC = () => {
                   .filter((n) => !isNaN(n))
               : [],
             total_quantity: item.current_quantity,
-            bin_count: item.bin_count
+            bin_count: item.bin_count,
+            exported_quantity: expInfo?.qty || 0,
+            exported_bins: expInfo?.bins || []
           };
         })
         // Default sort: product name → newest date first
@@ -212,10 +274,11 @@ const CurrentStockDashboard: React.FC = () => {
           return b.lotDate.localeCompare(a.lotDate); // newest first
         })
     );
-  }, [stockData, filters]);
+  }, [stockData, filters, exportData]);
 
   const handleRefresh = () => {
     loadCurrentStock();
+    loadExportData();
   };
 
   const handleLotSearch = (value: string) => {
@@ -253,7 +316,6 @@ const CurrentStockDashboard: React.FC = () => {
       align: 'center' as const,
       sorter: (a: GroupedStockItem, b: GroupedStockItem) =>
         a.lotDate.localeCompare(b.lotDate),
-      defaultSortOrder: 'descend' as const,
       render: (record: GroupedStockItem) => (
         <div>
           <div>
@@ -285,6 +347,52 @@ const CurrentStockDashboard: React.FC = () => {
         <Text strong style={{ color: quantity > 0 ? '#52c41a' : '#f5222d' }}>
           {Number(quantity || 0).toLocaleString('vi-VN')}
         </Text>
+      )
+    },
+    {
+      title: 'SL đã xuất',
+      dataIndex: 'exported_quantity',
+      key: 'exported_quantity',
+      width: 100,
+      align: 'center' as const,
+      sorter: (a: GroupedStockItem, b: GroupedStockItem) =>
+        a.exported_quantity - b.exported_quantity,
+      render: (quantity: number) => (
+        <Text
+          style={{
+            color: quantity > 0 ? '#fa8c16' : '#d9d9d9',
+            fontWeight: quantity > 0 ? 600 : 400
+          }}
+        >
+          {Number(quantity || 0).toLocaleString('vi-VN')}
+        </Text>
+      )
+    },
+    {
+      title: 'Thùng đã xuất',
+      dataIndex: 'exported_bins',
+      key: 'exported_bins',
+      width: 150,
+      align: 'center' as const,
+      render: (bins: number[]) => (
+        <Tooltip
+          title={
+            bins?.length > 0
+              ? `Thùng đã xuất: ${[...bins].sort((a, b) => a - b).join(', ')}`
+              : ''
+          }
+        >
+          <Text
+            style={{
+              fontSize: '12px',
+              color: bins?.length > 0 ? '#fa541c' : '#d9d9d9'
+            }}
+          >
+            {bins?.length > 0
+              ? `${bins.length} thùng [${[...bins].sort((a, b) => a - b).join(', ')}]`
+              : '—'}
+          </Text>
+        </Tooltip>
       )
     },
     {
@@ -436,7 +544,7 @@ const CurrentStockDashboard: React.FC = () => {
               setTablePagination({ current: page, pageSize })
           }}
           size="small"
-          scroll={{ x: 800 }}
+          scroll={{ x: 1100 }}
         />
       </div>
 
@@ -513,6 +621,29 @@ const CurrentStockDashboard: React.FC = () => {
                         </span>
                       )}
                     </div>
+
+                    {/* Row 4: Export info */}
+                    {(item.exported_quantity > 0 ||
+                      item.exported_bins.length > 0) && (
+                      <div className="mt-1 flex items-center gap-2 text-xs">
+                        <span className="text-gray-400">Đã xuất:</span>
+                        <Text style={{ color: '#fa8c16' }}>
+                          {Number(item.exported_quantity || 0).toLocaleString(
+                            'vi-VN'
+                          )}{' '}
+                          SP
+                        </Text>
+                        {item.exported_bins.length > 0 && (
+                          <span className="text-[11px] text-red-400">
+                            [
+                            {[...item.exported_bins]
+                              .sort((a, b) => a - b)
+                              .join(', ')}
+                            ]
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
             </div>

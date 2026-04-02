@@ -18,7 +18,7 @@ import {
 import AdminActionModal from '@components/RequestForm/AdminModals';
 import {
   employeeRequestFormService,
-  adminRequestFormService,
+  supervisorRequestFormService,
   requestFormService
 } from '@services/RequestFormService';
 import {
@@ -77,10 +77,10 @@ export default function RequestFormList() {
     queryClient.invalidateQueries({
       queryKey: ['employee-request-forms']
     });
-    // Also invalidate admin queries if supervisor
+    // Also invalidate supervisor queries if supervisor
     if (isSupervisor) {
       queryClient.invalidateQueries({
-        queryKey: ['admin-request-forms']
+        queryKey: ['supervisor-request-forms']
       });
     }
   };
@@ -217,7 +217,7 @@ export default function RequestFormList() {
   // ADMIN/SUPERVISOR TAB QUERIES & MUTATIONS
   // ============================================
 
-  // Fetch admin request forms for supervisor tab
+  // Fetch request forms for supervisor tab (BE đã filter sẵn theo supervisor_id)
   const {
     data: adminData,
     isLoading: adminIsLoading,
@@ -225,8 +225,8 @@ export default function RequestFormList() {
     error: adminError,
     refetch: adminRefetch
   } = useQuery({
-    queryKey: ['admin-request-forms', filters],
-    queryFn: () => adminRequestFormService.getList(filters),
+    queryKey: ['supervisor-request-forms', filters],
+    queryFn: () => supervisorRequestFormService.getList(filters),
     enabled: !!(isSupervisor && activeTab === 'approval'), // Only fetch when supervisor and on approval tab
     staleTime: 0,
     gcTime: 5 * 60 * 1000,
@@ -234,26 +234,13 @@ export default function RequestFormList() {
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
     placeholderData: (previousData) => previousData,
-    select: (response) => {
-      const allData = response.data?.data || [];
-      // Filter for supervisor: only show requests assigned to them BUT not created by themselves
-      const filteredData = allData.filter(
-        (form: RequestForm) =>
-          form.supervisor_id?.toString() === user?.id?.toString() &&
-          form.employee_id?.toString() !== user?.id?.toString() && // Exclude own requests
-          form.type !== 'giay_uy_quyen' // Exclude delegation requests
-      );
-
-      return {
-        data: filteredData,
-        total: filteredData.length,
-        current_page: response.data?.current_page || 1,
-        per_page: response.data?.per_page || 15,
-        last_page: Math.ceil(
-          filteredData.length / (response.data?.per_page || 15)
-        )
-      };
-    }
+    select: (response) => ({
+      data: response.data?.data || [],
+      total: response.data?.total || 0,
+      current_page: response.data?.current_page || 1,
+      per_page: response.data?.per_page || 15,
+      last_page: response.data?.last_page || 1
+    })
   });
 
   // Approval mutation for admin/supervisor
@@ -267,43 +254,40 @@ export default function RequestFormList() {
         action: 'approve' | 'reject';
         rejection_reason?: string;
         digital_signature_supervisor?: File;
-        digital_signature_manager?: File;
       };
     }) => {
-      const {
-        action,
-        digital_signature_supervisor,
-        digital_signature_manager,
-        rejection_reason
-      } = data;
+      const { action, digital_signature_supervisor, rejection_reason } = data;
 
       if (action === 'reject') {
-        return await requestFormService.admin.approveOrReject(id, {
+        return await requestFormService.supervisor.approveOrReject(id, {
           action,
           rejection_reason
         });
       }
 
       // For approve action
-      const hasSignatures =
-        digital_signature_supervisor || digital_signature_manager;
+      const hasSignatures = digital_signature_supervisor;
       return hasSignatures
-        ? await requestFormService.admin.approveOrRejectWithSignatures(id, {
-            action,
-            digital_signature_supervisor,
-            digital_signature_manager
-          })
-        : await requestFormService.admin.approveOrReject(id, { action });
+        ? await requestFormService.supervisor.approveOrRejectWithSignatures(
+            id,
+            {
+              action,
+              digital_signature_supervisor
+            }
+          )
+        : await requestFormService.supervisor.approveOrReject(id, { action });
     },
     onMutate: async ({ id, data: actionData }) => {
-      await queryClient.cancelQueries({ queryKey: ['admin-request-forms'] });
+      await queryClient.cancelQueries({
+        queryKey: ['supervisor-request-forms']
+      });
       const previousData = queryClient.getQueryData([
-        'admin-request-forms',
+        'supervisor-request-forms',
         filters
       ]);
 
       queryClient.setQueryData(
-        ['admin-request-forms', filters],
+        ['supervisor-request-forms', filters],
         (old: unknown) => {
           if (
             !old ||
@@ -350,7 +334,7 @@ export default function RequestFormList() {
     ) => {
       if (context?.previousData) {
         queryClient.setQueryData(
-          ['admin-request-forms', filters],
+          ['supervisor-request-forms', filters],
           context.previousData
         );
       }
@@ -361,10 +345,10 @@ export default function RequestFormList() {
     }
   });
 
-  // Mutation để duyệt trực tiếp đơn Giấy Ủy Quyền (should not happen in supervisor view)
+  // Mutation để duyệt trực tiếp đơn Giấy Ủy Quyền
   const { mutate: approveDirectly } = useMutation({
     mutationFn: (id: number) =>
-      requestFormService.admin.approveOrReject(id, { action: 'approve' }),
+      requestFormService.supervisor.approveOrReject(id, { action: 'approve' }),
     onSuccess: () => {
       message.destroy();
       message.success('Đơn ủy quyền đã được duyệt thành công!');
@@ -387,7 +371,7 @@ export default function RequestFormList() {
     try {
       const service =
         activeTab === 'approval'
-          ? adminRequestFormService
+          ? supervisorRequestFormService
           : employeeRequestFormService;
       const response = await service.getDetail(record.id);
       const fullData = response.data;
@@ -686,18 +670,14 @@ export default function RequestFormList() {
           loading={approveRejectMutation.isPending}
           currentUser={user}
           onCancel={closeModals}
-          onApprove={(data: {
-            digital_signature_supervisor?: File;
-            digital_signature_manager?: File;
-          }) => {
+          onApprove={(data: { digital_signature_supervisor?: File }) => {
             if (selectedRecord) {
               approveRejectMutation.mutate({
                 id: selectedRecord.id,
                 data: {
                   action: 'approve',
                   digital_signature_supervisor:
-                    data.digital_signature_supervisor,
-                  digital_signature_manager: data.digital_signature_manager
+                    data.digital_signature_supervisor
                 }
               });
             }
@@ -812,7 +792,7 @@ export default function RequestFormList() {
                 try {
                   const service =
                     activeTab === 'approval'
-                      ? adminRequestFormService
+                      ? supervisorRequestFormService
                       : employeeRequestFormService;
                   const response = await service.getDetail(selectedRecord.id);
                   const updatedData = response.data;

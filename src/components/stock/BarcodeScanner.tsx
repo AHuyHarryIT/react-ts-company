@@ -127,12 +127,13 @@ const BarcodeScanner: React.FC = () => {
     latestBarcodeRef.current = value;
     clearDebounce();
 
+    // Use longer debounce to wait for scanner to finish sending all characters
     if (value.length >= 5 && value.trim()) {
       debounceTimerRef.current = setTimeout(() => {
         if (latestBarcodeRef.current === value) {
           processScanInput(value);
         }
-      }, 100);
+      }, 400);
     }
   };
 
@@ -275,14 +276,20 @@ const BarcodeScanner: React.FC = () => {
       );
 
       const duration = Math.round(performance.now() - startTime);
-      const body = await response.json();
+      let body: Record<string, unknown> | null = null;
+      try {
+        body = await response.json();
+      } catch {
+        // Response is not JSON — treat as error
+      }
 
       if (response.ok || response.status === 409) {
         recentBarcodesRef.current.add(cacheKey);
         setTimeout(() => recentBarcodesRef.current.delete(cacheKey), 5000);
       }
 
-      if (response.ok) {
+      // Check both HTTP status and body.success
+      if (response.ok && body?.success !== false) {
         setScanCount((prev) => prev + 1);
         const msg =
           currentOp === 'in' ? 'Nhập kho thành công' : 'Xuất kho thành công';
@@ -312,9 +319,14 @@ const BarcodeScanner: React.FC = () => {
               ? 'Thùng này đã được nhập kho trước đó, không thể nhập trùng'
               : 'Thùng này đã được xuất kho trước đó';
         } else if (response.status === 422) {
-          serverMessage = body?.error?.message || 'Format barcode không đúng';
+          serverMessage =
+            ((body?.error as Record<string, unknown>)?.message as string) ||
+            'Format barcode không đúng';
         } else {
-          serverMessage = body?.message || body?.error?.message || errorMsg;
+          serverMessage =
+            (body?.message as string) ||
+            ((body?.error as Record<string, unknown>)?.message as string) ||
+            errorMsg;
         }
         const pName = getProductName(trimmedBarcode);
         appendLog({

@@ -1,9 +1,22 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Table, Button, Typography, message, Spin, Input, Select } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import {
+  Table,
+  Button,
+  Typography,
+  message,
+  Spin,
+  Input,
+  Select,
+  Popover
+} from 'antd';
+import { ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
-import { ApiErrorResponse } from '@/types/stockTransaction.types';
+import { productService } from '@/services/ProductService';
+import {
+  ApiErrorResponse,
+  TransactionListResponse
+} from '@/types/stockTransaction.types';
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -27,6 +40,13 @@ interface CurrentStockApiResponse {
   }[];
 }
 
+interface LotDetail {
+  lot: string;
+  quantity: number;
+  bins: string;
+  bin_count: number;
+}
+
 interface ProductSummaryRow {
   key: number;
   product_id: number;
@@ -35,6 +55,9 @@ interface ProductSummaryRow {
   lot_count: number;
   total_quantity: number;
   total_bins: number;
+  exported_quantity: number;
+  exported_bins: number;
+  lots: LotDetail[];
 }
 
 const ProductStockSummary: React.FC = () => {
@@ -42,6 +65,12 @@ const ProductStockSummary: React.FC = () => {
   const [stockData, setStockData] = useState<CurrentStockApiResponse | null>(
     null
   );
+  const [allProducts, setAllProducts] = useState<
+    { id: number; code: string; name: string }[]
+  >([]);
+  const [exportData, setExportData] = useState<
+    Map<number, { qty: number; bins: number }>
+  >(new Map());
   const [searchText, setSearchText] = useState('');
   const [filterProductId, setFilterProductId] = useState<number | undefined>();
   const [tablePagination, setTablePagination] = useState({
@@ -52,21 +81,76 @@ const ProductStockSummary: React.FC = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = (await StockTransactionService.getCurrentStock()) as {
-        success?: boolean;
-        data?: CurrentStockApiResponse;
-      };
+      // Fetch all products, current stock, and export transactions in parallel
+      const [stockResult, productsResult, exportResult] = await Promise.all([
+        StockTransactionService.getCurrentStock() as Promise<{
+          success?: boolean;
+          data?: CurrentStockApiResponse;
+        }>,
+        productService.list({ limit: 0 }),
+        StockTransactionService.getTransactions({
+          type: 'out',
+          per_page: 10000
+        })
+      ]);
 
-      if (result?.success === false) {
+      // Handle stock data
+      if (stockResult?.success === false) {
         message.error(
-          (result as unknown as ApiErrorResponse).message || 'Có lỗi xảy ra'
+          (stockResult as unknown as ApiErrorResponse).message ||
+            'Có lỗi xảy ra'
         );
         setStockData(null);
-        return;
+      } else {
+        const data = stockResult?.data as CurrentStockApiResponse;
+        setStockData(data || null);
       }
 
-      const data = result?.data as CurrentStockApiResponse;
-      setStockData(data || null);
+      // Handle products data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawProducts = (productsResult as any)?.data || productsResult || [];
+      const productList = (Array.isArray(rawProducts) ? rawProducts : []).map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (p: any) => ({
+          id: Number(p.id),
+          code: String(p.code || ''),
+          name: String(p.name || '')
+        })
+      );
+      setAllProducts(productList);
+
+      // Handle export data - aggregate by product_id
+      if (
+        exportResult &&
+        !(
+          'success' in exportResult &&
+          (exportResult as unknown as ApiErrorResponse).success === false
+        )
+      ) {
+        const txData = (exportResult as TransactionListResponse).data || [];
+        const expMap = new Map<number, { qty: number; bins: Set<string> }>();
+        txData.forEach((tx) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const flat = tx as any;
+          const pId = Number(flat.product_id || tx.storage_product?.product_id);
+          const bin = flat.bin ?? tx.storage_product?.bin;
+          const qty = Number(tx.quantity || 0);
+          if (pId) {
+            const existing = expMap.get(pId) || {
+              qty: 0,
+              bins: new Set<string>()
+            };
+            existing.qty += qty;
+            if (bin != null) existing.bins.add(String(bin));
+            expMap.set(pId, existing);
+          }
+        });
+        const resultMap = new Map<number, { qty: number; bins: number }>();
+        expMap.forEach((v, k) =>
+          resultMap.set(k, { qty: v.qty, bins: v.bins.size })
+        );
+        setExportData(resultMap);
+      }
     } catch {
       message.error('Có lỗi xảy ra khi tải dữ liệu');
       setStockData(null);
@@ -79,8 +163,14 @@ const ProductStockSummary: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  // Build product options for filter
+  // Build product options for filter (from all products)
   const productOptions = useMemo(() => {
+    if (allProducts.length > 0) {
+      return allProducts.map((p) => ({
+        value: p.id,
+        label: `${p.name} (${p.code})`
+      }));
+    }
     if (!stockData?.stocks) return [];
     const seen = new Map<number, string>();
     stockData.stocks.forEach((item) => {
@@ -95,14 +185,13 @@ const ProductStockSummary: React.FC = () => {
       value: id,
       label
     }));
-  }, [stockData]);
+  }, [stockData, allProducts]);
 
-  // Aggregate: group all lots by product → 1 row per product
+  // Aggregate: group all lots by product → 1 row per product, include ALL products
   const summaryData = useMemo((): ProductSummaryRow[] => {
-    if (!stockData?.stocks) return [];
-
-    // Only count items with quantity > 0
-    const items = stockData.stocks.filter((s) => s.current_quantity > 0);
+    // Build stock map from current stock data
+    const stockItems =
+      stockData?.stocks?.filter((s) => s.current_quantity > 0) || [];
 
     const map = new Map<
       number,
@@ -112,35 +201,71 @@ const ProductStockSummary: React.FC = () => {
         qty: number;
         bins: number;
         lots: Set<string>;
+        lotDetails: LotDetail[];
       }
     >();
 
-    items.forEach((item) => {
+    stockItems.forEach((item) => {
       const existing = map.get(item.product_id);
+      const lotDetail: LotDetail = {
+        lot: item.lot,
+        quantity: Number(item.current_quantity || 0),
+        bins: item.bins || '',
+        bin_count: Number(item.bin_count || 0)
+      };
       if (existing) {
         existing.qty += Number(item.current_quantity || 0);
         existing.bins += Number(item.bin_count || 0);
         existing.lots.add(item.lot);
+        existing.lotDetails.push(lotDetail);
       } else {
         map.set(item.product_id, {
           code: item.product_code,
           name: item.product_name,
           qty: Number(item.current_quantity || 0),
           bins: Number(item.bin_count || 0),
-          lots: new Set([item.lot])
+          lots: new Set([item.lot]),
+          lotDetails: [lotDetail]
         });
       }
     });
 
-    let rows = Array.from(map.entries()).map(([id, data]) => ({
-      key: id,
-      product_id: id,
-      product_code: data.code,
-      product_name: data.name,
-      lot_count: data.lots.size,
-      total_quantity: data.qty,
-      total_bins: data.bins
-    }));
+    // Merge all products - products without stock get 0 values
+    let rows: ProductSummaryRow[];
+    if (allProducts.length > 0) {
+      rows = allProducts.map((product) => {
+        const stockInfo = map.get(product.id);
+        const expInfo = exportData.get(product.id);
+        return {
+          key: product.id,
+          product_id: product.id,
+          product_code: stockInfo?.code || product.code,
+          product_name: stockInfo?.name || product.name,
+          lot_count: stockInfo?.lots.size || 0,
+          total_quantity: stockInfo?.qty || 0,
+          total_bins: stockInfo?.bins || 0,
+          exported_quantity: expInfo?.qty || 0,
+          exported_bins: expInfo?.bins || 0,
+          lots: stockInfo?.lotDetails || []
+        };
+      });
+    } else {
+      rows = Array.from(map.entries()).map(([id, data]) => {
+        const expInfo = exportData.get(id);
+        return {
+          key: id,
+          product_id: id,
+          product_code: data.code,
+          product_name: data.name,
+          lot_count: data.lots.size,
+          total_quantity: data.qty,
+          total_bins: data.bins,
+          exported_quantity: expInfo?.qty || 0,
+          exported_bins: expInfo?.bins || 0,
+          lots: data.lotDetails
+        };
+      });
+    }
 
     // Apply filters
     if (filterProductId) {
@@ -155,11 +280,9 @@ const ProductStockSummary: React.FC = () => {
       );
     }
 
-    // Sort by product name
-    return rows.sort((a, b) =>
-      a.product_name.localeCompare(b.product_name, 'vi')
-    );
-  }, [stockData, filterProductId, searchText]);
+    // Sort by product ID
+    return rows.sort((a, b) => a.product_id - b.product_id);
+  }, [stockData, filterProductId, searchText, allProducts, exportData]);
 
   // Total row
   const totals = useMemo(() => {
@@ -167,9 +290,11 @@ const ProductStockSummary: React.FC = () => {
       (acc, r) => ({
         qty: acc.qty + r.total_quantity,
         bins: acc.bins + r.total_bins,
-        lots: acc.lots + r.lot_count
+        lots: acc.lots + r.lot_count,
+        expQty: acc.expQty + r.exported_quantity,
+        expBins: acc.expBins + r.exported_bins
       }),
-      { qty: 0, bins: 0, lots: 0 }
+      { qty: 0, bins: 0, lots: 0, expQty: 0, expBins: 0 }
     );
   }, [summaryData]);
 
@@ -177,15 +302,17 @@ const ProductStockSummary: React.FC = () => {
     {
       title: 'STT',
       key: 'index',
-      width: 50,
+      width: 45,
       align: 'center' as const,
       render: (_: unknown, __: unknown, index: number) => index + 1
     },
     {
       title: 'Sản phẩm',
       key: 'product',
+      width: 160,
       sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
-        a.product_name.localeCompare(b.product_name, 'vi'),
+        a.product_id - b.product_id,
+      defaultSortOrder: 'ascend' as const,
       render: (record: ProductSummaryRow) => (
         <div>
           <Text strong>{record.product_name}</Text>
@@ -201,11 +328,60 @@ const ProductStockSummary: React.FC = () => {
       title: 'Số lots',
       dataIndex: 'lot_count',
       key: 'lot_count',
-      width: 80,
+      width: 100,
       align: 'center' as const,
       sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
         a.lot_count - b.lot_count,
-      render: (v: number) => <Text style={{ color: '#8c8c8c' }}>{v}</Text>
+      render: (_: number, record: ProductSummaryRow) =>
+        record.lot_count > 0 ? (
+          <Popover
+            title={`Chi tiết Lots - ${record.product_name}`}
+            trigger="click"
+            content={
+              <div className="max-h-60 overflow-auto" style={{ minWidth: 300 }}>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-2 py-1.5 text-left">Lot</th>
+                      <th className="px-2 py-1.5 text-right">Tồn kho</th>
+                      <th className="px-2 py-1.5 text-right">Thùng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {record.lots.map((lot) => (
+                      <tr key={lot.lot} className="border-b border-gray-100">
+                        <td className="px-2 py-1.5">
+                          <Text code style={{ fontSize: '13px' }}>
+                            {lot.lot}
+                          </Text>
+                        </td>
+                        <td className="px-2 py-1.5 text-right">
+                          <Text strong style={{ color: '#52c41a' }}>
+                            {Number(lot.quantity || 0).toLocaleString('vi-VN')}
+                          </Text>
+                        </td>
+                        <td className="px-2 py-1.5 text-right">
+                          <Text strong style={{ color: '#1890ff' }}>
+                            {lot.bin_count}
+                          </Text>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            }
+          >
+            <span
+              className="cursor-pointer text-blue-500 hover:text-blue-700"
+              style={{ borderBottom: '1px dashed currentColor' }}
+            >
+              {record.lot_count} <InfoCircleOutlined style={{ fontSize: 10 }} />
+            </span>
+          </Popover>
+        ) : (
+          <Text style={{ color: '#d9d9d9' }}>0</Text>
+        )
     },
     {
       title: 'Tổng tồn kho',
@@ -218,9 +394,40 @@ const ProductStockSummary: React.FC = () => {
       render: (v: number) => (
         <Text
           strong
-          style={{ color: v > 0 ? '#52c41a' : '#f5222d', fontSize: '14px' }}
+          style={{ color: v > 0 ? '#52c41a' : '#d9d9d9', fontSize: '14px' }}
         >
           {Number(v || 0).toLocaleString('vi-VN')}
+        </Text>
+      )
+    },
+    {
+      title: 'SL xuất',
+      dataIndex: 'exported_quantity',
+      key: 'exported_quantity',
+      width: 100,
+      align: 'center' as const,
+      sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
+        a.exported_quantity - b.exported_quantity,
+      render: (v: number) => (
+        <Text
+          strong
+          style={{ color: v > 0 ? '#fa8c16' : '#d9d9d9', fontSize: '14px' }}
+        >
+          {Number(v || 0).toLocaleString('vi-VN')}
+        </Text>
+      )
+    },
+    {
+      title: 'Thùng xuất',
+      dataIndex: 'exported_bins',
+      key: 'exported_bins',
+      width: 90,
+      align: 'center' as const,
+      sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
+        a.exported_bins - b.exported_bins,
+      render: (v: number) => (
+        <Text strong style={{ color: v > 0 ? '#fa541c' : '#d9d9d9' }}>
+          {v}
         </Text>
       )
     },
@@ -228,15 +435,68 @@ const ProductStockSummary: React.FC = () => {
       title: 'Tổng thùng',
       dataIndex: 'total_bins',
       key: 'total_bins',
-      width: 100,
+      width: 120,
       align: 'center' as const,
       sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
         a.total_bins - b.total_bins,
-      render: (v: number) => (
-        <Text strong style={{ color: '#1890ff' }}>
-          {v}
-        </Text>
-      )
+      render: (_: number, record: ProductSummaryRow) =>
+        record.total_bins > 0 ? (
+          <Popover
+            title={`Chi tiết Thùng - ${record.product_name}`}
+            trigger="click"
+            content={
+              <div className="max-h-60 overflow-auto" style={{ minWidth: 320 }}>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-2 py-1.5 text-left">Lot</th>
+                      <th className="px-2 py-1.5 text-right">Số thùng</th>
+                      <th className="px-2 py-1.5 text-left">DS thùng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {record.lots.map((lot) => (
+                      <tr key={lot.lot} className="border-b border-gray-100">
+                        <td className="px-2 py-1.5">
+                          <Text code style={{ fontSize: '13px' }}>
+                            {lot.lot}
+                          </Text>
+                        </td>
+                        <td className="px-2 py-1.5 text-right">
+                          <Text strong style={{ color: '#1890ff' }}>
+                            {lot.bin_count}
+                          </Text>
+                        </td>
+                        <td className="px-2 py-1.5 text-left font-medium text-purple-600">
+                          {lot.bins || '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t font-semibold">
+                      <td className="px-2 py-1.5">Tổng</td>
+                      <td className="px-2 py-1.5 text-right text-blue-600">
+                        {record.total_bins}
+                      </td>
+                      <td className="px-2 py-1.5"></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            }
+          >
+            <span
+              className="cursor-pointer font-semibold text-blue-500 hover:text-blue-700"
+              style={{ borderBottom: '1px dashed currentColor' }}
+            >
+              {record.total_bins}{' '}
+              <InfoCircleOutlined style={{ fontSize: 10 }} />
+            </span>
+          </Popover>
+        ) : (
+          <Text style={{ color: '#d9d9d9' }}>0</Text>
+        )
     }
   ];
 
@@ -340,33 +600,7 @@ const ProductStockSummary: React.FC = () => {
               setTablePagination({ current: page, pageSize })
           }}
           size="small"
-          scroll={{ x: 500 }}
-          summary={() =>
-            summaryData.length > 1 ? (
-              <Table.Summary fixed>
-                <Table.Summary.Row className="bg-gray-50 font-semibold">
-                  <Table.Summary.Cell index={0} colSpan={2} align="right">
-                    <Text strong>Tổng cộng</Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={2} align="center">
-                    <Text strong style={{ color: '#8c8c8c' }}>
-                      {totals.lots}
-                    </Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={3} align="center">
-                    <Text strong style={{ color: '#52c41a', fontSize: '14px' }}>
-                      {totals.qty.toLocaleString('vi-VN')}
-                    </Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={4} align="center">
-                    <Text strong style={{ color: '#1890ff' }}>
-                      {totals.bins}
-                    </Text>
-                  </Table.Summary.Cell>
-                </Table.Summary.Row>
-              </Table.Summary>
-            ) : null
-          }
+          scroll={{ x: 800 }}
         />
       </div>
 
@@ -404,7 +638,7 @@ const ProductStockSummary: React.FC = () => {
                         strong
                         style={{
                           color:
-                            item.total_quantity > 0 ? '#52c41a' : '#f5222d',
+                            item.total_quantity > 0 ? '#52c41a' : '#d9d9d9',
                           fontSize: '16px'
                         }}
                       >
@@ -416,32 +650,109 @@ const ProductStockSummary: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Row 2: Lots + Bins */}
-                  <div className="mt-1.5 flex items-center gap-4 text-xs">
-                    <span className="text-gray-500">{item.lot_count} lots</span>
-                    <Text strong style={{ color: '#1890ff' }}>
-                      {item.total_bins} thùng
+                  {/* Row 2: Export info */}
+                  <div className="mt-1 flex items-center gap-3 text-xs">
+                    <span className="text-gray-400">Đã xuất:</span>
+                    <Text
+                      style={{
+                        color:
+                          item.exported_quantity > 0 ? '#fa8c16' : '#d9d9d9'
+                      }}
+                    >
+                      {Number(item.exported_quantity || 0).toLocaleString(
+                        'vi-VN'
+                      )}{' '}
+                      SP
                     </Text>
+                    <Text
+                      style={{
+                        color: item.exported_bins > 0 ? '#fa541c' : '#d9d9d9'
+                      }}
+                    >
+                      {item.exported_bins} thùng
+                    </Text>
+                  </div>
+
+                  {/* Row 2: Lots + Bins (clickable for details) */}
+                  <div className="mt-1.5 flex items-center gap-4 text-xs">
+                    {item.lot_count > 0 ? (
+                      <Popover
+                        title="Chi tiết Lots"
+                        trigger="click"
+                        content={
+                          <div className="max-h-48 overflow-auto text-sm">
+                            {item.lots.map((lot) => (
+                              <div
+                                key={lot.lot}
+                                className="flex items-center justify-between gap-3 border-b border-gray-100 py-1.5"
+                              >
+                                <Text code style={{ fontSize: '13px' }}>
+                                  {lot.lot}
+                                </Text>
+                                <span>
+                                  <Text strong style={{ color: '#52c41a' }}>
+                                    {Number(lot.quantity || 0).toLocaleString(
+                                      'vi-VN'
+                                    )}
+                                  </Text>{' '}
+                                  ·{' '}
+                                  <Text strong style={{ color: '#1890ff' }}>
+                                    {lot.bin_count} thùng
+                                  </Text>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        }
+                      >
+                        <span
+                          className="cursor-pointer text-blue-500"
+                          style={{ borderBottom: '1px dashed currentColor' }}
+                        >
+                          {item.lot_count} lots{' '}
+                          <InfoCircleOutlined style={{ fontSize: 10 }} />
+                        </span>
+                      </Popover>
+                    ) : (
+                      <span className="text-gray-300">0 lots</span>
+                    )}
+                    {item.total_bins > 0 ? (
+                      <Popover
+                        title="Chi tiết Thùng"
+                        trigger="click"
+                        content={
+                          <div className="max-h-48 overflow-auto text-sm">
+                            {item.lots.map((lot) => (
+                              <div
+                                key={lot.lot}
+                                className="flex items-center justify-between gap-3 border-b border-gray-100 py-1.5"
+                              >
+                                <Text code style={{ fontSize: '13px' }}>
+                                  {lot.lot}
+                                </Text>
+                                <span className="font-medium text-purple-600">
+                                  {lot.bins || '—'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        }
+                      >
+                        <span
+                          className="cursor-pointer font-semibold text-blue-500"
+                          style={{ borderBottom: '1px dashed currentColor' }}
+                        >
+                          {item.total_bins} thùng{' '}
+                          <InfoCircleOutlined style={{ fontSize: 10 }} />
+                        </span>
+                      </Popover>
+                    ) : (
+                      <span className="text-gray-300">0 thùng</span>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Mobile totals footer */}
-            {summaryData.length > 1 && (
-              <div className="mt-3 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs">
-                <Text strong>Tổng cộng</Text>
-                <div className="flex items-center gap-4">
-                  <span className="text-gray-500">{totals.lots} lots</span>
-                  <Text strong style={{ color: '#52c41a', fontSize: '13px' }}>
-                    {totals.qty.toLocaleString('vi-VN')}
-                  </Text>
-                  <Text strong style={{ color: '#1890ff' }}>
-                    {totals.bins} thùng
-                  </Text>
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>
