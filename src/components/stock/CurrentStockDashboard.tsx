@@ -391,9 +391,8 @@ const CurrentStockDashboard: React.FC = () => {
           </Text>
           {bins && bins.length > 0 && (
             <div className="flex flex-wrap justify-center gap-1">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {[...bins]
-                .sort((a: any, b: any) => a - b)
+                .sort((a: number, b: number) => a - b)
                 .map((b) => (
                   <div
                     key={b}
@@ -420,9 +419,8 @@ const CurrentStockDashboard: React.FC = () => {
           </Text>
           {record.bins && record.bins.length > 0 && (
             <div className="flex flex-wrap justify-center gap-1">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {[...record.bins]
-                .sort((a: any, b: any) => a - b)
+                .sort((a: number, b: number) => a - b)
                 .map((b) => (
                   <div
                     key={b}

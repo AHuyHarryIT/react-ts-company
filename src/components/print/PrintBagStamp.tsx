@@ -20,6 +20,7 @@ interface PrintBagStampProps {
   employee_id?: EmployeeType['id'];
   stamp_id?: string;
   purpose?: 'new' | 'additional' | 'reprint';
+  onPrintSuccess?: () => void;
 }
 
 export const PrintBagStamp = ({
@@ -30,7 +31,8 @@ export const PrintBagStamp = ({
   shift,
   employee_id,
   stamp_id,
-  purpose
+  purpose,
+  onPrintSuccess
 }: PrintBagStampProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef: contentRef });
@@ -77,6 +79,7 @@ export const PrintBagStamp = ({
       message.success('In thành công');
       queryClient.invalidateQueries();
       if (stamp_id) handleRemoveNotification(stamp_id);
+      if (onPrintSuccess) onPrintSuccess();
     },
     onError: () => {
       console.error('Error saving print log');

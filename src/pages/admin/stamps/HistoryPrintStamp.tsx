@@ -107,20 +107,26 @@ export default function HistoryPrintStamp() {
           onOk: () => {
             setSelectedRecord(record);
             setTimeout(() => {
-              printPreviewRef.current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-              });
+              if (printPreviewRef.current) {
+                printPreviewRef.current.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start'
+                });
+                printPreviewRef.current.focus({ preventScroll: true });
+              }
             }, 100);
           }
         });
       } else {
         setSelectedRecord(record);
         setTimeout(() => {
-          printPreviewRef.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
+          if (printPreviewRef.current) {
+            printPreviewRef.current.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+            printPreviewRef.current.focus({ preventScroll: true });
+          }
         }, 100);
       }
     },
@@ -162,6 +168,49 @@ export default function HistoryPrintStamp() {
 
     checkDuplicate(requestData);
   };
+
+  // Keyboard shortcuts cho phím Enter:
+  // - Khi chưa chọn -> tự động focus/chọn bản ghi "Chờ in" đầu tiên
+  // - Khi có bản ghi được chọn (hiện preview) -> kích hoạt in
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeElement = document.activeElement as HTMLElement;
+      const tag = activeElement?.tagName;
+
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      if (e.key === 'Enter') {
+        // Ant Design modal "OK" button sẽ tự nhận phím Enter (nếu đang focus)
+        if (tag === 'BUTTON') return;
+
+        if (selectedRecord) {
+          e.preventDefault();
+          // Mở hộp thoại in thông qua trigger sự kiện Ctrl+P cho usePrintShortcut bắt
+          // Điều này giúp lưu trạng thái in đúng cách giống như ấn nút "Print" trên UI
+          window.dispatchEvent(
+            new KeyboardEvent('keydown', {
+              key: 'p',
+              ctrlKey: true,
+              bubbles: true
+            })
+          );
+        } else {
+          // Lần 1: tìm bản ghi "pending" đầu tiên trên trang hiện tại
+          const firstPendingRecord = dataSource?.find(
+            (record) => record.status === 'pending'
+          );
+          if (firstPendingRecord) {
+            e.preventDefault();
+            handlePrintClick(firstPendingRecord);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRecord, dataSource]); // Lắng nghe dataSource để lấy dòng đầu tiên nếu thay đổi
 
   // Effect để scroll đến dòng được highlight
   useEffect(() => {
@@ -805,7 +854,7 @@ export default function HistoryPrintStamp() {
 
       {/* Print Preview Section */}
       {selectedRecord && (
-        <div ref={printPreviewRef} className="mt-8">
+        <div ref={printPreviewRef} tabIndex={-1} className="mt-8 outline-none">
           <ComponentCard title="Xem trước khi in">
             <div className="space-y-5">
               {/* Print Info Header */}
@@ -876,6 +925,7 @@ export default function HistoryPrintStamp() {
                   date={dayjs(selectedRecord.date)}
                   employee_id={selectedRecord.employee_id}
                   stamp_id={selectedRecord.id}
+                  onPrintSuccess={() => setSelectedRecord(null)}
                 />
               )}
 
@@ -896,6 +946,7 @@ export default function HistoryPrintStamp() {
                   date={dayjs(selectedRecord.date)}
                   employee_id={selectedRecord.employee_id}
                   stamp_id={selectedRecord.id}
+                  onPrintSuccess={() => setSelectedRecord(null)}
                 />
               )}
             </div>

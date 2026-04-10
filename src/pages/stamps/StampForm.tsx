@@ -63,11 +63,12 @@ export default function StampForm() {
       // Disable Ctrl+P / Cmd+P
       if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
         e.preventDefault();
-        e.stopPropagation();
+        // Không dùng e.stopPropagation() để cho usePrintShortcut phía dưới nhận event
       }
 
-      // Skip if user is typing in an input
       const tag = (e.target as HTMLElement)?.tagName;
+
+      // Skip if user is typing in an input
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
       // Press 1 → Tem Bịch, Press 2 → Tem Thùng
@@ -81,16 +82,28 @@ export default function StampForm() {
         form.resetFields();
       }
 
-      // Enter → Submit form
+      // Enter → Submit form or Print
       if (e.key === 'Enter') {
+        if (tag === 'BUTTON') return; // Allow natural button click
+
         e.preventDefault();
-        form.submit();
+        if (stampData) {
+          window.dispatchEvent(
+            new KeyboardEvent('keydown', {
+              key: 'p',
+              ctrlKey: true,
+              bubbles: true
+            })
+          );
+        } else {
+          form.submit();
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [form]);
+  }, [form, stampData]);
 
   const { data: productsData } = useCrudList({
     service: productService,
@@ -134,10 +147,13 @@ export default function StampForm() {
 
       // Scroll to preview section after a short delay to ensure it's rendered
       setTimeout(() => {
-        previewRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
+        if (previewRef.current) {
+          previewRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          previewRef.current.focus({ preventScroll: true });
+        }
       }, 100);
     },
     onReset: () => {
@@ -432,7 +448,7 @@ export default function StampForm() {
 
       {/* ── Preview Section ──────────────────────────────────── */}
       {stampData && (
-        <div ref={previewRef} className="mt-4">
+        <div ref={previewRef} tabIndex={-1} className="mt-4 outline-none">
           <ComponentCard title="Xem trước khi in">
             <div className="space-y-5">
               {/* Print Info Header */}
