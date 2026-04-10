@@ -63,7 +63,8 @@ export default function SalariesList() {
       return response;
     },
     enabled: !!selectedSalaryId,
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
+    retry: false
   });
 
   const paginationProps: PaginationProps = {

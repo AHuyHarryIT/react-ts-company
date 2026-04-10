@@ -20,22 +20,44 @@ function MobileScheduleCard({ item }: { item: ScheduleDetailType }) {
       className={`flex items-center rounded-lg border px-3 py-2.5 transition-all ${
         isWeekend ? 'border-gray-200 bg-gray-50' : 'border-gray-100 bg-white'
       }`}
+      style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}
     >
       {/* Weekday - fixed width */}
       <span
         className={`w-7 shrink-0 text-center text-[12px] font-semibold ${
           isWeekend ? 'text-red-400' : 'text-gray-400'
         }`}
+        style={{ flexShrink: 0, width: '28px', textAlign: 'center' }}
       >
         {date.format('dd')}
       </span>
       {/* Date - grows */}
-      <span className="ml-2 flex-1 text-sm font-medium text-gray-700">
+      <span
+        className="ml-2 flex-1 text-sm font-medium text-gray-700"
+        style={{ flex: 1, marginLeft: '8px' }}
+      >
         {date.format('DD/MM')}
       </span>
       {/* Shift icon + label - grouped, pushed right */}
-      <div className="ml-auto flex w-28 shrink-0 items-center gap-1.5">
-        <span className="w-8 shrink-0 text-center">
+      <div
+        className="ml-auto flex w-28 shrink-0 items-center gap-1.5"
+        style={{
+          marginLeft: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          flexShrink: 0,
+          width: '112px'
+        }}
+      >
+        <span
+          className="w-8 shrink-0 text-center"
+          style={{
+            flexShrink: 0,
+            width: '32px',
+            textAlign: 'center',
+            marginRight: '6px'
+          }}
+        >
           {legend ? legend.icon : <span className="text-gray-300">-</span>}
         </span>
         <span className="text-[12px] text-gray-500">{legend?.label ?? ''}</span>

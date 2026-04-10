@@ -14,6 +14,7 @@ import { ErrorTable } from '@components/check-po/ErrorTable';
 import { WeekTable } from '@components/check-po/WeekTable';
 import ComponentCard from '@components/common/ComponentCard';
 import { getWeeksInMonth } from '@utils/weeksInMonth';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 import { IconAdd, IconHistory } from '@components/icons';
 import { FaTruck, FaWarehouse } from 'react-icons/fa6';
@@ -25,6 +26,7 @@ import { PoHistoryModal } from './PoHistoryModal';
 import { ExcelToCsvModal } from './ExcelToCsvModal';
 
 export const PoList = () => {
+  const isMobile = useIsMobile();
   const [month, setMonth] = useState<Dayjs>(dayjs());
   const [search, setSearch] = useState('');
 
@@ -127,6 +129,7 @@ export const PoList = () => {
             color="green"
             icon={<IconAdd />}
             onClick={() => setAddQuantityOpen(true)}
+            size={isMobile ? 'small' : 'middle'}
           >
             Thêm sản lượng
           </Button>
@@ -135,6 +138,7 @@ export const PoList = () => {
             color="blue"
             icon={<FaTruck />}
             onClick={() => setAddExportOpen(true)}
+            size={isMobile ? 'small' : 'middle'}
           >
             Thêm PO xuất hàng
           </Button>
@@ -143,6 +147,7 @@ export const PoList = () => {
             color="blue"
             icon={<FaWarehouse />}
             onClick={() => setAddInventoryOpen(true)}
+            size={isMobile ? 'small' : 'middle'}
           >
             Thêm tồn đầu kỳ
           </Button>
@@ -151,30 +156,31 @@ export const PoList = () => {
             color="blue"
             icon={<IconHistory />}
             onClick={() => setHistoryOpen(true)}
+            size={isMobile ? 'small' : 'middle'}
           >
             Lịch sử nhập PO
           </Button>
           <ExportPoModal />
           <ExcelToCsvModal />
 
-          <div className="ml-auto flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+          <div className="ml-auto flex w-full flex-wrap items-center gap-3 md:w-auto">
+            <div className="flex flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 lg:flex-none dark:border-gray-600 dark:bg-gray-800">
               <FaSearch className="text-xs text-gray-400" />
               <Input
                 placeholder="Tìm sản phẩm..."
                 allowClear
-                size="small"
-                className="!w-48 !border-0 !shadow-none"
+                size={isMobile ? 'small' : 'middle'}
+                className="!w-full min-w-[120px] !border-0 !shadow-none lg:!w-48"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
-              <span className="mr-2 text-xs text-gray-500">📅 Tháng:</span>
+            <div className="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 sm:w-auto dark:border-gray-600 dark:bg-gray-800">
+              <span className="text-xs text-gray-500">📅 Tháng:</span>
               <DatePicker
                 picker="month"
                 value={month}
-                size="small"
+                size={isMobile ? 'small' : 'middle'}
                 className="!rounded-lg"
                 onChange={(date) => (date ? setMonth(date) : setMonth(dayjs()))}
               />
@@ -185,10 +191,11 @@ export const PoList = () => {
         {/* ── Tabs ──────────────────────────────────────────────── */}
         <Tabs
           items={poTabs}
-          type="card"
-          size="large"
+          type={isMobile ? 'line' : 'card'}
+          size={isMobile ? 'small' : 'large'}
           animated
           destroyOnHidden
+          tabBarStyle={isMobile ? { marginBottom: 12 } : undefined}
         />
       </div>
 

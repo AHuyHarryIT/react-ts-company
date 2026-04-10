@@ -1,4 +1,5 @@
 import { useAuth } from '@hooks/useAuth';
+import { useIsMobile } from '@hooks/useIsMobile';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Badge,
@@ -909,6 +910,7 @@ const suggestIconsForName = (name: string): string[] => {
 };
 
 function PermissionsManager() {
+  const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingPerm, setEditingPerm] = useState<Permission | null>(null);
@@ -1368,20 +1370,130 @@ function PermissionsManager() {
         </div>
       </div>
 
-      <Table<Permission>
-        {...(customTableProps as unknown as TableProps<Permission>)}
-        columns={columns}
-        dataSource={permissions}
-        rowKey="id"
-        loading={isLoading}
-      />
+      {isMobile ? (
+        <Spin spinning={isLoading}>
+          {permissions.length === 0 && !isLoading ? (
+            <Empty description="Không có dữ liệu" />
+          ) : (
+            <div className="flex flex-col gap-3">
+              {permissions.map((perm, index) => (
+                <div
+                  key={perm.id}
+                  className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                          {perm.name}
+                        </span>
+                        {renderIconPreview(
+                          perm.icon || (perm.sidebar_items?.[0]?.icon as string)
+                        )}
+                      </div>
+                      <code className="text-[11px] text-gray-400">
+                        {perm.key}
+                      </code>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    <Tag
+                      color={
+                        perm.type === 'admin'
+                          ? 'purple'
+                          : perm.type === 'employee'
+                            ? 'green'
+                            : 'gold'
+                      }
+                      className="!m-0 !text-[10px]"
+                    >
+                      {perm.type}
+                    </Tag>
+                    <Tag
+                      color={
+                        perm.display_area === 'sidebar'
+                          ? 'blue'
+                          : perm.display_area === 'home'
+                            ? 'cyan'
+                            : 'geekblue'
+                      }
+                      className="!m-0 !text-[10px]"
+                    >
+                      {perm.display_area}
+                    </Tag>
+                    {perm.module && (
+                      <Tag color="cyan" className="!m-0 !text-[10px]">
+                        {perm.module}
+                      </Tag>
+                    )}
+                    {(perm.sidebar_items?.length ?? 0) > 0 && (
+                      <Badge
+                        count={perm.sidebar_items?.length}
+                        color="#1677ff"
+                      />
+                    )}
+                  </div>
+
+                  {perm.url && (
+                    <div className="mt-1.5">
+                      <code className="text-[11px] text-green-600">
+                        {perm.url}
+                      </code>
+                    </div>
+                  )}
+
+                  <div className="mt-2 flex items-center justify-end gap-2 border-t border-gray-100 pt-2 dark:border-gray-700">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<FiEdit3 />}
+                      onClick={() => openEdit(perm)}
+                    >
+                      Sửa
+                    </Button>
+                    <Popconfirm
+                      title="Xóa quyền?"
+                      description="Sidebar items cũng bị xóa."
+                      onConfirm={() => deleteMut.mutate(perm.id)}
+                      okText="Xóa"
+                      cancelText="Hủy"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<FaTrash />}
+                        danger
+                      >
+                        Xóa
+                      </Button>
+                    </Popconfirm>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Spin>
+      ) : (
+        <Table<Permission>
+          {...(customTableProps as unknown as TableProps<Permission>)}
+          columns={columns}
+          dataSource={permissions}
+          rowKey="id"
+          loading={isLoading}
+        />
+      )}
 
       {/* ══════ Permission Drawer (includes sidebar items) ══════ */}
       <Drawer
         title={editingPerm ? `Sửa: ${editingPerm.name}` : 'Thêm quyền mới'}
         open={drawerOpen}
         onClose={closeDrawer}
-        width={520}
+        width={isMobile ? '100%' : 520}
         footer={
           <div className="flex justify-end gap-2">
             <Button onClick={closeDrawer}>Đóng</Button>
@@ -1757,6 +1869,7 @@ function UserPermissionDrawer({
   open: boolean;
   onClose: () => void;
 }) {
+  const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   // checkedIds = tập hợp TẤT CẢ permission IDs mà user ĐANG ĐƯỢC bật (bao gồm role + granted - denied)
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
@@ -1894,7 +2007,7 @@ function UserPermissionDrawer({
       }
       open={open}
       onClose={onClose}
-      width={640}
+      width={isMobile ? '100%' : 640}
       footer={
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -2163,6 +2276,7 @@ function UserPermissionDrawer({
 // ─────────────────────────────────────────────────────────────────────────────
 
 function AdminManager() {
+  const isMobile = useIsMobile();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
@@ -2401,13 +2515,110 @@ function AdminManager() {
       )}
 
       {/* Admin List Table */}
-      <Table<AdminUser>
-        {...(customTableProps as unknown as TableProps<AdminUser>)}
-        columns={columns}
-        dataSource={adminUsers}
-        rowKey="id"
-        loading={isLoading}
-      />
+      {isMobile ? (
+        <Spin spinning={isLoading}>
+          {adminUsers.length === 0 && !isLoading ? (
+            <Empty description="Không có admin nào" />
+          ) : (
+            <div className="flex flex-col gap-3">
+              {adminUsers.map((record, index) => {
+                const isSelf = record.id === user?.id?.toString();
+                return (
+                  <div
+                    key={record.id}
+                    className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                            {record.name}
+                          </span>
+                          <Tag
+                            color={
+                              record.role_name?.toLowerCase().includes('co')
+                                ? 'geekblue'
+                                : 'purple'
+                            }
+                            className="!m-0 !text-[10px]"
+                          >
+                            {record.role_name || 'Admin'}
+                          </Tag>
+                        </div>
+                        <code className="font-mono text-[11px] text-gray-400">
+                          {record.phone}
+                        </code>
+                      </div>
+                    </div>
+
+                    <div className="mt-1 flex items-center justify-between text-[11px] text-gray-400">
+                      <span>
+                        {record.created_at
+                          ? new Date(record.created_at).toLocaleDateString(
+                              'vi-VN',
+                              {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                              }
+                            )
+                          : '—'}
+                      </span>
+                      {(record.direct_permissions_count ?? 0) > 0 && (
+                        <Badge
+                          count={record.direct_permissions_count}
+                          color="#10b981"
+                        />
+                      )}
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-end gap-2 border-t border-gray-100 pt-2 dark:border-gray-700">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<FaUserShield className="text-violet-500" />}
+                        onClick={() => setPermDrawerUser(record)}
+                      >
+                        Quyền
+                      </Button>
+                      <Popconfirm
+                        title="Xoá tài khoản này?"
+                        description={`${record.name} (${record.phone})`}
+                        onConfirm={() => deleteMut.mutate(record.id)}
+                        okText="Xoá"
+                        cancelText="Hủy"
+                        okButtonProps={{ danger: true }}
+                        disabled={isSelf}
+                      >
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<FaTrash />}
+                          danger
+                          disabled={isSelf}
+                        >
+                          Xoá
+                        </Button>
+                      </Popconfirm>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Spin>
+      ) : (
+        <Table<AdminUser>
+          {...(customTableProps as unknown as TableProps<AdminUser>)}
+          columns={columns}
+          dataSource={adminUsers}
+          rowKey="id"
+          loading={isLoading}
+        />
+      )}
 
       {/* User Permission Drawer */}
       <UserPermissionDrawer
@@ -2425,6 +2636,7 @@ function AdminManager() {
 
 export default function RBACPage() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const roleName = user?.role.name?.toLowerCase() || '';
 
   if (!roleName.includes('super admin')) {
@@ -2443,7 +2655,7 @@ export default function RBACPage() {
           <div className="flex items-center gap-2">
             <FaShieldAlt className="text-blue-500" />
             <span className="text-sm font-bold text-gray-700 dark:text-white">
-              Hệ thống phân quyền RBAC
+              {isMobile ? 'RBAC' : 'Hệ thống phân quyền RBAC'}
             </span>
           </div>
           <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
@@ -2456,15 +2668,17 @@ export default function RBACPage() {
         {/* ── Tabs ──────────────────────────────────────────── */}
         <Tabs
           defaultActiveKey="roles"
-          type="card"
-          size="large"
+          type={isMobile ? 'line' : 'card'}
+          size={isMobile ? 'small' : 'large'}
           animated
+          tabBarStyle={isMobile ? { marginBottom: 12 } : undefined}
           items={[
             {
               key: 'roles',
               label: (
                 <span className="flex items-center gap-2 text-sm font-medium">
-                  <FaShieldAlt className="text-blue-500" /> Phân quyền
+                  <FaShieldAlt className="text-blue-500" />{' '}
+                  {isMobile ? 'Quyền' : 'Phân quyền'}
                 </span>
               ),
               children: <RolePermissionManager />
@@ -2473,7 +2687,8 @@ export default function RBACPage() {
               key: 'permissions',
               label: (
                 <span className="flex items-center gap-2 text-sm font-medium">
-                  <FaKey className="text-amber-500" /> Quản lý quyền & Sidebar
+                  <FaKey className="text-amber-500" />{' '}
+                  {isMobile ? 'QL Quyền' : 'Quản lý quyền & Sidebar'}
                 </span>
               ),
               children: <PermissionsManager />
@@ -2482,7 +2697,8 @@ export default function RBACPage() {
               key: 'admin-users',
               label: (
                 <span className="flex items-center gap-2 text-sm font-medium">
-                  <FaUsers className="text-slate-500" /> Quản lý Admin
+                  <FaUsers className="text-slate-500" />{' '}
+                  {isMobile ? 'Admin' : 'Quản lý Admin'}
                 </span>
               ),
               children: <AdminManager />

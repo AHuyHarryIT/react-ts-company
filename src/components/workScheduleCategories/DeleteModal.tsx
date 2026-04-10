@@ -6,12 +6,19 @@ import { deleteWorkScheduleCategory } from '@services/WorkScheduleCategoryServic
 
 import { BiTrash } from 'react-icons/bi';
 
+import { SizeType } from 'antd/es/config-provider/SizeContext';
+
 interface DeleteModalProps {
   id: string;
   name: string;
+  size?: SizeType;
 }
 
-export const DeleteModal: React.FC<DeleteModalProps> = ({ id, name }) => {
+export const DeleteModal: React.FC<DeleteModalProps> = ({
+  id,
+  name,
+  size = 'middle'
+}) => {
   const [open, setOpen] = useState(false);
   const [modalText, setModalText] = useState<ReactNode>(
     <p>
@@ -65,6 +72,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({ id, name }) => {
   return (
     <>
       <Button
+        size={size}
         color="danger"
         variant="solid"
         icon={<BiTrash />}

@@ -1,6 +1,14 @@
-import { Table, TableColumnsType, TableProps, Tag } from 'antd';
+import {
+  Table,
+  TableColumnsType,
+  TableProps,
+  Tag,
+  Pagination,
+  Spin
+} from 'antd';
 import { useState } from 'react';
 import { FaShieldAlt } from 'react-icons/fa';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 import { roleService } from '@services/RoleService';
 import { roleFields } from '@/configs/roleForm.config';
@@ -15,6 +23,7 @@ import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
 import { customTableProps } from '@components/custom/TableProps.custom';
 
 export default function RoleList() {
+  const isMobile = useIsMobile();
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
@@ -173,8 +182,110 @@ export default function RoleList() {
           </div>
         </div>
 
-        {/* ── Table ────────────────────────────────────────────── */}
-        <Table<RoleType> {...tableProps} />
+        {/* ── Content ────────────────────────────────────────────── */}
+        {isMobile ? (
+          <Spin spinning={isLoading}>
+            {roles.length === 0 && !isLoading ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-white py-12 dark:border-gray-700 dark:bg-gray-800">
+                <FaShieldAlt className="mb-3 text-3xl text-gray-300 dark:text-gray-600" />
+                <p className="text-sm text-gray-400">
+                  Không có dữ liệu chức vụ
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-3">
+                  {roles.map((record, index) => (
+                    <div
+                      key={record.id}
+                      className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+                    >
+                      {/* Card top: index + ID badge */}
+                      <div className="mb-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                            {index + 1 + limit * (page - 1)}
+                          </span>
+                          <span className="text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                            {record.role_name || (
+                              <span className="text-gray-400 italic">
+                                Chưa có
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <Tag color="blue" className="!m-0 !font-mono !text-xs">
+                          {record.id}
+                        </Tag>
+                      </div>
+
+                      {/* Dates */}
+                      <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-400">
+                        <span>
+                          Tạo:{' '}
+                          {new Date(record.created_at).toLocaleDateString(
+                            'vi-VN',
+                            {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            }
+                          )}
+                        </span>
+                        <span>·</span>
+                        <span>
+                          Cập nhật:{' '}
+                          {new Date(record.updated_at).toLocaleDateString(
+                            'vi-VN',
+                            {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            }
+                          )}
+                        </span>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                        <UpdateModal
+                          id={record.id}
+                          service={roleService}
+                          schema={roleCreateSchema}
+                          fields={roleFields}
+                          size="small"
+                        />
+                        <ConfirmButton
+                          id={record.id}
+                          service={roleService}
+                          size="small"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {total > limit && (
+                  <div className="mt-4 flex justify-center">
+                    <Pagination
+                      current={page}
+                      pageSize={limit}
+                      total={total}
+                      onChange={(p, size) => {
+                        setPage(p);
+                        setLimit(size);
+                      }}
+                      size="small"
+                      showSizeChanger
+                      showTotal={(t, range) => `${range[0]}-${range[1]} / ${t}`}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </Spin>
+        ) : (
+          <Table<RoleType> {...tableProps} />
+        )}
       </div>
     </ComponentCard>
   );

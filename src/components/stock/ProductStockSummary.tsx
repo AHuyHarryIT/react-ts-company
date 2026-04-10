@@ -7,7 +7,7 @@ import {
   Spin,
   Input,
   Select,
-  Popover
+  Drawer
 } from 'antd';
 import { ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
@@ -77,6 +77,9 @@ const ProductStockSummary: React.FC = () => {
     current: 1,
     pageSize: 50
   });
+  const [detailRecord, setDetailRecord] = useState<ProductSummaryRow | null>(
+    null
+  );
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -325,62 +328,24 @@ const ProductStockSummary: React.FC = () => {
       )
     },
     {
-      title: 'Số lots',
-      dataIndex: 'lot_count',
+      title: 'Chi tiết Lots / Thùng',
       key: 'lot_count',
-      width: 100,
+      width: 150,
       align: 'center' as const,
       sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
         a.lot_count - b.lot_count,
       render: (_: number, record: ProductSummaryRow) =>
-        record.lot_count > 0 ? (
-          <Popover
-            title={`Chi tiết Lots - ${record.product_name}`}
-            trigger="click"
-            content={
-              <div className="max-h-60 overflow-auto" style={{ minWidth: 300 }}>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="px-2 py-1.5 text-left">Lot</th>
-                      <th className="px-2 py-1.5 text-right">Tồn kho</th>
-                      <th className="px-2 py-1.5 text-right">Thùng</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {record.lots.map((lot) => (
-                      <tr key={lot.lot} className="border-b border-gray-100">
-                        <td className="px-2 py-1.5">
-                          <Text code style={{ fontSize: '13px' }}>
-                            {lot.lot}
-                          </Text>
-                        </td>
-                        <td className="px-2 py-1.5 text-right">
-                          <Text strong style={{ color: '#52c41a' }}>
-                            {Number(lot.quantity || 0).toLocaleString('vi-VN')}
-                          </Text>
-                        </td>
-                        <td className="px-2 py-1.5 text-right">
-                          <Text strong style={{ color: '#1890ff' }}>
-                            {lot.bin_count}
-                          </Text>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            }
+        record.lot_count > 0 || record.total_bins > 0 ? (
+          <span
+            onClick={() => setDetailRecord(record)}
+            className="cursor-pointer text-blue-500 hover:text-blue-700"
+            style={{ borderBottom: '1px dashed currentColor' }}
           >
-            <span
-              className="cursor-pointer text-blue-500 hover:text-blue-700"
-              style={{ borderBottom: '1px dashed currentColor' }}
-            >
-              {record.lot_count} <InfoCircleOutlined style={{ fontSize: 10 }} />
-            </span>
-          </Popover>
+            {record.lot_count} lots · {record.total_bins} thùng{' '}
+            <InfoCircleOutlined style={{ fontSize: 10 }} />
+          </span>
         ) : (
-          <Text style={{ color: '#d9d9d9' }}>0</Text>
+          <Text style={{ color: '#d9d9d9' }}>0 lots · 0 thùng</Text>
         )
     },
     {
@@ -430,73 +395,6 @@ const ProductStockSummary: React.FC = () => {
           {v}
         </Text>
       )
-    },
-    {
-      title: 'Tổng thùng',
-      dataIndex: 'total_bins',
-      key: 'total_bins',
-      width: 120,
-      align: 'center' as const,
-      sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
-        a.total_bins - b.total_bins,
-      render: (_: number, record: ProductSummaryRow) =>
-        record.total_bins > 0 ? (
-          <Popover
-            title={`Chi tiết Thùng - ${record.product_name}`}
-            trigger="click"
-            content={
-              <div className="max-h-60 overflow-auto" style={{ minWidth: 320 }}>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="px-2 py-1.5 text-left">Lot</th>
-                      <th className="px-2 py-1.5 text-right">Số thùng</th>
-                      <th className="px-2 py-1.5 text-left">DS thùng</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {record.lots.map((lot) => (
-                      <tr key={lot.lot} className="border-b border-gray-100">
-                        <td className="px-2 py-1.5">
-                          <Text code style={{ fontSize: '13px' }}>
-                            {lot.lot}
-                          </Text>
-                        </td>
-                        <td className="px-2 py-1.5 text-right">
-                          <Text strong style={{ color: '#1890ff' }}>
-                            {lot.bin_count}
-                          </Text>
-                        </td>
-                        <td className="px-2 py-1.5 text-left font-medium text-purple-600">
-                          {lot.bins || '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="border-t font-semibold">
-                      <td className="px-2 py-1.5">Tổng</td>
-                      <td className="px-2 py-1.5 text-right text-blue-600">
-                        {record.total_bins}
-                      </td>
-                      <td className="px-2 py-1.5"></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            }
-          >
-            <span
-              className="cursor-pointer font-semibold text-blue-500 hover:text-blue-700"
-              style={{ borderBottom: '1px dashed currentColor' }}
-            >
-              {record.total_bins}{' '}
-              <InfoCircleOutlined style={{ fontSize: 10 }} />
-            </span>
-          </Popover>
-        ) : (
-          <Text style={{ color: '#d9d9d9' }}>0</Text>
-        )
     }
   ];
 
@@ -527,7 +425,7 @@ const ProductStockSummary: React.FC = () => {
           <div>
             <span className="text-xs text-gray-400">Sản phẩm</span>
             <span className="ml-1.5 text-base font-bold text-purple-600">
-              {summaryData.length}
+              {summaryData.length.toLocaleString('vi-VN')}
             </span>
           </div>
           <div>
@@ -539,13 +437,13 @@ const ProductStockSummary: React.FC = () => {
           <div>
             <span className="text-xs text-gray-400">Tổng thùng</span>
             <span className="ml-1.5 text-base font-bold text-blue-600">
-              {totals.bins}
+              {totals.bins.toLocaleString('vi-VN')}
             </span>
           </div>
           <div>
             <span className="text-xs text-gray-400">Tổng lots</span>
             <span className="ml-1.5 text-base font-bold text-orange-500">
-              {totals.lots}
+              {totals.lots.toLocaleString('vi-VN')}
             </span>
           </div>
         </div>
@@ -675,79 +573,17 @@ const ProductStockSummary: React.FC = () => {
 
                   {/* Row 2: Lots + Bins (clickable for details) */}
                   <div className="mt-1.5 flex items-center gap-4 text-xs">
-                    {item.lot_count > 0 ? (
-                      <Popover
-                        title="Chi tiết Lots"
-                        trigger="click"
-                        content={
-                          <div className="max-h-48 overflow-auto text-sm">
-                            {item.lots.map((lot) => (
-                              <div
-                                key={lot.lot}
-                                className="flex items-center justify-between gap-3 border-b border-gray-100 py-1.5"
-                              >
-                                <Text code style={{ fontSize: '13px' }}>
-                                  {lot.lot}
-                                </Text>
-                                <span>
-                                  <Text strong style={{ color: '#52c41a' }}>
-                                    {Number(lot.quantity || 0).toLocaleString(
-                                      'vi-VN'
-                                    )}
-                                  </Text>{' '}
-                                  ·{' '}
-                                  <Text strong style={{ color: '#1890ff' }}>
-                                    {lot.bin_count} thùng
-                                  </Text>
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        }
+                    {item.lot_count > 0 || item.total_bins > 0 ? (
+                      <span
+                        onClick={() => setDetailRecord(item)}
+                        className="cursor-pointer text-blue-500 hover:text-blue-700"
+                        style={{ borderBottom: '1px dashed currentColor' }}
                       >
-                        <span
-                          className="cursor-pointer text-blue-500"
-                          style={{ borderBottom: '1px dashed currentColor' }}
-                        >
-                          {item.lot_count} lots{' '}
-                          <InfoCircleOutlined style={{ fontSize: 10 }} />
-                        </span>
-                      </Popover>
+                        {item.lot_count} lots · {item.total_bins} thùng{' '}
+                        <InfoCircleOutlined style={{ fontSize: 10 }} />
+                      </span>
                     ) : (
-                      <span className="text-gray-300">0 lots</span>
-                    )}
-                    {item.total_bins > 0 ? (
-                      <Popover
-                        title="Chi tiết Thùng"
-                        trigger="click"
-                        content={
-                          <div className="max-h-48 overflow-auto text-sm">
-                            {item.lots.map((lot) => (
-                              <div
-                                key={lot.lot}
-                                className="flex items-center justify-between gap-3 border-b border-gray-100 py-1.5"
-                              >
-                                <Text code style={{ fontSize: '13px' }}>
-                                  {lot.lot}
-                                </Text>
-                                <span className="font-medium text-purple-600">
-                                  {lot.bins || '—'}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        }
-                      >
-                        <span
-                          className="cursor-pointer font-semibold text-blue-500"
-                          style={{ borderBottom: '1px dashed currentColor' }}
-                        >
-                          {item.total_bins} thùng{' '}
-                          <InfoCircleOutlined style={{ fontSize: 10 }} />
-                        </span>
-                      </Popover>
-                    ) : (
-                      <span className="text-gray-300">0 thùng</span>
+                      <span className="text-gray-300">0 lots · 0 thùng</span>
                     )}
                   </div>
                 </div>
@@ -756,6 +592,116 @@ const ProductStockSummary: React.FC = () => {
           </>
         )}
       </div>
+
+      <Drawer
+        title={
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+              <InfoCircleOutlined />
+            </div>
+            <span className="text-gray-800">
+              Các Lot của sản phẩm: {detailRecord?.product_name}
+            </span>
+          </div>
+        }
+        placement="right"
+        onClose={() => setDetailRecord(null)}
+        open={!!detailRecord}
+        width={450}
+        styles={{
+          body: { backgroundColor: '#f8fafc', padding: '16px' },
+          header: { borderBottom: '2px solid #e2e8f0' }
+        }}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            {detailRecord.lots.map((lot, index) => (
+              <div
+                key={lot.lot}
+                className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-md"
+              >
+                {/* Header Card */}
+                <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-blue-50 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-200 text-xs font-bold text-indigo-700">
+                      {index + 1}
+                    </span>
+                    <Text className="font-semibold text-gray-700">Mã Lot:</Text>
+                    <Text
+                      code
+                      className="border border-green-200 bg-green-50 text-sm font-bold text-green-700"
+                    >
+                      {lot.lot}
+                    </Text>
+                  </div>
+                  <div className="text-right">
+                    <Text strong className="block text-sm text-emerald-600">
+                      {Number(lot.quantity || 0).toLocaleString('vi-VN')} SP
+                    </Text>
+                  </div>
+                </div>
+
+                {/* Body Card */}
+                <div className="px-4 py-3">
+                  <div className="mb-2 flex items-center justify-between space-x-2">
+                    <Text
+                      type="secondary"
+                      className="text-xs font-bold text-gray-500 uppercase"
+                    >
+                      Danh sách Thùng
+                    </Text>
+                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700">
+                      {lot.bin_count} thùng
+                    </span>
+                  </div>
+                  <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-2.5">
+                    {lot.bins ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {lot.bins.split(',').map((bin, i) => (
+                          <div
+                            key={`${bin}-${i}`}
+                            className="min-w-[28px] rounded border border-gray-300 bg-white px-1.5 py-0.5 text-center text-[12px] font-semibold text-gray-800 shadow-sm"
+                          >
+                            {bin.trim()}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <Text className="text-[13px] text-gray-400 italic">
+                        Không có dữ liệu thùng
+                      </Text>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Footer Summary */}
+            <div className="mt-2 flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50 p-3 shadow-sm">
+              <Text strong className="text-[13px] text-blue-800 uppercase">
+                Tổng cộng:
+              </Text>
+              <div className="text-right">
+                <Text
+                  strong
+                  className="mb-1 block text-base leading-none text-green-600"
+                >
+                  {Number(detailRecord.total_quantity || 0).toLocaleString(
+                    'vi-VN'
+                  )}{' '}
+                  SP
+                </Text>
+                <Text
+                  strong
+                  className="block text-[13px] leading-none text-blue-600"
+                >
+                  {detailRecord.total_bins} thùng
+                </Text>
+              </div>
+            </div>
+          </div>
+        )}
+      </Drawer>
     </div>
   );
 };

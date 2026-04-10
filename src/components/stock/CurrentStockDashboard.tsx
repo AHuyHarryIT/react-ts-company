@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  Table,
-  Button,
-  Typography,
-  message,
-  Spin,
-  Input,
-  Select,
-  Tooltip
-} from 'antd';
+import { Table, Button, Typography, message, Spin, Input, Select } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
@@ -57,6 +48,7 @@ interface GroupedStockItem {
   bin_count: number;
   exported_quantity: number;
   exported_bins: number[];
+  total_bins_init: number;
 }
 
 // Parse lot code "A-ddmmyyyy-shift" → { date, shift, sortableDate }
@@ -261,7 +253,8 @@ const CurrentStockDashboard: React.FC = () => {
             total_quantity: item.current_quantity,
             bin_count: item.bin_count,
             exported_quantity: expInfo?.qty || 0,
-            exported_bins: expInfo?.bins || []
+            exported_bins: expInfo?.bins || [],
+            total_bins_init: item.bin_count + (expInfo?.bins?.length || 0)
           };
         })
         // Default sort: product name → newest date first
@@ -350,6 +343,16 @@ const CurrentStockDashboard: React.FC = () => {
       )
     },
     {
+      title: 'Tổng số thùng',
+      dataIndex: 'total_bins_init',
+      key: 'total_bins_init',
+      width: 120,
+      align: 'center' as const,
+      sorter: (a: GroupedStockItem, b: GroupedStockItem) =>
+        a.total_bins_init - b.total_bins_init,
+      render: (count: number) => <Text strong>{count} thùng</Text>
+    },
+    {
       title: 'SL đã xuất',
       dataIndex: 'exported_quantity',
       key: 'exported_quantity',
@@ -372,53 +375,65 @@ const CurrentStockDashboard: React.FC = () => {
       title: 'Thùng đã xuất',
       dataIndex: 'exported_bins',
       key: 'exported_bins',
-      width: 150,
+      width: 180,
       align: 'center' as const,
-      render: (bins: number[]) => (
-        <Tooltip
-          title={
-            bins?.length > 0
-              ? `Thùng đã xuất: ${[...bins].sort((a, b) => a - b).join(', ')}`
-              : ''
-          }
-        >
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render: (bins: any[]) => (
+        <div className="flex flex-col items-center gap-1.5 py-1">
           <Text
             style={{
               fontSize: '12px',
+              fontWeight: 600,
               color: bins?.length > 0 ? '#fa541c' : '#d9d9d9'
             }}
           >
-            {bins?.length > 0
-              ? `${bins.length} thùng [${[...bins].sort((a, b) => a - b).join(', ')}]`
-              : '—'}
+            {bins?.length > 0 ? `${bins.length} thùng` : '—'}
           </Text>
-        </Tooltip>
+          {bins && bins.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {[...bins]
+                .sort((a: any, b: any) => a - b)
+                .map((b) => (
+                  <div
+                    key={b}
+                    className="min-w-[24px] rounded border border-orange-200 bg-orange-50 px-1 py-px text-center text-[10px] font-semibold text-orange-600 shadow-sm"
+                  >
+                    {b}
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
       )
     },
     {
-      title: 'Tổng thùng còn lại',
-      dataIndex: 'bin_count',
-      key: 'bin_count',
-      width: 120,
+      title: 'Thùng còn lại',
+      key: 'bins_info',
+      width: 250,
       align: 'center' as const,
-      render: (count: number) => (
-        <Text strong style={{ color: '#1890ff' }}>
-          {count} thùng
-        </Text>
-      )
-    },
-    {
-      title: 'Danh sách thùng còn lại',
-      dataIndex: 'bins',
-      key: 'bins',
-      width: 180,
-      align: 'center' as const,
-      render: (bins: number[]) => (
-        <Text style={{ fontSize: '12px', color: '#722ed1' }}>
-          {bins?.length > 0
-            ? bins.sort((a, b) => a - b).join(', ')
-            : 'Không có'}
-        </Text>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render: (_: unknown, record: any) => (
+        <div className="flex flex-col items-center gap-1.5 py-1">
+          <Text strong style={{ color: '#1890ff' }}>
+            {record.bin_count} thùng
+          </Text>
+          {record.bins && record.bins.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-1">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {[...record.bins]
+                .sort((a: any, b: any) => a - b)
+                .map((b) => (
+                  <div
+                    key={b}
+                    className="min-w-[24px] rounded border border-gray-300 bg-gray-50 px-1 py-px text-center text-[11px] font-semibold text-gray-700 shadow-sm"
+                  >
+                    {b}
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
       )
     }
   ];
@@ -458,13 +473,17 @@ const CurrentStockDashboard: React.FC = () => {
             <div>
               <span className="text-xs text-gray-400">Thùng</span>
               <span className="ml-1.5 text-base font-bold text-blue-600">
-                {stockData.summary?.total_bins || 0}
+                {Number(stockData.summary?.total_bins || 0).toLocaleString(
+                  'vi-VN'
+                )}
               </span>
             </div>
             <div>
               <span className="text-xs text-gray-400">Sản phẩm</span>
               <span className="ml-1.5 text-base font-bold text-purple-600">
-                {stockData.summary?.total_products || 0}
+                {Number(stockData.summary?.total_products || 0).toLocaleString(
+                  'vi-VN'
+                )}
               </span>
             </div>
             <div>
@@ -478,13 +497,15 @@ const CurrentStockDashboard: React.FC = () => {
             <div>
               <span className="text-xs text-gray-400">Lots</span>
               <span className="ml-1.5 text-base font-bold text-orange-500">
-                {stockData.stocks
-                  ? new Set(
-                      stockData.stocks.map(
-                        (item) => `${item.product_id}_${item.lot}`
-                      )
-                    ).size
-                  : 0}
+                {Number(
+                  stockData.stocks
+                    ? new Set(
+                        stockData.stocks.map(
+                          (item) => `${item.product_id}_${item.lot}`
+                        )
+                      ).size
+                    : 0
+                ).toLocaleString('vi-VN')}
               </span>
             </div>
           </div>
@@ -611,36 +632,78 @@ const CurrentStockDashboard: React.FC = () => {
                     </div>
 
                     {/* Row 3: Bins info */}
-                    <div className="mt-1.5 flex items-center gap-2 text-xs">
-                      <Text strong style={{ color: '#1890ff' }}>
-                        {item.bin_count} thùng
-                      </Text>
+                    <div className="mt-1.5 flex flex-col gap-1 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Tổng thùng:</span>
+                        <Text strong>{item.total_bins_init} thùng</Text>
+                        <span className="text-gray-300">|</span>
+                        <span className="text-gray-500">Còn lại:</span>
+                        <Text strong style={{ color: '#1890ff' }}>
+                          {item.bin_count} thùng
+                        </Text>
+                      </div>
                       {item.bins?.length > 0 && (
-                        <span className="text-[11px] text-purple-500">
-                          [{item.bins.sort((a, b) => a - b).join(', ')}]
-                        </span>
+                        <div className="flex w-full flex-wrap gap-1 border-t border-dashed border-gray-100 pt-1">
+                          <span className="mt-0.5 mr-1 block text-gray-500">
+                            Danh sách:
+                          </span>
+                          {[...item.bins]
+                            .sort((a, b) => a - b)
+                            .map((b) => (
+                              <span
+                                key={b}
+                                className="rounded border border-gray-300 bg-gray-50 px-1 text-[10px] font-semibold text-gray-700"
+                              >
+                                {b}
+                              </span>
+                            ))}
+                        </div>
                       )}
                     </div>
 
                     {/* Row 4: Export info */}
                     {(item.exported_quantity > 0 ||
                       item.exported_bins.length > 0) && (
-                      <div className="mt-1 flex items-center gap-2 text-xs">
-                        <span className="text-gray-400">Đã xuất:</span>
-                        <Text style={{ color: '#fa8c16' }}>
-                          {Number(item.exported_quantity || 0).toLocaleString(
-                            'vi-VN'
-                          )}{' '}
-                          SP
-                        </Text>
+                      <div className="mt-1.5 flex flex-col gap-1 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-400">Đã xuất:</span>
+                          <Text style={{ color: '#fa8c16' }}>
+                            {Number(item.exported_quantity || 0).toLocaleString(
+                              'vi-VN'
+                            )}{' '}
+                            SP
+                          </Text>
+                          {item.exported_bins.length > 0 && (
+                            <>
+                              <span className="text-gray-300">|</span>
+                              <Text
+                                style={{
+                                  color: '#fa541c',
+                                  fontSize: '11px',
+                                  fontWeight: 600
+                                }}
+                              >
+                                {item.exported_bins.length} thùng
+                              </Text>
+                            </>
+                          )}
+                        </div>
                         {item.exported_bins.length > 0 && (
-                          <span className="text-[11px] text-red-400">
-                            [
+                          <div className="flex w-full flex-wrap items-center gap-1 border-t border-dashed border-orange-100/50 pt-1">
+                            <span className="mt-0.5 mr-1 block text-[10px] text-gray-400">
+                              Đã xuất:
+                            </span>
                             {[...item.exported_bins]
                               .sort((a, b) => a - b)
-                              .join(', ')}
-                            ]
-                          </span>
+                              .map((b) => (
+                                <span
+                                  key={b}
+                                  className="rounded border border-orange-200 bg-orange-50 px-1 text-[10px] font-semibold text-orange-600"
+                                >
+                                  {b}
+                                </span>
+                              ))}
+                          </div>
                         )}
                       </div>
                     )}

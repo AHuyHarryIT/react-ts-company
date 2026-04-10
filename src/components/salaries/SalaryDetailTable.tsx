@@ -1,7 +1,8 @@
 import React from 'react';
-import { Table, TableColumnsType, TableProps } from 'antd';
+import { Empty, Spin, Table, TableColumnsType, TableProps, Tag } from 'antd';
 
 import { SalaryDetailTableType } from '@/types/salaryType';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 interface SalaryDetailTableProps {
   data: SalaryDetailTableType[];
@@ -12,6 +13,44 @@ export const SalaryDetailTable: React.FC<SalaryDetailTableProps> = ({
   data,
   loading
 }) => {
+  const isMobile = useIsMobile();
+
+  const formatVND = (value: number | null | undefined) => {
+    if (!value) return null;
+    return value.toLocaleString('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    });
+  };
+
+  const Field = ({
+    label,
+    value,
+    highlight,
+    danger
+  }: {
+    label: string;
+    value: React.ReactNode;
+    highlight?: boolean;
+    danger?: boolean;
+  }) =>
+    value ? (
+      <div className="flex items-baseline justify-between gap-2 py-0.5">
+        <span className="shrink-0 text-xs text-gray-500">{label}</span>
+        <span
+          className={`text-right text-xs font-medium ${
+            danger
+              ? 'text-red-500'
+              : highlight
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-800 dark:text-white/80'
+          }`}
+        >
+          {value}
+        </span>
+      </div>
+    ) : null;
+
   const columns: TableColumnsType<SalaryDetailTableType> = [
     {
       title: <div className="capitalize">STT</div>,
@@ -864,5 +903,255 @@ export const SalaryDetailTable: React.FC<SalaryDetailTableProps> = ({
     tableLayout: 'auto',
     pagination: false
   };
+
+  if (isMobile) {
+    return (
+      <Spin spinning={!!loading}>
+        {data.length === 0 && !loading ? (
+          <Empty description="Không có dữ liệu" />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {data.map((record, index) => (
+              <div
+                key={['detail', record.id, record.employee_id].join('-')}
+                className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              >
+                {/* Header */}
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                    {index + 1}
+                  </span>
+                  <span className="text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                    {record.employee?.name || '-'}
+                  </span>
+                  <Tag
+                    color="blue"
+                    className="!m-0 ml-auto !font-mono !text-xs"
+                  >
+                    {record.employee_id}
+                  </Tag>
+                </div>
+                <div className="mb-1 text-xs text-gray-400">
+                  {record.employee?.role?.role_name || '-'}
+                </div>
+
+                {/* Thử việc */}
+                <div className="mt-2 space-y-0.5 rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
+                  <div className="mb-1.5 text-[10px] font-semibold tracking-wider text-orange-500 uppercase">
+                    Thử việc
+                  </div>
+                  <Field
+                    label="Số công ngày"
+                    value={record.number_of_work_days_trial}
+                  />
+                  <Field
+                    label="Lương ca ngày"
+                    value={formatVND(record.day_shift_salary_trial)}
+                    highlight
+                  />
+                  <Field
+                    label="Số công đêm"
+                    value={record.number_of_work_nights_trial}
+                  />
+                  <Field
+                    label="Lương ca đêm"
+                    value={formatVND(record.night_shift_salary_trial)}
+                    highlight
+                  />
+                  <Field
+                    label="Số giờ TC"
+                    value={record.overtime_hours_trial?.toLocaleString(
+                      'vi-VN',
+                      { maximumFractionDigits: 1 }
+                    )}
+                  />
+                  <Field
+                    label="Lương TC"
+                    value={formatVND(record.overtime_salary_trial)}
+                  />
+                  <Field
+                    label="PC học việc"
+                    value={formatVND(record.allowance_apprentice_detail)}
+                  />
+                </div>
+
+                {/* Chính thức */}
+                <div className="mt-2 space-y-0.5 rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
+                  <div className="mb-1.5 text-[10px] font-semibold tracking-wider text-blue-500 uppercase">
+                    Chính thức
+                  </div>
+                  <Field label="Số công" value={record.number_of_work} />
+                  <Field
+                    label="Số giờ chính"
+                    value={record.core_hours?.toLocaleString('vi-VN', {
+                      maximumFractionDigits: 1
+                    })}
+                  />
+                  <Field
+                    label="Lương chính thức"
+                    value={formatVND(record.official_salary)}
+                    highlight
+                  />
+                  <Field
+                    label="Số giờ TC"
+                    value={record.overtime_hours_detail?.toLocaleString(
+                      'vi-VN',
+                      { maximumFractionDigits: 1 }
+                    )}
+                  />
+                  <Field
+                    label="Lương tăng ca"
+                    value={formatVND(record.overtime_salary)}
+                    highlight
+                  />
+                </div>
+
+                {/* Phụ cấp */}
+                <div className="mt-2 space-y-0.5 rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
+                  <div className="mb-1.5 text-[10px] font-semibold tracking-wider text-emerald-500 uppercase">
+                    Phụ cấp
+                  </div>
+                  <Field
+                    label="Chuyên cần"
+                    value={record.number_of_hours_worked}
+                  />
+                  <Field
+                    label="Trách nhiệm"
+                    value={formatVND(record.allowance_responsibility_detail)}
+                  />
+                  <Field
+                    label="PC cơm ngày"
+                    value={formatVND(record.allowance_rice_detail)}
+                  />
+                  <Field
+                    label="PC cơm đêm"
+                    value={formatVND(record.allowance_shift_night)}
+                  />
+                  <Field
+                    label="PC tăng ca"
+                    value={formatVND(record.allowance_overtime_detail)}
+                  />
+                  <Field
+                    label="PC khác"
+                    value={formatVND(record.allowance_diffrent)}
+                  />
+                  <Field
+                    label="Tiền lễ Tết"
+                    value={formatVND(record.holidays_money)}
+                  />
+                  <Field
+                    label="Tiền phép năm"
+                    value={formatVND(record.paid_holidays_money)}
+                  />
+                  <Field
+                    label="Thưởng chuyên cần"
+                    value={formatVND(record.bonuses_for_attendance)}
+                  />
+                  <Field
+                    label="Tiền sinh nhật"
+                    value={formatVND(record.birthday_money)}
+                  />
+                  <Field
+                    label="Lương CT GCN"
+                    value={formatVND(record.gcn_business_travel_salary)}
+                  />
+                  <Field
+                    label="PC xăng GCN"
+                    value={formatVND(record.allowance_gcn_business_fuel)}
+                  />
+                  <Field
+                    label="Giới thiệu người"
+                    value={formatVND(record.money_referral_people)}
+                  />
+                  <Field label="Ốm đau" value={formatVND(record.sickness)} />
+                  <Field label="Ma chay" value={formatVND(record.funeral)} />
+                  <Field
+                    label="Lương tháng trước thiếu"
+                    value={formatVND(record.previous_period_debt)}
+                  />
+                </div>
+
+                {/* Tổng + Khấu trừ */}
+                <div className="mt-2 space-y-0.5 rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
+                  <div className="mb-1.5 text-[10px] font-semibold tracking-wider text-red-500 uppercase">
+                    Khấu trừ
+                  </div>
+                  <Field
+                    label="BHXH (10.5%)"
+                    value={formatVND(record.insurance_detail)}
+                    danger
+                  />
+                  <Field
+                    label="Tạm ứng"
+                    value={formatVND(record.advance_money)}
+                    danger
+                  />
+                  <Field
+                    label="Vi phạm"
+                    value={record.number_of_violations?.toString()}
+                    danger
+                  />
+                  <Field
+                    label="Phí CĐ (1%)"
+                    value={formatVND(record.unicon_deduction)}
+                    danger
+                  />
+                  <Field
+                    label="Nghỉ có phép"
+                    value={formatVND(record.subtract_daysleave_allowed)}
+                    danger
+                  />
+                  <Field
+                    label="Nghỉ không phép"
+                    value={formatVND(record.subtract_daysleave_notallowed)}
+                    danger
+                  />
+                  <Field
+                    label="Lỗi nghiêm trọng"
+                    value={formatVND(record.subtract_error_serious)}
+                    danger
+                  />
+                  <Field
+                    label="Lỗi nhẹ"
+                    value={formatVND(record.subtract_error_minor)}
+                    danger
+                  />
+                  <Field
+                    label="Trừ KPI"
+                    value={formatVND(record.kpi_subtraction)}
+                    danger
+                  />
+                </div>
+
+                {/* Tổng thu nhập + Thực lãnh */}
+                <div className="mt-2 flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2 dark:bg-blue-900/20">
+                  <span className="text-xs font-medium text-blue-700 dark:text-blue-400">
+                    Tổng thu nhập
+                  </span>
+                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                    {formatVND(record.total_income) || '-'}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2 dark:bg-emerald-900/20">
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                    Thực lãnh
+                  </span>
+                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatVND(record.actually_received) || '-'}
+                  </span>
+                </div>
+                {record.forms_of_payment && (
+                  <div className="mt-1 text-center text-[11px] text-gray-400">
+                    {record.forms_of_payment}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Spin>
+    );
+  }
+
   return <Table<SalaryDetailTableType> {...tableProps} />;
 };

@@ -8,7 +8,8 @@ import {
   message,
   DatePicker,
   Popconfirm,
-  Tag
+  Tag,
+  Tooltip
 } from 'antd';
 import {
   SearchOutlined,
@@ -25,6 +26,7 @@ import {
   TransactionListResponse,
   ApiErrorResponse
 } from '@/types/stockTransaction.types';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -52,6 +54,7 @@ interface ApiFilters {
 }
 
 const RawTransactionHistory: React.FC = () => {
+  const isMobile = useIsMobile();
   const [allTransactions, setAllTransactions] = useState<TransactionRow[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -143,9 +146,33 @@ const RawTransactionHistory: React.FC = () => {
     [apiFilters, searchText, paginationMeta.per_page]
   );
 
+  const [globalStats, setGlobalStats] = useState({ totalIn: 0, totalOut: 0 });
+
+  const loadStatistics = useCallback(async () => {
+    try {
+      const res = await StockTransactionService.getStatistics(
+        apiFilters.from_date,
+        apiFilters.to_date
+      );
+      if (res && 'success' in res && res.success) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stats = (res as any).data?.summary;
+        if (stats) {
+          setGlobalStats({
+            totalIn: Number(stats.total_in) || 0,
+            totalOut: Number(stats.total_out) || 0
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Error loading statistics', e);
+    }
+  }, [apiFilters.from_date, apiFilters.to_date]);
+
   useEffect(() => {
     loadTransactions(1);
-  }, [loadTransactions]);
+    loadStatistics();
+  }, [loadTransactions, loadStatistics]);
 
   const handleDelete = useCallback(
     async (id: number) => {
@@ -173,14 +200,20 @@ const RawTransactionHistory: React.FC = () => {
   }, [allTransactions, filterProductId]);
 
   const summary = useMemo(() => {
-    let totalIn = 0;
-    let totalOut = 0;
+    let currentIn = 0;
+    let currentOut = 0;
     filtered.forEach((tx) => {
-      if (tx.type === 'in') totalIn += tx.quantity;
-      else totalOut += tx.quantity;
+      const qty = Number(tx.quantity) || 0;
+      if (tx.type === 'in') currentIn += qty;
+      else currentOut += qty;
     });
-    return { totalIn, totalOut };
-  }, [filtered]);
+
+    if (filterProductId || searchText || apiFilters.type) {
+      return { totalIn: currentIn, totalOut: currentOut };
+    }
+
+    return { totalIn: globalStats.totalIn, totalOut: globalStats.totalOut };
+  }, [filtered, filterProductId, searchText, apiFilters.type, globalStats]);
 
   const handleTypeChange = (value: 'in' | 'out' | undefined) => {
     setApiFilters((prev) => ({ ...prev, type: value }));
@@ -207,6 +240,13 @@ const RawTransactionHistory: React.FC = () => {
   const formatTime = (date: string) => {
     const d = new Date(date);
     return `${d.toLocaleDateString('vi-VN')} ${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
+  };
+
+  const formatQty = (val: number | string) => {
+    return Number(val).toLocaleString('vi-VN', {
+      maximumFractionDigits: 5, // Prevent rounding
+      minimumFractionDigits: 0
+    });
   };
 
   // ── Dynamic column widths based on actual data ──
@@ -308,7 +348,8 @@ const RawTransactionHistory: React.FC = () => {
             fontWeight: 600
           }}
         >
-          {r.type === 'in' ? `+${v}` : `-${v}`}
+          {r.type === 'in' ? '+' : '-'}
+          {formatQty(v)}
         </Text>
       )
     },
@@ -373,7 +414,7 @@ const RawTransactionHistory: React.FC = () => {
       render: (_: unknown, r: TransactionRow) => (
         <Popconfirm
           title={`Xoá ${r.type === 'in' ? 'nhập' : 'xuất'} kho`}
-          description={`${r.product_name} — Lot: ${r.lot}, SL: ${r.quantity}, Thùng: ${r.bin ?? 'N/A'}`}
+          description={`${r.product_name} — Lot: ${r.lot}, SL: ${formatQty(r.quantity)}, Thùng: ${r.bin ?? 'N/A'}`}
           onConfirm={() => handleDelete(r.id)}
           okText="Xoá"
           cancelText="Huỷ"
@@ -415,7 +456,7 @@ const RawTransactionHistory: React.FC = () => {
             style={{ color: tx.type === 'in' ? '#52c41a' : '#ff4d4f' }}
           >
             {tx.type === 'in' ? '+' : '-'}
-            {tx.quantity}
+            {formatQty(tx.quantity)}
           </Text>
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500">
@@ -432,7 +473,7 @@ const RawTransactionHistory: React.FC = () => {
       </div>
       <Popconfirm
         title={`Xoá ${tx.type === 'in' ? 'nhập' : 'xuất'} kho`}
-        description={`${tx.product_name} — Lot: ${tx.lot}, SL: ${tx.quantity}`}
+        description={`${tx.product_name} — Lot: ${tx.lot}, SL: ${formatQty(tx.quantity)}`}
         onConfirm={() => handleDelete(tx.id)}
         okText="Xoá"
         cancelText="Huỷ"
@@ -462,19 +503,28 @@ const RawTransactionHistory: React.FC = () => {
           <div>
             <span className="text-xs text-gray-400">Nhập</span>
             <span className="ml-1 text-sm font-bold text-green-600">
-              +{summary.totalIn.toLocaleString()}
+              +{formatQty(summary.totalIn)}
             </span>
           </div>
           <div>
             <span className="text-xs text-gray-400">Xuất</span>
             <span className="ml-1 text-sm font-bold text-red-500">
-              -{summary.totalOut.toLocaleString()}
+              -{formatQty(summary.totalOut)}
             </span>
           </div>
+          <Tooltip title="Chênh lệch (Nhập - Xuất) trong khoảng thời gian lọc. Tồn thực tế sẽ cộng thêm số dư đầu kỳ.">
+            <div>
+              <span className="text-xs text-gray-400">Biến động</span>
+              <span className="ml-1 text-sm font-bold text-blue-600">
+                {summary.totalIn - summary.totalOut >= 0 ? '+' : ''}
+                {formatQty(summary.totalIn - summary.totalOut)}
+              </span>
+            </div>
+          </Tooltip>
           <div>
             <span className="text-xs text-gray-400">GD</span>
             <span className="ml-1 text-xs font-semibold text-gray-700">
-              {paginationMeta.total}
+              {paginationMeta.total.toLocaleString('vi-VN')}
             </span>
           </div>
         </div>
@@ -494,33 +544,84 @@ const RawTransactionHistory: React.FC = () => {
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
           />
-          <RangePicker
-            size="small"
-            format="DD/MM/YYYY"
-            placeholder={['Từ ngày', 'Đến ngày']}
-            value={dateRange}
-            onChange={handleDateChange}
-            className="!w-full sm:!w-auto"
-            presets={[
-              { label: 'Hôm nay', value: [dayjs(), dayjs()] },
-              {
-                label: 'Tháng này',
-                value: [dayjs().startOf('month'), dayjs()]
-              },
-              {
-                label: 'Tháng trước',
-                value: [
-                  dayjs().subtract(1, 'month').startOf('month'),
-                  dayjs().subtract(1, 'month').endOf('month')
-                ]
-              },
-              {
-                label: '30 ngày',
-                value: [dayjs().subtract(30, 'day'), dayjs()]
+          <div className="w-full sm:w-auto">
+            {isMobile ? (
+              <div className="flex w-full gap-2">
+                <DatePicker
+                  size="small"
+                  format="DD/MM/YYYY"
+                  placeholder="Từ ngày"
+                  value={dateRange[0]}
+                  onChange={(date) => handleDateChange([date, dateRange[1]])}
+                  className="w-1/2"
+                  allowClear={false}
+                />
+                <DatePicker
+                  size="small"
+                  format="DD/MM/YYYY"
+                  placeholder="Đến ngày"
+                  value={dateRange[1]}
+                  onChange={(date) => handleDateChange([dateRange[0], date])}
+                  className="w-1/2"
+                  allowClear={false}
+                />
+              </div>
+            ) : (
+              <RangePicker
+                size="small"
+                format="DD/MM/YYYY"
+                placeholder={['Từ ngày', 'Đến ngày']}
+                value={dateRange}
+                onChange={handleDateChange}
+                className="!w-auto"
+                presets={[
+                  { label: 'Hôm nay', value: [dayjs(), dayjs()] },
+                  {
+                    label: 'Tháng này',
+                    value: [dayjs().startOf('month'), dayjs()]
+                  },
+                  {
+                    label: 'Tháng trước',
+                    value: [
+                      dayjs().subtract(1, 'month').startOf('month'),
+                      dayjs().subtract(1, 'month').endOf('month')
+                    ]
+                  },
+                  {
+                    label: '30 ngày',
+                    value: [dayjs().subtract(30, 'day'), dayjs()]
+                  }
+                ]}
+              />
+            )}
+          </div>
+
+          {/* Quick Date Buttons */}
+          <div className="flex items-center gap-1">
+            <Button
+              size="small"
+              type="dashed"
+              onClick={() => handleDateChange([dayjs(), dayjs()])}
+              className="text-xs"
+            >
+              Hôm nay
+            </Button>
+            <Button
+              size="small"
+              type="dashed"
+              onClick={() =>
+                handleDateChange([
+                  dayjs().subtract(1, 'day'),
+                  dayjs().subtract(1, 'day')
+                ])
               }
-            ]}
-          />
-          <div className="flex items-center gap-1.5">
+              className="text-xs"
+            >
+              Hôm qua
+            </Button>
+          </div>
+
+          <div className="flex flex-1 items-center justify-end gap-1.5 sm:justify-start">
             <Select
               placeholder="Loại"
               allowClear

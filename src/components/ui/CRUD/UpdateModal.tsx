@@ -2,6 +2,7 @@ import { Button, Modal } from 'antd';
 import { AxiosRequestConfig } from 'axios';
 import { useState } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
+import { SizeType } from 'antd/es/config-provider/SizeContext';
 
 import { FieldConfig } from '@/types/form';
 import { UpdateForm } from '@components/ui/CRUD/UpdateForm';
@@ -15,6 +16,7 @@ interface UpdateFormProps<TData, TCreateDto, TUpdateDto> {
   schema: ZodObject<ZodRawShape>;
   fields: FieldConfig[];
   config?: AxiosRequestConfig;
+  size?: SizeType;
 }
 
 export function UpdateModal<
@@ -26,7 +28,8 @@ export function UpdateModal<
   service,
   schema,
   fields = [],
-  config = {}
+  config = {},
+  size = 'middle'
 }: UpdateFormProps<TData, TCreateDto, TUpdateDto>) {
   const [open, setOpen] = useState(false);
 
@@ -41,6 +44,7 @@ export function UpdateModal<
   return (
     <>
       <Button
+        size={size}
         color="primary"
         variant="solid"
         icon={<FaPen />}

@@ -14,7 +14,9 @@ import {
   Button,
   DatePicker,
   Modal,
+  Pagination,
   Select,
+  Spin,
   Table,
   TableColumnsType,
   TableProps,
@@ -35,8 +37,10 @@ import {
 import { PrintBagStamp } from '@components/print/PrintBagStamp';
 import { PrintBoxStamp } from '@components/print/PrintBoxStamp';
 import { RejectModal } from './RejectModal';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 export default function HistoryPrintStamp() {
+  const isMobile = useIsMobile();
   const [lotDate, setLotDate] = useState<Dayjs | null>(null);
   const [createdDate, setCreatedDate] = useState<Dayjs | null>(dayjs());
   const [params, setParams] = useState<QueryParams>({
@@ -621,8 +625,181 @@ export default function HistoryPrintStamp() {
             </div>
           </div>
 
-          {/* ── Table ── */}
-          <Table {...tableProps} />
+          {/* ── Content ── */}
+          {isMobile ? (
+            <Spin spinning={queryResult.isLoading}>
+              <div className="flex flex-col gap-3">
+                {(dataSource || []).map((record, index) => {
+                  const isHighlighted = record.id === highlightId;
+                  return (
+                    <div
+                      key={`stamp-card-${record.id}`}
+                      data-row-key={`stamp-${record.id}`}
+                      className={`rounded-xl border bg-white p-4 shadow-sm dark:bg-gray-800 ${
+                        isHighlighted
+                          ? 'border-yellow-300 ring-2 ring-yellow-100 dark:border-yellow-600 dark:ring-yellow-900/30'
+                          : 'border-gray-100 dark:border-gray-700'
+                      }`}
+                    >
+                      {/* Top: index + status */}
+                      <div className="mb-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                            {index +
+                              1 +
+                              (params.limit ?? 10) * ((params.page ?? 1) - 1)}
+                          </span>
+                          {record.status === 'pending' && (
+                            <Tag
+                              color="yellow-inverse"
+                              className="font-bold uppercase"
+                            >
+                              Chờ in
+                            </Tag>
+                          )}
+                          {record.status === 'approve' && (
+                            <Tag
+                              color="green-inverse"
+                              className="font-bold uppercase"
+                            >
+                              Đã in
+                            </Tag>
+                          )}
+                          {record.status === 'rejected' && (
+                            <Tag
+                              color="red-inverse"
+                              className="font-bold uppercase"
+                            >
+                              Đã hủy
+                            </Tag>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {record.type === 'bag' ? (
+                            <Tag color="orange" className="!m-0">
+                              Tem Bịch
+                            </Tag>
+                          ) : (
+                            <Tag color="cyan" className="!m-0">
+                              Tem Thùng
+                            </Tag>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Product name */}
+                      <div className="text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                        {record.product?.name || (
+                          <span className="text-gray-400 italic">Chưa có</span>
+                        )}
+                      </div>
+
+                      {/* Details */}
+                      <div className="mt-1.5 space-y-1 text-[13px] text-gray-500">
+                        <div>
+                          <span className="font-medium text-gray-600 dark:text-gray-300">
+                            NV gửi:
+                          </span>{' '}
+                          {record.employee?.name || 'Chưa có thông tin'}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span>
+                            Lot: {dayjs(record.date).format('DD-MM-YYYY')}
+                          </span>
+                          <span>·</span>
+                          {record.shift === 1 ? (
+                            <Tag color="blue" className="!m-0">
+                              Ca 1
+                            </Tag>
+                          ) : (
+                            <Tag color="purple" className="!m-0">
+                              Ca 2
+                            </Tag>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span>
+                            SL:{' '}
+                            <strong className="text-blue-600">
+                              {record.binCount}
+                            </strong>
+                          </span>
+                          <span>·</span>
+                          <span>
+                            Bắt đầu:{' '}
+                            <Tag
+                              color="geekblue"
+                              className="!m-0 !font-mono !text-xs"
+                            >
+                              {record.binStart}
+                            </Tag>
+                          </span>
+                        </div>
+                        {record.purpose && (
+                          <div>
+                            Mục đích:{' '}
+                            {record.purpose === 'new' ? (
+                              <Tag color="green" className="!m-0">
+                                In mới
+                              </Tag>
+                            ) : record.purpose === 'additional' ? (
+                              <Tag color="blue" className="!m-0">
+                                In thêm
+                              </Tag>
+                            ) : record.purpose === 'reprint' ? (
+                              <Tag color="orange" className="!m-0">
+                                In lại
+                              </Tag>
+                            ) : (
+                              <Tag className="!m-0">{record.purpose}</Tag>
+                            )}
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-400">
+                          Gửi:{' '}
+                          {dayjs(record.created_at).format(
+                            'DD/MM/YYYY HH:mm:ss'
+                          )}
+                          {record.manager?.name && (
+                            <span> · NV in: {record.manager.name}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      {record.status === 'pending' && (
+                        <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                          <Button
+                            color="blue"
+                            variant="solid"
+                            size="small"
+                            icon={<IconPrint />}
+                            onClick={() => handlePrintClick(record)}
+                          >
+                            IN
+                          </Button>
+                          <RejectModal stampId={record.id} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Pagination
+                  size="small"
+                  current={params.page}
+                  pageSize={params.limit}
+                  total={pagination.total}
+                  onChange={(page, size) => {
+                    setParams((prev) => ({ ...prev, page, limit: size }));
+                  }}
+                />
+              </div>
+            </Spin>
+          ) : (
+            <Table {...tableProps} />
+          )}
         </div>
       </ComponentCard>
 
@@ -646,6 +823,31 @@ export default function HistoryPrintStamp() {
                     </Tag>
                     <Tag color="purple">Ca {selectedRecord.shift}</Tag>
                     <Tag color="cyan">SL: {selectedRecord.binCount}</Tag>
+                    <Tag color="orange">
+                      {selectedRecord.type === 'box' ||
+                      selectedRecord.type === 'Tem Thùng'
+                        ? 'Tem Thùng'
+                        : 'Tem Bịch'}
+                    </Tag>
+                    {(() => {
+                      const startStr = String(selectedRecord.binStart || '');
+                      const count = Number(selectedRecord.binCount || 1);
+                      if (startStr.includes(',')) {
+                        return <Tag color="green">Tem số: {startStr}</Tag>;
+                      }
+                      const startNum = parseInt(startStr);
+                      if (!isNaN(startNum)) {
+                        if (count > 1) {
+                          return (
+                            <Tag color="green">
+                              Tem: {startNum} ➔ {startNum + count - 1}
+                            </Tag>
+                          );
+                        }
+                        return <Tag color="green">Tem số: {startNum}</Tag>;
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
                 <Button

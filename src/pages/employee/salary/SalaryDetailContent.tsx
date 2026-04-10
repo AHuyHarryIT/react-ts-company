@@ -276,6 +276,20 @@ export const SalaryDetailContent = ({
       note: salaryDetails?.birthday_money_notice || null
     },
     {
+      key: 'sickness',
+      description: 'Hỗ trợ ốm đau',
+      hours: 0,
+      amount: salaryDetails?.sickness || 0,
+      note: salaryDetails?.sickness_notice || null
+    },
+    {
+      key: 'funeral',
+      description: 'Hỗ trợ ma chay, hiếu hỉ',
+      hours: 0,
+      amount: salaryDetails?.funeral || 0,
+      note: salaryDetails?.funeral_notice || null
+    },
+    {
       key: 'previous_period_debt',
       description: 'Tiền lương tháng trước bị thiếu',
       hours: 0,

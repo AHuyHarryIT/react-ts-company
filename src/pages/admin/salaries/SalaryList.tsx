@@ -1,8 +1,16 @@
 import { Link } from '@tanstack/react-router';
-import { Button, Table, TableColumnsType, TableProps, Tag } from 'antd';
+import {
+  Button,
+  Pagination,
+  Table,
+  TableColumnsType,
+  TableProps,
+  Tag
+} from 'antd';
 import { useState } from 'react';
 import { FaMoneyBillWave } from 'react-icons/fa';
 import { GoInfo } from 'react-icons/go';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 import { useCrudList } from '@/hooks/useCrudList';
 import { SalaryType } from '@/types/salaryType';
@@ -15,6 +23,7 @@ import { customTableProps } from '@components/custom/TableProps.custom';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 
 export default function SalaryList() {
+  const isMobile = useIsMobile();
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
@@ -166,8 +175,96 @@ export default function SalaryList() {
           </div>
         </div>
 
-        {/* ── Table ────────────────────────────────────────────── */}
-        <Table<SalaryType> {...tableProps} />
+        {/* ── Content ────────────────────────────────────────────── */}
+        {isMobile ? (
+          <div className="flex flex-col gap-3">
+            {salaries.map((record, index) => (
+              <div
+                key={record.id}
+                className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+                    {index + 1 + limit * (page - 1)}
+                  </span>
+                  <span className="line-clamp-1 text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                    {record.title || (
+                      <span className="text-gray-400 italic">Chưa có</span>
+                    )}
+                  </span>
+                </div>
+                <div className="space-y-1.5 pl-8 text-[13px]">
+                  <div className="text-lg font-semibold text-emerald-600">
+                    {new Intl.NumberFormat('vi-VN', {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    }).format(record.total)}
+                    <span className="ml-1 text-xs text-gray-400">₫</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Tag color="blue" className="!m-0 !text-xs">
+                      {new Date(record.start_date).toLocaleDateString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })}
+                    </Tag>
+                    <span className="text-gray-400">→</span>
+                    <Tag color="purple" className="!m-0 !text-xs">
+                      {new Date(record.end_date).toLocaleDateString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })}
+                    </Tag>
+                  </div>
+                </div>
+                {/* Actions */}
+                <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                  <Link to={`/admin/salaries/$id`} params={{ id: record.id }}>
+                    <Button
+                      color="primary"
+                      variant="solid"
+                      size="small"
+                      icon={<GoInfo />}
+                    >
+                      Chi tiết
+                    </Button>
+                  </Link>
+                  <ConfirmButton
+                    id={record.id}
+                    service={salariesService}
+                    size="small"
+                    content={
+                      <p>
+                        Bạn có chắc chắn muốn xóa bản lương{' '}
+                        <strong>
+                          {record.title} - {record.id}
+                        </strong>{' '}
+                        không?
+                      </p>
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-end pt-2">
+              <Pagination
+                size="small"
+                current={page}
+                pageSize={limit}
+                total={total}
+                showTotal={(t) => `Tổng ${t} bản lương`}
+                onChange={(p, size) => {
+                  setPage(p);
+                  setLimit(size);
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <Table<SalaryType> {...tableProps} />
+        )}
       </div>
     </ComponentCard>
   );

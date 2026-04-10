@@ -4,6 +4,8 @@ import {
   Button,
   Input,
   Modal,
+  Pagination,
+  Spin,
   Table,
   TableColumnsType,
   TableProps,
@@ -15,6 +17,7 @@ import { FaUser, FaSearch } from 'react-icons/fa';
 import { FaFingerprint, FaPen } from 'react-icons/fa6';
 import { LuUserRoundPlus } from 'react-icons/lu';
 import { BiTrash } from 'react-icons/bi';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 import { useCrudList } from '@/hooks/useCrudList';
 import { EmployeeType } from '@/types/employeeType';
@@ -28,6 +31,7 @@ import { STORAGE_URL } from '@/configs/environment.config';
 import { customTableProps } from '@components/custom/TableProps.custom';
 
 export default function EmployeeList() {
+  const isMobile = useIsMobile();
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 10,
@@ -320,8 +324,142 @@ export default function EmployeeList() {
           </div>
         </div>
 
-        {/* ── Table ────────────────────────────────────────────── */}
-        <Table<EmployeeType> {...tableProps} />
+        {/* ── Content ────────────────────────────────────────── */}
+        {isMobile ? (
+          <Spin spinning={isLoading}>
+            {employees.length === 0 && !isLoading ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-white py-12 dark:border-gray-700 dark:bg-gray-800">
+                <FaUser className="mb-3 text-3xl text-gray-300 dark:text-gray-600" />
+                <p className="text-sm text-gray-400">
+                  Không có dữ liệu nhân viên
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-3">
+                  {employees.map((record, index) => (
+                    <div
+                      key={record.id}
+                      className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+                    >
+                      {/* Card top: index + ID badge */}
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                          {index +
+                            1 +
+                            (params.limit ?? 10) * ((params.page ?? 1) - 1)}
+                        </span>
+                        <Tag color="blue" className="!m-0 !font-mono !text-xs">
+                          {record.id}
+                        </Tag>
+                      </div>
+
+                      {/* Employee info */}
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          src={`${STORAGE_URL}/${record.card_photo}`}
+                          alt="avatar"
+                          icon={<FaUser />}
+                          shape="square"
+                          size={44}
+                          className="flex-shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                            {record.name}
+                          </div>
+                          {record.phone && (
+                            <div className="mt-0.5 text-xs text-gray-400">
+                              {record.phone}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Tags */}
+                      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                        {record.role?.role_name && (
+                          <Tag color="geekblue" className="!m-0 !text-xs">
+                            {record.role.role_name}
+                          </Tag>
+                        )}
+                        {record.company && (
+                          <Tag
+                            color={
+                              record.company.toUpperCase() === 'VVP'
+                                ? 'purple'
+                                : record.company.toUpperCase() === 'A7A'
+                                  ? 'cyan'
+                                  : undefined
+                            }
+                            className="!m-0 !text-xs"
+                          >
+                            {record.company.toUpperCase() === 'VVP'
+                              ? 'VINH VINH PHÁT'
+                              : record.company.toUpperCase()}
+                          </Tag>
+                        )}
+                        {record.calendar_category?.name && (
+                          <Tag color="green" className="!m-0 !text-xs">
+                            {record.calendar_category.name}
+                          </Tag>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                        <Link
+                          to={`/admin/employees/edit/$id`}
+                          params={{ id: record.id }}
+                        >
+                          <Button
+                            color="primary"
+                            variant="solid"
+                            size="small"
+                            icon={<FaPen />}
+                          >
+                            Sửa
+                          </Button>
+                        </Link>
+                        <ConfirmButton
+                          id={record.id}
+                          service={employeeService}
+                          size="small"
+                          content={
+                            <p>
+                              Bạn có chắc chắn muốn xóa nhân viên{' '}
+                              <strong>
+                                {record.name} - {record.id}
+                              </strong>{' '}
+                              không?
+                            </p>
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {(pagination.total || 0) > (params.limit ?? 10) && (
+                  <div className="mt-4 flex justify-center">
+                    <Pagination
+                      current={params.page}
+                      pageSize={params.limit}
+                      total={pagination.total}
+                      onChange={(page, size) => {
+                        setParams((prev) => ({ ...prev, page, limit: size }));
+                      }}
+                      size="small"
+                      showSizeChanger
+                      showTotal={(t, range) => `${range[0]}-${range[1]} / ${t}`}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </Spin>
+        ) : (
+          <Table<EmployeeType> {...tableProps} />
+        )}
       </div>
     </ComponentCard>
   );

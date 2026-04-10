@@ -6,9 +6,12 @@ import { updateWorkScheduleCategory } from '@services/WorkScheduleCategoryServic
 
 import { FaPen } from 'react-icons/fa6';
 
+import { SizeType } from 'antd/es/config-provider/SizeContext';
+
 interface UpdateWorkScheduleCategoryProps {
   categoryId: string;
   categoryName: string;
+  size?: SizeType;
 }
 
 type FormField = {
@@ -17,7 +20,7 @@ type FormField = {
 
 export const UpdateWorkScheduleCategory: React.FC<
   UpdateWorkScheduleCategoryProps
-> = ({ categoryId, categoryName }) => {
+> = ({ categoryId, categoryName, size = 'middle' }) => {
   const [open, setOpen] = useState(false);
 
   const queryClient = useQueryClient();
@@ -66,6 +69,7 @@ export const UpdateWorkScheduleCategory: React.FC<
   return (
     <>
       <Button
+        size={size}
         color="primary"
         variant="solid"
         icon={<FaPen />}

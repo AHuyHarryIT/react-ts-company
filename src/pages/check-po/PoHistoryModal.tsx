@@ -22,6 +22,7 @@ import {
   Button,
   DatePicker,
   Drawer,
+  Empty,
   Form,
   FormProps,
   Input,
@@ -38,8 +39,9 @@ import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import { FaCheck, FaTimes } from 'react-icons/fa';
-import { FaTrash } from 'react-icons/fa6';
+import { FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa6';
 import { IconHistory } from '@components/icons';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 // ── Types ────────────────────────────────────────────────────
 interface FormFields {
@@ -68,12 +70,14 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
   open,
   onClose
 }) => {
+  const isMobile = useIsMobile();
   const [form] = Form.useForm<FormFields>();
   const [month, setMonth] = useState<Dayjs>(dayjs());
   const [date, setDate] = useState<Dayjs>();
   const [searchText, setSearchText] = useState<string>('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
+  const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -600,12 +604,12 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     >
       <div className="flex h-full flex-col overflow-hidden">
         {/* ── Sticky Filter Bar ──────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-900">
+        <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 bg-white p-4 sm:px-6 sm:py-3 dark:border-gray-700 dark:bg-gray-900">
           <DatePicker
             picker="month"
             value={month}
-            size="middle"
-            className="!rounded-lg"
+            size={isMobile ? 'small' : 'middle'}
+            className="!w-full !rounded-lg sm:!w-auto"
             placeholder="Chọn tháng"
             onChange={(d) =>
               d ? (setMonth(d), setDate(undefined)) : setMonth(dayjs())
@@ -614,8 +618,8 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
           <Input.Search
             placeholder="Tìm sản phẩm..."
             allowClear
-            size="middle"
-            className="!max-w-[300px] !rounded-lg"
+            size={isMobile ? 'small' : 'middle'}
+            className="!w-full !rounded-lg sm:!w-[300px]"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             onSearch={(value) => setSearchText(value)}
@@ -629,9 +633,220 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
         </div>
 
         {/* ── Content ─────────────────────────────────────────── */}
-        <div className="min-h-0 flex-1 overflow-auto px-6 py-4">
+        <div className="min-h-0 flex-1 overflow-auto p-4 sm:px-6">
           {!date ? (
-            <Table<BatchGroup> {...batchTableProps} />
+            isMobile ? (
+              <Spin spinning={isLoadingHistory}>
+                {batchGroups.length === 0 && !isLoadingHistory ? (
+                  <Empty description="Không có lịch sử" />
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {batchGroups.map((batch, index) => {
+                      const hasBatchId =
+                        batch.batchId && !batch.batchId.startsWith('no-batch-');
+                      const isExpanded = expandedBatchId === batch.batchId;
+                      return (
+                        <div
+                          key={batch.batchId}
+                          className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                        >
+                          <div className="flex items-start justify-between border-b border-gray-100 pb-2 dark:border-gray-700">
+                            <div className="flex items-center gap-2">
+                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                                {index + 1}
+                              </span>
+                              <div className="text-sm font-semibold text-gray-800 dark:text-white">
+                                {batch.date}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[10px] text-gray-400">
+                                Thời gian
+                              </div>
+                              <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                                {batch.createdAt
+                                  ? dayjs(batch.createdAt).format('HH:mm:ss')
+                                  : '—'}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            <div className="rounded-lg bg-gray-50 p-2 dark:bg-gray-900/40">
+                              <div className="text-[10px] text-gray-500">
+                                Người nhập
+                              </div>
+                              <div className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">
+                                {batch.employeeName}
+                              </div>
+                            </div>
+                            <div className="rounded-lg bg-gray-50 p-2 dark:bg-gray-900/40">
+                              <div className="text-[10px] text-gray-500">
+                                Tên file
+                              </div>
+                              <div className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">
+                                {batch.fileName || '—'}
+                              </div>
+                            </div>
+                            <div className="rounded-lg bg-green-50 p-2 dark:bg-green-900/20">
+                              <div className="text-[10px] text-green-600 dark:text-green-400">
+                                Tổng sản phẩm
+                              </div>
+                              <div className="font-bold text-green-700 dark:text-green-300">
+                                {batch.productCount} SP
+                              </div>
+                            </div>
+                            <div className="rounded-lg bg-blue-50 p-2 dark:bg-blue-900/20">
+                              <div className="text-[10px] text-blue-600 dark:text-blue-400">
+                                Tổng số lượng
+                              </div>
+                              <div className="font-bold text-blue-700 dark:text-blue-300">
+                                {Number(batch.totalQuantity).toLocaleString(
+                                  'vi-VN'
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-2 flex items-center justify-between">
+                            <Button
+                              type="text"
+                              size="small"
+                              className="text-xs !text-blue-500"
+                              icon={
+                                isExpanded ? <FaChevronUp /> : <FaChevronDown />
+                              }
+                              onClick={() =>
+                                setExpandedBatchId(
+                                  isExpanded ? null : batch.batchId
+                                )
+                              }
+                            >
+                              {isExpanded ? 'Thu gọn' : 'Xem chi tiết SP'}
+                            </Button>
+                            {hasBatchId ? (
+                              <Popconfirm
+                                title="Xóa toán bộ file?"
+                                onConfirm={(e) => {
+                                  e?.stopPropagation();
+                                  deleteBatch(batch.batchId);
+                                }}
+                                okText="Xóa"
+                                cancelText="Hủy"
+                                okButtonProps={{
+                                  danger: true,
+                                  loading: isDeletingBatch
+                                }}
+                              >
+                                <Button
+                                  size="small"
+                                  type="text"
+                                  danger
+                                  icon={<FaTrash />}
+                                />
+                              </Popconfirm>
+                            ) : (
+                              // handle single isolated item if no batch
+                              batch.records.length === 1 && (
+                                <Popconfirm
+                                  title={`Xóa "${batch.records[0].product?.name}"?`}
+                                  onConfirm={(e) => {
+                                    e?.stopPropagation();
+                                    deleteBatch(batch.batchId);
+                                  }}
+                                  okText="Xóa"
+                                  cancelText="Hủy"
+                                  okButtonProps={{ danger: true }}
+                                >
+                                  <Button
+                                    size="small"
+                                    type="text"
+                                    danger
+                                    icon={<FaTrash />}
+                                  />
+                                </Popconfirm>
+                              )
+                            )}
+                          </div>
+
+                          {/* Expanded detail list */}
+                          {isExpanded && batch.records.length > 0 && (
+                            <div className="mt-2 overflow-hidden rounded-lg border border-gray-100 dark:border-gray-700">
+                              {batch.records.map((r, i) => (
+                                <div
+                                  key={r.id}
+                                  className="flex items-center justify-between border-b border-gray-50 p-2 last:border-0 dark:border-gray-800"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <div className="truncate text-xs font-medium text-gray-800 dark:text-gray-200">
+                                      {i + 1}. {r.product?.name || '—'}
+                                    </div>
+                                  </div>
+                                  <div className="ml-2 flex flex-shrink-0 items-center gap-2">
+                                    {editingId === r.id ? (
+                                      <div className="flex items-center gap-1">
+                                        <InputNumber
+                                          size="small"
+                                          min={0}
+                                          value={editValue}
+                                          onChange={(v) => setEditValue(v ?? 0)}
+                                          className="!w-[70px] text-xs"
+                                        />
+                                        <Button
+                                          size="small"
+                                          type="text"
+                                          className="!p-1 !text-green-500"
+                                          icon={
+                                            <FaCheck className="text-[10px]" />
+                                          }
+                                          onClick={() => handleInlineSave(r)}
+                                        />
+                                        <Button
+                                          size="small"
+                                          type="text"
+                                          className="!p-1 !text-gray-400"
+                                          icon={
+                                            <FaTimes className="text-[10px]" />
+                                          }
+                                          onClick={() => setEditingId(null)}
+                                        />
+                                      </div>
+                                    ) : (
+                                      <span
+                                        className="text-xs font-bold text-blue-600"
+                                        onClick={() => {
+                                          setEditingId(r.id);
+                                          setEditValue(r.quantity);
+                                        }}
+                                      >
+                                        {Number(r.quantity).toLocaleString(
+                                          'vi-VN'
+                                        )}
+                                      </span>
+                                    )}
+                                    <Popconfirm
+                                      title="Xóa?"
+                                      onConfirm={() => deleteRecord(r.id)}
+                                      okText="Xóa"
+                                      cancelText="Hủy"
+                                      okButtonProps={{ danger: true }}
+                                    >
+                                      <FaTrash className="cursor-pointer text-[10px] text-red-400" />
+                                    </Popconfirm>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Spin>
+            ) : (
+              <Table<BatchGroup> {...batchTableProps} />
+            )
           ) : (
             <Spin spinning={isLoadingProducts}>
               <Form<FormFields> {...formProps}>

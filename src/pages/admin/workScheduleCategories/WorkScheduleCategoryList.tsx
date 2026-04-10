@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { Table, TableColumnsType, TableProps, Tag } from 'antd';
+import { Table, TableColumnsType, TableProps, Tag, Pagination } from 'antd';
 import { useState } from 'react';
 import { FaCalendarAlt } from 'react-icons/fa';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
@@ -14,6 +15,7 @@ import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryServi
 import { customTableProps } from '@components/custom/TableProps.custom';
 
 export default function WorkScheduleCategoryList() {
+  const isMobile = useIsMobile();
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
 
@@ -161,8 +163,83 @@ export default function WorkScheduleCategoryList() {
           </div>
         </div>
 
-        {/* ── Table ────────────────────────────────────────────── */}
-        <Table<WorkScheduleCategoryType> {...tableProps} />
+        {/* ── Content ────────────────────────────────────────────── */}
+        {isMobile ? (
+          <div className="flex flex-col gap-3">
+            {workScheduleCategories.map((record, index) => (
+              <div
+                key={record.id}
+                className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                    {index + 1 + limit * (page - 1)}
+                  </span>
+                  <span className="text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                    {record.name || (
+                      <span className="text-gray-400 italic">Chưa có</span>
+                    )}
+                  </span>
+                  <Tag
+                    color="blue"
+                    className="!m-0 ml-auto !font-mono !text-xs"
+                  >
+                    {record.id}
+                  </Tag>
+                </div>
+                <div className="space-y-1 pl-8 text-xs text-gray-500">
+                  <div>
+                    <span className="font-medium text-gray-500">Tạo:</span>{' '}
+                    {new Date(record.created_at).toLocaleDateString('vi-VN', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric'
+                    })}{' '}
+                    {new Date(record.created_at).toLocaleTimeString('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-500">Cập nhật:</span>{' '}
+                    {new Date(record.updated_at).toLocaleDateString('vi-VN', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric'
+                    })}{' '}
+                    {new Date(record.updated_at).toLocaleTimeString('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                </div>
+                {/* Actions */}
+                <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                  <UpdateWorkScheduleCategory
+                    categoryId={record.id}
+                    categoryName={record.name}
+                    size="small"
+                  />
+                  <DeleteModal id={record.id} name={record.name} size="small" />
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-end pt-2">
+              <Pagination
+                size="small"
+                current={page}
+                pageSize={limit}
+                total={total}
+                onChange={(p, size) => {
+                  setPage(p);
+                  setLimit(size);
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <Table<WorkScheduleCategoryType> {...tableProps} />
+        )}
       </div>
     </ComponentCard>
   );

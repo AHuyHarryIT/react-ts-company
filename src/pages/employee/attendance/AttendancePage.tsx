@@ -55,26 +55,58 @@ type ActiveTab = 'history' | 'calculate';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const fmtDate = (v: string) =>
-  v
-    ? new Date(v).toLocaleString('vi-VN', {
+const safeDate = (v: string) => {
+  if (!v) return new Date('');
+
+  let clean = String(v);
+
+  // Xóa các số microsecond/millisecond dư ở cuối (có đuôi .xxxxxx) mà webkit/iOS đời cũ không hiểu
+  clean = clean.replace(/\.\d{1,6}(Z)?$/, '$1');
+
+  // Safari trên iOS cũ bị lỗi "Invalid Date" đối với chuỗi ngày có dấu gạch ngang và khoảng trắng "YYYY-MM-DD HH:mm:ss"
+  // nên ta chuyển dấu '-' thành '/' nếu rơi trúng định dạng đó (chứ không đụng ISO có ký tự 'T')
+  if (/^\d{4}-\d{2}-\d{2}\s/.test(clean)) {
+    clean = clean.replace(/-/g, '/');
+  }
+
+  return new Date(clean);
+};
+
+const fmtDate = (v: string) => {
+  if (!v) return null;
+  const d = safeDate(v);
+  return isNaN(d.getTime())
+    ? v.split('.')[0].split(' ')[0]
+    : d.toLocaleString('vi-VN', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
-      })
-    : null;
+      });
+};
 
-const fmtWeekday = (v: string) =>
-  v ? new Date(v).toLocaleString('vi-VN', { weekday: 'long' }) : null;
+const fmtWeekday = (v: string) => {
+  if (!v) return null;
+  const d = safeDate(v);
+  return isNaN(d.getTime())
+    ? '-'
+    : d.toLocaleString('vi-VN', { weekday: 'long' });
+};
 
-const fmtTime = (v: string) =>
-  v
-    ? new Date(v).toLocaleString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })
-    : '-';
+const fmtTime = (v: string) => {
+  if (!v) return '-';
+  const clean = v.split('.')[0];
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(clean)) return clean;
+  const d = safeDate(clean);
+  if (isNaN(d.getTime())) {
+    const match = clean.match(/\d{2}:\d{2}(:\d{2})?/);
+    return match ? match[0] : clean;
+  }
+  return d.toLocaleString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+};
 
 // ── Summary Stats ────────────────────────────────────────────────────────────
 
@@ -103,44 +135,181 @@ function SummaryStats({
 
   if (isMobile) {
     return (
-      <div className="grid grid-cols-6 overflow-hidden rounded-lg border border-gray-200 bg-white">
-        <div className="col-span-2 border-r border-b border-gray-200 py-2.5 text-center">
-          <div className="text-[11px] text-gray-400">Đi làm</div>
-          <div className="text-base leading-tight font-bold text-gray-800">
+      <div
+        className="grid grid-cols-6 overflow-hidden rounded-lg border border-gray-200 bg-white"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb',
+          backgroundColor: '#fff',
+          overflow: 'hidden'
+        }}
+      >
+        <div
+          className="col-span-2 border-r border-b border-gray-200 py-2.5 text-center"
+          style={{
+            width: '33.33%',
+            borderRight: '1px solid #e5e7eb',
+            borderBottom: '1px solid #e5e7eb',
+            padding: '10px 0',
+            textAlign: 'center'
+          }}
+        >
+          <div
+            className="text-[11px] text-gray-400"
+            style={{ fontSize: '11px', color: '#9ca3af' }}
+          >
+            Đi làm
+          </div>
+          <div
+            className="text-base leading-tight font-bold text-gray-800"
+            style={{ fontSize: '16px', fontWeight: 'bold' }}
+          >
             {stats.workDays}{' '}
-            <span className="text-[11px] font-normal text-gray-400">ngày</span>
+            <span
+              className="text-[11px] font-normal text-gray-400"
+              style={{
+                fontSize: '11px',
+                fontWeight: 'normal',
+                color: '#9ca3af'
+              }}
+            >
+              ngày
+            </span>
           </div>
         </div>
-        <div className="col-span-2 border-r border-b border-gray-200 py-2.5 text-center">
-          <div className="text-[11px] text-gray-400">Tổng giờ</div>
-          <div className="text-base leading-tight font-bold text-gray-800">
+        <div
+          className="col-span-2 border-r border-b border-gray-200 py-2.5 text-center"
+          style={{
+            width: '33.33%',
+            borderRight: '1px solid #e5e7eb',
+            borderBottom: '1px solid #e5e7eb',
+            padding: '10px 0',
+            textAlign: 'center'
+          }}
+        >
+          <div
+            className="text-[11px] text-gray-400"
+            style={{ fontSize: '11px', color: '#9ca3af' }}
+          >
+            Tổng giờ
+          </div>
+          <div
+            className="text-base leading-tight font-bold text-gray-800"
+            style={{ fontSize: '16px', fontWeight: 'bold' }}
+          >
             {Math.round(stats.totalHours * 10) / 10}{' '}
-            <span className="text-[11px] font-normal text-gray-400">giờ</span>
+            <span
+              className="text-[11px] font-normal text-gray-400"
+              style={{
+                fontSize: '11px',
+                fontWeight: 'normal',
+                color: '#9ca3af'
+              }}
+            >
+              giờ
+            </span>
           </div>
         </div>
-        <div className="col-span-2 border-b border-gray-200 py-2.5 text-center">
-          <div className="text-[11px] text-gray-400">Hành chính</div>
-          <div className="text-base leading-tight font-bold text-gray-800">
+        <div
+          className="col-span-2 border-b border-gray-200 py-2.5 text-center"
+          style={{
+            width: '33.33%',
+            borderBottom: '1px solid #e5e7eb',
+            padding: '10px 0',
+            textAlign: 'center'
+          }}
+        >
+          <div
+            className="text-[11px] text-gray-400"
+            style={{ fontSize: '11px', color: '#9ca3af' }}
+          >
+            Hành chính
+          </div>
+          <div
+            className="text-base leading-tight font-bold text-gray-800"
+            style={{ fontSize: '16px', fontWeight: 'bold' }}
+          >
             {Math.round(stats.adminHours * 10) / 10}{' '}
-            <span className="text-[11px] font-normal text-gray-400">giờ</span>
+            <span
+              className="text-[11px] font-normal text-gray-400"
+              style={{
+                fontSize: '11px',
+                fontWeight: 'normal',
+                color: '#9ca3af'
+              }}
+            >
+              giờ
+            </span>
           </div>
         </div>
-        <div className="col-span-3 border-r border-gray-200 py-2.5 text-center">
-          <div className="text-[11px] text-gray-400">Tăng ca</div>
-          <div className="text-base leading-tight font-bold text-gray-800">
+        <div
+          className="col-span-3 border-r border-gray-200 py-2.5 text-center"
+          style={{
+            width: '50%',
+            borderRight: '1px solid #e5e7eb',
+            padding: '10px 0',
+            textAlign: 'center'
+          }}
+        >
+          <div
+            className="text-[11px] text-gray-400"
+            style={{ fontSize: '11px', color: '#9ca3af' }}
+          >
+            Tăng ca
+          </div>
+          <div
+            className="text-base leading-tight font-bold text-gray-800"
+            style={{ fontSize: '16px', fontWeight: 'bold' }}
+          >
             {Math.round(stats.otHours * 10) / 10}{' '}
-            <span className="text-[11px] font-normal text-gray-400">giờ</span>
+            <span
+              className="text-[11px] font-normal text-gray-400"
+              style={{
+                fontSize: '11px',
+                fontWeight: 'normal',
+                color: '#9ca3af'
+              }}
+            >
+              giờ
+            </span>
           </div>
         </div>
         <div
           className={`col-span-3 py-2.5 text-center ${stats.missingDays > 0 ? 'bg-red-50' : ''}`}
+          style={{
+            width: '50%',
+            padding: '10px 0',
+            textAlign: 'center',
+            backgroundColor: stats.missingDays > 0 ? '#fef2f2' : 'transparent'
+          }}
         >
-          <div className="text-[11px] text-gray-400">Quên chấm công</div>
+          <div
+            className="text-[11px] text-gray-400"
+            style={{ fontSize: '11px', color: '#9ca3af' }}
+          >
+            Quên chấm công
+          </div>
           <div
             className={`text-base leading-tight font-bold ${stats.missingDays > 0 ? 'text-red-600' : 'text-gray-800'}`}
+            style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: stats.missingDays > 0 ? '#dc2626' : '#1f2937'
+            }}
           >
             {stats.missingDays}{' '}
-            <span className="text-[11px] font-normal text-gray-400">ngày</span>
+            <span
+              className="text-[11px] font-normal text-gray-400"
+              style={{
+                fontSize: '11px',
+                fontWeight: 'normal',
+                color: '#9ca3af'
+              }}
+            >
+              ngày
+            </span>
           </div>
         </div>
       </div>
@@ -248,25 +417,62 @@ function MobileCalculateRow({ item }: { item: CalculatedRow }) {
       className={`rounded-xl border bg-white p-3.5 shadow-sm ${
         isMissing ? 'border-red-200' : 'border-gray-100'
       }`}
+      style={{
+        padding: '14px',
+        borderRadius: '12px',
+        border: `1px solid ${isMissing ? '#fecaca' : '#f3f4f6'}`,
+        marginBottom: '12px',
+        backgroundColor: '#fff'
+      }}
     >
       {/* Header: Date + Total */}
-      <div className="flex items-center justify-between">
+      <div
+        className="flex items-center justify-between"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}
+      >
         <div>
-          <span className="text-sm font-semibold text-gray-800">
+          <span
+            className="text-sm font-semibold text-gray-800"
+            style={{ fontSize: '14px', fontWeight: 600 }}
+          >
             {dayjs(item.date).format('DD/MM')}
           </span>
-          <span className="ml-1.5 text-[13px] text-gray-400 capitalize">
+          <span
+            className="ml-1.5 text-[13px] text-gray-400 capitalize"
+            style={{
+              marginLeft: '6px',
+              fontSize: '13px',
+              color: '#9ca3af',
+              textTransform: 'capitalize'
+            }}
+          >
             {dayjs(item.date).format('dddd')}
           </span>
         </div>
         {item.shift > 0 ? (
-          <div className="text-right">
+          <div className="text-right" style={{ textAlign: 'right' }}>
             <span className="text-xl font-bold text-gray-800 tabular-nums">
               {item.total_hours ?? 0}
             </span>
-            <span className="ml-0.5 text-sm text-gray-400">giờ</span>
+            <span
+              className="ml-0.5 text-sm text-gray-400"
+              style={{ marginLeft: '2px', fontSize: '14px' }}
+            >
+              giờ
+            </span>
             {(item.overtime_hours ?? 0) > 0 && (
-              <span className="ml-1.5 text-sm text-amber-500 tabular-nums">
+              <span
+                className="ml-1.5 text-sm text-amber-500 tabular-nums"
+                style={{
+                  marginLeft: '6px',
+                  fontSize: '14px',
+                  color: '#f59e0b'
+                }}
+              >
                 +{item.overtime_hours}h TC
               </span>
             )}
@@ -277,19 +483,60 @@ function MobileCalculateRow({ item }: { item: CalculatedRow }) {
       </div>
       {/* Time in / out */}
       {item.shift > 0 && (
-        <div className="mt-2.5 flex gap-2">
-          <div className="flex-1 rounded-lg bg-gray-50 px-3 py-2">
-            <div className="text-[11px] text-gray-400">Vào</div>
+        <div
+          className="mt-2.5 flex gap-2"
+          style={{ marginTop: '10px', display: 'flex', gap: '8px' }}
+        >
+          <div
+            className="flex-1 rounded-lg bg-gray-50 px-3 py-2"
+            style={{
+              flex: 1,
+              backgroundColor: '#f9fafb',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              marginRight: '4px'
+            }}
+          >
+            <div
+              className="text-[11px] text-gray-400"
+              style={{ fontSize: '11px', color: '#9ca3af' }}
+            >
+              Vào
+            </div>
             <div
               className={`text-sm font-semibold tabular-nums ${item.time_in ? 'text-teal-600' : 'text-red-400'}`}
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: item.time_in ? '#0d9488' : '#f87171'
+              }}
             >
               {item.time_in ? fmtTime(item.time_in) : '--:--:--'}
             </div>
           </div>
-          <div className="flex-1 rounded-lg bg-gray-50 px-3 py-2">
-            <div className="text-[11px] text-gray-400">Ra</div>
+          <div
+            className="flex-1 rounded-lg bg-gray-50 px-3 py-2"
+            style={{
+              flex: 1,
+              backgroundColor: '#f9fafb',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              marginLeft: '4px'
+            }}
+          >
+            <div
+              className="text-[11px] text-gray-400"
+              style={{ fontSize: '11px', color: '#9ca3af' }}
+            >
+              Ra
+            </div>
             <div
               className={`text-sm font-semibold tabular-nums ${item.time_out ? 'text-slate-600' : 'text-red-400'}`}
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: item.time_out ? '#475569' : '#f87171'
+              }}
             >
               {item.time_out ? fmtTime(item.time_out) : '--:--:--'}
             </div>

@@ -453,6 +453,25 @@ export default function StampForm() {
                     <Tag color={type === 'bag' ? 'orange' : 'lime'}>
                       {type === 'bag' ? 'Tem Bịch' : 'Tem Thùng'}
                     </Tag>
+                    {(() => {
+                      const startStr = String(stampData.startStamp || '');
+                      const count = Number(stampData.totalStamp || 1);
+                      if (startStr.includes(',')) {
+                        return <Tag color="green">Tem số: {startStr}</Tag>;
+                      }
+                      const startNum = parseInt(startStr);
+                      if (!isNaN(startNum)) {
+                        if (count > 1) {
+                          return (
+                            <Tag color="green">
+                              Tem: {startNum} ➔ {startNum + count - 1}
+                            </Tag>
+                          );
+                        }
+                        return <Tag color="green">Tem số: {startNum}</Tag>;
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
                 <Button

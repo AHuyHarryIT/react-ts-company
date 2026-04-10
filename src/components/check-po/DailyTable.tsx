@@ -1,4 +1,11 @@
-import { Table, TableColumnsType, TableProps } from 'antd';
+import {
+  Empty,
+  Pagination,
+  Spin,
+  Table,
+  TableColumnsType,
+  TableProps
+} from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
@@ -6,6 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { ProduceTableType } from '@/types/poTableType';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { useCrudList } from '@hooks/useCrudList';
+import { useIsMobile } from '@hooks/useIsMobile';
 import { productService } from '@services/ProductService';
 import { produceDataSource } from '@utils/poDataUtil';
 
@@ -15,6 +23,7 @@ interface DailyTableProps {
 }
 
 export const DailyTable: React.FC<DailyTableProps> = ({ month, search }) => {
+  const isMobile = useIsMobile();
   const [dataSource, setDataSource] = useState<ProduceTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
@@ -153,6 +162,113 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month, search }) => {
       }
     }
   };
+
+  if (isMobile) {
+    return (
+      <Spin spinning={queryResult.isLoading}>
+        {dataSource.length === 0 && !queryResult.isLoading ? (
+          <Empty description="Không có dữ liệu" />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {dataSource.map((record, index) => {
+              const activeDates = Object.entries(record.times ?? {}).filter(
+                ([, vals]: [string, { shift1?: number; shift2?: number }]) =>
+                  vals.shift1 || vals.shift2
+              );
+              return (
+                <div
+                  key={record.id}
+                  className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div className="flex items-start gap-2 border-b border-gray-100 pb-2 dark:border-gray-700">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                      {index + 1 + limit * (page - 1)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-gray-800 dark:text-white/90">
+                        {record.name}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2 dark:bg-blue-900/20">
+                    <span className="text-xs font-medium text-blue-700 dark:text-blue-400">
+                      Tổng cộng
+                    </span>
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                      {record.totalQuantity?.toLocaleString() || '0'}
+                    </span>
+                  </div>
+
+                  {activeDates.length > 0 && (
+                    <details className="group mt-2">
+                      <summary className="cursor-pointer rounded-lg bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:bg-gray-900/40 dark:text-gray-400 dark:hover:bg-gray-900/60">
+                        Chi tiết {activeDates.length} ngày có dữ liệu
+                      </summary>
+                      <div className="mt-2 overflow-hidden rounded-lg border border-gray-100 dark:border-gray-700">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="bg-gray-50 text-gray-500 dark:bg-gray-900/40">
+                              <th className="px-2 py-1.5 text-left font-medium">
+                                Ngày
+                              </th>
+                              <th className="px-2 py-1.5 text-center font-medium">
+                                Ca 1
+                              </th>
+                              <th className="px-2 py-1.5 text-center font-medium">
+                                Ca 2
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeDates.map(
+                              ([date, vals]: [
+                                string,
+                                { shift1?: number; shift2?: number }
+                              ]) => (
+                                <tr
+                                  key={date}
+                                  className="border-t border-gray-50 dark:border-gray-800"
+                                >
+                                  <td className="px-2 py-1 text-gray-600 dark:text-gray-300">
+                                    {date}
+                                  </td>
+                                  <td className="px-2 py-1 text-center text-amber-600">
+                                    {vals.shift1?.toLocaleString() || '-'}
+                                  </td>
+                                  <td className="px-2 py-1 text-center text-emerald-600">
+                                    {vals.shift2?.toLocaleString() || '-'}
+                                  </td>
+                                </tr>
+                              )
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </details>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Pagination manually implemented for card view */}
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                size="small"
+                current={page}
+                total={total}
+                pageSize={limit}
+                onChange={(p, s) => {
+                  setPage(p);
+                  setLimit(s);
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </Spin>
+    );
+  }
 
   return <Table {...tableProps} />;
 };

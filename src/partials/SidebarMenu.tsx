@@ -111,6 +111,7 @@ function SidebarSubmenu({
   pathname,
   isCollapsed,
   isOpen,
+  isMobile,
   onToggle,
   onClick
 }: {
@@ -118,6 +119,7 @@ function SidebarSubmenu({
   pathname: string;
   isCollapsed: boolean;
   isOpen: boolean;
+  isMobile: boolean;
   onToggle: () => void;
   onClick?: () => void;
 }) {
@@ -135,6 +137,7 @@ function SidebarSubmenu({
   });
 
   const handleMouseEnter = () => {
+    if (isMobile) return;
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     if (!isOpen) {
       hoverTimerRef.current = setTimeout(() => {
@@ -144,6 +147,7 @@ function SidebarSubmenu({
   };
 
   const handleMouseLeave = () => {
+    if (isMobile) return;
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     if (isOpen) {
       hoverTimerRef.current = setTimeout(() => {
@@ -308,6 +312,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 pathname={pathname}
                 isCollapsed={isSidebarClose}
                 isOpen={openKey === key}
+                isMobile={isMobile}
                 onToggle={() => handleToggle(key)}
                 onClick={handleClick}
               />

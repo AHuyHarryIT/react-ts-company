@@ -1,10 +1,18 @@
-import { Table, TableColumnsType, TableProps } from 'antd';
+import {
+  Empty,
+  Pagination,
+  Spin,
+  Table,
+  TableColumnsType,
+  TableProps
+} from 'antd';
 import type { Dayjs } from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
 import { WeekTableType } from '@/types/poTableType';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { useCrudList } from '@hooks/useCrudList';
+import { useIsMobile } from '@hooks/useIsMobile';
 import { productService } from '@services/ProductService';
 import { weeklyDataSource } from '@utils/poDataUtil';
 
@@ -21,6 +29,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   endDate,
   search
 }) => {
+  const isMobile = useIsMobile();
   const [dataSource, setDataSource] = useState<WeekTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
@@ -182,5 +191,138 @@ export const WeekTable: React.FC<WeekTableProps> = ({
       }
     }
   };
+
+  if (isMobile) {
+    return (
+      <Spin spinning={queryResult.isLoading}>
+        {dataSource.length === 0 && !queryResult.isLoading ? (
+          <Empty description="Không có dữ liệu" />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {dataSource.map((record, index) => {
+              const activeDates = Object.entries(record.times ?? {}).filter(
+                ([, vals]: [
+                  string,
+                  { exportQuantity?: number; [key: string]: unknown }
+                ]) => Number(vals.exportQuantity) > 0
+              );
+              return (
+                <div
+                  key={record.id}
+                  className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div className="flex items-start gap-2 border-b border-gray-100 pb-2 dark:border-gray-700">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                      {index + 1 + limit * (page - 1)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-gray-800 dark:text-white/90">
+                        {record.name}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-gray-50 p-2 dark:bg-gray-900/40">
+                      <div className="text-[10px] text-gray-500">
+                        Tổng tồn hiện tại
+                      </div>
+                      <div className="font-bold text-gray-800 dark:text-white">
+                        {record.totalQuantity?.toLocaleString() || '0'}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-blue-50 p-2 dark:bg-blue-900/20">
+                      <div className="text-[10px] text-blue-500">
+                        Đã xuất (tuần)
+                      </div>
+                      <div className="font-bold text-blue-600 dark:text-blue-400">
+                        {record.exportQuantity?.toLocaleString() || '0'}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-orange-50 p-2 dark:bg-orange-900/20">
+                      <div className="text-[10px] text-orange-500">
+                        Tồn đầu tuần
+                      </div>
+                      <div className="font-bold text-orange-600 dark:text-orange-400">
+                        {record.beginOfWeek?.toLocaleString() || '0'}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-emerald-50 p-2 dark:bg-emerald-900/20">
+                      <div className="text-[10px] text-emerald-500">
+                        Còn lại (tuần)
+                      </div>
+                      <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                        {record.totalReamingOfWeek?.toLocaleString() || '0'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {activeDates.length > 0 && (
+                    <details className="group mt-2">
+                      <summary className="cursor-pointer rounded-lg bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:bg-gray-900/40 dark:text-gray-400 dark:hover:bg-gray-900/60">
+                        Chi tiết {activeDates.length} ngày xuất hàng
+                      </summary>
+                      <div className="mt-2 overflow-hidden rounded-lg border border-gray-100 dark:border-gray-700">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="bg-gray-50 text-gray-500 dark:bg-gray-900/40">
+                              <th className="px-2 py-1.5 text-left font-medium">
+                                Ngày
+                              </th>
+                              <th className="px-2 py-1.5 text-right font-medium">
+                                Xuất
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeDates.map(
+                              ([date, vals]: [
+                                string,
+                                {
+                                  exportQuantity?: number;
+                                  [key: string]: unknown;
+                                }
+                              ]) => (
+                                <tr
+                                  key={date}
+                                  className="border-t border-gray-50 dark:border-gray-800"
+                                >
+                                  <td className="px-2 py-1 text-gray-600 dark:text-gray-300">
+                                    {date}
+                                  </td>
+                                  <td className="px-2 py-1 text-right font-medium text-indigo-600">
+                                    {vals.exportQuantity?.toLocaleString() ||
+                                      '-'}
+                                  </td>
+                                </tr>
+                              )
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </details>
+                  )}
+                </div>
+              );
+            })}
+
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                size="small"
+                current={page}
+                total={total}
+                pageSize={limit}
+                onChange={(p, s) => {
+                  setPage(p);
+                  setLimit(s);
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </Spin>
+    );
+  }
+
   return <Table {...tableProps} />;
 };

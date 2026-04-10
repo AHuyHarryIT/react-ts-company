@@ -6,6 +6,8 @@ import {
   Select,
   Tag,
   Avatar,
+  Pagination,
+  Spin,
   TableColumnsType,
   TableProps
 } from 'antd';
@@ -18,8 +20,10 @@ import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { STORAGE_URL } from '@/configs/environment.config';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 export default function HistoryPage() {
+  const isMobile = useIsMobile();
   const [date, setDate] = useState<Dayjs>(dayjs());
   const [activityTypes, setActivityTypes] = useState<string[]>([]);
   const [params, setParams] = useState({
@@ -334,8 +338,91 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        {/* ── Table ───────────────────────────────────────────────── */}
-        <Table {...tableProps} />
+        {/* ── Content ───────────────────────────────────────────────── */}
+        {isMobile ? (
+          <Spin spinning={queryResult.isLoading}>
+            <div className="flex flex-col gap-3">
+              {dataSource.map((record, index) => (
+                <div
+                  key={record.id}
+                  className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div className="flex items-start gap-3">
+                    <Avatar
+                      icon={<UserOutlined />}
+                      src={`${STORAGE_URL}/${(record as unknown as { employee?: { photo?: string } }).employee?.photo}`}
+                      size={40}
+                      className="flex-shrink-0"
+                      style={{ backgroundColor: '#1890ff' }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                          {index +
+                            1 +
+                            (params.limit ?? 10) * ((params.page ?? 1) - 1)}
+                        </span>
+                        <span className="line-clamp-1 text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                          {record.employee_name}
+                        </span>
+                      </div>
+                      <div className="mt-1 space-y-1.5 pl-8 text-[13px]">
+                        <div className="flex items-center gap-2">
+                          <Tag
+                            color="blue"
+                            className="!m-0 !font-mono !text-xs"
+                          >
+                            {record.employee_code ||
+                              record.employee_id ||
+                              'N/A'}
+                          </Tag>
+                          <Tag
+                            color={getActivityTypeColor(record.activity_type)}
+                            className="!m-0 font-medium"
+                          >
+                            {record.activity_type}
+                          </Tag>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-500">
+                            Số lần:
+                          </span>
+                          <span className="text-lg font-semibold text-blue-600">
+                            {record.login_count}
+                          </span>
+                        </div>
+                        {record.description && (
+                          <div className="text-sm text-gray-700 dark:text-gray-300">
+                            {record.description}
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-400">
+                          {dayjs(record.created_at).format(
+                            'DD/MM/YYYY HH:mm:ss'
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Pagination
+                size="small"
+                current={params.page}
+                pageSize={params.limit}
+                total={pagination.total}
+                showSizeChanger
+                onChange={(page, size) => {
+                  setParams((prev) => ({ ...prev, page, limit: size }));
+                }}
+              />
+            </div>
+          </Spin>
+        ) : (
+          <Table {...tableProps} />
+        )}
       </div>
     </ComponentCard>
   );

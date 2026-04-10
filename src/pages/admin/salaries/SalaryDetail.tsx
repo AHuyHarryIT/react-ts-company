@@ -17,6 +17,7 @@ import CategoryTable from '@components/salaries/CategoryTable';
 import { SalaryDetailTable } from '@components/salaries/SalaryDetailTable';
 import { SalaryTable } from '@components/salaries/SalaryTable';
 import { fetchSalary } from '@services/SalaryService';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 type CompanyType = 'vvp' | 'a7a';
 
@@ -24,6 +25,7 @@ const routeApi = getRouteApi('/_authenticated/admin/salaries/$id');
 
 export default function SalaryDetail() {
   const { id } = routeApi.useParams();
+  const isMobile = useIsMobile();
 
   const [company, setCompany] = useState<CompanyType>('vvp');
 
@@ -126,7 +128,13 @@ export default function SalaryDetail() {
           )}
 
           {/* ── Tabs ────────────────────────────────────────────── */}
-          <Tabs items={SalaryTabs} size="large" type="card" animated />
+          <Tabs
+            items={SalaryTabs}
+            size={isMobile ? 'small' : 'large'}
+            type={isMobile ? 'line' : 'card'}
+            animated
+            tabBarStyle={isMobile ? { marginBottom: 12 } : undefined}
+          />
         </div>
       </ComponentCard>
     </>

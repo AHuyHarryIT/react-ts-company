@@ -2,7 +2,9 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
   DatePicker,
   Input,
+  Pagination,
   Select,
+  Spin,
   Switch,
   Table,
   TableColumnsType,
@@ -42,6 +44,7 @@ import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryServi
 import { EmployeeListModal } from '@components/attendances/EmployeeListModal';
 import { fetchAttendancesCalculated } from '@services/AttendanceService';
 import { ExportModal } from './ExportModal';
+import { useIsMobile } from '@hooks/useIsMobile';
 
 // ─── Type defs ────────────────────────────────────────────────────────────────
 type HistoryTableColumns = AttendanceType;
@@ -157,6 +160,7 @@ function FilterBar({
 // ─────────────────────────────────────────────────────────────────────────────
 
 function HistoryTab() {
+  const isMobile = useIsMobile();
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
@@ -429,7 +433,100 @@ function HistoryTab() {
       </div>
 
       {/* Table */}
-      <Table<HistoryTableColumns> {...tableProps} />
+      {isMobile ? (
+        <Spin spinning={isLoading}>
+          <div className="flex flex-col gap-3">
+            {attendances.map((record, index) => {
+              const catName = categories?.workScheduleCategories.find(
+                (item) => item.id === record.employees?.calendar_category_id
+              )?.name;
+              return (
+                <div
+                  key={['attendances', record.id, record.employee_code].join(
+                    '-'
+                  )}
+                  className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                      {index +
+                        1 +
+                        (params.limit ?? 10) * ((params.page ?? 1) - 1)}
+                    </span>
+                    <span className="line-clamp-1 text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                      {record.employees?.name || (
+                        <span className="text-gray-400 italic">
+                          Chưa có thông tin
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="space-y-1 pl-8 text-[13px] text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <Tag color="blue" className="!m-0 !font-mono !text-xs">
+                        {record.employee_code}
+                      </Tag>
+                      {catName && (
+                        <Tag color="geekblue" className="!m-0">
+                          {catName}
+                        </Tag>
+                      )}
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-500">
+                        Thời gian:
+                      </span>{' '}
+                      {record.datetime
+                        ? new Date(record.datetime).toLocaleString('vi-VN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                          })
+                        : '—'}
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                    <UpdateModal
+                      id={record.id}
+                      service={attendanceService}
+                      schema={attendanceSchema}
+                      fields={attendanceUpdateFields}
+                      size="small"
+                    />
+                    <ConfirmButton
+                      id={record.id}
+                      service={attendanceService}
+                      size="small"
+                      content={
+                        <p>
+                          Bạn có chắc chắn muốn xóa dữ liệu chấm công của nhân
+                          viên <strong>{record.employee_code}</strong> không?
+                        </p>
+                      }
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Pagination
+              size="small"
+              current={params.page}
+              pageSize={params.limit}
+              total={pagination.total}
+              onChange={(page, size) => {
+                setParams((prev) => ({ ...prev, page, limit: size }));
+              }}
+            />
+          </div>
+        </Spin>
+      ) : (
+        <Table<HistoryTableColumns> {...tableProps} />
+      )}
     </div>
   );
 }
@@ -439,6 +536,7 @@ function HistoryTab() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function RecordsTab() {
+  const isMobile = useIsMobile();
   const [params, setParams] = useState<QueryParams>({
     page: 1,
     limit: 50,
@@ -883,7 +981,153 @@ function RecordsTab() {
       </div>
 
       {/* Table */}
-      <Table<RecordTableColumns> {...tableProps} />
+      {isMobile ? (
+        <Spin spinning={isLoading}>
+          <div className="flex flex-col gap-3">
+            {(forgottenDays ? forgetAttendance : attendances).map(
+              (record, index) => {
+                const isSunday = record.date
+                  ? new Date(record.date).getDay() === 0
+                  : false;
+                return (
+                  <div
+                    key={[
+                      'attendances',
+                      'sheet',
+                      record.employee_id,
+                      record.date
+                    ].join('-')}
+                    className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                  >
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                        {index +
+                          1 +
+                          (params.limit ?? 50) * ((params.page ?? 1) - 1)}
+                      </span>
+                      <span className="line-clamp-1 text-[15px] font-semibold text-gray-800 dark:text-white/90">
+                        {record.name || (
+                          <span className="text-gray-400 italic">
+                            Chưa có thông tin
+                          </span>
+                        )}
+                      </span>
+                      <Tag
+                        color="blue"
+                        className="!m-0 ml-auto !font-mono !text-xs"
+                      >
+                        {record.employee_id}
+                      </Tag>
+                    </div>
+                    <div className="space-y-1 pl-8 text-[13px] text-gray-500">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={isSunday ? 'font-medium text-red-500' : ''}
+                        >
+                          {record.date
+                            ? new Date(record.date).toLocaleDateString(
+                                'vi-VN',
+                                {
+                                  weekday: 'long',
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                }
+                              )
+                            : '—'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span>
+                          Vào:{' '}
+                          {record.time_in ? (
+                            <Tag color="green" className="!m-0 !text-xs">
+                              {new Date(record.time_in).toLocaleTimeString(
+                                'vi-VN',
+                                {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit'
+                                }
+                              )}
+                            </Tag>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
+                        </span>
+                        <span>
+                          Ra:{' '}
+                          {record.time_out ? (
+                            <Tag color="orange" className="!m-0 !text-xs">
+                              {new Date(record.time_out).toLocaleTimeString(
+                                'vi-VN',
+                                {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit'
+                                }
+                              )}
+                            </Tag>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {record.day_type &&
+                          (record.is_schedule_change ? (
+                            <Tag color="yellow">{record.day_type}</Tag>
+                          ) : record.day_type === 'Ca ngày' ? (
+                            <Tag color="blue">Ca 1</Tag>
+                          ) : record.day_type === 'Ca đêm' ? (
+                            <Tag color="purple">Ca 2</Tag>
+                          ) : (
+                            <Tag color="green">Nghỉ</Tag>
+                          ))}
+                        {record.total_hours ? (
+                          <span>
+                            Tổng:{' '}
+                            <strong className="text-blue-600">
+                              {record.total_hours}h
+                            </strong>
+                          </span>
+                        ) : record.shift ? (
+                          <Tag color="red" className="!text-xs">
+                            Chấm công chưa đủ
+                          </Tag>
+                        ) : null}
+                        {record.overtime_hours ? (
+                          <span>
+                            TC:{' '}
+                            <strong className="text-amber-600">
+                              {record.overtime_hours}h
+                            </strong>
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+            )}
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Pagination
+              size="small"
+              current={pagination.current}
+              pageSize={
+                forgottenDays ? forgetAttendance.length : pagination.pageSize
+              }
+              total={forgottenDays ? forgetAttendance.length : pagination.total}
+              onChange={(page, size) => {
+                setParams((prev) => ({ ...prev, page, limit: size }));
+              }}
+            />
+          </div>
+        </Spin>
+      ) : (
+        <Table<RecordTableColumns> {...tableProps} />
+      )}
     </div>
   );
 }
