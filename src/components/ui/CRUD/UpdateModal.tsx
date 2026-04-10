@@ -1,4 +1,4 @@
-import { Button, Modal } from 'antd';
+import { Modal } from 'antd';
 import { AxiosRequestConfig } from 'axios';
 import { useState } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
@@ -7,8 +7,7 @@ import { SizeType } from 'antd/es/config-provider/SizeContext';
 import { FieldConfig } from '@/types/form';
 import { UpdateForm } from '@components/ui/CRUD/UpdateForm';
 import { CrudServiceType } from '@utils/crudService';
-
-import { FaPen } from 'react-icons/fa6';
+import { EditButton } from '@components/common/ActionButtons';
 
 interface UpdateFormProps<TData, TCreateDto, TUpdateDto> {
   id: string;
@@ -43,15 +42,7 @@ export function UpdateModal<
 
   return (
     <>
-      <Button
-        size={size}
-        color="primary"
-        variant="solid"
-        icon={<FaPen />}
-        onClick={showModal}
-      >
-        Sửa
-      </Button>
+      <EditButton size={size} onClick={showModal} />
       <Modal
         title="Cập nhật"
         open={open}

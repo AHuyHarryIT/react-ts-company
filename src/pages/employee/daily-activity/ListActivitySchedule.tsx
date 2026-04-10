@@ -8,6 +8,7 @@ import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
+import { ActionGroup } from '@components/common/ActionButtons';
 import { productStatusOptions } from '@constants/productStatus.enum';
 import { dailyScheduleSchema } from '@schemas/dailyScheduleSchema.schema';
 import {
@@ -111,7 +112,7 @@ export const ListActivity = () => {
       align: 'center',
       width: 100,
       render: (_value, record) => (
-        <div className="flex items-center justify-center gap-2">
+        <ActionGroup>
           <UpdateModal
             id={record.id}
             service={empDailyScheduleService}
@@ -128,7 +129,7 @@ export const ListActivity = () => {
               </span>
             }
           />
-        </div>
+        </ActionGroup>
       )
     }
   ];

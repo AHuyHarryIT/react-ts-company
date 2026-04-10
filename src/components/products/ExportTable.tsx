@@ -19,9 +19,9 @@ import { PaginatedResponse } from '@/types/responseTypes';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { RowTableActions } from './RowTableActions';
 import { calculateExportProduct } from '@utils/calculateExportProduct';
-import { Link } from '@tanstack/react-router';
 import { useIsMobile } from '@hooks/useIsMobile';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa6';
+import { useProductDrawer } from '@/contexts/ProductDrawerContext';
 
 export type ExportTableType = {
   id: string;
@@ -49,6 +49,7 @@ const ExportMobileCard: React.FC<{
   index: number;
 }> = ({ record, month, index }) => {
   const [expanded, setExpanded] = useState(false);
+  const { openProduct } = useProductDrawer();
 
   const daysInMonth = dayjs(month).daysInMonth();
   const dates = Array.from({ length: daysInMonth }, (_, i) =>
@@ -69,13 +70,12 @@ const ExportMobileCard: React.FC<{
           {index + 1}
         </div>
         <div className="min-w-0 flex-1">
-          <Link
-            to={'/admin/products/$id'}
-            params={{ id: record.id }}
-            className="text-sm leading-tight font-semibold text-gray-900 dark:text-white"
+          <button
+            onClick={() => openProduct(record.id)}
+            className="text-left text-sm leading-tight font-semibold text-blue-600 transition-colors hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
           >
             {record.name}
-          </Link>
+          </button>
           <div className="mt-1 flex items-center gap-2">
             <Tag color="default" className="!m-0 !text-[10px]">
               {record.code}
@@ -150,6 +150,7 @@ export const ExportTable: React.FC<ExportTableProps> = ({
   setParams
 }) => {
   const isMobile = useIsMobile();
+  const { openProduct } = useProductDrawer();
   const [dataSource, setDataSource] = useState<ExportTableType[]>([]);
 
   const { data: response } = queryResult;
@@ -261,9 +262,12 @@ export const ExportTable: React.FC<ExportTableProps> = ({
       render: (value, record) => {
         return (
           <Tooltip title={value} placement="topLeft">
-            <Link to={'/admin/products/$id'} params={{ id: record.id }}>
+            <button
+              onClick={() => openProduct(record.id)}
+              className="text-left font-medium text-blue-600 transition-colors hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+            >
               {value}
-            </Link>
+            </button>
           </Tooltip>
         );
       }

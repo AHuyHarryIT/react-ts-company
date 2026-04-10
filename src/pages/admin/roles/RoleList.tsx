@@ -21,6 +21,8 @@ import { CreateModal } from '@components/ui/CRUD/CreateModal';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
 import { customTableProps } from '@components/custom/TableProps.custom';
+import { ActionGroup } from '@components/common/ActionButtons';
+import { motion } from 'framer-motion';
 
 export default function RoleList() {
   const isMobile = useIsMobile();
@@ -129,7 +131,7 @@ export default function RoleList() {
       align: 'center',
       render: (_, record) => {
         return (
-          <div className="flex items-center justify-center gap-2">
+          <ActionGroup>
             <UpdateModal
               id={record.id}
               service={roleService}
@@ -137,7 +139,7 @@ export default function RoleList() {
               fields={roleFields}
             />
             <ConfirmButton id={record.id} service={roleService} />
-          </div>
+          </ActionGroup>
         );
       }
     }
@@ -196,8 +198,11 @@ export default function RoleList() {
               <>
                 <div className="flex flex-col gap-3">
                   {roles.map((record, index) => (
-                    <div
+                    <motion.div
                       key={record.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
                       className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
                     >
                       {/* Card top: index + ID badge */}
@@ -247,7 +252,7 @@ export default function RoleList() {
                       </div>
 
                       {/* Actions */}
-                      <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                      <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
                         <UpdateModal
                           id={record.id}
                           service={roleService}
@@ -260,8 +265,8 @@ export default function RoleList() {
                           service={roleService}
                           size="small"
                         />
-                      </div>
-                    </div>
+                      </ActionGroup>
+                    </motion.div>
                   ))}
                 </div>
                 {total > limit && (

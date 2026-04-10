@@ -2,6 +2,7 @@ import { useDailyScheduleUpdateFields } from '@/configs/dailyScheduleForm.config
 import { DailyScheduleType } from '@/types/dailyScheduleType';
 import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
+import { ActionGroup } from '@components/common/ActionButtons';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
@@ -157,7 +158,7 @@ export default function DailySchedule() {
       align: 'center',
       width: 100,
       render: (_value, record) => (
-        <div className="flex items-center justify-center gap-2">
+        <ActionGroup>
           <UpdateModal
             id={record.id}
             service={dailyScheduleService}
@@ -174,7 +175,7 @@ export default function DailySchedule() {
               </span>
             }
           />
-        </div>
+        </ActionGroup>
       )
     }
   ];

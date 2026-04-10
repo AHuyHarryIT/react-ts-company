@@ -1,14 +1,7 @@
 import { useIsMobile } from '@hooks/useIsMobile';
-import {
-  Button,
-  Table,
-  TableColumnsType,
-  TableProps,
-  Tag,
-  Pagination
-} from 'antd';
+import { Pagination, Table, TableColumnsType, TableProps, Tag } from 'antd';
 import { useState } from 'react';
-import { FaCalendarCheck, FaEye } from 'react-icons/fa';
+import { FaCalendarCheck } from 'react-icons/fa';
 
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
@@ -19,6 +12,7 @@ import { ScheduleDetailDrawer } from './Detail';
 
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { useCrudList } from '@hooks/useCrudList';
+import { ActionGroup, ViewButton } from '@components/common/ActionButtons';
 import { QueryParams } from '@/types/queryParams';
 import { ScheduleType } from '@/types/scheduleType';
 
@@ -79,26 +73,21 @@ export default function WorkScheduleList() {
       width: 180,
       render: (_value, record) => {
         return (
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              type="default"
-              className="!border-gray-800 !text-gray-800 hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400"
-              icon={<FaEye />}
+          <ActionGroup>
+            <ViewButton
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedId(record.id);
                 setDrawerOpen(true);
               }}
-            >
-              Chi tiết
-            </Button>
+            />
             <DeleteModal
               id={record.id}
               name={record.title}
               transparent
               isIconOnly
             />
-          </div>
+          </ActionGroup>
         );
       }
     }
@@ -183,26 +172,21 @@ export default function WorkScheduleList() {
                 </div>
 
                 {/* Action Bar */}
-                <div className="mt-1 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700/50">
-                  <Button
-                    type="default"
-                    icon={<FaEye />}
+                <ActionGroup className="mt-1 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700/50">
+                  <ViewButton
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedId(item.id);
                       setDrawerOpen(true);
                     }}
-                    className="!border-gray-800 !text-gray-800 hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400"
-                  >
-                    Chi tiết
-                  </Button>
+                  />
                   <DeleteModal
                     id={item.id}
                     name={item.title}
                     transparent
                     isIconOnly
                   />
-                </div>
+                </ActionGroup>
               </div>
             ))}
 

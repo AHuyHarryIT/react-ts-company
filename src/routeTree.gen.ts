@@ -61,13 +61,9 @@ import { Route as AuthenticatedEmployeeStampsRequestImport } from './routes/_aut
 import { Route as AuthenticatedEmployeeStampsHistoryImport } from './routes/_authenticated/employee/stamps/history'
 import { Route as AuthenticatedEmployeeRequestFormsAuthorizedImport } from './routes/_authenticated/employee/request-forms/authorized'
 import { Route as AuthenticatedAdminRequestFormsIdImport } from './routes/_authenticated/admin/request-forms/$id'
-import { Route as AuthenticatedAdminProductsTrashImport } from './routes/_authenticated/admin/products/trash'
-import { Route as AuthenticatedAdminProductsAddImport } from './routes/_authenticated/admin/products/add'
 import { Route as AuthenticatedAdminProductsIdImport } from './routes/_authenticated/admin/products/$id'
 import { Route as AuthenticatedAdminEmployeesAddImport } from './routes/_authenticated/admin/employees/add'
 import { Route as AuthenticatedAdminEmployeesTrashIndexImport } from './routes/_authenticated/admin/employees/trash/index'
-import { Route as AuthenticatedAdminProductsQuantityUpdateImport } from './routes/_authenticated/admin/products/quantity/update'
-import { Route as AuthenticatedAdminProductsQuantityAddImport } from './routes/_authenticated/admin/products/quantity/add'
 import { Route as AuthenticatedAdminProductsEditIdImport } from './routes/_authenticated/admin/products/edit.$id'
 import { Route as AuthenticatedAdminEmployeesEditIdImport } from './routes/_authenticated/admin/employees/edit.$id'
 
@@ -415,20 +411,6 @@ const AuthenticatedAdminRequestFormsIdRoute =
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
-const AuthenticatedAdminProductsTrashRoute =
-  AuthenticatedAdminProductsTrashImport.update({
-    id: '/trash',
-    path: '/trash',
-    getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
-  } as any)
-
-const AuthenticatedAdminProductsAddRoute =
-  AuthenticatedAdminProductsAddImport.update({
-    id: '/add',
-    path: '/add',
-    getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
-  } as any)
-
 const AuthenticatedAdminProductsIdRoute =
   AuthenticatedAdminProductsIdImport.update({
     id: '/$id',
@@ -448,20 +430,6 @@ const AuthenticatedAdminEmployeesTrashIndexRoute =
     id: '/employees/trash/',
     path: '/employees/trash/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-
-const AuthenticatedAdminProductsQuantityUpdateRoute =
-  AuthenticatedAdminProductsQuantityUpdateImport.update({
-    id: '/quantity/update',
-    path: '/quantity/update',
-    getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
-  } as any)
-
-const AuthenticatedAdminProductsQuantityAddRoute =
-  AuthenticatedAdminProductsQuantityAddImport.update({
-    id: '/quantity/add',
-    path: '/quantity/add',
-    getParentRoute: () => AuthenticatedAdminProductsRouteRoute,
   } as any)
 
 const AuthenticatedAdminProductsEditIdRoute =
@@ -648,20 +616,6 @@ declare module '@tanstack/react-router' {
       path: '/$id'
       fullPath: '/admin/products/$id'
       preLoaderRoute: typeof AuthenticatedAdminProductsIdImport
-      parentRoute: typeof AuthenticatedAdminProductsRouteImport
-    }
-    '/_authenticated/admin/products/add': {
-      id: '/_authenticated/admin/products/add'
-      path: '/add'
-      fullPath: '/admin/products/add'
-      preLoaderRoute: typeof AuthenticatedAdminProductsAddImport
-      parentRoute: typeof AuthenticatedAdminProductsRouteImport
-    }
-    '/_authenticated/admin/products/trash': {
-      id: '/_authenticated/admin/products/trash'
-      path: '/trash'
-      fullPath: '/admin/products/trash'
-      preLoaderRoute: typeof AuthenticatedAdminProductsTrashImport
       parentRoute: typeof AuthenticatedAdminProductsRouteImport
     }
     '/_authenticated/admin/request-forms/$id': {
@@ -867,20 +821,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProductsEditIdImport
       parentRoute: typeof AuthenticatedAdminProductsRouteImport
     }
-    '/_authenticated/admin/products/quantity/add': {
-      id: '/_authenticated/admin/products/quantity/add'
-      path: '/quantity/add'
-      fullPath: '/admin/products/quantity/add'
-      preLoaderRoute: typeof AuthenticatedAdminProductsQuantityAddImport
-      parentRoute: typeof AuthenticatedAdminProductsRouteImport
-    }
-    '/_authenticated/admin/products/quantity/update': {
-      id: '/_authenticated/admin/products/quantity/update'
-      path: '/quantity/update'
-      fullPath: '/admin/products/quantity/update'
-      preLoaderRoute: typeof AuthenticatedAdminProductsQuantityUpdateImport
-      parentRoute: typeof AuthenticatedAdminProductsRouteImport
-    }
     '/_authenticated/admin/employees/trash/': {
       id: '/_authenticated/admin/employees/trash/'
       path: '/employees/trash'
@@ -922,26 +862,16 @@ const AuthenticatedActivityScheduleRouteRouteWithChildren =
 
 interface AuthenticatedAdminProductsRouteRouteChildren {
   AuthenticatedAdminProductsIdRoute: typeof AuthenticatedAdminProductsIdRoute
-  AuthenticatedAdminProductsAddRoute: typeof AuthenticatedAdminProductsAddRoute
-  AuthenticatedAdminProductsTrashRoute: typeof AuthenticatedAdminProductsTrashRoute
   AuthenticatedAdminProductsIndexRoute: typeof AuthenticatedAdminProductsIndexRoute
   AuthenticatedAdminProductsEditIdRoute: typeof AuthenticatedAdminProductsEditIdRoute
-  AuthenticatedAdminProductsQuantityAddRoute: typeof AuthenticatedAdminProductsQuantityAddRoute
-  AuthenticatedAdminProductsQuantityUpdateRoute: typeof AuthenticatedAdminProductsQuantityUpdateRoute
 }
 
 const AuthenticatedAdminProductsRouteRouteChildren: AuthenticatedAdminProductsRouteRouteChildren =
   {
     AuthenticatedAdminProductsIdRoute: AuthenticatedAdminProductsIdRoute,
-    AuthenticatedAdminProductsAddRoute: AuthenticatedAdminProductsAddRoute,
-    AuthenticatedAdminProductsTrashRoute: AuthenticatedAdminProductsTrashRoute,
     AuthenticatedAdminProductsIndexRoute: AuthenticatedAdminProductsIndexRoute,
     AuthenticatedAdminProductsEditIdRoute:
       AuthenticatedAdminProductsEditIdRoute,
-    AuthenticatedAdminProductsQuantityAddRoute:
-      AuthenticatedAdminProductsQuantityAddRoute,
-    AuthenticatedAdminProductsQuantityUpdateRoute:
-      AuthenticatedAdminProductsQuantityUpdateRoute,
   }
 
 const AuthenticatedAdminProductsRouteRouteWithChildren =
@@ -1187,8 +1117,6 @@ export interface FileRoutesByFullPath {
   '/work-schedules/': typeof AuthenticatedWorkSchedulesIndexRoute
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
-  '/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
-  '/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/admin/request-forms/$id': typeof AuthenticatedAdminRequestFormsIdRoute
   '/employee/request-forms/authorized': typeof AuthenticatedEmployeeRequestFormsAuthorizedRoute
   '/employee/stamps/history': typeof AuthenticatedEmployeeStampsHistoryRoute
@@ -1218,8 +1146,6 @@ export interface FileRoutesByFullPath {
   '/employee/schedules': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
   '/admin/products/edit/$id': typeof AuthenticatedAdminProductsEditIdRoute
-  '/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
-  '/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
 
@@ -1240,8 +1166,6 @@ export interface FileRoutesByTo {
   '/work-schedules': typeof AuthenticatedWorkSchedulesIndexRoute
   '/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
-  '/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
-  '/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/admin/request-forms/$id': typeof AuthenticatedAdminRequestFormsIdRoute
   '/employee/request-forms/authorized': typeof AuthenticatedEmployeeRequestFormsAuthorizedRoute
   '/employee/stamps/history': typeof AuthenticatedEmployeeStampsHistoryRoute
@@ -1271,8 +1195,6 @@ export interface FileRoutesByTo {
   '/employee/schedules': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
   '/admin/products/edit/$id': typeof AuthenticatedAdminProductsEditIdRoute
-  '/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
-  '/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/admin/employees/trash': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
 
@@ -1302,8 +1224,6 @@ export interface FileRoutesById {
   '/_authenticated/work-schedules/': typeof AuthenticatedWorkSchedulesIndexRoute
   '/_authenticated/admin/employees/add': typeof AuthenticatedAdminEmployeesAddRoute
   '/_authenticated/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
-  '/_authenticated/admin/products/add': typeof AuthenticatedAdminProductsAddRoute
-  '/_authenticated/admin/products/trash': typeof AuthenticatedAdminProductsTrashRoute
   '/_authenticated/admin/request-forms/$id': typeof AuthenticatedAdminRequestFormsIdRoute
   '/_authenticated/employee/request-forms/authorized': typeof AuthenticatedEmployeeRequestFormsAuthorizedRoute
   '/_authenticated/employee/stamps/history': typeof AuthenticatedEmployeeStampsHistoryRoute
@@ -1333,8 +1253,6 @@ export interface FileRoutesById {
   '/_authenticated/employee/schedules/': typeof AuthenticatedEmployeeSchedulesIndexRoute
   '/_authenticated/admin/employees/edit/$id': typeof AuthenticatedAdminEmployeesEditIdRoute
   '/_authenticated/admin/products/edit/$id': typeof AuthenticatedAdminProductsEditIdRoute
-  '/_authenticated/admin/products/quantity/add': typeof AuthenticatedAdminProductsQuantityAddRoute
-  '/_authenticated/admin/products/quantity/update': typeof AuthenticatedAdminProductsQuantityUpdateRoute
   '/_authenticated/admin/employees/trash/': typeof AuthenticatedAdminEmployeesTrashIndexRoute
 }
 
@@ -1364,8 +1282,6 @@ export interface FileRouteTypes {
     | '/work-schedules/'
     | '/admin/employees/add'
     | '/admin/products/$id'
-    | '/admin/products/add'
-    | '/admin/products/trash'
     | '/admin/request-forms/$id'
     | '/employee/request-forms/authorized'
     | '/employee/stamps/history'
@@ -1395,8 +1311,6 @@ export interface FileRouteTypes {
     | '/employee/schedules'
     | '/admin/employees/edit/$id'
     | '/admin/products/edit/$id'
-    | '/admin/products/quantity/add'
-    | '/admin/products/quantity/update'
     | '/admin/employees/trash'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1416,8 +1330,6 @@ export interface FileRouteTypes {
     | '/work-schedules'
     | '/admin/employees/add'
     | '/admin/products/$id'
-    | '/admin/products/add'
-    | '/admin/products/trash'
     | '/admin/request-forms/$id'
     | '/employee/request-forms/authorized'
     | '/employee/stamps/history'
@@ -1447,8 +1359,6 @@ export interface FileRouteTypes {
     | '/employee/schedules'
     | '/admin/employees/edit/$id'
     | '/admin/products/edit/$id'
-    | '/admin/products/quantity/add'
-    | '/admin/products/quantity/update'
     | '/admin/employees/trash'
   id:
     | '__root__'
@@ -1476,8 +1386,6 @@ export interface FileRouteTypes {
     | '/_authenticated/work-schedules/'
     | '/_authenticated/admin/employees/add'
     | '/_authenticated/admin/products/$id'
-    | '/_authenticated/admin/products/add'
-    | '/_authenticated/admin/products/trash'
     | '/_authenticated/admin/request-forms/$id'
     | '/_authenticated/employee/request-forms/authorized'
     | '/_authenticated/employee/stamps/history'
@@ -1507,8 +1415,6 @@ export interface FileRouteTypes {
     | '/_authenticated/employee/schedules/'
     | '/_authenticated/admin/employees/edit/$id'
     | '/_authenticated/admin/products/edit/$id'
-    | '/_authenticated/admin/products/quantity/add'
-    | '/_authenticated/admin/products/quantity/update'
     | '/_authenticated/admin/employees/trash/'
   fileRoutesById: FileRoutesById
 }
@@ -1646,12 +1552,8 @@ export const routeTree = rootRoute
       "parent": "/_authenticated/admin",
       "children": [
         "/_authenticated/admin/products/$id",
-        "/_authenticated/admin/products/add",
-        "/_authenticated/admin/products/trash",
         "/_authenticated/admin/products/",
-        "/_authenticated/admin/products/edit/$id",
-        "/_authenticated/admin/products/quantity/add",
-        "/_authenticated/admin/products/quantity/update"
+        "/_authenticated/admin/products/edit/$id"
       ]
     },
     "/_authenticated/admin/salaries": {
@@ -1708,14 +1610,6 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/products/$id": {
       "filePath": "_authenticated/admin/products/$id.tsx",
-      "parent": "/_authenticated/admin/products"
-    },
-    "/_authenticated/admin/products/add": {
-      "filePath": "_authenticated/admin/products/add.tsx",
-      "parent": "/_authenticated/admin/products"
-    },
-    "/_authenticated/admin/products/trash": {
-      "filePath": "_authenticated/admin/products/trash.tsx",
       "parent": "/_authenticated/admin/products"
     },
     "/_authenticated/admin/request-forms/$id": {
@@ -1832,14 +1726,6 @@ export const routeTree = rootRoute
     },
     "/_authenticated/admin/products/edit/$id": {
       "filePath": "_authenticated/admin/products/edit.$id.tsx",
-      "parent": "/_authenticated/admin/products"
-    },
-    "/_authenticated/admin/products/quantity/add": {
-      "filePath": "_authenticated/admin/products/quantity/add.tsx",
-      "parent": "/_authenticated/admin/products"
-    },
-    "/_authenticated/admin/products/quantity/update": {
-      "filePath": "_authenticated/admin/products/quantity/update.tsx",
       "parent": "/_authenticated/admin/products"
     },
     "/_authenticated/admin/employees/trash/": {

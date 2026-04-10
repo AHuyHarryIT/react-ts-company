@@ -11,6 +11,7 @@ export const dailyQuantitiesSchema = defaultModelSchema.extend({
   date: z.string(),
   quantity: z.number(),
   employee_id: z.string(),
+  shift: z.string().nullable().optional(),
   batch_id: z.string().nullable().optional(),
   file_name: z.string().nullable().optional(),
   created_at_formatted: z.string().datetime().optional(),

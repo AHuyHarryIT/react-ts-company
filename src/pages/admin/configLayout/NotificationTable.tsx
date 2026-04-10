@@ -5,12 +5,16 @@ import {
 import { PaginatedResponse } from '@/types/responseTypes';
 import { QueryParams } from '@/types/queryParams';
 import { customTableProps } from '@components/custom/TableProps.custom';
-import { IconDelete, IconEdit } from '@components/icons';
 import {
   deleteNotification,
   fetchNotifications,
   updateNotification
 } from '@services/NotificationService';
+import {
+  ActionGroup,
+  EditButton,
+  DeleteButton
+} from '@components/common/ActionButtons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
@@ -241,10 +245,9 @@ export const NotificationTable = () => {
       render: (_, record) => {
         const editable = isEditing(record);
         return editable ? (
-          <div className="flex justify-center gap-2">
+          <ActionGroup>
             <Button
-              variant="solid"
-              color="green"
+              type="primary"
               onClick={() =>
                 save({
                   id: record.id,
@@ -255,34 +258,22 @@ export const NotificationTable = () => {
               Lưu
             </Button>
             <Popconfirm title="Hủy thay đổi?" onConfirm={cancel}>
-              <Button variant="solid">Hủy</Button>
+              <Button type="default">Hủy</Button>
             </Popconfirm>
-          </div>
+          </ActionGroup>
         ) : (
-          <div className="flex justify-center gap-2">
-            <Button
-              variant="solid"
-              color="blue"
-              icon={<IconEdit />}
+          <ActionGroup>
+            <EditButton
               onClick={() => edit(record)}
               disabled={editingKey !== ''}
-            >
-              Sửa
-            </Button>
+            />
             <Popconfirm
               title="Xóa thông báo?"
               onConfirm={() => remove(record.id)}
             >
-              <Button
-                variant="solid"
-                color="red"
-                icon={<IconDelete />}
-                disabled={editingKey !== ''}
-              >
-                Xóa
-              </Button>
+              <DeleteButton disabled={editingKey !== ''} />
             </Popconfirm>
-          </div>
+          </ActionGroup>
         );
       }
     }

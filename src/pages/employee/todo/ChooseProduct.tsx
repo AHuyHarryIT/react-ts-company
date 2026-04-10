@@ -38,14 +38,23 @@ export const ChooseProduct = () => {
         shift: values.shift
       }),
     onError: () => {
-      message.error('Sản phẩm đã tồn tại hoặc không hợp lệ');
+      message.error({
+        content: 'Sản phẩm đã tồn tại hoặc không hợp lệ',
+        key: 'create-todo'
+      });
     },
     onMutate: () => {
-      message.loading('Đang cập nhật sản phẩm...');
+      message.loading({
+        content: 'Đang cập nhật sản phẩm...',
+        key: 'create-todo'
+      });
     },
     onSuccess: () => {
       form.resetFields();
-      message.success('Cập nhật sản phẩm thành công');
+      message.success({
+        content: 'Cập nhật sản phẩm thành công',
+        key: 'create-todo'
+      });
     }
   });
 

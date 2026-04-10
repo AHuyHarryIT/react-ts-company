@@ -11,12 +11,14 @@ import { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 
 import axiosPrivate from '@/api/axiosInstance';
-import BackButton from '@components/common/BackButton';
-import ComponentCard from '@components/common/ComponentCard';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from '@tanstack/react-query';
 import { PaginatedResponse } from '@/types/responseTypes';
 import { updateMonthlyQuantities } from '@services/TotalQuantityService';
-import { getRouteApi } from '@tanstack/react-router';
 
 interface FormFields {
   month: string;
@@ -33,15 +35,30 @@ interface ProductsResponse {
   }[];
 }
 
-const routeApi = getRouteApi('/_authenticated/admin/products/quantity/update');
-
 export default function ProductQuantityUpdate() {
-  const { months } = routeApi.useLoaderData();
+  // Fetch months internally
+  const { data: monthListData } = useQuery<{ months: string[] }>({
+    queryKey: ['months'],
+    queryFn: () => axiosPrivate.get('/api/products/month-list'),
+    placeholderData: keepPreviousData,
+    staleTime: 5 * 60 * 1000
+  });
+
+  const months = useMemo(() => monthListData?.months || [], [monthListData]);
+
   const [form] = Form.useForm<FormFields>();
   const queryClient = useQueryClient();
 
-  const [month, setMonth] = useState(months[0]);
+  const [month, setMonth] = useState<string>('');
   const [productType, setProductType] = useState(7);
+
+  // Set initial month when months are loaded
+  useEffect(() => {
+    if (months.length > 0 && !month) {
+      setMonth(months[0]);
+      form.setFieldValue('month', months[0]);
+    }
+  }, [months, month, form]);
 
   const monthOptions = months.map((month: string) => ({
     value: month,
@@ -63,7 +80,8 @@ export default function ProductQuantityUpdate() {
           'fields[products]': ['id', 'name'].join(',')
         }
       });
-    }
+    },
+    enabled: !!month
   });
 
   const productList = useMemo(() => products?.data || [], [products]);
@@ -126,113 +144,108 @@ export default function ProductQuantityUpdate() {
   };
 
   return (
-    <>
-      <BackButton to="/admin/products" />
-      <ComponentCard title="Cập nhật số lượng hàng">
-        <Spin spinning={isPending}>
-          <Form<FormFields>
-            form={form}
-            layout="vertical"
-            onFinish={handleFinish}
-            scrollToFirstError={{
-              behavior: 'instant',
-              block: 'start',
-              focus: true
-            }}
+    <Spin spinning={isPending}>
+      <Form<FormFields>
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        scrollToFirstError={{
+          behavior: 'instant',
+          block: 'start',
+          focus: true
+        }}
+      >
+        <div className="flex flex-wrap gap-2">
+          <Form.Item<FormFields>
+            label="Tháng cập nhật"
+            name="month"
+            initialValue={months[0]}
+            rules={[{ required: true, message: 'Vui lòng chọn tháng' }]}
           >
-            <div className="flex flex-wrap gap-2">
+            <Select
+              options={monthOptions}
+              placeholder={'Chọn thời gian'}
+              onChange={(value) => {
+                setMonth(value);
+              }}
+            />
+          </Form.Item>
+          <Form.Item<FormFields>
+            label="Loại sản lượng"
+            name="productType"
+            initialValue={7}
+            rules={[
+              { required: true, message: 'Vui lòng chọn loại sản lượng' }
+            ]}
+          >
+            <Select
+              options={[
+                {
+                  label: 'MOQ',
+                  value: 7
+                },
+                {
+                  label: 'Tồn đầu kỳ',
+                  value: 4
+                },
+                {
+                  label: 'Tồn đầu kỳ 200%',
+                  value: 5
+                }
+              ]}
+              placeholder="Chọn loại sản lượng"
+              onChange={(value) => {
+                setProductType(value);
+              }}
+            />
+          </Form.Item>
+        </div>
+
+        <h3 className="mb-2 text-lg font-medium text-gray-800 sm:text-2xl dark:text-white/90">
+          Sản phẩm
+        </h3>
+        <hr className="my-2" />
+        <Spin spinning={isLoading}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {productList.map((product) => (
               <Form.Item<FormFields>
-                label="Tháng cập nhật"
-                name="month"
-                initialValue={months[0]}
-                rules={[{ required: true, message: 'Vui lòng chọn tháng' }]}
-              >
-                <Select
-                  options={monthOptions}
-                  placeholder={'Chọn thời gian'}
-                  onChange={(value) => {
-                    setMonth(value);
-                  }}
-                />
-              </Form.Item>
-              <Form.Item<FormFields>
-                label="Loại sản lượng"
-                name="productType"
-                initialValue={7}
+                key={`product_${product.id}`}
+                label={product.name}
+                name={`product_${product.id}`}
                 rules={[
-                  { required: true, message: 'Vui lòng chọn loại sản lượng' }
+                  {
+                    type: 'number',
+                    min: 0,
+                    message: 'Số lượng phải lớn hơn hoặc bằng 0'
+                  },
+                  {
+                    required: true,
+                    message: 'Số lượng không được để trống'
+                  }
                 ]}
               >
-                <Select
-                  options={[
-                    {
-                      label: 'MOQ',
-                      value: 7
-                    },
-                    {
-                      label: 'Tồn đầu kỳ',
-                      value: 4
-                    },
-                    {
-                      label: 'Tồn đầu kỳ 200%',
-                      value: 5
-                    }
-                  ]}
-                  placeholder="Chọn loại sản lượng"
-                  onChange={(value) => {
-                    setProductType(value);
-                  }}
+                <InputNumber
+                  min={0}
+                  style={{ width: '100%' }}
+                  placeholder="Nhập số lượng"
                 />
               </Form.Item>
-            </div>
-
-            <h3 className="mb-2 text-lg font-medium text-gray-800 sm:text-2xl dark:text-white/90">
-              Sản phẩm
-            </h3>
-            <hr className="my-2" />
-            <Spin spinning={isLoading}>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {productList.map((product) => (
-                  <Form.Item<FormFields>
-                    key={`product_${product.id}`}
-                    label={product.name}
-                    name={`product_${product.id}`}
-                    rules={[
-                      {
-                        type: 'number',
-                        min: 0,
-                        message: 'Số lượng phải lớn hơn hoặc bằng 0'
-                      },
-                      {
-                        required: true,
-                        message: 'Số lượng không được để trống'
-                      }
-                    ]}
-                  >
-                    <InputNumber
-                      min={0}
-                      style={{ width: '100%' }}
-                      placeholder="Nhập số lượng"
-                    />
-                  </Form.Item>
-                ))}
-              </div>
-              {productList.length > 0 && (
-                <Form.Item>
-                  <Button
-                    variant="solid"
-                    color="blue"
-                    loading={isPending}
-                    htmlType="submit"
-                  >
-                    Cập nhật
-                  </Button>
-                </Form.Item>
-              )}
-            </Spin>
-          </Form>
+            ))}
+          </div>
+          {productList.length > 0 && (
+            <Form.Item>
+              <Button
+                variant="solid"
+                color="blue"
+                loading={isPending}
+                htmlType="submit"
+              >
+                Cập nhật
+              </Button>
+            </Form.Item>
+          )}
         </Spin>
-      </ComponentCard>
-    </>
+      </Form>
+    </Spin>
   );
 }

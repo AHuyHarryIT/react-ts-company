@@ -11,11 +11,8 @@ import {
   Tag,
   Tooltip
 } from 'antd';
-import {
-  SearchOutlined,
-  ReloadOutlined,
-  DeleteOutlined
-} from '@ant-design/icons';
+import { SearchOutlined, DeleteOutlined } from '@ant-design/icons';
+import RefreshButton from '@/components/common/RefreshButton';
 
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
@@ -641,8 +638,7 @@ const RawTransactionHistory: React.FC = () => {
               onChange={(e) => setSearchText(e.target.value)}
               size="small"
             />
-            <Button
-              icon={<ReloadOutlined />}
+            <RefreshButton
               onClick={() => loadTransactions(paginationMeta.current_page)}
               loading={loading}
               size="small"

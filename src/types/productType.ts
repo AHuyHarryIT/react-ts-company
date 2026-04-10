@@ -17,6 +17,7 @@ export type ProductHistoryStatusType = {
   product_id: ProductType['id'];
   quantity: number;
   status: ProductStatusType;
+  shift: string | null;
   date: string;
   employee_id: EmployeeType['id'];
   created_at: string;

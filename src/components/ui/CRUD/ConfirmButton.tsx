@@ -1,11 +1,11 @@
-import { Button, Modal } from 'antd';
+import { Modal } from 'antd';
 import { SizeType } from 'antd/es/config-provider/SizeContext';
 import { useState } from 'react';
 
 import { useDynamicCrudForm } from '@hooks/useDynamicCrudForm';
 import { CrudServiceType } from '@utils/crudService';
 
-import { IconDelete, IconRestore } from '@components/icons';
+import { DeleteButton, RestoreButton } from '@components/common/ActionButtons';
 
 interface DeleteProps<TData, TCreateDto, TUpdateDto> {
   id: string;
@@ -77,20 +77,22 @@ export function ConfirmButton<
       : mode === 'restore'
         ? isRestoring
         : isDeleting;
-  const btnColor = mode === 'restore' ? 'gold' : 'red';
 
   return (
     <>
-      <Button
-        size={size}
-        variant="solid"
-        color={btnColor}
-        icon={isRestore ? <IconRestore /> : <IconDelete />}
-        onClick={handleOpen}
-        loading={isPending}
-      >
-        {label.btn}
-      </Button>
+      {isRestore ? (
+        <RestoreButton size={size} onClick={handleOpen} loading={isPending}>
+          {label.btn}
+        </RestoreButton>
+      ) : mode === 'forceDelete' ? (
+        <DeleteButton size={size} onClick={handleOpen} loading={isPending}>
+          {label.btn}
+        </DeleteButton>
+      ) : (
+        <DeleteButton size={size} onClick={handleOpen} loading={isPending}>
+          {label.btn}
+        </DeleteButton>
+      )}
 
       <Modal
         title={

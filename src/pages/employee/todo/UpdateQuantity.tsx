@@ -11,7 +11,7 @@ import { FaBoxOpen, FaEdit } from 'react-icons/fa';
 import { IoWarning } from 'react-icons/io5';
 
 interface FormValues {
-  productId: string;
+  productKey: string; // composite key: "productId|shift"
   quantity: number;
 }
 
@@ -25,30 +25,45 @@ export const UpdateQuantity = () => {
 
   const { mutate, isPending } = useMutation({
     mutationKey: ['product', 'todo', 'update-quantity'],
-    mutationFn: (data: FormValues) => updateTodoQuantity(data),
+    mutationFn: (data: {
+      productId: string;
+      quantity: number;
+      shift: string;
+    }) => updateTodoQuantity(data),
     onMutate: () => {
-      message.loading('Đang cập nhật sản lượng...');
+      message.loading({
+        content: 'Đang cập nhật sản lượng...',
+        key: 'update-quantity'
+      });
     },
     onSuccess: () => {
       form.resetFields();
-      message.success('Cập nhật sản lượng thành công');
+      message.success({
+        content: 'Cập nhật sản lượng thành công',
+        key: 'update-quantity'
+      });
     },
     onError: () => {
-      message.error('Cập nhật sản lượng thất bại');
+      message.error({
+        content: 'Cập nhật sản lượng thất bại',
+        key: 'update-quantity'
+      });
     }
   });
 
+  // Each todo item = unique (product + shift), build composite key
   const todoOptions = todoData?.map((todo) => ({
     key: todo.id,
-    label: todo.product.name,
-    value: todo.product.id
+    label: `${todo.product.name} — ${todo.shift}`,
+    value: `${todo.product.id}|${todo.shift}`
   }));
 
   const formProps: FormProps<FormValues> = {
     ...customFormProps,
     form: form,
     onFinish: (values) => {
-      mutate(values);
+      const [productId, shift] = values.productKey.split('|');
+      mutate({ productId, quantity: values.quantity, shift });
     }
   };
 
@@ -127,7 +142,7 @@ export const UpdateQuantity = () => {
               <Form<FormValues> {...formProps}>
                 <Form.Item<FormValues>
                   label="Chọn sản phẩm"
-                  name="productId"
+                  name="productKey"
                   rules={[
                     { required: true, message: 'Vui lòng chọn sản phẩm' }
                   ]}

@@ -1,7 +1,7 @@
-import { IconDelete } from '@components/icons';
+import { DeleteButton } from '@components/common/ActionButtons';
 import { deletePurchaseOrder } from '@services/PurchaseOrdersService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, message, Modal } from 'antd';
+import { message, Modal } from 'antd';
 import React, { useState } from 'react';
 
 interface DeleteModelProps {
@@ -44,14 +44,7 @@ export const DeleteModel: React.FC<DeleteModelProps> = ({ id, name }) => {
 
   return (
     <>
-      <Button
-        variant="solid"
-        color="red"
-        icon={<IconDelete />}
-        onClick={handleOpen}
-      >
-        Xóa
-      </Button>
+      <DeleteButton onClick={handleOpen} />
 
       <Modal
         title="Xác nhận xóa"

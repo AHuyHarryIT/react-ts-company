@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Table, Card, Input, Select, Button, Typography, message } from 'antd';
-import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Table, Card, Input, Select, Typography, message } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import RefreshButton from '@/components/common/RefreshButton';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
 import {
@@ -302,15 +303,11 @@ const TransactionList: React.FC = () => {
               <Option value="in">Nhập</Option>
               <Option value="out">Xuất</Option>
             </Select>
-            <Button
-              type="primary"
-              icon={<ReloadOutlined />}
-              onClick={handleRefresh}
-              loading={loading}
+            <RefreshButton
+              refresh={handleRefresh}
+              isLoading={loading}
               size="small"
-            >
-              Làm mới
-            </Button>
+            />
           </div>
         </div>
       </Card>

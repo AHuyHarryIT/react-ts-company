@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Table, Button, Typography, message, Spin, Input, Select } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import RefreshButton from '@/components/common/RefreshButton';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
 import {
@@ -534,14 +534,11 @@ const CurrentStockDashboard: React.FC = () => {
             className="!w-full sm:!w-[160px]"
             onChange={(e) => handleLotSearch(e.target.value)}
           />
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={handleRefresh}
-            loading={loading}
+          <RefreshButton
+            refresh={handleRefresh}
+            isLoading={loading}
             size="small"
-          >
-            Tải lại
-          </Button>
+          />
         </div>
       </div>
 

@@ -13,6 +13,7 @@ import { UpdateWorkScheduleCategory } from '@components/workScheduleCategories/U
 import { WorkScheduleCategoryType } from '@/types/workScheduleCategoryType';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
 import { customTableProps } from '@components/custom/TableProps.custom';
+import { ActionGroup } from '@components/common/ActionButtons';
 
 export default function WorkScheduleCategoryList() {
   const isMobile = useIsMobile();
@@ -116,13 +117,13 @@ export default function WorkScheduleCategoryList() {
         width: 180,
         render: (_value, _record) => {
           return (
-            <div className="flex items-center justify-center gap-2">
+            <ActionGroup>
               <UpdateWorkScheduleCategory
                 categoryId={_record.id}
                 categoryName={_record.name}
               />
               <DeleteModal id={_record.id} name={_record.name} />
-            </div>
+            </ActionGroup>
           );
         }
       }
@@ -214,14 +215,14 @@ export default function WorkScheduleCategoryList() {
                   </div>
                 </div>
                 {/* Actions */}
-                <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
                   <UpdateWorkScheduleCategory
                     categoryId={record.id}
                     categoryName={record.name}
                     size="small"
                   />
                   <DeleteModal id={record.id} name={record.name} size="small" />
-                </div>
+                </ActionGroup>
               </div>
             ))}
             <div className="flex justify-end pt-2">

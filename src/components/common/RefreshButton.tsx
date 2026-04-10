@@ -1,26 +1,28 @@
-import { Button } from 'antd';
+import { Button, ButtonProps } from 'antd';
 import React from 'react';
-
 import { IoReload } from 'react-icons/io5';
 
-interface RefreshButtonProps {
-  refresh: () => void;
-  isLoading: boolean;
+interface RefreshButtonProps extends ButtonProps {
+  refresh?: () => void;
+  isLoading?: boolean;
 }
 
 const RefreshButton: React.FC<RefreshButtonProps> = ({
   refresh,
-  isLoading
+  isLoading,
+  onClick,
+  ...props
 }) => {
   return (
     <Button
-      color="primary"
-      variant="solid"
+      type="default"
+      className={`!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400 ${props.className || ''}`}
       icon={<IoReload />}
-      onClick={() => refresh()}
-      loading={isLoading}
+      onClick={refresh || onClick}
+      loading={isLoading !== undefined ? isLoading : props.loading}
+      {...props}
     >
-      Làm mới
+      {props.children !== undefined ? props.children : 'Làm mới'}
     </Button>
   );
 };

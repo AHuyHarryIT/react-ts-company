@@ -27,14 +27,23 @@ export const UpdateQuantityError = () => {
     mutationKey: ['product', 'todo', 'update-quantity'],
     mutationFn: (data: FormValues) => updateTodoQuantityError(data),
     onMutate: () => {
-      message.loading('Đang cập nhật sản lượng...');
+      message.loading({
+        content: 'Đang cập nhật sản lượng...',
+        key: 'update-error'
+      });
     },
     onSuccess: () => {
       form.resetFields();
-      message.success('Cập nhật sản lượng thành công');
+      message.success({
+        content: 'Cập nhật sản lượng thành công',
+        key: 'update-error'
+      });
     },
     onError: () => {
-      message.error('Cập nhật sản lượng thất bại');
+      message.error({
+        content: 'Cập nhật sản lượng thất bại',
+        key: 'update-error'
+      });
     }
   });
 

@@ -18,7 +18,7 @@ import { customTableProps } from '@components/custom/TableProps.custom';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
 import { calculateTotalProduct } from '@utils/calculateTotalProduct';
 import { RowTableActions } from './RowTableActions';
-import { Link } from '@tanstack/react-router';
+import { useProductDrawer } from '@/contexts/ProductDrawerContext';
 import { useIsMobile } from '@hooks/useIsMobile';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa6';
 
@@ -77,6 +77,7 @@ const TotalMobileCard: React.FC<{
   displayMode: string;
 }> = ({ record, months, index, displayMode }) => {
   const [expanded, setExpanded] = useState(false);
+  const { openProduct } = useProductDrawer();
 
   const fmt = (v: number) => (v ? v.toLocaleString() : '0');
   const fmtDec = (v: number) =>
@@ -97,13 +98,12 @@ const TotalMobileCard: React.FC<{
           {index + 1}
         </div>
         <div className="min-w-0 flex-1">
-          <Link
-            to={'/admin/products/$id'}
-            params={{ id: record.id }}
-            className="text-sm leading-tight font-semibold text-gray-900 dark:text-white"
+          <button
+            onClick={() => openProduct(record.id)}
+            className="text-left text-sm leading-tight font-semibold text-blue-600 transition-colors hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
           >
             {record.name}
-          </Link>
+          </button>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <Tag color="default" className="!m-0 !text-[10px]">
               {record.code}
@@ -239,6 +239,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
   displayMode
 }) => {
   const isMobile = useIsMobile();
+  const { openProduct } = useProductDrawer();
 
   const { data: response } = queryResult;
   const tableData = response?.data || [];
@@ -356,9 +357,12 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       render: (value, record) => {
         return (
           <Tooltip title={value} placement="topLeft">
-            <Link to={'/admin/products/$id'} params={{ id: record.id }}>
+            <button
+              onClick={() => openProduct(record.id)}
+              className="text-left font-medium text-blue-600 transition-colors hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+            >
               {value}
-            </Link>
+            </button>
           </Tooltip>
         );
       }

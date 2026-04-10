@@ -1,10 +1,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 
-import { DatePicker, Input, Select, Tabs, TabsProps } from 'antd';
+import { DatePicker, Input, Modal, Select, Tabs, TabsProps } from 'antd';
 import { useMemo, useState } from 'react';
 import { FaSearch, FaRulerCombined, FaTag } from 'react-icons/fa';
 import {
@@ -26,6 +25,8 @@ import { Error200Table } from '@components/products/Error200Table';
 import { ExportTable } from '@components/products/ExportTable';
 import { ProduceTable } from '@components/products/ProduceTable';
 import { TotalTable } from '@components/products/TotalTable';
+import { ProductDrawerProvider } from '@/contexts/ProductDrawerContext';
+import { ProductDetailDrawer } from './ProductDetailDrawer';
 
 import { QueryParams } from '@/types/queryParams';
 import { useCrudList } from '@hooks/useCrudList';
@@ -34,8 +35,16 @@ import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEn
 import { productService } from '@services/ProductService';
 import { ExportModal } from './ExportModal';
 
+import ProductAdd from './ProductAdd';
+import ProductQuantityAdd from './ProductQuantityAdd';
+import ProductQuantityUpdate from './ProductQuantityUpdate';
+import ProductTrash from './ProductTrash';
+
+type ModalType = 'add' | 'quantityAdd' | 'quantityUpdate' | 'trash' | null;
+
 export default function ProductList() {
   const [month, setMonth] = useState<Dayjs | null>(dayjs().startOf('month'));
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
 
   const [params, setParams] = useState<QueryParams>({
     page: 1,
@@ -174,167 +183,219 @@ export default function ProductList() {
     }
   ];
 
-  return (
-    <ComponentCard title="Quản lý sản phẩm">
-      <div className="space-y-5">
-        {/* ── Action Bar ───────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 dark:border-gray-700 dark:bg-gray-800/50">
-          <RefreshButton
-            isLoading={queryResult.isFetching}
-            refresh={queryResult.refetch}
-          />
+  const modalConfig: Record<
+    Exclude<ModalType, null>,
+    { title: string; width: number | string }
+  > = {
+    add: { title: 'Thêm sản phẩm', width: 600 },
+    quantityAdd: { title: 'Thêm sản lượng sản xuất', width: '90vw' },
+    quantityUpdate: { title: 'Cập nhật số lượng hàng', width: '90vw' },
+    trash: { title: 'Thùng rác', width: '90vw' }
+  };
 
-          <Link to="/admin/products/add">
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+  const renderModalContent = () => {
+    switch (activeModal) {
+      case 'add':
+        return <ProductAdd />;
+      case 'quantityAdd':
+        return <ProductQuantityAdd />;
+      case 'quantityUpdate':
+        return <ProductQuantityUpdate />;
+      case 'trash':
+        return <ProductTrash />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <ProductDrawerProvider>
+      <ComponentCard title="Quản lý sản phẩm">
+        <div className="space-y-5">
+          {/* ── Action Bar ───────────────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+            <RefreshButton
+              isLoading={queryResult.isFetching}
+              refresh={queryResult.refetch}
+            />
+
+            <button
+              onClick={() => setActiveModal('add')}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+            >
               <FaPlus className="text-[10px] text-gray-500" />
               Thêm SP
             </button>
-          </Link>
 
-          <Link to="/admin/products/quantity/add">
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+            <button
+              onClick={() => setActiveModal('quantityAdd')}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+            >
               <FaIndustry className="text-[10px] text-gray-500" />
               Thêm SL
             </button>
-          </Link>
 
-          <Link to="/admin/products/quantity/update">
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+            <button
+              onClick={() => setActiveModal('quantityUpdate')}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+            >
               <FaBox6 className="text-[10px] text-gray-500" />
               Cập nhật SL
             </button>
-          </Link>
 
-          <Link to="/admin/products/trash">
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+            <button
+              onClick={() => setActiveModal('trash')}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+            >
               <FaTrashCan className="text-[10px] text-gray-500" />
               Thùng rác
             </button>
-          </Link>
 
-          <div className="ml-auto">
-            <ExportModal />
-          </div>
-        </div>
-
-        {/* ── Filter Bar ───────────────────────────────────────────── */}
-        <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                📅 Tháng
-              </label>
-              <DatePicker
-                value={month}
-                picker="month"
-                placeholder="Chọn tháng"
-                className="!rounded-lg"
-                onChange={(date) => {
-                  const newMonth = date
-                    ? date.startOf('month')
-                    : dayjs().startOf('month');
-                  setMonth(newMonth);
-                  setParams((prev) => ({
-                    ...prev,
-                    month: newMonth.format('YYYY-MM')
-                  }));
-                }}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                <FaChartBar className="mr-1 inline-block text-blue-500" />
-                Dữ liệu xuất hàng
-              </label>
-              <Select
-                value={activeDisplayMode}
-                onChange={setDisplayMode}
-                className="!rounded-lg"
-                options={[
-                  { value: 'hide', label: 'Ẩn xuất hàng' },
-                  ...(years.length === 0 && activeDisplayMode !== 'hide'
-                    ? [
-                        {
-                          value: activeDisplayMode,
-                          label: `Năm ${activeDisplayMode}`
-                        }
-                      ]
-                    : []),
-                  ...years.map((y) => ({ value: y, label: `Năm ${y}` }))
-                ]}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                <FaTag className="mr-1 inline-block text-emerald-500" />
-                Mã thùng
-              </label>
-              <Select
-                options={ProductModelEnumOptions}
-                placeholder="Chọn mã thùng"
-                popupMatchSelectWidth={false}
-                allowClear
-                className="!rounded-lg"
-                onSelect={(value) => {
-                  setParams((prev) => ({
-                    ...prev,
-                    'filter[binCode]': value
-                  }));
-                }}
-                onClear={() => {
-                  setParams((prev) => ({
-                    ...prev,
-                    'filter[binCode]': undefined
-                  }));
-                }}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                <FaRulerCombined className="mr-1 inline-block text-orange-500" />
-                Kích thước khuôn
-              </label>
-              <Select
-                options={ProductModelSizeEnumOptions}
-                placeholder="Chọn kích thước"
-                popupMatchSelectWidth={false}
-                allowClear
-                className="!rounded-lg"
-                onSelect={(value) => {
-                  setParams((prev) => ({
-                    ...prev,
-                    'filter[moldSize]': value
-                  }));
-                }}
-                onClear={() => {
-                  setParams((prev) => ({
-                    ...prev,
-                    'filter[moldSize]': undefined
-                  }));
-                }}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                <FaSearch className="mr-1 inline-block text-gray-400" />
-                Tìm kiếm
-              </label>
-              <Input.Search
-                placeholder="Tìm kiếm sản phẩm..."
-                allowClear
-                className="!rounded-lg"
-                onChange={(e) => {
-                  const inputValue = e.target.value;
-                  handleSearch(inputValue);
-                }}
-              />
+            <div className="ml-auto">
+              <ExportModal />
             </div>
           </div>
+
+          {/* ── Filter Bar ───────────────────────────────────────────── */}
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  📅 Tháng
+                </label>
+                <DatePicker
+                  value={month}
+                  picker="month"
+                  placeholder="Chọn tháng"
+                  className="!rounded-lg"
+                  onChange={(date) => {
+                    const newMonth = date
+                      ? date.startOf('month')
+                      : dayjs().startOf('month');
+                    setMonth(newMonth);
+                    setParams((prev) => ({
+                      ...prev,
+                      month: newMonth.format('YYYY-MM')
+                    }));
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaChartBar className="mr-1 inline-block text-blue-500" />
+                  Dữ liệu xuất hàng
+                </label>
+                <Select
+                  value={activeDisplayMode}
+                  onChange={setDisplayMode}
+                  className="!rounded-lg"
+                  options={[
+                    { value: 'hide', label: 'Ẩn xuất hàng' },
+                    ...(years.length === 0 && activeDisplayMode !== 'hide'
+                      ? [
+                          {
+                            value: activeDisplayMode,
+                            label: `Năm ${activeDisplayMode}`
+                          }
+                        ]
+                      : []),
+                    ...years.map((y) => ({ value: y, label: `Năm ${y}` }))
+                  ]}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaTag className="mr-1 inline-block text-emerald-500" />
+                  Mã thùng
+                </label>
+                <Select
+                  options={ProductModelEnumOptions}
+                  placeholder="Chọn mã thùng"
+                  popupMatchSelectWidth={false}
+                  allowClear
+                  className="!rounded-lg"
+                  onSelect={(value) => {
+                    setParams((prev) => ({
+                      ...prev,
+                      'filter[binCode]': value
+                    }));
+                  }}
+                  onClear={() => {
+                    setParams((prev) => ({
+                      ...prev,
+                      'filter[binCode]': undefined
+                    }));
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaRulerCombined className="mr-1 inline-block text-orange-500" />
+                  Kích thước khuôn
+                </label>
+                <Select
+                  options={ProductModelSizeEnumOptions}
+                  placeholder="Chọn kích thước"
+                  popupMatchSelectWidth={false}
+                  allowClear
+                  className="!rounded-lg"
+                  onSelect={(value) => {
+                    setParams((prev) => ({
+                      ...prev,
+                      'filter[moldSize]': value
+                    }));
+                  }}
+                  onClear={() => {
+                    setParams((prev) => ({
+                      ...prev,
+                      'filter[moldSize]': undefined
+                    }));
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaSearch className="mr-1 inline-block text-gray-400" />
+                  Tìm kiếm
+                </label>
+                <Input.Search
+                  placeholder="Tìm kiếm sản phẩm..."
+                  allowClear
+                  className="!rounded-lg"
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    handleSearch(inputValue);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Tabs ─────────────────────────────────────────────────── */}
+          <Tabs items={productTabs} type="card" size="large" animated />
         </div>
 
-        {/* ── Tabs ─────────────────────────────────────────────────── */}
-        <Tabs items={productTabs} type="card" size="large" animated />
-      </div>
-    </ComponentCard>
+        {/* ── Modal ─────────────────────────────────────────────────── */}
+        <Modal
+          title={activeModal ? modalConfig[activeModal].title : ''}
+          open={activeModal !== null}
+          onCancel={() => setActiveModal(null)}
+          footer={null}
+          width={activeModal ? modalConfig[activeModal].width : undefined}
+          destroyOnHidden
+          centered
+          styles={{
+            body: {
+              maxHeight: '75vh',
+              overflowY: 'auto',
+              paddingRight: 8
+            }
+          }}
+        >
+          {renderModalContent()}
+        </Modal>
+        <ProductDetailDrawer />
+      </ComponentCard>
+    </ProductDrawerProvider>
   );
 }

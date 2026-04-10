@@ -25,6 +25,7 @@ export type TodoCreateType = {
 export type TodoUpdateQuantityType = {
   productId: ProductType['id'];
   quantity: number;
+  shift?: string;
 };
 
 export type TodoHistoryRequest = {

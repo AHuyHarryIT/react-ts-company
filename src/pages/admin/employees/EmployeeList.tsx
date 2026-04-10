@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import {
   Avatar,
-  Button,
   Input,
   Modal,
   Pagination,
@@ -14,7 +13,7 @@ import {
 import { debounce } from 'lodash';
 import { useState } from 'react';
 import { FaUser, FaSearch } from 'react-icons/fa';
-import { FaFingerprint, FaPen } from 'react-icons/fa6';
+import { FaFingerprint } from 'react-icons/fa6';
 import { LuUserRoundPlus } from 'react-icons/lu';
 import { BiTrash } from 'react-icons/bi';
 import { useIsMobile } from '@hooks/useIsMobile';
@@ -24,6 +23,7 @@ import { EmployeeType } from '@/types/employeeType';
 import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
+import { ActionGroup, EditButton } from '@components/common/ActionButtons';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
 
@@ -212,11 +212,9 @@ export default function EmployeeList() {
       align: 'center',
       render: (_value, _record) => {
         return (
-          <div className="flex items-center justify-center gap-2">
+          <ActionGroup>
             <Link to={`/admin/employees/edit/$id`} params={{ id: _record.id }}>
-              <Button color="primary" variant="solid" icon={<FaPen />}>
-                Sửa
-              </Button>
+              <EditButton />
             </Link>
             <ConfirmButton
               id={_record.id}
@@ -231,7 +229,7 @@ export default function EmployeeList() {
                 </p>
               }
             />
-          </div>
+          </ActionGroup>
         );
       }
     }
@@ -407,19 +405,12 @@ export default function EmployeeList() {
                       </div>
 
                       {/* Actions */}
-                      <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                      <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
                         <Link
                           to={`/admin/employees/edit/$id`}
                           params={{ id: record.id }}
                         >
-                          <Button
-                            color="primary"
-                            variant="solid"
-                            size="small"
-                            icon={<FaPen />}
-                          >
-                            Sửa
-                          </Button>
+                          <EditButton size="small" />
                         </Link>
                         <ConfirmButton
                           id={record.id}
@@ -435,7 +426,7 @@ export default function EmployeeList() {
                             </p>
                           }
                         />
-                      </div>
+                      </ActionGroup>
                     </div>
                   ))}
                 </div>

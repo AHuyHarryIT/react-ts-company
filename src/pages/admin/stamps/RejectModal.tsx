@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, message, Modal } from 'antd';
+import { message, Modal } from 'antd';
 import React, { useState } from 'react';
-import { FaBan } from 'react-icons/fa';
 import { rejectStamp } from '@services/StampService';
 import { useStampNotification } from '@hooks/useStampNotification';
+import { RejectButton } from '@components/common/ActionButtons';
 
 interface RejectModalProps {
   stampId: string;
@@ -33,13 +33,7 @@ export const RejectModal: React.FC<RejectModalProps> = ({ stampId }) => {
   });
   return (
     <>
-      <Button
-        variant="solid"
-        color="red"
-        icon={<FaBan />}
-        children="Từ chối"
-        onClick={() => setOpen(true)}
-      />
+      <RejectButton onClick={() => setOpen(true)} />
       <Modal
         title="Xác nhận từ chối"
         confirmLoading={isPending}

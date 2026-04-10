@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  Table,
-  Button,
-  Typography,
-  message,
-  Spin,
-  Input,
-  Select,
-  Drawer
-} from 'antd';
-import { ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Table, Typography, message, Spin, Input, Select, Drawer } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import RefreshButton from '@/components/common/RefreshButton';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
 import { productService } from '@/services/ProductService';
@@ -469,14 +461,7 @@ const ProductStockSummary: React.FC = () => {
             className="!w-full sm:!w-[160px]"
             onChange={(e) => setSearchText(e.target.value)}
           />
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={loadData}
-            loading={loading}
-            size="small"
-          >
-            Tải lại
-          </Button>
+          <RefreshButton refresh={loadData} isLoading={loading} size="small" />
         </div>
       </div>
 

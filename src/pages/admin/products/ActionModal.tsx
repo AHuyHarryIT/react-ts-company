@@ -1,5 +1,5 @@
 import { ProductHistoryStatusType, ProductType } from '@/types/productType';
-import { IconDelete, IconEdit } from '@components/icons';
+import { EditButton, DeleteButton } from '@components/common/ActionButtons';
 import {
   deleteProductHistoryDetail,
   updateProductHistoryDetail
@@ -13,6 +13,7 @@ interface EditModalProps {
   quantity: number;
   productId: ProductType['id'];
   status: ProductHistoryStatusType['status'];
+  children?: ReactNode;
 }
 
 interface FormFields {
@@ -28,7 +29,8 @@ export const EditModal: React.FC<EditModalProps> = ({
   id,
   quantity,
   productId,
-  status
+  status,
+  children
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -75,14 +77,13 @@ export const EditModal: React.FC<EditModalProps> = ({
 
   return (
     <>
-      <Button
-        variant="solid"
-        color="blue"
-        icon={<IconEdit />}
-        onClick={handleOpen}
-      >
-        Cập nhật
-      </Button>
+      {children ? (
+        <div onClick={handleOpen} className="inline-block cursor-pointer">
+          {children}
+        </div>
+      ) : (
+        <EditButton onClick={handleOpen} />
+      )}
       <Modal
         title="Chỉnh sửa sản phẩm"
         open={open}
@@ -164,14 +165,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
 
   return (
     <>
-      <Button
-        variant="solid"
-        color="danger"
-        icon={<IconDelete />}
-        onClick={handleOpen}
-      >
-        Xóa
-      </Button>
+      <DeleteButton onClick={handleOpen} />
       <Modal
         title="Xóa lịch sử cập nhật"
         open={open}

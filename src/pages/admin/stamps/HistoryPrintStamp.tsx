@@ -1,8 +1,8 @@
 import { QueryParams } from '@/types/queryParams';
+import { ActionGroup, PrintButton } from '@components/common/ActionButtons';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
-import { IconPrint } from '@components/icons';
 import {
   getStampHistory,
   HistoryPrintStampType,
@@ -412,26 +412,16 @@ export default function HistoryPrintStamp() {
       render: (_, record) => {
         if (record.status == 'approve' || record.status == 'rejected') {
           return (
-            <Button
-              disabled
-              color="blue"
-              variant="solid"
-              icon={<IconPrint />}
-              children="IN"
-            />
+            <ActionGroup>
+              <PrintButton disabled />
+            </ActionGroup>
           );
         }
         return (
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              color="blue"
-              variant="solid"
-              icon={<IconPrint />}
-              children="IN"
-              onClick={() => handlePrintClick(record)}
-            />
+          <ActionGroup>
+            <PrintButton onClick={() => handlePrintClick(record)} />
             <RejectModal stampId={record.id} />
-          </div>
+          </ActionGroup>
         );
       }
     }
@@ -817,18 +807,13 @@ export default function HistoryPrintStamp() {
 
                       {/* Actions */}
                       {record.status === 'pending' && (
-                        <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
-                          <Button
-                            color="blue"
-                            variant="solid"
+                        <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
+                          <PrintButton
                             size="small"
-                            icon={<IconPrint />}
                             onClick={() => handlePrintClick(record)}
-                          >
-                            IN
-                          </Button>
+                          />
                           <RejectModal stampId={record.id} />
-                        </div>
+                        </ActionGroup>
                       )}
                     </div>
                   );

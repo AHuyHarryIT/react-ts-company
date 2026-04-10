@@ -18,7 +18,7 @@ import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { RowTableActions } from './RowTableActions';
-import { Link } from '@tanstack/react-router';
+import { useProductDrawer } from '@/contexts/ProductDrawerContext';
 import { useIsMobile } from '@hooks/useIsMobile';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa6';
 
@@ -48,6 +48,7 @@ const Error200MobileCard: React.FC<{
   index: number;
 }> = ({ record, month, index }) => {
   const [expanded, setExpanded] = useState(false);
+  const { openProduct } = useProductDrawer();
 
   const daysInMonth = dayjs(month).daysInMonth();
   const dates = Array.from({ length: daysInMonth }, (_, i) =>
@@ -68,13 +69,12 @@ const Error200MobileCard: React.FC<{
           {index + 1}
         </div>
         <div className="min-w-0 flex-1">
-          <Link
-            to={'/admin/products/$id'}
-            params={{ id: record.id }}
-            className="text-sm leading-tight font-semibold text-gray-900 dark:text-white"
+          <button
+            onClick={() => openProduct(record.id)}
+            className="text-left text-sm leading-tight font-semibold text-blue-600 transition-colors hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
           >
             {record.name}
-          </Link>
+          </button>
           <div className="mt-1 flex items-center gap-2">
             <Tag color="default" className="!m-0 !text-[10px]">
               {record.code}
@@ -149,6 +149,7 @@ export const Error200Table: React.FC<Error200TableProps> = ({
   setParams
 }) => {
   const isMobile = useIsMobile();
+  const { openProduct } = useProductDrawer();
   const [dataSource, setDataSource] = useState<Error200TableType[]>([]);
 
   const { data: response } = queryResult;
@@ -285,9 +286,12 @@ export const Error200Table: React.FC<Error200TableProps> = ({
       render: (value, record) => {
         return (
           <Tooltip title={value} placement="topLeft">
-            <Link to={'/admin/products/$id'} params={{ id: record.id }}>
+            <button
+              onClick={() => openProduct(record.id)}
+              className="text-left font-medium text-blue-600 transition-colors hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+            >
               {value}
-            </Link>
+            </button>
           </Tooltip>
         );
       }

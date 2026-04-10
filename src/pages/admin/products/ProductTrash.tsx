@@ -1,10 +1,8 @@
-import { Input, Select, Table, TableColumnsType, TableProps, Flex } from 'antd';
-import { useState } from 'react';
+import { Input, Table, TableColumnsType, TableProps, Select } from 'antd';
+import React, { useState } from 'react';
 
 import { ProductType } from '@/types/productType';
 import { QueryParams } from '@/types/queryParams';
-import BackButton from '@components/common/BackButton';
-import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
@@ -13,9 +11,10 @@ import { ProductModelEnumOptions } from '@schemas/product/productModelEnum.enum'
 import { ProductModelSizeEnumOptions } from '@schemas/product/productModelSizeEnum.enum';
 import { productService } from '@services/ProductService';
 import { debounce } from 'lodash';
-import { Button, Modal, message } from 'antd';
+import { Modal, message } from 'antd';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { IconDelete } from '@components/icons';
+
+import { ActionGroup, DeleteButton } from '@components/common/ActionButtons';
 
 interface ForceDeleteButtonProps {
   productId: string;
@@ -44,14 +43,13 @@ const ForceDeleteButton: React.FC<ForceDeleteButtonProps> = ({
 
   return (
     <>
-      <Button
-        size="middle"
-        variant="solid"
-        color="red"
-        icon={<IconDelete />}
+      <DeleteButton
         onClick={() => setOpen(true)}
         loading={forceDeleteMutation.isPending}
-      />
+        title="Xóa vĩnh viễn"
+      >
+        {null}
+      </DeleteButton>
 
       <Modal
         title="Xóa sản phẩm"
@@ -209,7 +207,7 @@ export default function ProductTrash() {
       minWidth: 180,
       render: (_value, record) => {
         return (
-          <Flex gap="small" justify="center" wrap="wrap">
+          <ActionGroup>
             <ConfirmButton
               isRestore={true}
               id={record.id}
@@ -220,7 +218,7 @@ export default function ProductTrash() {
               productName={record.name}
               productCode={record.code}
             />
-          </Flex>
+          </ActionGroup>
         );
       }
     }
@@ -255,58 +253,55 @@ export default function ProductTrash() {
 
   return (
     <>
-      <BackButton to="/admin/products" />
-      <ComponentCard title="Thùng rác">
-        <RefreshButton refresh={refetch} isLoading={isFetching} />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          <Select
-            options={ProductModelEnumOptions}
-            placeholder="Chọn mã thùng"
-            popupMatchSelectWidth={false}
-            allowClear
-            onSelect={(value) => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[binCode]': value
-              }));
-            }}
-            onClear={() => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[binCode]': undefined
-              }));
-            }}
-          />
-          <Select
-            options={ProductModelSizeEnumOptions}
-            placeholder="Chọn kích thước khuôn"
-            popupMatchSelectWidth={false}
-            allowClear
-            onSelect={(value) => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[moldSize]': value
-              }));
-            }}
-            onClear={() => {
-              setParams((prev) => ({
-                ...prev,
-                'filter[moldSize]': undefined
-              }));
-            }}
-          />
-          <Input.Search
-            className="col-span-1"
-            placeholder="Tìm kiếm sản phẩm"
-            allowClear
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              handleSearch(inputValue);
-            }}
-          />
-        </div>
-        <Table {...tableProps} />
-      </ComponentCard>
+      <RefreshButton refresh={refetch} isLoading={isFetching} />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <Select
+          options={ProductModelEnumOptions}
+          placeholder="Chọn mã thùng"
+          popupMatchSelectWidth={false}
+          allowClear
+          onSelect={(value: string) => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[binCode]': value
+            }));
+          }}
+          onClear={() => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[binCode]': undefined
+            }));
+          }}
+        />
+        <Select
+          options={ProductModelSizeEnumOptions}
+          placeholder="Chọn kích thước khuôn"
+          popupMatchSelectWidth={false}
+          allowClear
+          onSelect={(value: string) => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[moldSize]': value
+            }));
+          }}
+          onClear={() => {
+            setParams((prev) => ({
+              ...prev,
+              'filter[moldSize]': undefined
+            }));
+          }}
+        />
+        <Input.Search
+          className="col-span-1"
+          placeholder="Tìm kiếm sản phẩm"
+          allowClear
+          onChange={(e) => {
+            const inputValue = e.target.value;
+            handleSearch(inputValue);
+          }}
+        />
+      </div>
+      <Table {...tableProps} />
     </>
   );
 }

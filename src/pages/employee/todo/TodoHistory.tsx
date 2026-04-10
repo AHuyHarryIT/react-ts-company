@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { FaCalendarAlt, FaSearch } from 'react-icons/fa';
 import { FaClockRotateLeft } from 'react-icons/fa6';
+import { dateTimeToShift } from '@utils/dateTimeToShift';
 
 interface TodoOption {
   key: string;
@@ -107,9 +108,12 @@ export const TodoHistory = () => {
             {/* ── Data Table ────────────────────────────────────── */}
             <div className="rounded-xl border border-gray-100 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
               {/* Header Row - Desktop only */}
-              <div className="hidden border-b border-gray-200 bg-gray-50 px-4 py-3 sm:grid sm:grid-cols-3 dark:border-gray-700 dark:bg-gray-800">
+              <div className="hidden border-b border-gray-200 bg-gray-50 px-4 py-3 sm:grid sm:grid-cols-4 dark:border-gray-700 dark:bg-gray-800">
                 <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                   Ngày
+                </span>
+                <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                  Ca
                 </span>
                 <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                   Loại
@@ -125,9 +129,34 @@ export const TodoHistory = () => {
                     {histories.data.map((history) => (
                       <div key={history.id}>
                         {/* Desktop row */}
-                        <div className="hidden px-4 py-3 transition-colors hover:bg-gray-50 sm:grid sm:grid-cols-3 dark:hover:bg-gray-800/30">
+                        <div className="hidden px-4 py-3 transition-colors hover:bg-gray-50 sm:grid sm:grid-cols-4 dark:hover:bg-gray-800/30">
                           <span className="text-sm text-gray-700 dark:text-gray-300">
                             {dayjs(history.date).format('DD/MM/YYYY')}
+                          </span>
+                          <span>
+                            {history.status === 1 &&
+                              (() => {
+                                const shiftValue = history.shift
+                                  ? history.shift
+                                  : dateTimeToShift(
+                                        dayjs(history.date).format(
+                                          'DD-MM-YYYY'
+                                        ),
+                                        String(history.created_at)
+                                      ) === 2
+                                    ? 'Ca 2'
+                                    : 'Ca 1';
+                                return (
+                                  <Tag
+                                    color={
+                                      shiftValue === 'Ca 1' ? 'blue' : 'purple'
+                                    }
+                                    className="!text-xs"
+                                  >
+                                    {shiftValue}
+                                  </Tag>
+                                );
+                              })()}
                           </span>
                           <span>
                             <Tag color="blue" className="!text-xs">
@@ -152,6 +181,31 @@ export const TodoHistory = () => {
                               <span className="text-sm text-gray-700 dark:text-gray-300">
                                 {dayjs(history.date).format('DD/MM/YYYY')}
                               </span>
+                              {history.status === 1 &&
+                                (() => {
+                                  const shiftValue = history.shift
+                                    ? history.shift
+                                    : dateTimeToShift(
+                                          dayjs(history.date).format(
+                                            'DD-MM-YYYY'
+                                          ),
+                                          String(history.created_at)
+                                        ) === 2
+                                      ? 'Ca 2'
+                                      : 'Ca 1';
+                                  return (
+                                    <Tag
+                                      color={
+                                        shiftValue === 'Ca 1'
+                                          ? 'blue'
+                                          : 'purple'
+                                      }
+                                      className="!m-0 !text-[11px]"
+                                    >
+                                      {shiftValue}
+                                    </Tag>
+                                  );
+                                })()}
                               <Tag color="blue" className="!m-0 !text-[11px]">
                                 {
                                   productStatusOptions.find(

@@ -49,7 +49,12 @@ export const produceDataSource = (productData: ProductType[]) => {
       .filter((item) => item.status === 1)
       .forEach((time) => {
         const dateKey = dayjs(time.date).format('DD-MM-YYYY');
-        const shift = dateTimeToShift(dateKey, time.created_at);
+        // Dùng shift từ BE nếu có, fallback dateTimeToShift cho records cũ (shift = null)
+        const shift = time.shift
+          ? time.shift === 'Ca 2'
+            ? 2
+            : 1
+          : dateTimeToShift(dateKey, time.created_at);
 
         if (!timeMap[dateKey]) {
           timeMap[dateKey] = { shift1: 0, shift2: 0 };

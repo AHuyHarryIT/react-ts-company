@@ -1,15 +1,7 @@
 import { Link } from '@tanstack/react-router';
-import {
-  Button,
-  Pagination,
-  Table,
-  TableColumnsType,
-  TableProps,
-  Tag
-} from 'antd';
+import { Pagination, Table, TableColumnsType, TableProps, Tag } from 'antd';
 import { useState } from 'react';
 import { FaMoneyBillWave } from 'react-icons/fa';
-import { GoInfo } from 'react-icons/go';
 import { useIsMobile } from '@hooks/useIsMobile';
 
 import { useCrudList } from '@/hooks/useCrudList';
@@ -21,6 +13,7 @@ import { salariesService } from '@services/SalaryService';
 
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
+import { ActionGroup, ViewButton } from '@components/common/ActionButtons';
 
 export default function SalaryList() {
   const isMobile = useIsMobile();
@@ -115,11 +108,9 @@ export default function SalaryList() {
       width: 180,
       render: (_value, _record) => {
         return (
-          <div className="flex items-center justify-center gap-2">
+          <ActionGroup>
             <Link to={`/admin/salaries/$id`} params={{ id: _record.id }}>
-              <Button color="primary" variant="solid" icon={<GoInfo />}>
-                Chi tiết
-              </Button>
+              <ViewButton />
             </Link>
             <ConfirmButton
               id={_record.id}
@@ -134,7 +125,7 @@ export default function SalaryList() {
                 </p>
               }
             />
-          </div>
+          </ActionGroup>
         );
       }
     }
@@ -220,16 +211,9 @@ export default function SalaryList() {
                   </div>
                 </div>
                 {/* Actions */}
-                <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
                   <Link to={`/admin/salaries/$id`} params={{ id: record.id }}>
-                    <Button
-                      color="primary"
-                      variant="solid"
-                      size="small"
-                      icon={<GoInfo />}
-                    >
-                      Chi tiết
-                    </Button>
+                    <ViewButton size="small" />
                   </Link>
                   <ConfirmButton
                     id={record.id}
@@ -245,7 +229,7 @@ export default function SalaryList() {
                       </p>
                     }
                   />
-                </div>
+                </ActionGroup>
               </div>
             ))}
             <div className="flex justify-end pt-2">

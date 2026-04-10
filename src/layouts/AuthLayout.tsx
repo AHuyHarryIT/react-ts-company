@@ -1,16 +1,27 @@
 import GridShape from '@components/common/GridShape';
 import { Outlet } from '@tanstack/react-router';
+import { motion } from 'framer-motion';
 
 export default function AuthLayout() {
   return (
     <>
       <div className="relative z-1 flex h-screen w-full overflow-hidden bg-white px-4 py-6 sm:p-0 dark:bg-gray-900">
-        <div className="flex flex-1 flex-col rounded-2xl p-6 sm:rounded-none sm:border-0 sm:p-8">
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="flex flex-1 flex-col rounded-2xl p-6 sm:rounded-none sm:border-0 sm:p-8"
+        >
           <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
             <Outlet />
           </div>
-        </div>
-        <div className="relative z-1 hidden flex-1 items-center justify-center bg-blue-950 p-8 lg:flex dark:bg-white/5">
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+          className="relative z-1 hidden flex-1 items-center justify-center bg-blue-950 p-8 lg:flex dark:bg-white/5"
+        >
           {/* <!-- ===== Common Grid Shape Start ===== --> */}
           <GridShape />
           <div className="flex max-w-xs flex-col items-center">
@@ -18,7 +29,7 @@ export default function AuthLayout() {
               VINH VINH PHAT ONE MEMBER CO.,LTD
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   );
