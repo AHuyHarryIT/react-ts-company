@@ -1,7 +1,7 @@
-import { Outlet, useLocation } from '@tanstack/react-router';
+import { Outlet } from '@tanstack/react-router';
 import { ConfigProvider, Layout, theme as antTheme, message } from 'antd';
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import BirthdayModal from '@components/BirthdayModal';
 import CleaningDutyModal from '@components/CleaningDuty/CleaningDutyModal';
@@ -78,8 +78,6 @@ function AppLayout() {
     }
   };
 
-  const location = useLocation();
-
   const messages =
     notifications?.data.map((notification) => notification.message) || [];
   return (
@@ -105,17 +103,13 @@ function AppLayout() {
                   <MarqueeAlert messages={messages} />
                 </div>
               )}
-              <AnimatePresence mode="popLayout">
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0, scale: 0.98, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98, y: -10 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                >
-                  <Outlet />
-                </motion.div>
-              </AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              >
+                <Outlet />
+              </motion.div>
             </Content>
             <AppFooter />
           </Layout>

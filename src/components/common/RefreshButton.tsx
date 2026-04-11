@@ -1,6 +1,7 @@
 import { Button, ButtonProps } from 'antd';
 import React from 'react';
 import { IoReload } from 'react-icons/io5';
+import { motion } from 'framer-motion';
 
 interface RefreshButtonProps extends ButtonProps {
   refresh?: () => void;
@@ -14,16 +15,22 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({
   ...props
 }) => {
   return (
-    <Button
-      type="default"
-      className={`!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400 ${props.className || ''}`}
-      icon={<IoReload />}
-      onClick={refresh || onClick}
-      loading={isLoading !== undefined ? isLoading : props.loading}
-      {...props}
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="inline-block"
     >
-      {props.children !== undefined ? props.children : 'Làm mới'}
-    </Button>
+      <Button
+        type="default"
+        className={`!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400 ${props.className || ''}`}
+        icon={<IoReload />}
+        onClick={refresh || onClick}
+        loading={isLoading !== undefined ? isLoading : props.loading}
+        {...props}
+      >
+        {props.children !== undefined ? props.children : 'Làm mới'}
+      </Button>
+    </motion.div>
   );
 };
 

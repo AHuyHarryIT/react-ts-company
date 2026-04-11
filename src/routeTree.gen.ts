@@ -41,6 +41,7 @@ import { Route as AuthenticatedEmployeeRequestFormsIndexImport } from './routes/
 import { Route as AuthenticatedEmployeeAttendancesIndexImport } from './routes/_authenticated/employee/attendances/index'
 import { Route as AuthenticatedEmployeeActivityScheduleIndexImport } from './routes/_authenticated/employee/activity-schedule/index'
 import { Route as AuthenticatedAdminWorkScheduleCategoriesIndexImport } from './routes/_authenticated/admin/work-schedule-categories/index'
+import { Route as AuthenticatedAdminSystemLogsIndexImport } from './routes/_authenticated/admin/system-logs/index'
 import { Route as AuthenticatedAdminSalariesIndexImport } from './routes/_authenticated/admin/salaries/index'
 import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authenticated/admin/roles/index'
 import { Route as AuthenticatedAdminRequestFormsIndexImport } from './routes/_authenticated/admin/request-forms/index'
@@ -257,6 +258,13 @@ const AuthenticatedAdminWorkScheduleCategoriesIndexRoute =
   AuthenticatedAdminWorkScheduleCategoriesIndexImport.update({
     id: '/work-schedule-categories/',
     path: '/work-schedule-categories/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminSystemLogsIndexRoute =
+  AuthenticatedAdminSystemLogsIndexImport.update({
+    id: '/system-logs/',
+    path: '/system-logs/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
@@ -765,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSalariesIndexImport
       parentRoute: typeof AuthenticatedAdminSalariesRouteImport
     }
+    '/_authenticated/admin/system-logs/': {
+      id: '/_authenticated/admin/system-logs/'
+      path: '/system-logs'
+      fullPath: '/admin/system-logs'
+      preLoaderRoute: typeof AuthenticatedAdminSystemLogsIndexImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
     '/_authenticated/admin/work-schedule-categories/': {
       id: '/_authenticated/admin/work-schedule-categories/'
       path: '/work-schedule-categories'
@@ -912,6 +927,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminRegistryIndexRoute: typeof AuthenticatedAdminRegistryIndexRoute
   AuthenticatedAdminRequestFormsIndexRoute: typeof AuthenticatedAdminRequestFormsIndexRoute
   AuthenticatedAdminRolesIndexRoute: typeof AuthenticatedAdminRolesIndexRoute
+  AuthenticatedAdminSystemLogsIndexRoute: typeof AuthenticatedAdminSystemLogsIndexRoute
   AuthenticatedAdminWorkScheduleCategoriesIndexRoute: typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   AuthenticatedAdminEmployeesEditIdRoute: typeof AuthenticatedAdminEmployeesEditIdRoute
   AuthenticatedAdminEmployeesTrashIndexRoute: typeof AuthenticatedAdminEmployeesTrashIndexRoute
@@ -943,6 +959,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminRequestFormsIndexRoute:
       AuthenticatedAdminRequestFormsIndexRoute,
     AuthenticatedAdminRolesIndexRoute: AuthenticatedAdminRolesIndexRoute,
+    AuthenticatedAdminSystemLogsIndexRoute:
+      AuthenticatedAdminSystemLogsIndexRoute,
     AuthenticatedAdminWorkScheduleCategoriesIndexRoute:
       AuthenticatedAdminWorkScheduleCategoriesIndexRoute,
     AuthenticatedAdminEmployeesEditIdRoute:
@@ -1138,6 +1156,7 @@ export interface FileRoutesByFullPath {
   '/admin/request-forms': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
+  '/admin/system-logs': typeof AuthenticatedAdminSystemLogsIndexRoute
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/employee/activity-schedule': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
   '/employee/attendances': typeof AuthenticatedEmployeeAttendancesIndexRoute
@@ -1187,6 +1206,7 @@ export interface FileRoutesByTo {
   '/admin/request-forms': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
+  '/admin/system-logs': typeof AuthenticatedAdminSystemLogsIndexRoute
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/employee/activity-schedule': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
   '/employee/attendances': typeof AuthenticatedEmployeeAttendancesIndexRoute
@@ -1245,6 +1265,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/request-forms/': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/_authenticated/admin/roles/': typeof AuthenticatedAdminRolesIndexRoute
   '/_authenticated/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
+  '/_authenticated/admin/system-logs/': typeof AuthenticatedAdminSystemLogsIndexRoute
   '/_authenticated/admin/work-schedule-categories/': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/_authenticated/employee/activity-schedule/': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
   '/_authenticated/employee/attendances/': typeof AuthenticatedEmployeeAttendancesIndexRoute
@@ -1303,6 +1324,7 @@ export interface FileRouteTypes {
     | '/admin/request-forms'
     | '/admin/roles'
     | '/admin/salaries/'
+    | '/admin/system-logs'
     | '/admin/work-schedule-categories'
     | '/employee/activity-schedule'
     | '/employee/attendances'
@@ -1351,6 +1373,7 @@ export interface FileRouteTypes {
     | '/admin/request-forms'
     | '/admin/roles'
     | '/admin/salaries'
+    | '/admin/system-logs'
     | '/admin/work-schedule-categories'
     | '/employee/activity-schedule'
     | '/employee/attendances'
@@ -1407,6 +1430,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/request-forms/'
     | '/_authenticated/admin/roles/'
     | '/_authenticated/admin/salaries/'
+    | '/_authenticated/admin/system-logs/'
     | '/_authenticated/admin/work-schedule-categories/'
     | '/_authenticated/employee/activity-schedule/'
     | '/_authenticated/employee/attendances/'
@@ -1494,6 +1518,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/registry/",
         "/_authenticated/admin/request-forms/",
         "/_authenticated/admin/roles/",
+        "/_authenticated/admin/system-logs/",
         "/_authenticated/admin/work-schedule-categories/",
         "/_authenticated/admin/employees/edit/$id",
         "/_authenticated/admin/employees/trash/"
@@ -1695,6 +1720,10 @@ export const routeTree = rootRoute
     "/_authenticated/admin/salaries/": {
       "filePath": "_authenticated/admin/salaries/index.tsx",
       "parent": "/_authenticated/admin/salaries"
+    },
+    "/_authenticated/admin/system-logs/": {
+      "filePath": "_authenticated/admin/system-logs/index.tsx",
+      "parent": "/_authenticated/admin"
     },
     "/_authenticated/admin/work-schedule-categories/": {
       "filePath": "_authenticated/admin/work-schedule-categories/index.tsx",

@@ -107,7 +107,7 @@ export default function Dashboard() {
   }, [user?.id]);
 
   // ── Dashboard statistics (admin only) ──
-  const { data: dashboardResponse } = useQuery({
+  const { data: dashboardResponse, isLoading: isDashboardLoading } = useQuery({
     queryKey: ['dashboardData'],
     queryFn: fetchDashboardData,
     enabled: admin,
@@ -176,6 +176,7 @@ export default function Dashboard() {
     value?: string;
     navLink?: LinkProps['to'];
     onClick?: () => void;
+    isLoading?: boolean;
   };
 
   const handleLogout = async () => {
@@ -188,6 +189,23 @@ export default function Dashboard() {
   };
 
   const listWidget: WidgetType[] = useMemo(() => {
+    const EXPECTED_ASYNC_KEYS = [
+      'view_total_employees',
+      'view_attendance_history',
+      'view_attendance_calculation',
+      'view_total_positions',
+      'view_today_employees',
+      'view_total_schedule',
+      'view_total_products',
+      'view_total_salary',
+      'view_total_history',
+      'view_request_forms',
+      'feed_back',
+      'view_po_list',
+      'view_labels_to_print',
+      'storage_export_product'
+    ];
+
     return homePermissions
       .filter((perm) => !CHART_KEYS.includes(perm.key))
       .map((perm) => {
@@ -195,7 +213,12 @@ export default function Dashboard() {
           title: capitalizeWords(perm.name),
           icon: renderIcon(perm.icon ?? undefined),
           value: valueMap[perm.key],
-          navLink: (perm.url || undefined) as LinkProps['to'] | undefined
+          navLink: (perm.url || undefined) as LinkProps['to'] | undefined,
+          isLoading:
+            admin &&
+            isDashboardLoading &&
+            !dashboardResponse &&
+            EXPECTED_ASYNC_KEYS.includes(perm.key)
         };
         // Special: logout is an action, not navigation
         if (perm.key === 'logout') {
@@ -204,7 +227,7 @@ export default function Dashboard() {
         }
         return widget;
       });
-  }, [homePermissions, valueMap]);
+  }, [homePermissions, valueMap, isDashboardLoading, admin, dashboardResponse]);
 
   // Supervisor widget (hardcoded, no RBAC needed)
   const supervisorWidget: WidgetType | null = useMemo(() => {
@@ -494,8 +517,8 @@ export default function Dashboard() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="overflow-hidden rounded-2xl shadow-sm"
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="overflow-hidden rounded-2xl shadow-sm transition-shadow duration-300 dark:shadow-none"
         >
           <SlideCarousel images={imageList.data} />
         </motion.div>
@@ -505,44 +528,48 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+        transition={{ duration: 0.3, delay: 0.05, ease: 'easeOut' }}
+        className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow duration-300 lg:hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
       >
-        {/* Mobile logo */}
-        <div className="mb-3 flex justify-center sm:hidden">
-          <img src={logo} alt="Logo" className="h-20" />
-        </div>
-
-        {/* Main header row */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Left: Greeting */}
-          <div className="text-center sm:text-left">
-            <p className="text-sm font-semibold text-black/60 dark:text-gray-500">
-              Xin chào
-            </p>
-            <h1 className="mt-0.5 text-2xl font-bold text-black sm:text-3xl dark:text-white">
-              {user?.name?.replace(/[()]/g, '').split(' ').pop() || 'Bạn'}{' '}
-              <span className="inline-block">{greeting.emoji}</span>
-            </h1>
-            {greeting.text && (
-              <p className="mt-1 text-sm font-semibold text-black/50 dark:text-gray-500">
-                {greeting.text}
-              </p>
-            )}
+        <div className="absolute top-0 right-0 h-64 w-64 translate-x-1/3 -translate-y-1/2 rounded-full bg-blue-50/50 blur-3xl dark:bg-blue-900/10" />
+        <div className="absolute bottom-0 left-0 h-64 w-64 -translate-x-1/2 translate-y-1/2 rounded-full bg-purple-50/50 blur-3xl dark:bg-purple-900/10" />
+        <div className="relative z-10">
+          {/* Mobile logo */}
+          <div className="mb-3 flex justify-center sm:hidden">
+            <img src={logo} alt="Logo" className="h-20" />
           </div>
 
-          {/* Right: Live clock + info */}
-          <div className="flex flex-col items-center sm:items-end">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-2xl font-bold tracking-wide text-black tabular-nums sm:text-3xl dark:text-white">
-                {clockDisplay}
-              </span>
-              <span className="text-2xl sm:text-3xl">{weatherEmoji}</span>
+          {/* Main header row */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Left: Greeting */}
+            <div className="text-center sm:text-left">
+              <p className="text-sm font-semibold text-black/60 dark:text-gray-500">
+                Xin chào
+              </p>
+              <h1 className="mt-0.5 text-2xl font-bold text-black sm:text-3xl dark:text-white">
+                {user?.name?.replace(/[()]/g, '').split(' ').pop() || 'Bạn'}{' '}
+                <span className="inline-block">{greeting.emoji}</span>
+              </h1>
+              {greeting.text && (
+                <p className="mt-1 text-sm font-semibold text-black/50 dark:text-gray-500">
+                  {greeting.text}
+                </p>
+              )}
             </div>
-            <p className="mt-1 text-xs font-semibold text-black/50 dark:text-gray-500">
-              {currentDate}
-              {weather && ` · ${weather.temp} · ${weather.desc}`}
-            </p>
+
+            {/* Right: Live clock + info */}
+            <div className="flex flex-col items-center sm:items-end">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-2xl font-bold tracking-wide text-black tabular-nums sm:text-3xl dark:text-white">
+                  {clockDisplay}
+                </span>
+                <span className="text-2xl sm:text-3xl">{weatherEmoji}</span>
+              </div>
+              <p className="mt-1 text-xs font-semibold text-black/50 dark:text-gray-500">
+                {currentDate}
+                {weather && ` · ${weather.temp} · ${weather.desc}`}
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -582,6 +609,7 @@ export default function Dashboard() {
                   navLink={widget.navLink as LinkProps['to']}
                   onClick={widget.onClick}
                   index={index}
+                  isLoading={widget.isLoading}
                 />
               </div>
             ))}
@@ -592,9 +620,9 @@ export default function Dashboard() {
       {/* ── Charts ─────────────────────────────────────────────── */}
       {(showSalaryChart || showProductChart) && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.3, delay: 0.1, ease: 'easeOut' }}
         >
           {/* Section label */}
           <div className="mb-4 flex items-center gap-2">

@@ -5,6 +5,7 @@ import { Link, useLocation } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import React from 'react';
 import { FaChevronDown } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarMenuProps {
   items: MenuItem[];
@@ -70,7 +71,9 @@ function SidebarItem({
   const icon = extractIcon(item);
 
   const content = (
-    <div
+    <motion.div
+      whileHover={{ scale: 1.02, x: 4 }}
+      whileTap={{ scale: 0.98 }}
       className={`group mx-2.5 my-0.5 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-out ${
         isActive
           ? 'bg-blue-50/60 font-semibold text-black dark:bg-blue-900/20 dark:text-white'
@@ -78,7 +81,9 @@ function SidebarItem({
       }`}
     >
       {icon && (
-        <span
+        <motion.span
+          whileHover={{ rotate: isActive ? 0 : [0, -10, 10, -10, 0] }}
+          transition={{ duration: 0.4 }}
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl transition-colors duration-200 ${
             isActive
               ? 'text-blue-600 dark:text-blue-400'
@@ -86,12 +91,12 @@ function SidebarItem({
           } ${isCollapsed ? '!mx-auto !h-9 !w-9' : ''}`}
         >
           {icon}
-        </span>
+        </motion.span>
       )}
       {!isCollapsed && (
         <span className="truncate text-[13.5px] capitalize">{label}</span>
       )}
-    </div>
+    </motion.div>
   );
 
   if (path) {
@@ -159,7 +164,9 @@ function SidebarSubmenu({
   return (
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {/* Parent button */}
-      <button
+      <motion.button
+        whileHover={isMobile ? {} : { scale: 1.02, x: 4 }}
+        whileTap={{ scale: 0.98 }}
         onClick={onToggle}
         className={`group mx-2.5 my-0.5 flex w-[calc(100%-20px)] items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-out ${
           hasActiveChild
@@ -190,57 +197,61 @@ function SidebarSubmenu({
             />
           </>
         )}
-      </button>
+      </motion.button>
 
       {/* Children */}
-      {!isCollapsed && (
-        <div
-          className="overflow-hidden transition-all duration-300 ease-out"
-          style={{
-            maxHeight: isOpen ? `${children.length * 42 + 8}px` : '0px',
-            opacity: isOpen ? 1 : 0
-          }}
-        >
-          <div className="ml-5 border-l border-gray-100 py-1 dark:border-gray-700/50">
-            {children.map((child) => {
-              const childPath = extractPath(child);
-              const childLabel = extractLabel(child);
-              const childIcon = extractIcon(child);
-              const isChildActive = childPath
-                ? pathname.startsWith(childPath)
-                : false;
+      <AnimatePresence initial={false}>
+        {!isCollapsed && isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+            className="overflow-hidden"
+          >
+            <div className="ml-5 border-l border-gray-100 py-1 dark:border-gray-700/50">
+              {children.map((child) => {
+                const childPath = extractPath(child);
+                const childLabel = extractLabel(child);
+                const childIcon = extractIcon(child);
+                const isChildActive = childPath
+                  ? pathname.startsWith(childPath)
+                  : false;
 
-              return (
-                <Link
-                  key={String(
-                    child && typeof child === 'object' && 'key' in child
-                      ? child.key
-                      : Math.random()
-                  )}
-                  to={(childPath || '/') as string}
-                  onClick={onClick}
-                  className="block no-underline"
-                >
-                  <div
-                    className={`mx-2 my-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 transition-all duration-200 ease-out ${
-                      isChildActive
-                        ? 'bg-blue-50/50 font-semibold text-black dark:bg-blue-900/15 dark:text-white'
-                        : 'font-medium text-black hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white'
-                    }`}
-                  >
-                    {childIcon && (
-                      <span className="text-[13px]">{childIcon}</span>
+                return (
+                  <Link
+                    key={String(
+                      child && typeof child === 'object' && 'key' in child
+                        ? child.key
+                        : Math.random()
                     )}
-                    <span className="truncate text-[12.5px] capitalize">
-                      {childLabel}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
+                    to={(childPath || '/') as string}
+                    onClick={onClick}
+                    className="block no-underline"
+                  >
+                    <motion.div
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`mx-2 my-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 transition-all duration-200 ease-out ${
+                        isChildActive
+                          ? 'bg-blue-50/50 font-semibold text-black dark:bg-blue-900/15 dark:text-white'
+                          : 'font-medium text-black hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white'
+                      }`}
+                    >
+                      {childIcon && (
+                        <span className="text-[13px]">{childIcon}</span>
+                      )}
+                      <span className="truncate text-[12.5px] capitalize">
+                        {childLabel}
+                      </span>
+                    </motion.div>
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -277,10 +288,15 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
               if (isMobile) toggleSidebar();
             }}
           >
-            <img
+            <motion.img
               src={logo}
               alt="Logo"
-              className={`transition-all duration-300 ${isSidebarClose ? 'h-12' : 'h-20'}`}
+              initial={{ scale: 0.8, opacity: 0, y: -10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.05, rotate: [-2, 2, -2, 0] }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className={`drop-shadow-sm transition-all duration-300 ${isSidebarClose ? 'h-[52px]' : 'h-[88px]'}`}
             />
           </Link>
         </div>

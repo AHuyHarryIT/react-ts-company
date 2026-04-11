@@ -202,8 +202,8 @@ export default function RoleList() {
                       key={record.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
-                      className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+                      transition={{ duration: 0.3 }}
+                      className="w-full rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
                     >
                       {/* Card top: index + ID badge */}
                       <div className="mb-2 flex items-center justify-between">

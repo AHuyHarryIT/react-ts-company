@@ -1,11 +1,8 @@
 import { ProductHistoryStatusType, ProductType } from '@/types/productType';
-import { EditButton, DeleteButton } from '@components/common/ActionButtons';
-import {
-  deleteProductHistoryDetail,
-  updateProductHistoryDetail
-} from '@services/ProductService';
+import { DeleteButton, EditButton } from '@components/common/ActionButtons';
+import { deleteProductHistoryDetail } from '@services/ProductService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Form, InputNumber, message, Modal } from 'antd';
+import { Button, message, Modal } from 'antd';
 import { ReactNode, useState } from 'react';
 
 interface EditModalProps {
@@ -16,102 +13,28 @@ interface EditModalProps {
   children?: ReactNode;
 }
 
-interface FormFields {
-  quantity: number;
-}
-
 interface DeleteModalProps {
   id: string;
   description: ReactNode;
 }
 
-export const EditModal: React.FC<EditModalProps> = ({
-  id,
-  quantity,
-  productId,
-  status,
-  children
-}) => {
-  const [open, setOpen] = useState(false);
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const queryClient = useQueryClient();
-
-  const { mutate, isPending } = useMutation({
-    mutationKey: ['updateProductDetail'],
-    mutationFn: (data: FormFields) => {
-      return updateProductHistoryDetail(id, productId, status, data.quantity);
-    },
-    onMutate: () => {
-      message.loading({
-        content: 'Đang cập nhật...',
-        key: 'updateProductDetail'
-      });
-    },
-    onSuccess: () => {
-      message.success({
-        content: 'Cập nhật thành công',
-        key: 'updateProductDetail'
-      });
-      queryClient.invalidateQueries();
-      handleClose();
-    },
-    onError: () => {
-      message.error({
-        content: 'Cập nhật thất bại',
-        key: 'updateProductDetail'
-      });
-    }
-  });
-
-  const handleFinish = (values: FormFields) => {
-    mutate(values);
+export const EditModal: React.FC<EditModalProps> = ({ id, children }) => {
+  const triggerInlineEdit = () => {
+    window.dispatchEvent(new CustomEvent(`trigger-inline-edit-${id}`));
   };
 
   return (
     <>
       {children ? (
-        <div onClick={handleOpen} className="inline-block cursor-pointer">
+        <div
+          onClick={triggerInlineEdit}
+          className="inline-block cursor-pointer"
+        >
           {children}
         </div>
       ) : (
-        <EditButton onClick={handleOpen} />
+        <EditButton onClick={triggerInlineEdit} />
       )}
-      <Modal
-        title="Chỉnh sửa sản phẩm"
-        open={open}
-        destroyOnHidden
-        onCancel={handleClose}
-        loading={isPending}
-        footer={null}
-      >
-        <Form<FormFields>
-          layout="vertical"
-          initialValues={{ quantity: quantity }}
-          onFinish={handleFinish}
-        >
-          <Form.Item<FormFields>
-            name="quantity"
-            label="Số lượng"
-            rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Cập nhật
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
     </>
   );
 };

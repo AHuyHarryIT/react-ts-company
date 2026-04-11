@@ -58,7 +58,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05, duration: 0.3 }}
+        transition={{ duration: 0.3 }}
         className="w-full rounded-xl border border-gray-100 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800"
       >
         <div className="mb-2 flex items-start justify-between">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, ButtonProps } from 'antd';
+import { motion } from 'framer-motion';
 import {
   IconEdit,
   IconDelete,
@@ -29,14 +30,20 @@ export const ActionGroup: React.FC<{
  */
 export const EditButton: React.FC<ButtonProps> = (props) => {
   return (
-    <Button
-      type="default"
-      className="!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400"
-      icon={<IconEdit />}
-      {...props}
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="inline-block"
     >
-      {props.children !== undefined ? props.children : 'Cập nhật'}
-    </Button>
+      <Button
+        type="default"
+        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400"
+        icon={<IconEdit />}
+        {...props}
+      >
+        {props.children !== undefined ? props.children : 'Cập nhật'}
+      </Button>
+    </motion.div>
   );
 };
 
@@ -45,14 +52,20 @@ export const EditButton: React.FC<ButtonProps> = (props) => {
  */
 export const DeleteButton: React.FC<ButtonProps> = (props) => {
   return (
-    <Button
-      type="default"
-      className="!border-gray-800 !text-gray-800 transition-colors hover:!border-red-500 hover:!text-red-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-red-400 dark:hover:!text-red-400"
-      icon={<IconDelete />}
-      {...props}
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="inline-block"
     >
-      {props.children !== undefined ? props.children : 'Xóa'}
-    </Button>
+      <Button
+        type="default"
+        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-red-500 hover:!text-red-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-red-400 dark:hover:!text-red-400"
+        icon={<IconDelete />}
+        {...props}
+      >
+        {props.children !== undefined ? props.children : 'Xóa'}
+      </Button>
+    </motion.div>
   );
 };
 
@@ -61,14 +74,20 @@ export const DeleteButton: React.FC<ButtonProps> = (props) => {
  */
 export const RestoreButton: React.FC<ButtonProps> = (props) => {
   return (
-    <Button
-      type="default"
-      className="!border-gray-800 !text-gray-800 transition-colors hover:!border-amber-500 hover:!text-amber-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-amber-400 dark:hover:!text-amber-400"
-      icon={<IconRestore />}
-      {...props}
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="inline-block"
     >
-      {props.children !== undefined ? props.children : 'Khôi phục'}
-    </Button>
+      <Button
+        type="default"
+        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-amber-500 hover:!text-amber-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-amber-400 dark:hover:!text-amber-400"
+        icon={<IconRestore />}
+        {...props}
+      >
+        {props.children !== undefined ? props.children : 'Khôi phục'}
+      </Button>
+    </motion.div>
   );
 };
 
@@ -77,14 +96,20 @@ export const RestoreButton: React.FC<ButtonProps> = (props) => {
  */
 export const ViewButton: React.FC<ButtonProps> = (props) => {
   return (
-    <Button
-      type="default"
-      className="!border-gray-800 !text-gray-800 transition-colors hover:!border-indigo-500 hover:!text-indigo-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-indigo-400 dark:hover:!text-indigo-400"
-      icon={<FaEye />}
-      {...props}
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="inline-block"
     >
-      {props.children !== undefined ? props.children : 'Chi tiết'}
-    </Button>
+      <Button
+        type="default"
+        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-indigo-500 hover:!text-indigo-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-indigo-400 dark:hover:!text-indigo-400"
+        icon={<FaEye />}
+        {...props}
+      >
+        {props.children !== undefined ? props.children : 'Chi tiết'}
+      </Button>
+    </motion.div>
   );
 };
 
@@ -93,14 +118,20 @@ export const ViewButton: React.FC<ButtonProps> = (props) => {
  */
 export const PrintButton: React.FC<ButtonProps> = (props) => {
   return (
-    <Button
-      type="default"
-      className="!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400"
-      icon={<IconPrint />}
-      {...props}
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="inline-block"
     >
-      {props.children !== undefined ? props.children : 'IN'}
-    </Button>
+      <Button
+        type="default"
+        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400"
+        icon={<IconPrint />}
+        {...props}
+      >
+        {props.children !== undefined ? props.children : 'IN'}
+      </Button>
+    </motion.div>
   );
 };
 
@@ -109,13 +140,19 @@ export const PrintButton: React.FC<ButtonProps> = (props) => {
  */
 export const RejectButton: React.FC<ButtonProps> = (props) => {
   return (
-    <Button
-      type="default"
-      className="!border-gray-800 !text-gray-800 transition-colors hover:!border-red-500 hover:!text-red-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-red-400 dark:hover:!text-red-400"
-      icon={<FaBan />}
-      {...props}
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="inline-block"
     >
-      {props.children !== undefined ? props.children : 'Từ chối'}
-    </Button>
+      <Button
+        type="default"
+        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-red-500 hover:!text-red-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-red-400 dark:hover:!text-red-400"
+        icon={<FaBan />}
+        {...props}
+      >
+        {props.children !== undefined ? props.children : 'Từ chối'}
+      </Button>
+    </motion.div>
   );
 };

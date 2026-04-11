@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios';
 import { ApiErrorResponse, ValidationErrors } from '@/types/apiType';
 import { clearAuth } from '@stores/authStore';
 import { mapErrorCodesToMessages } from '@utils/validationMapper';
+import { message } from 'antd';
 
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
@@ -79,6 +80,9 @@ axiosPrivate.interceptors.response.use(
         break;
 
       case 500:
+        message.error(
+          'Hệ thống gặp sự cố khi xử lý chức năng này. Quản trị viên vui lòng kiểm tra System Logs để biết chi tiết.'
+        );
         break;
 
       default:

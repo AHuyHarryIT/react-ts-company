@@ -15,7 +15,7 @@ const Header = () => {
 
   return (
     <IconContext.Provider value={{ size: '1.25rem' }}>
-      <header className="sticky top-0 z-10 flex w-full border-gray-200 bg-white px-4 py-2 lg:border-b lg:px-6 dark:border-gray-800 dark:bg-gray-900">
+      <header className="sticky top-0 z-40 flex w-full border-gray-200 bg-white px-4 py-2 lg:border-b lg:px-6 dark:border-gray-800 dark:bg-gray-900">
         <div>
           <Button
             type="text"
