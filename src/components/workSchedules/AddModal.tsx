@@ -109,7 +109,7 @@ export const AddWorkSchedule = () => {
           >
             <Input
               type="file"
-              accept=".xls*"
+              accept=".xls,.xlsx,.xlsb,.xlsm,.csv"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {

@@ -44,7 +44,8 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
     record: ProductHistoryStatusType;
     index: number;
     productId?: string;
-  }> = ({ record, index, productId }) => {
+    hideShift?: boolean;
+  }> = ({ record, index, productId, hideShift }) => {
     const shiftValue = record.shift
       ? record.shift
       : dateTimeToShift(
@@ -90,23 +91,27 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
           </div>
         </div>
 
-        <div className="mt-3 mb-3 grid grid-cols-2 gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700/30">
+        <div
+          className={`mt-3 mb-3 grid gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700/30 ${hideShift ? 'grid-cols-1' : 'grid-cols-2'}`}
+        >
           <div>
             <div className="text-[10px] text-gray-500">Ngày làm việc</div>
             <div className="text-xs font-medium">
               {dayjs(record.date).format('DD-MM-YYYY')}
             </div>
           </div>
-          <div>
-            <div className="text-[10px] text-gray-500">Ca làm việc</div>
-            <Tag
-              color={shiftValue === 'Ca 1' ? 'blue' : 'purple'}
-              className="!m-0 !text-[10px]"
-            >
-              {shiftValue}
-            </Tag>
-          </div>
-          <div className="col-span-2">
+          {!hideShift && (
+            <div>
+              <div className="text-[10px] text-gray-500">Ca làm việc</div>
+              <Tag
+                color={shiftValue === 'Ca 1' ? 'blue' : 'purple'}
+                className="!m-0 !text-[10px]"
+              >
+                {shiftValue}
+              </Tag>
+            </div>
+          )}
+          <div className={hideShift ? 'col-span-1' : 'col-span-2'}>
             <div className="text-[10px] text-gray-500">Lần cuối cập nhật</div>
             <div className="text-xs text-gray-600 dark:text-gray-400">
               {dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss')}
@@ -286,7 +291,10 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
     }
   };
 
-  const renderTabContent = (data: ProductHistoryStatusType[]) => {
+  const renderTabContent = (
+    data: ProductHistoryStatusType[],
+    statusKey: string
+  ) => {
     if (isMobile) {
       if (!data || data.length === 0)
         return <Empty description="Không có dữ liệu" />;
@@ -300,13 +308,20 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
                 record={record}
                 index={index}
                 productId={productHistoryDetail?.product.id}
+                hideShift={statusKey === 'status3'}
               />
             </List.Item>
           )}
         />
       );
     }
-    return <Table {...tableProps} dataSource={data} />;
+
+    const cols =
+      statusKey === 'status3'
+        ? tableColumns.filter((col) => col.key !== 'shift')
+        : tableColumns;
+
+    return <Table {...tableProps} columns={cols} dataSource={data} />;
   };
 
   const productTabs: TabsProps['items'] = [
@@ -318,7 +333,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
           Sản xuất (100%)
         </span>
       ),
-      children: renderTabContent(dataSourceMap['status1'])
+      children: renderTabContent(dataSourceMap['status1'], 'status1')
     },
     {
       key: 'status2',
@@ -328,7 +343,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
           Kiểm (200%)
         </span>
       ),
-      children: renderTabContent(dataSourceMap['status2'])
+      children: renderTabContent(dataSourceMap['status2'], 'status2')
     },
     {
       key: 'status3',
@@ -338,7 +353,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
           Xuất hàng (200%)
         </span>
       ),
-      children: renderTabContent(dataSourceMap['status3'])
+      children: renderTabContent(dataSourceMap['status3'], 'status3')
     },
     {
       key: 'status6',
@@ -348,7 +363,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
           Hàng lỗi
         </span>
       ),
-      children: renderTabContent(dataSourceMap['status6'])
+      children: renderTabContent(dataSourceMap['status6'], 'status6')
     }
   ];
 

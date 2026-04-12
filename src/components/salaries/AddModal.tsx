@@ -128,7 +128,7 @@ export const AddSalary = () => {
           >
             <Input
               type="file"
-              accept=".xls*"
+              accept=".xls,.xlsx,.xlsb,.xlsm,.csv"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 setVvpFile(file);
@@ -142,7 +142,7 @@ export const AddSalary = () => {
           >
             <Input
               type="file"
-              accept=".xls*"
+              accept=".xls,.xlsx,.xlsb,.xlsm,.csv"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 setA7aFile(file);
