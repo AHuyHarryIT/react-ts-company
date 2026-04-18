@@ -90,7 +90,15 @@ export const ExcelToCsvModal = () => {
         selectedSheets: sheetInfos.map((s) => s.name)
       };
 
-      setFiles((prev) => [...prev, entry]);
+      setFiles((prev) => {
+        const updated = [...prev, entry];
+        return updated.sort((a, b) =>
+          a.fileName.localeCompare(b.fileName, undefined, {
+            numeric: true,
+            sensitivity: 'base'
+          })
+        );
+      });
       message.success(
         `${file.name}: ${sheetInfos.length} sheet, ${sheetInfos.reduce((s, si) => s + si.rowCount, 0)} dòng`
       );

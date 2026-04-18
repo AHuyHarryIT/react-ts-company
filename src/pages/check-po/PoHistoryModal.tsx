@@ -234,24 +234,53 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
   const batchGroups: BatchGroup[] = useMemo(() => {
     const map = new Map<string, DailyQuantitiesType[]>();
 
+    // Phân loại records vào các batch
     for (const item of filteredHistoryData) {
       const key = item.batch_id || `no-batch-${item.id}`;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(item);
     }
 
-    return [...map.entries()]
-      .map(([batchId, records]) => ({
-        batchId,
-        date: records[0]?.date || '',
-        fileName: records[0]?.file_name || '',
-        employeeName: records[0]?.employee?.name || '—',
-        createdAt: records[0]?.updated_at || records[0]?.created_at || '',
-        productCount: records.length,
-        totalQuantity: records.reduce((s, r) => s + (r.quantity || 0), 0),
-        records
-      }))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return (
+      [...map.entries()]
+        .map(([batchId, records]) => {
+          // Sắp xếp các record bên trong mỗi batch theo tên sản phẩm (hỗ trợ số/STT trong tên)
+          const sortedRecords = [...records].sort((a, b) => {
+            const nameA = a.product?.name || '';
+            const nameB = b.product?.name || '';
+            return nameA.localeCompare(nameB, undefined, {
+              numeric: true,
+              sensitivity: 'base'
+            });
+          });
+
+          return {
+            batchId,
+            date: sortedRecords[0]?.date || '',
+            fileName: sortedRecords[0]?.file_name || '',
+            employeeName: sortedRecords[0]?.employee?.name || '—',
+            createdAt:
+              sortedRecords[0]?.created_at ||
+              sortedRecords[0]?.updated_at ||
+              '',
+            productCount: sortedRecords.length,
+            totalQuantity: sortedRecords.reduce(
+              (s, r) => s + (r.quantity || 0),
+              0
+            ),
+            records: sortedRecords
+          };
+        })
+        // Sắp xếp các file theo Tên file (sử dụng natural sort để nhận diện đúng số STT trong tên)
+        .sort((a, b) => {
+          const nameA = a.fileName || '';
+          const nameB = b.fileName || '';
+          return nameA.localeCompare(nameB, undefined, {
+            numeric: true,
+            sensitivity: 'base'
+          });
+        })
+    );
   }, [filteredHistoryData]);
 
   // ── Batch table columns ────────────────────────────────────

@@ -1010,8 +1010,17 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
           return false;
         }
 
-        setBatches((prev) => [...prev, ...newBatches]);
-        setActiveKeys(newBatches.map((b) => b.id));
+        setBatches((prev) => {
+          const updated = [...prev, ...newBatches];
+          // Sắp xếp lại theo tên file như trong Explorer (Natural sort)
+          return updated.sort((a, b) =>
+            a.fileName.localeCompare(b.fileName, undefined, {
+              numeric: true,
+              sensitivity: 'base'
+            })
+          );
+        });
+        setActiveKeys((prev) => [...prev, ...newBatches.map((b) => b.id)]);
         message.success(
           `${file.name}: Thêm ${newBatches.length} bảng dữ liệu.`
         );

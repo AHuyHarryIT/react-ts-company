@@ -377,10 +377,9 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
             title: 'Nhân viên',
             dataIndex: ['employee', 'name'],
             key: 'employee_name',
-            width: 180,
             responsive: ['sm' as const],
             render: (name: string, record: RequestForm) => (
-              <div>
+              <div className="whitespace-nowrap">
                 <div className="text-sm font-medium">{name}</div>
                 <div className="text-xs text-gray-500">
                   MSNV: {record.employee.id}
@@ -394,14 +393,18 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      width: 140,
       render: (_, record: RequestForm) => {
         // Use effective status to show correct status based on signatures
         const effectiveStatus = getEffectiveStatus(record);
         return (
-          <Tag color={getStatusColor(effectiveStatus)} className="font-medium">
-            {REQUEST_FORM_STATUSES[effectiveStatus]}
-          </Tag>
+          <div className="whitespace-nowrap">
+            <Tag
+              color={getStatusColor(effectiveStatus)}
+              className="font-medium"
+            >
+              {REQUEST_FORM_STATUSES[effectiveStatus]}
+            </Tag>
+          </div>
         );
       }
     },
@@ -820,9 +823,10 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
         // 4 đơn thường: Hiển thị ngày admin duyệt
         if (record.status === 'approved' && date) {
           const approverInfo =
-            record.approved_by && typeof record.approved_by === 'object'
+            record.approvedBy ||
+            (record.approved_by && typeof record.approved_by === 'object'
               ? record.approved_by
-              : null;
+              : null);
           const approverName = approverInfo
             ? (approverInfo as { name: string }).name
             : null;
@@ -841,9 +845,10 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
           );
         } else if (record.status === 'rejected' && date) {
           const approverInfo =
-            record.approved_by && typeof record.approved_by === 'object'
+            record.approvedBy ||
+            (record.approved_by && typeof record.approved_by === 'object'
               ? record.approved_by
-              : null;
+              : null);
           const approverName = approverInfo
             ? (approverInfo as { name: string }).name
             : null;

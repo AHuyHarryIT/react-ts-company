@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { message, Modal, Alert, Spin, Tabs, Tag } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusOutlined } from '@ant-design/icons';
+import dayjs, { Dayjs } from 'dayjs';
 import { useAuth } from '@/hooks/useAuth';
 import { usePrefetchAuthorizableEmployees } from '@/hooks/useAuthorizedEmployee';
 import RefreshButton from '@components/common/RefreshButton';
@@ -15,6 +16,7 @@ import {
   DelegationSignModal,
   RequestFormDetailView
 } from '@components/RequestForm';
+import { EmployeeRequestFormOverview } from '@components/RequestForm/EmployeeRequestFormOverview';
 import AdminActionModal from '@components/RequestForm/AdminModals';
 import {
   employeeRequestFormService,
@@ -42,10 +44,18 @@ export default function RequestFormList() {
   // Active tab state
   const [activeTab, setActiveTab] = useState('my-requests');
 
-  const [filters, setFilters] = useState<RequestFormFiltersType>({
+  // Year & Date Range state
+  const [year, setYear] = useState<Dayjs>(dayjs());
+
+  const DEFAULT_FILTERS: RequestFormFiltersType = {
     per_page: 15,
-    page: 1
-  });
+    page: 1,
+    from_date: dayjs().startOf('year').format('YYYY-MM-DD'),
+    to_date: dayjs().endOf('year').format('YYYY-MM-DD')
+  };
+
+  const [filters, setFilters] =
+    useState<RequestFormFiltersType>(DEFAULT_FILTERS);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletingRecord, setDeletingRecord] = useState<RequestForm | null>(
     null
@@ -427,9 +437,20 @@ export default function RequestFormList() {
 
   const handleClearFilters = () => {
     setFilters({
-      per_page: 15,
-      page: 1
+      ...DEFAULT_FILTERS,
+      from_date: year.startOf('year').format('YYYY-MM-DD'),
+      to_date: year.endOf('year').format('YYYY-MM-DD')
     });
+  };
+
+  const handleYearChange = (date: Dayjs) => {
+    setYear(date);
+    setFilters((prev) => ({
+      ...prev,
+      from_date: date.startOf('year').format('YYYY-MM-DD'),
+      to_date: date.endOf('year').format('YYYY-MM-DD'),
+      page: 1
+    }));
   };
 
   const handleTableChange = (page: number, pageSize?: number) => {
@@ -455,7 +476,10 @@ export default function RequestFormList() {
     : undefined;
 
   // Admin data and pagination for supervisor approval tab
-  const adminRequestForms = adminData?.data || [];
+  const adminRequestForms = useMemo(
+    () => adminData?.data || [],
+    [adminData?.data]
+  );
   const adminPagination = adminData
     ? {
         current: adminData.current_page,
@@ -469,6 +493,18 @@ export default function RequestFormList() {
       }
     : undefined;
 
+  // Client-side search for supervisor tab
+  const [supervisorSearchText, setSupervisorSearchText] = useState('');
+  const filteredAdminRequestForms = useMemo(() => {
+    if (!supervisorSearchText.trim()) return adminRequestForms;
+    const keyword = supervisorSearchText.trim().toLowerCase();
+    return adminRequestForms.filter((form) => {
+      const name = form.employee?.name?.toLowerCase() || '';
+      const id = form.employee?.id?.toString() || '';
+      return name.includes(keyword) || id.includes(keyword);
+    });
+  }, [adminRequestForms, supervisorSearchText]);
+
   // Define tabs
   const tabItems = [
     {
@@ -481,6 +517,13 @@ export default function RequestFormList() {
       ),
       children: (
         <div className="space-y-5">
+          {/* ── Overview ────────────────────────────────────── */}
+          <EmployeeRequestFormOverview
+            mode="employee"
+            year={year}
+            onYearChange={handleYearChange}
+          />
+
           {/* ── Action Bar ──────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <button
@@ -548,6 +591,13 @@ export default function RequestFormList() {
             ),
             children: (
               <div className="space-y-5">
+                {/* ── Overview ──────────────────────────────── */}
+                <EmployeeRequestFormOverview
+                  mode="supervisor"
+                  year={year}
+                  onYearChange={handleYearChange}
+                />
+
                 {/* ── Action Bar ────────────────────────────── */}
                 <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
                   <RefreshButton
@@ -568,6 +618,8 @@ export default function RequestFormList() {
                     onFiltersChange={handleFiltersChange}
                     onClearFilters={handleClearFilters}
                     isAdmin={true}
+                    searchText={supervisorSearchText}
+                    onSearchTextChange={setSupervisorSearchText}
                   />
                 </div>
 
@@ -585,7 +637,7 @@ export default function RequestFormList() {
                 {/* ── Table ────────────────────────────────── */}
                 <Spin spinning={adminIsLoading}>
                   <DataTable
-                    data={adminRequestForms}
+                    data={filteredAdminRequestForms}
                     loading={adminIsLoading}
                     pagination={adminPagination}
                     onView={handleView}

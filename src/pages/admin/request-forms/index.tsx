@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Modal, message, Alert, Spin } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import dayjs, { Dayjs } from 'dayjs';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { DataTable } from '@components/RequestForm/DataTable';
 import { FilterPanel } from '@components/RequestForm/FilterPanel';
 import { RequestFormDetailView } from '@components/RequestForm';
+import { RequestFormOverview } from '@components/RequestForm/RequestFormOverview';
 import AdminActionModal from '@components/RequestForm/AdminModals';
 import {
   adminRequestFormService,
@@ -21,10 +23,15 @@ export default function RequestFormList() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // State for Year Overview & Default Filters
+  const [year, setYear] = useState<Dayjs>(dayjs());
+
   // Constants
   const DEFAULT_FILTERS: RequestFormFiltersType = {
     per_page: 15,
-    page: 1
+    page: 1,
+    from_date: dayjs().startOf('year').format('YYYY-MM-DD'),
+    to_date: dayjs().endOf('year').format('YYYY-MM-DD')
   };
   const QUERY_KEYS = {
     requestForms: 'admin-request-forms',
@@ -218,10 +225,23 @@ export default function RequestFormList() {
     }
   });
 
-  const requestForms = data?.data || [];
+  const requestForms = useMemo(() => data?.data || [], [data?.data]);
 
-  // Tính toán lại total cho pagination khi có filter
+  // Client-side search by employee name or ID
+  const [searchText, setSearchText] = useState('');
+
+  const filteredRequestForms = useMemo(() => {
+    if (!searchText.trim()) return requestForms;
+    const keyword = searchText.trim().toLowerCase();
+    return requestForms.filter((form) => {
+      const name = form.employee?.name?.toLowerCase() || '';
+      const id = form.employee?.id?.toString() || '';
+      return name.includes(keyword) || id.includes(keyword);
+    });
+  }, [requestForms, searchText]);
+
   const getFilteredTotal = () => {
+    if (searchText.trim()) return filteredRequestForms.length;
     return data?.total || 0;
   };
 
@@ -266,7 +286,20 @@ export default function RequestFormList() {
       setFilters(newFilters);
     },
     clearFilters: () => {
-      setFilters(DEFAULT_FILTERS);
+      setFilters({
+        ...DEFAULT_FILTERS,
+        from_date: year.startOf('year').format('YYYY-MM-DD'),
+        to_date: year.endOf('year').format('YYYY-MM-DD')
+      });
+    },
+    yearChange: (date: Dayjs) => {
+      setYear(date);
+      setFilters((prev) => ({
+        ...prev,
+        from_date: date.startOf('year').format('YYYY-MM-DD'),
+        to_date: date.endOf('year').format('YYYY-MM-DD'),
+        page: 1
+      }));
     }
   };
 
@@ -283,6 +316,9 @@ export default function RequestFormList() {
     <>
       <ComponentCard title="Quản lý đơn yêu cầu">
         <div className="space-y-5">
+          {/* ── Overview Section ────────────────────────────────── */}
+          <RequestFormOverview year={year} onYearChange={handlers.yearChange} />
+
           {/* ── Action Bar ──────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <RefreshButton isLoading={isFetching} refresh={refetch} />
@@ -302,6 +338,8 @@ export default function RequestFormList() {
               onFiltersChange={handlers.filtersChange}
               onClearFilters={handlers.clearFilters}
               isAdmin={true}
+              searchText={searchText}
+              onSearchTextChange={setSearchText}
             />
           </div>
 
@@ -319,7 +357,7 @@ export default function RequestFormList() {
           {/* ── Table ───────────────────────────────────────────── */}
           <Spin spinning={isLoading}>
             <DataTable
-              data={requestForms}
+              data={filteredRequestForms}
               loading={isLoading}
               pagination={pagination}
               onView={handlers.view}

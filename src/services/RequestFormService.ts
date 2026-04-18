@@ -22,6 +22,7 @@ export const employeeRequestFormService = {
 
     if (filters?.type) params.append('type', filters.type);
     if (filters?.status) params.append('status', filters.status);
+    if (filters?.employee_id) params.append('employee_id', filters.employee_id);
     if (filters?.from_date) params.append('from_date', filters.from_date);
     if (filters?.to_date) params.append('to_date', filters.to_date);
     if (filters?.per_page)
@@ -212,6 +213,7 @@ export const supervisorRequestFormService = {
 
     if (filters?.type) params.append('type', filters.type);
     if (filters?.status) params.append('status', filters.status);
+    if (filters?.employee_id) params.append('employee_id', filters.employee_id);
     if (filters?.from_date) params.append('from_date', filters.from_date);
     if (filters?.to_date) params.append('to_date', filters.to_date);
     if (filters?.per_page)

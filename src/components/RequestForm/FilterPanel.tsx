@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Select, Button } from 'antd';
+import { Row, Col, Select, Button, Input } from 'antd';
 import { ClearOutlined } from '@ant-design/icons';
 import {
   type RequestFormFilters as RequestFormFiltersType,
@@ -14,12 +14,16 @@ interface RequestFormFiltersProps {
   onFiltersChange: (filters: RequestFormFiltersType) => void;
   onClearFilters: () => void;
   isAdmin?: boolean;
+  searchText?: string;
+  onSearchTextChange?: (value: string) => void;
 }
 
 export const FilterPanel: React.FC<RequestFormFiltersProps> = ({
   filters,
   onFiltersChange,
-  onClearFilters
+  onClearFilters,
+  searchText = '',
+  onSearchTextChange
 }) => {
   const handleFilterChange = (
     key: keyof RequestFormFiltersType,
@@ -28,14 +32,37 @@ export const FilterPanel: React.FC<RequestFormFiltersProps> = ({
     onFiltersChange({
       ...filters,
       [key]: value,
-      page: 1 // Reset to first page when filters change
+      page: 1
     });
+  };
+
+  const handleClearAll = () => {
+    onSearchTextChange?.('');
+    onClearFilters();
   };
 
   return (
     <div>
       <Row gutter={[12, 12]} align="middle" justify="start">
-        <Col xs={12} sm={8} md={6}>
+        {onSearchTextChange && (
+          <Col xs={12} sm={8} md={6}>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-700 sm:text-sm">
+                Tìm nhân viên
+              </label>
+              <Input
+                placeholder="Nhập tên hoặc MSNV"
+                allowClear
+                value={searchText}
+                onChange={(e) => onSearchTextChange(e.target.value)}
+                className="w-full"
+                size="middle"
+              />
+            </div>
+          </Col>
+        )}
+
+        <Col xs={12} sm={8} md={5}>
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-700 sm:text-sm">
               Loại đơn
@@ -83,7 +110,7 @@ export const FilterPanel: React.FC<RequestFormFiltersProps> = ({
           <Button
             type="default"
             icon={<ClearOutlined />}
-            onClick={onClearFilters}
+            onClick={handleClearAll}
             className="w-full sm:mt-5"
             size="middle"
           >
