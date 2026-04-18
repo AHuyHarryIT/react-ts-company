@@ -33,6 +33,7 @@ import { Route as AuthenticatedStampsHistoryImport } from './routes/_authenticat
 import { Route as AuthenticatedStampsCreateImport } from './routes/_authenticated/stamps/create'
 import { Route as AuthenticatedAdminNotificationDemoImport } from './routes/_authenticated/admin/notification-demo'
 import { Route as AuthenticatedEmployeeRequestFormsRouteImport } from './routes/_authenticated/employee/request-forms/route'
+import { Route as AuthenticatedAdminSalaryWebRouteImport } from './routes/_authenticated/admin/salary-web/route'
 import { Route as AuthenticatedAdminSalariesRouteImport } from './routes/_authenticated/admin/salaries/route'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products/route'
 import { Route as AuthenticatedEmployeeSchedulesIndexImport } from './routes/_authenticated/employee/schedules/index'
@@ -42,6 +43,7 @@ import { Route as AuthenticatedEmployeeAttendancesIndexImport } from './routes/_
 import { Route as AuthenticatedEmployeeActivityScheduleIndexImport } from './routes/_authenticated/employee/activity-schedule/index'
 import { Route as AuthenticatedAdminWorkScheduleCategoriesIndexImport } from './routes/_authenticated/admin/work-schedule-categories/index'
 import { Route as AuthenticatedAdminSystemLogsIndexImport } from './routes/_authenticated/admin/system-logs/index'
+import { Route as AuthenticatedAdminSalaryWebIndexImport } from './routes/_authenticated/admin/salary-web/index'
 import { Route as AuthenticatedAdminSalariesIndexImport } from './routes/_authenticated/admin/salaries/index'
 import { Route as AuthenticatedAdminRolesIndexImport } from './routes/_authenticated/admin/roles/index'
 import { Route as AuthenticatedAdminRequestFormsIndexImport } from './routes/_authenticated/admin/request-forms/index'
@@ -70,6 +72,9 @@ import { Route as AuthenticatedAdminEmployeesEditIdImport } from './routes/_auth
 
 // Create Virtual Routes
 
+const AuthenticatedAdminSalaryWebIdLazyImport = createFileRoute(
+  '/_authenticated/admin/salary-web/$id',
+)()
 const AuthenticatedAdminSalariesIdLazyImport = createFileRoute(
   '/_authenticated/admin/salaries/$id',
 )()
@@ -205,6 +210,13 @@ const AuthenticatedEmployeeRequestFormsRouteRoute =
     getParentRoute: () => AuthenticatedEmployeeRouteRoute,
   } as any)
 
+const AuthenticatedAdminSalaryWebRouteRoute =
+  AuthenticatedAdminSalaryWebRouteImport.update({
+    id: '/salary-web',
+    path: '/salary-web',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
 const AuthenticatedAdminSalariesRouteRoute =
   AuthenticatedAdminSalariesRouteImport.update({
     id: '/salaries',
@@ -266,6 +278,13 @@ const AuthenticatedAdminSystemLogsIndexRoute =
     id: '/system-logs/',
     path: '/system-logs/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+
+const AuthenticatedAdminSalaryWebIndexRoute =
+  AuthenticatedAdminSalaryWebIndexImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminSalaryWebRouteRoute,
   } as any)
 
 const AuthenticatedAdminSalariesIndexRoute =
@@ -351,6 +370,17 @@ const AuthenticatedAdminAttendancesIndexRoute =
     path: '/attendances/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+
+const AuthenticatedAdminSalaryWebIdLazyRoute =
+  AuthenticatedAdminSalaryWebIdLazyImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminSalaryWebRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/salary-web/$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
 const AuthenticatedAdminSalariesIdLazyRoute =
   AuthenticatedAdminSalariesIdLazyImport.update({
@@ -549,6 +579,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSalariesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteImport
     }
+    '/_authenticated/admin/salary-web': {
+      id: '/_authenticated/admin/salary-web'
+      path: '/salary-web'
+      fullPath: '/admin/salary-web'
+      preLoaderRoute: typeof AuthenticatedAdminSalaryWebRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteImport
+    }
     '/_authenticated/employee/request-forms': {
       id: '/_authenticated/employee/request-forms'
       path: '/request-forms'
@@ -689,6 +726,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSalariesIdLazyImport
       parentRoute: typeof AuthenticatedAdminSalariesRouteImport
     }
+    '/_authenticated/admin/salary-web/$id': {
+      id: '/_authenticated/admin/salary-web/$id'
+      path: '/$id'
+      fullPath: '/admin/salary-web/$id'
+      preLoaderRoute: typeof AuthenticatedAdminSalaryWebIdLazyImport
+      parentRoute: typeof AuthenticatedAdminSalaryWebRouteImport
+    }
     '/_authenticated/admin/attendances/': {
       id: '/_authenticated/admin/attendances/'
       path: '/attendances'
@@ -772,6 +816,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/salaries/'
       preLoaderRoute: typeof AuthenticatedAdminSalariesIndexImport
       parentRoute: typeof AuthenticatedAdminSalariesRouteImport
+    }
+    '/_authenticated/admin/salary-web/': {
+      id: '/_authenticated/admin/salary-web/'
+      path: '/'
+      fullPath: '/admin/salary-web/'
+      preLoaderRoute: typeof AuthenticatedAdminSalaryWebIndexImport
+      parentRoute: typeof AuthenticatedAdminSalaryWebRouteImport
     }
     '/_authenticated/admin/system-logs/': {
       id: '/_authenticated/admin/system-logs/'
@@ -911,9 +962,28 @@ const AuthenticatedAdminSalariesRouteRouteWithChildren =
     AuthenticatedAdminSalariesRouteRouteChildren,
   )
 
+interface AuthenticatedAdminSalaryWebRouteRouteChildren {
+  AuthenticatedAdminSalaryWebIdLazyRoute: typeof AuthenticatedAdminSalaryWebIdLazyRoute
+  AuthenticatedAdminSalaryWebIndexRoute: typeof AuthenticatedAdminSalaryWebIndexRoute
+}
+
+const AuthenticatedAdminSalaryWebRouteRouteChildren: AuthenticatedAdminSalaryWebRouteRouteChildren =
+  {
+    AuthenticatedAdminSalaryWebIdLazyRoute:
+      AuthenticatedAdminSalaryWebIdLazyRoute,
+    AuthenticatedAdminSalaryWebIndexRoute:
+      AuthenticatedAdminSalaryWebIndexRoute,
+  }
+
+const AuthenticatedAdminSalaryWebRouteRouteWithChildren =
+  AuthenticatedAdminSalaryWebRouteRoute._addFileChildren(
+    AuthenticatedAdminSalaryWebRouteRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminProductsRouteRoute: typeof AuthenticatedAdminProductsRouteRouteWithChildren
   AuthenticatedAdminSalariesRouteRoute: typeof AuthenticatedAdminSalariesRouteRouteWithChildren
+  AuthenticatedAdminSalaryWebRouteRoute: typeof AuthenticatedAdminSalaryWebRouteRouteWithChildren
   AuthenticatedAdminNotificationDemoRoute: typeof AuthenticatedAdminNotificationDemoRoute
   AuthenticatedAdminEmployeesAddRoute: typeof AuthenticatedAdminEmployeesAddRoute
   AuthenticatedAdminRequestFormsIdRoute: typeof AuthenticatedAdminRequestFormsIdRoute
@@ -939,6 +1009,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
       AuthenticatedAdminProductsRouteRouteWithChildren,
     AuthenticatedAdminSalariesRouteRoute:
       AuthenticatedAdminSalariesRouteRouteWithChildren,
+    AuthenticatedAdminSalaryWebRouteRoute:
+      AuthenticatedAdminSalaryWebRouteRouteWithChildren,
     AuthenticatedAdminNotificationDemoRoute:
       AuthenticatedAdminNotificationDemoRoute,
     AuthenticatedAdminEmployeesAddRoute: AuthenticatedAdminEmployeesAddRoute,
@@ -1124,6 +1196,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof authLoginRoute
   '/admin/products': typeof AuthenticatedAdminProductsRouteRouteWithChildren
   '/admin/salaries': typeof AuthenticatedAdminSalariesRouteRouteWithChildren
+  '/admin/salary-web': typeof AuthenticatedAdminSalaryWebRouteRouteWithChildren
   '/employee/request-forms': typeof AuthenticatedEmployeeRequestFormsRouteRouteWithChildren
   '/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/stamps/create': typeof AuthenticatedStampsCreateRoute
@@ -1144,6 +1217,7 @@ export interface FileRoutesByFullPath {
   '/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
   '/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
+  '/admin/salary-web/$id': typeof AuthenticatedAdminSalaryWebIdLazyRoute
   '/admin/attendances': typeof AuthenticatedAdminAttendancesIndexRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
   '/admin/edit-layout': typeof AuthenticatedAdminEditLayoutIndexRoute
@@ -1156,6 +1230,7 @@ export interface FileRoutesByFullPath {
   '/admin/request-forms': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
+  '/admin/salary-web/': typeof AuthenticatedAdminSalaryWebIndexRoute
   '/admin/system-logs': typeof AuthenticatedAdminSystemLogsIndexRoute
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/employee/activity-schedule': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
@@ -1194,6 +1269,7 @@ export interface FileRoutesByTo {
   '/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
   '/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
+  '/admin/salary-web/$id': typeof AuthenticatedAdminSalaryWebIdLazyRoute
   '/admin/attendances': typeof AuthenticatedAdminAttendancesIndexRoute
   '/admin/check-po': typeof AuthenticatedAdminCheckPoIndexRoute
   '/admin/edit-layout': typeof AuthenticatedAdminEditLayoutIndexRoute
@@ -1206,6 +1282,7 @@ export interface FileRoutesByTo {
   '/admin/request-forms': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/admin/roles': typeof AuthenticatedAdminRolesIndexRoute
   '/admin/salaries': typeof AuthenticatedAdminSalariesIndexRoute
+  '/admin/salary-web': typeof AuthenticatedAdminSalaryWebIndexRoute
   '/admin/system-logs': typeof AuthenticatedAdminSystemLogsIndexRoute
   '/admin/work-schedule-categories': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/employee/activity-schedule': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
@@ -1233,6 +1310,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRouteRouteWithChildren
   '/_authenticated/admin/salaries': typeof AuthenticatedAdminSalariesRouteRouteWithChildren
+  '/_authenticated/admin/salary-web': typeof AuthenticatedAdminSalaryWebRouteRouteWithChildren
   '/_authenticated/employee/request-forms': typeof AuthenticatedEmployeeRequestFormsRouteRouteWithChildren
   '/_authenticated/admin/notification-demo': typeof AuthenticatedAdminNotificationDemoRoute
   '/_authenticated/stamps/create': typeof AuthenticatedStampsCreateRoute
@@ -1253,6 +1331,7 @@ export interface FileRoutesById {
   '/_authenticated/employee/todo/update-quantity': typeof AuthenticatedEmployeeTodoUpdateQuantityRoute
   '/_authenticated/employee/todo/update-quantity-error': typeof AuthenticatedEmployeeTodoUpdateQuantityErrorRoute
   '/_authenticated/admin/salaries/$id': typeof AuthenticatedAdminSalariesIdLazyRoute
+  '/_authenticated/admin/salary-web/$id': typeof AuthenticatedAdminSalaryWebIdLazyRoute
   '/_authenticated/admin/attendances/': typeof AuthenticatedAdminAttendancesIndexRoute
   '/_authenticated/admin/check-po/': typeof AuthenticatedAdminCheckPoIndexRoute
   '/_authenticated/admin/edit-layout/': typeof AuthenticatedAdminEditLayoutIndexRoute
@@ -1265,6 +1344,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/request-forms/': typeof AuthenticatedAdminRequestFormsIndexRoute
   '/_authenticated/admin/roles/': typeof AuthenticatedAdminRolesIndexRoute
   '/_authenticated/admin/salaries/': typeof AuthenticatedAdminSalariesIndexRoute
+  '/_authenticated/admin/salary-web/': typeof AuthenticatedAdminSalaryWebIndexRoute
   '/_authenticated/admin/system-logs/': typeof AuthenticatedAdminSystemLogsIndexRoute
   '/_authenticated/admin/work-schedule-categories/': typeof AuthenticatedAdminWorkScheduleCategoriesIndexRoute
   '/_authenticated/employee/activity-schedule/': typeof AuthenticatedEmployeeActivityScheduleIndexRoute
@@ -1292,6 +1372,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/products'
     | '/admin/salaries'
+    | '/admin/salary-web'
     | '/employee/request-forms'
     | '/admin/notification-demo'
     | '/stamps/create'
@@ -1312,6 +1393,7 @@ export interface FileRouteTypes {
     | '/employee/todo/update-quantity'
     | '/employee/todo/update-quantity-error'
     | '/admin/salaries/$id'
+    | '/admin/salary-web/$id'
     | '/admin/attendances'
     | '/admin/check-po'
     | '/admin/edit-layout'
@@ -1324,6 +1406,7 @@ export interface FileRouteTypes {
     | '/admin/request-forms'
     | '/admin/roles'
     | '/admin/salaries/'
+    | '/admin/salary-web/'
     | '/admin/system-logs'
     | '/admin/work-schedule-categories'
     | '/employee/activity-schedule'
@@ -1361,6 +1444,7 @@ export interface FileRouteTypes {
     | '/employee/todo/update-quantity'
     | '/employee/todo/update-quantity-error'
     | '/admin/salaries/$id'
+    | '/admin/salary-web/$id'
     | '/admin/attendances'
     | '/admin/check-po'
     | '/admin/edit-layout'
@@ -1373,6 +1457,7 @@ export interface FileRouteTypes {
     | '/admin/request-forms'
     | '/admin/roles'
     | '/admin/salaries'
+    | '/admin/salary-web'
     | '/admin/system-logs'
     | '/admin/work-schedule-categories'
     | '/employee/activity-schedule'
@@ -1398,6 +1483,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/salaries'
+    | '/_authenticated/admin/salary-web'
     | '/_authenticated/employee/request-forms'
     | '/_authenticated/admin/notification-demo'
     | '/_authenticated/stamps/create'
@@ -1418,6 +1504,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employee/todo/update-quantity'
     | '/_authenticated/employee/todo/update-quantity-error'
     | '/_authenticated/admin/salaries/$id'
+    | '/_authenticated/admin/salary-web/$id'
     | '/_authenticated/admin/attendances/'
     | '/_authenticated/admin/check-po/'
     | '/_authenticated/admin/edit-layout/'
@@ -1430,6 +1517,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/request-forms/'
     | '/_authenticated/admin/roles/'
     | '/_authenticated/admin/salaries/'
+    | '/_authenticated/admin/salary-web/'
     | '/_authenticated/admin/system-logs/'
     | '/_authenticated/admin/work-schedule-categories/'
     | '/_authenticated/employee/activity-schedule/'
@@ -1505,6 +1593,7 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/admin/products",
         "/_authenticated/admin/salaries",
+        "/_authenticated/admin/salary-web",
         "/_authenticated/admin/notification-demo",
         "/_authenticated/admin/employees/add",
         "/_authenticated/admin/request-forms/$id",
@@ -1587,6 +1676,14 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/admin/salaries/$id",
         "/_authenticated/admin/salaries/"
+      ]
+    },
+    "/_authenticated/admin/salary-web": {
+      "filePath": "_authenticated/admin/salary-web/route.tsx",
+      "parent": "/_authenticated/admin",
+      "children": [
+        "/_authenticated/admin/salary-web/$id",
+        "/_authenticated/admin/salary-web/"
       ]
     },
     "/_authenticated/employee/request-forms": {
@@ -1673,6 +1770,10 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/admin/salaries/$id.lazy.tsx",
       "parent": "/_authenticated/admin/salaries"
     },
+    "/_authenticated/admin/salary-web/$id": {
+      "filePath": "_authenticated/admin/salary-web/$id.lazy.tsx",
+      "parent": "/_authenticated/admin/salary-web"
+    },
     "/_authenticated/admin/attendances/": {
       "filePath": "_authenticated/admin/attendances/index.tsx",
       "parent": "/_authenticated/admin"
@@ -1720,6 +1821,10 @@ export const routeTree = rootRoute
     "/_authenticated/admin/salaries/": {
       "filePath": "_authenticated/admin/salaries/index.tsx",
       "parent": "/_authenticated/admin/salaries"
+    },
+    "/_authenticated/admin/salary-web/": {
+      "filePath": "_authenticated/admin/salary-web/index.tsx",
+      "parent": "/_authenticated/admin/salary-web"
     },
     "/_authenticated/admin/system-logs/": {
       "filePath": "_authenticated/admin/system-logs/index.tsx",

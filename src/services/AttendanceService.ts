@@ -11,6 +11,7 @@ import { CrudService } from '@utils/crudService';
 
 const ENDPOINT = '/api/attendances';
 const EMP_ENDPOINT = '/api/employee/attendances';
+const CALCULATE_ENDPOINT = '/api/attendances/calculate';
 
 export interface AttendanceResponse {
   employee_id: string;
@@ -65,8 +66,8 @@ export const fetchAttendancesCalculated = async (params?: QueryParams) => {
   return await axiosPrivate.get<
     AttendanceResult,
     PaginatedResponse<AttendanceResult>
-  >(ENDPOINT, {
-    params: { ...params, include_calculation: 1 }
+  >(CALCULATE_ENDPOINT, {
+    params
   });
 };
 
