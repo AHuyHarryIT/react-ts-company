@@ -64,6 +64,43 @@ interface RecordTableColumns {
   administrative_hours: number | null;
 }
 
+const isAdditionalShift = (hnhc: RecordTableColumns['hnhc']) =>
+  hnhc === 'TC' || hnhc === 'LN';
+
+const getDisplayAdministrativeHours = (record: RecordTableColumns) =>
+  isAdditionalShift(record.hnhc) ? 0 : record.administrative_hours || 0;
+
+const getDisplayOvertimeHours = (record: RecordTableColumns) =>
+  isAdditionalShift(record.hnhc)
+    ? record.total_hours || 0
+    : record.overtime_hours || 0;
+
+const getDisplayDayType = (record: RecordTableColumns) => {
+  if (record.hnhc === 'TC') return 'Tăng cường ca đêm';
+  if (record.hnhc === 'LN') return 'Tăng cường ca ngày';
+  return record.day_type;
+};
+
+const getDayTypeTag = (record: RecordTableColumns) => {
+  const displayDayType = getDisplayDayType(record);
+
+  if (record.hnhc === 'TC') {
+    return <Tag color="purple">Tăng cường ca đêm</Tag>;
+  }
+  if (record.hnhc === 'LN') {
+    return <Tag color="gold">Tăng cường ca ngày</Tag>;
+  }
+  if (record.is_schedule_change) {
+    return <Tag color="yellow">{displayDayType}</Tag>;
+  }
+  if (displayDayType === 'Ca ngày') return <Tag color="blue">Ca 1</Tag>;
+  if (displayDayType === 'Ca đêm') return <Tag color="purple">Ca 2</Tag>;
+  if (displayDayType === 'Nghỉ nửa ngày') {
+    return <Tag color="red">Nghỉ nửa ngày</Tag>;
+  }
+  return <Tag color="green">Nghỉ</Tag>;
+};
+
 // ─── Shared Filter Bar ───────────────────────────────────────────────────────
 interface FilterBarProps {
   onMonthChange: (value: Dayjs | null) => void;
@@ -756,16 +793,7 @@ function RecordsTab() {
       dataIndex: 'day_type',
       key: 'day_type',
       align: 'center',
-      render: (value, record) => {
-        if (record.is_schedule_change) {
-          return <Tag color="yellow">{value}</Tag>;
-        }
-        if (value === 'Ca ngày') return <Tag color="blue">Ca 1</Tag>;
-        if (value === 'Ca đêm') return <Tag color="purple">Ca 2</Tag>;
-        if (value === 'Nghỉ nửa ngày')
-          return <Tag color="red">Nghỉ nửa ngày</Tag>;
-        return <Tag color="green">Nghỉ</Tag>;
-      }
+      render: (_value, record) => getDayTypeTag(record)
     },
     {
       title: (
@@ -787,17 +815,20 @@ function RecordsTab() {
     },
     {
       title: (
-        <Tooltip title="Giờ hành chính">
-          <span>HC (h)</span>
+        <Tooltip title="Giờ chính, không bao gồm ngày tăng cường">
+          <span>Giờ chính (h)</span>
         </Tooltip>
       ),
       dataIndex: 'administrative_hours',
       key: 'administrative_hours',
       align: 'center',
-      render: (value, record) => {
+      render: (_value, record) => {
         if (!record.shift) return <span className="text-gray-300">—</span>;
-        return value ? (
-          <span className="font-semibold text-emerald-600">{value}</span>
+        const displayHours = getDisplayAdministrativeHours(record);
+        return displayHours ? (
+          <span className="font-semibold text-emerald-600">{displayHours}</span>
+        ) : isAdditionalShift(record.hnhc) ? (
+          <span className="text-gray-300">—</span>
         ) : (
           <Tag color="red">Chấm công chưa đủ</Tag>
         );
@@ -812,9 +843,10 @@ function RecordsTab() {
       dataIndex: 'overtime_hours',
       key: 'overtime_hours',
       align: 'center',
-      render: (value) => {
-        return value ? (
-          <span className="font-semibold text-amber-600">{value}</span>
+      render: (_value, record) => {
+        const displayHours = getDisplayOvertimeHours(record);
+        return displayHours ? (
+          <span className="font-semibold text-amber-600">{displayHours}</span>
         ) : (
           <span className="text-gray-300">—</span>
         );
@@ -1076,18 +1108,7 @@ function RecordsTab() {
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        {record.day_type &&
-                          (record.is_schedule_change ? (
-                            <Tag color="yellow">{record.day_type}</Tag>
-                          ) : record.day_type === 'Ca ngày' ? (
-                            <Tag color="blue">Ca 1</Tag>
-                          ) : record.day_type === 'Ca đêm' ? (
-                            <Tag color="purple">Ca 2</Tag>
-                          ) : record.day_type === 'Nghỉ nửa ngày' ? (
-                            <Tag color="red">Nghỉ nửa ngày</Tag>
-                          ) : (
-                            <Tag color="green">Nghỉ</Tag>
-                          ))}
+                        {getDayTypeTag(record)}
                         {record.total_hours ? (
                           <span>
                             Tổng:{' '}
@@ -1100,11 +1121,19 @@ function RecordsTab() {
                             Chấm công chưa đủ
                           </Tag>
                         ) : null}
-                        {record.overtime_hours ? (
+                        {getDisplayAdministrativeHours(record) ? (
+                          <span>
+                            Chính:{' '}
+                            <strong className="text-emerald-600">
+                              {getDisplayAdministrativeHours(record)}h
+                            </strong>
+                          </span>
+                        ) : null}
+                        {getDisplayOvertimeHours(record) ? (
                           <span>
                             TC:{' '}
                             <strong className="text-amber-600">
-                              {record.overtime_hours}h
+                              {getDisplayOvertimeHours(record)}h
                             </strong>
                           </span>
                         ) : null}
