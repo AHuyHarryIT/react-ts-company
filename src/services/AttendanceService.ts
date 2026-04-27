@@ -17,7 +17,7 @@ export interface AttendanceResponse {
   name: string;
   date: string;
   calendar_category_id: string;
-  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
+  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | 'NN' | null;
   company: string;
   dates: {
     datetime: string;

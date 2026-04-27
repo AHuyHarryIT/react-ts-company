@@ -9,6 +9,7 @@ import {
   Modal
 } from 'antd';
 import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import { addSalary, AddSalaryParams } from '@services/SalaryService';
@@ -25,16 +26,42 @@ type FormField = {
 
 export const AddSalary = () => {
   const queryClient = useQueryClient();
+  const [form] = Form.useForm<FormField>();
 
   const [open, setOpen] = useState(false);
   const [vvpFile, setVvpFile] = useState<File>();
   const [a7aFile, setA7aFile] = useState<File>();
+
+  const calculateDefaultDates = () => {
+    const now = dayjs();
+    // End date: 15 của tháng hiện tại
+    let endDate = now.clone().date(15);
+    // Start date: 16 của tháng trước
+    let startDate = now.clone().subtract(1, 'month').date(16);
+
+    // Ensure dates are valid
+    if (!endDate.isValid()) {
+      endDate = now.clone().endOf('month');
+    }
+    if (!startDate.isValid()) {
+      startDate = now.clone().subtract(1, 'month').startOf('month');
+    }
+
+    return { startDate, endDate };
+  };
+
+  const formatDefaultTitle = (salaryMonth: Dayjs) => {
+    return `Bảng Lương Tháng ${salaryMonth.format('MM-YYYY')}`;
+  };
 
   const showModal = () => {
     setOpen(true);
   };
 
   const onCancel = () => {
+    form.resetFields();
+    setVvpFile(undefined);
+    setA7aFile(undefined);
     setOpen(false);
   };
 
@@ -51,7 +78,7 @@ export const AddSalary = () => {
     },
     onSuccess: () => {
       message.success('Thêm bản lương thành công');
-
+      onCancel();
       queryClient.invalidateQueries();
     },
     onError: () => {
@@ -76,7 +103,8 @@ export const AddSalary = () => {
 
   const formProps: FormProps = {
     layout: 'vertical',
-    onFinish: onFinish
+    onFinish: onFinish,
+    form: form
   };
 
   return (
@@ -97,6 +125,16 @@ export const AddSalary = () => {
         destroyOnHidden
         centered
         footer={null}
+        afterOpenChange={(isOpen) => {
+          if (isOpen) {
+            const { startDate, endDate } = calculateDefaultDates();
+            form.setFieldsValue({
+              title: formatDefaultTitle(endDate),
+              start_date: startDate,
+              end_date: endDate
+            });
+          }
+        }}
       >
         <Form {...formProps}>
           <Form.Item<FormField>
@@ -111,14 +149,22 @@ export const AddSalary = () => {
             label="Ngày bắt đầu"
             rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu' }]}
           >
-            <DatePicker style={{ width: '100%' }} format={'YYYY-MM-DD'} />
+            <DatePicker
+              style={{ width: '100%' }}
+              format="YYYY-MM-DD"
+              disabled
+            />
           </Form.Item>
           <Form.Item<FormField>
             name="end_date"
             label="Ngày kết thúc"
             rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc' }]}
           >
-            <DatePicker style={{ width: '100%' }} format={'YYYY-MM-DD'} />
+            <DatePicker
+              style={{ width: '100%' }}
+              format="YYYY-MM-DD"
+              disabled
+            />
           </Form.Item>
 
           <Form.Item<FormField>

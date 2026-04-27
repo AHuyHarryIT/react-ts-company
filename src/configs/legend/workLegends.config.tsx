@@ -9,6 +9,14 @@ export const workLegends = {
       </Tag>
     )
   },
+  NN: {
+    label: 'Nghỉ nửa ngày',
+    icon: (
+      <Tag className="!m-0 font-bold" color="red-inverse">
+        NN
+      </Tag>
+    )
+  },
   D: {
     label: 'Ca đêm',
     icon: (

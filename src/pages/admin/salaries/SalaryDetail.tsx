@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
-import { Alert, Radio, Tabs, TabsProps } from 'antd';
-import { useState } from 'react';
+import { Alert, Empty, Radio, Select, Tabs, TabsProps } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 import {
   FaListAlt,
   FaMoneyCheckAlt,
   FaFileInvoiceDollar,
-  FaClock
+  FaClock,
+  FaReceipt
 } from 'react-icons/fa';
 
 import BackButton from '@components/common/BackButton';
@@ -16,6 +17,7 @@ import { AttendanceTable } from '@components/salaries/AttendanceTable';
 import CategoryTable from '@components/salaries/CategoryTable';
 import { SalaryDetailTable } from '@components/salaries/SalaryDetailTable';
 import { SalaryTable } from '@components/salaries/SalaryTable';
+import { PayslipDetailContent } from '@components/salaries/PayslipDetailContent';
 import { fetchSalary } from '@services/SalaryService';
 import { useIsMobile } from '@hooks/useIsMobile';
 
@@ -28,6 +30,9 @@ export default function SalaryDetail() {
   const isMobile = useIsMobile();
 
   const [company, setCompany] = useState<CompanyType>('vvp');
+  const [selectedSalaryDetailId, setSelectedSalaryDetailId] = useState<
+    number | null
+  >(null);
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['fetchSalary', id, company],
@@ -40,6 +45,45 @@ export default function SalaryDetail() {
     salaryDetail: [],
     attendance: []
   };
+
+  const salaryDetailOptions = useMemo(
+    () =>
+      salaryDetail.map((item) => ({
+        value: item.id,
+        label: `${item.employee?.name || 'Chưa có tên'} - NV${item.employee_id}`,
+        searchText: [
+          item.employee?.name,
+          item.employee_id,
+          item.employee?.role?.role_name
+        ]
+          .filter(Boolean)
+          .join(' ')
+      })),
+    [salaryDetail]
+  );
+
+  const selectedSalaryDetail = useMemo(
+    () =>
+      salaryDetail.find((item) => item.id === selectedSalaryDetailId) ||
+      salaryDetail[0] ||
+      null,
+    [salaryDetail, selectedSalaryDetailId]
+  );
+
+  useEffect(() => {
+    if (!salaryDetail.length) {
+      setSelectedSalaryDetailId(null);
+      return;
+    }
+
+    const hasSelected = salaryDetail.some(
+      (item) => item.id === selectedSalaryDetailId
+    );
+
+    if (!hasSelected) {
+      setSelectedSalaryDetailId(salaryDetail[0].id);
+    }
+  }, [salaryDetail, selectedSalaryDetailId]);
 
   const SalaryTabs: TabsProps['items'] = [
     {
@@ -60,7 +104,9 @@ export default function SalaryDetail() {
           Bảng lương thanh toán
         </span>
       ),
-      children: <SalaryTable data={salary} loading={isLoading} />
+      children: (
+        <SalaryTable data={salary} company={company} loading={isLoading} />
+      )
     },
     {
       key: 'salaryDetail',
@@ -86,6 +132,47 @@ export default function SalaryDetail() {
           company={company}
           loading={isLoading}
         />
+      )
+    },
+    {
+      key: 'payslip',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaReceipt className="text-pink-500" />
+          Phiếu lương
+        </span>
+      ),
+      children: (
+        <div className="space-y-4">
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Nhân viên:
+              </span>
+              <Select
+                className="w-full sm:max-w-sm"
+                placeholder="Chọn nhân viên để xem phiếu lương"
+                value={selectedSalaryDetail?.id}
+                options={salaryDetailOptions}
+                showSearch
+                optionFilterProp="searchText"
+                onChange={setSelectedSalaryDetailId}
+                loading={isLoading}
+              />
+            </div>
+          </div>
+
+          {selectedSalaryDetail ? (
+            <PayslipDetailContent
+              salaryDetails={selectedSalaryDetail}
+              isLoading={isLoading}
+              error={null}
+              showAttendanceComparison={false}
+            />
+          ) : (
+            <Empty description="Không có phiếu lương" />
+          )}
+        </div>
       )
     }
   ];

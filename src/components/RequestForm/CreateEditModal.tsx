@@ -21,7 +21,11 @@ import { FormFieldsRenderer } from './FormFieldsRenderer';
 import { EmployeeSelectionProvider, useEmployeeSelection } from './Utilities';
 import { employeeRequestFormService } from '@/services/RequestFormService';
 import { authStore } from '@/stores/authStore';
-import { SUPERVISOR_IDS } from '@/constants/supervisors';
+import {
+  SUPERVISOR_IDS,
+  SUPERVISOR_ROLE_IDS,
+  SUPERVISOR_ROLE_NAMES
+} from '@/constants/supervisors';
 import { STORAGE_URL } from '@/configs/environment.config';
 import {
   dataURLToStandardFile,
@@ -98,10 +102,20 @@ const CreateEditModalContent: React.FC<CreateRequestFormProps> = ({
     staleTime: 5 * 60 * 1000 // Cache 5 phút
   });
 
-  // Filter supervisors from employees list based on SUPERVISOR_IDS
-  const supervisors = (employeesData || []).filter((emp) =>
-    (SUPERVISOR_IDS as readonly string[]).includes(emp.id?.toString() || '')
-  );
+  // Filter supervisors from employees list based on fixed IDs or leader roles
+  const supervisors = (employeesData || []).filter((emp) => {
+    const roleName = emp.role_name?.toLowerCase() || '';
+    const roleId = emp.role_id?.toString() || '';
+    return (
+      (SUPERVISOR_IDS as readonly string[]).includes(
+        emp.id?.toString() || ''
+      ) ||
+      SUPERVISOR_ROLE_NAMES.includes(
+        roleName as (typeof SUPERVISOR_ROLE_NAMES)[number]
+      ) ||
+      (SUPERVISOR_ROLE_IDS as readonly string[]).includes(roleId)
+    );
+  });
 
   // Get current user info from auth
   const authState = useStore(authStore);
@@ -113,10 +127,16 @@ const CreateEditModalContent: React.FC<CreateRequestFormProps> = ({
   // Check if current user is supervisor
   const isCurrentUserSupervisor = React.useMemo(() => {
     if (!currentUser?.id) return false;
-    return (SUPERVISOR_IDS as readonly string[]).includes(
-      currentUser.id.toString()
+    return (
+      (SUPERVISOR_IDS as readonly string[]).includes(
+        currentUser.id.toString()
+      ) ||
+      SUPERVISOR_ROLE_NAMES.includes(
+        currentUser.role.name.toLowerCase() as (typeof SUPERVISOR_ROLE_NAMES)[number]
+      ) ||
+      (SUPERVISOR_ROLE_IDS as readonly string[]).includes(currentUser.role.id)
     );
-  }, [currentUser?.id]);
+  }, [currentUser]);
 
   // Check if current user can submit directly to manager (bypass supervisor)
   const canSubmitDirectToManager = React.useMemo(() => {

@@ -13,6 +13,7 @@ import {
 } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { FaCalendarAlt, FaFilter } from 'react-icons/fa';
 import { LoginHistoryItemType, HistoryFiltersType } from '@/types/historyType';
 import { historyService } from '@/services/HistoryService';
@@ -21,6 +22,8 @@ import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { STORAGE_URL } from '@/configs/environment.config';
 import { useIsMobile } from '@hooks/useIsMobile';
+
+dayjs.extend(customParseFormat);
 
 export default function HistoryPage() {
   const isMobile = useIsMobile();
@@ -131,6 +134,41 @@ export default function HistoryPage() {
     return colors[colorIndex];
   };
 
+  const parseActivityTime = (record: LoginHistoryItemType) => {
+    const candidates = [
+      record.last_activity_time,
+      record.updated_at,
+      record.created_at
+    ].filter(Boolean) as string[];
+
+    for (const value of candidates) {
+      const parsed = dayjs(
+        value,
+        [
+          'YYYY-MM-DD HH:mm:ss',
+          'YYYY-MM-DDTHH:mm:ssZ',
+          'YYYY-MM-DDTHH:mm:ss.SSSZ',
+          'DD/MM/YYYY HH:mm:ss',
+          'DD/MM/YYYY HH:mm',
+          'YYYY-MM-DD'
+        ],
+        true
+      );
+
+      if (parsed.isValid()) return parsed;
+
+      const looseParsed = dayjs(value);
+      if (looseParsed.isValid()) return looseParsed;
+    }
+
+    return null;
+  };
+
+  const formatActivityTime = (record: LoginHistoryItemType, format: string) => {
+    const parsed = parseActivityTime(record);
+    return parsed ? parsed.format(format) : '-';
+  };
+
   const columns: TableColumnsType<LoginHistoryItemType> = [
     {
       title: 'STT',
@@ -212,10 +250,10 @@ export default function HistoryPage() {
       render: (_: unknown, record: LoginHistoryItemType) => (
         <div className="text-center">
           <div className="text-sm font-medium text-gray-800 dark:text-white/90">
-            {dayjs(record.created_at).format('DD/MM/YYYY')}
+            {formatActivityTime(record, 'DD/MM/YYYY')}
           </div>
           <div className="text-xs text-gray-500">
-            {dayjs(record.created_at).format('HH:mm:ss')}
+            {formatActivityTime(record, 'HH:mm:ss')}
           </div>
         </div>
       )
@@ -397,9 +435,7 @@ export default function HistoryPage() {
                           </div>
                         )}
                         <div className="text-xs text-gray-400">
-                          {dayjs(record.created_at).format(
-                            'DD/MM/YYYY HH:mm:ss'
-                          )}
+                          {formatActivityTime(record, 'DD/MM/YYYY HH:mm:ss')}
                         </div>
                       </div>
                     </div>

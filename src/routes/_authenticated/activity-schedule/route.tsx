@@ -10,7 +10,11 @@ export const Route = createFileRoute('/_authenticated/activity-schedule')({
       'tổ trưởng ngoại quan',
       'tổ phó sản xuất',
       'tổ trưởng sản xuất',
-      'co admin'
+      'tổ trưởng qc',
+      'tổ trưởng kho',
+      'co admin',
+      23,
+      24
     ]);
   }
 });

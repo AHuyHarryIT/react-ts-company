@@ -2,20 +2,9 @@ import { QueryParams } from '@/types/queryParams';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
-import { customPaginationProps } from '@components/custom/PaginationProps.custom';
-import { DateRangeCard } from '@components/ui/DateRangeCard';
 import { useCrudList } from '@hooks/useCrudList';
 import { empScheduleService } from '@services/workScheduleService';
-import {
-  Alert,
-  Drawer,
-  Empty,
-  Input,
-  Pagination,
-  PaginationProps,
-  Spin,
-  Tag
-} from 'antd';
+import { Alert, Empty, Input, Select, Spin, Tag } from 'antd';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 import { useState, useEffect } from 'react';
@@ -25,8 +14,8 @@ import { useSearch } from '@tanstack/react-router';
 
 export const ScheduleList = () => {
   const [params, setParams] = useState<QueryParams>({
-    page: 1,
-    limit: 12
+    limit: 0,
+    sort: '-date'
   });
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
     null
@@ -51,20 +40,23 @@ export const ScheduleList = () => {
     initialFilters: params
   });
 
-  const paginationProps: PaginationProps = {
-    ...customPaginationProps,
-    pageSizeOptions: ['12', '24', '48', '60', '120', '240'],
-    current: pagination.current ?? 1,
-    pageSize: pagination.pageSize ?? 12,
-    total: pagination.total ?? 0,
-    onChange: (page, pageSize) => {
-      setParams((prev) => ({
-        ...prev,
-        page: page,
-        limit: pageSize
-      }));
+  useEffect(() => {
+    if (selectedScheduleId || search.openId || !data.length) {
+      return;
     }
-  };
+
+    setSelectedScheduleId(String(data[0].id));
+  }, [data, search.openId, selectedScheduleId]);
+
+  const selectedSchedule = data.find(
+    (item) => String(item.id) === selectedScheduleId
+  );
+
+  const scheduleOptions = data.map((item) => ({
+    value: String(item.id),
+    label: item.title,
+    date: item.date
+  }));
 
   const handleSearch = debounce((value: string) => {
     setParams((prev) => ({
@@ -89,8 +81,9 @@ export const ScheduleList = () => {
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <RefreshButton isLoading={isFetching} refresh={refetch} />
             <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+              <FaCalendarCheck className="text-xs text-blue-500" />
               <Tag color="blue" className="!m-0 !text-xs">
-                📅 Tổng: <strong>{pagination.total ?? 0}</strong> lịch
+                Tổng: <strong>{pagination.total ?? 0}</strong> lịch
               </Tag>
             </div>
           </div>
@@ -128,51 +121,63 @@ export const ScheduleList = () => {
           {/* ── Content ────────────────────────────────────────── */}
           <Spin spinning={isLoading}>
             {data.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                {data.map((item) => (
-                  <div
-                    key={item.id}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedScheduleId(String(item.id))}
-                  >
-                    <DateRangeCard
-                      key={`schedule_${item.id}-${item.date}`}
-                      title={item.title}
-                      startDate={dayjs(item.date)}
+              <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
+                <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="min-w-0">
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+                      Lịch làm việc đang xem
+                    </h2>
+                    {selectedSchedule && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Tháng {dayjs(selectedSchedule.date).format('MM/YYYY')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="w-full xl:w-[360px]">
+                    <label className="mb-1.5 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                      <FaCalendarAlt className="text-blue-500" />
+                      Đổi lịch làm việc
+                    </label>
+                    <Select
+                      value={selectedScheduleId ?? undefined}
+                      options={scheduleOptions}
+                      onChange={setSelectedScheduleId}
+                      placeholder="Chọn lịch làm việc"
+                      className="w-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-blue-200 [&_.ant-select-selector]:!bg-white [&_.ant-select-selector]:!shadow-sm dark:[&_.ant-select-selector]:!border-blue-900 dark:[&_.ant-select-selector]:!bg-gray-900"
+                      showSearch
+                      optionFilterProp="label"
+                      size="large"
+                      suffixIcon={<FaCalendarAlt className="text-gray-400" />}
+                      dropdownStyle={{ minWidth: 340 }}
+                      optionRender={(option) => {
+                        const schedule = option.data as {
+                          label: string;
+                          date: string;
+                        };
+
+                        return (
+                          <div className="py-1">
+                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                              {schedule.label}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              Tháng {dayjs(schedule.date).format('MM/YYYY')}
+                            </div>
+                          </div>
+                        );
+                      }}
                     />
                   </div>
-                ))}
+                </div>
+
+                <ScheduleDetailContent scheduleId={selectedScheduleId} />
               </div>
             ) : (
               <Empty description="Không có dữ liệu" />
             )}
-            <div className="mt-4">
-              <Pagination {...paginationProps} />
-            </div>
           </Spin>
         </div>
       </ComponentCard>
-
-      {/* ── Schedule Detail Drawer ──────────────────────────────── */}
-      <Drawer
-        title={
-          <div className="flex items-center gap-3">
-            <FaCalendarCheck className="text-emerald-500" />
-            <span className="font-semibold">Chi tiết lịch làm việc</span>
-          </div>
-        }
-        open={!!selectedScheduleId}
-        onClose={() => setSelectedScheduleId(null)}
-        width={600}
-        placement="right"
-        styles={{
-          body: { padding: '16px', background: '#f9fafb' }
-        }}
-      >
-        {selectedScheduleId && (
-          <ScheduleDetailContent scheduleId={selectedScheduleId} />
-        )}
-      </Drawer>
     </>
   );
 };

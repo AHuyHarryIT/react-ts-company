@@ -10,8 +10,9 @@ export const Route = createFileRoute('/_authenticated/stamps')({
       'super admin',
       'qa-qc',
       'qc',
+      'tổ trưởng qc',
       'co admin',
-      'co admin'
+      23
     ]);
   }
 });

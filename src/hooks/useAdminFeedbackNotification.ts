@@ -31,7 +31,9 @@ export function useAdminFeedbackNotification(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
 
-    const channel = echo.channel('feedback.admin');
+    const channelName = 'feedback.admin';
+    const eventName = '.feedback.created';
+    const channel = echo.channel(channelName);
 
     const handler = (payload: FeedbackCreatedPayload) => {
       addFeedbackNotification({
@@ -48,11 +50,11 @@ export function useAdminFeedbackNotification(enabled: boolean) {
       });
     };
 
-    channel.listen('.feedback.created', handler);
+    channel.listen(eventName, handler);
 
     return () => {
-      channel.stopListening('.feedback.created');
-      echo.leaveChannel('feedback.admin');
+      channel.stopListening(eventName);
+      echo.leaveChannel(channelName);
     };
   }, [enabled]);
 

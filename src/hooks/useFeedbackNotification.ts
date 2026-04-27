@@ -41,6 +41,7 @@ export function useFeedbackNotification(enabled: boolean, userId?: string) {
     if (!enabled || !userId) return;
 
     const channelName = `feedback.employee.${userId}`;
+    const eventName = '.feedback.replied';
     const channel = echo.channel(channelName);
 
     const handler = (payload: FeedbackRepliedPayload) => {
@@ -61,10 +62,10 @@ export function useFeedbackNotification(enabled: boolean, userId?: string) {
       });
     };
 
-    channel.listen('.feedback.replied', handler);
+    channel.listen(eventName, handler);
 
     return () => {
-      channel.stopListening('.feedback.replied');
+      channel.stopListening(eventName);
       echo.leaveChannel(channelName);
     };
   }, [enabled, userId]);

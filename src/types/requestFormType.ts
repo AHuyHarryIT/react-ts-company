@@ -277,12 +277,7 @@ export interface RequestFormTypesResponse {
 
 export interface AuthorizableEmployeesResponse {
   success: boolean;
-  data: Array<{
-    id: number;
-    name: string;
-    employee_code?: string;
-    role_name?: string;
-  }>;
+  data: AuthorizableEmployee[];
 }
 
 // Response for signature fields endpoint
@@ -351,6 +346,7 @@ export interface AuthorizableEmployee {
   name: string;
   employee_code?: string;
   gender?: string;
+  role_id?: number;
   role_name?: string;
 }
 

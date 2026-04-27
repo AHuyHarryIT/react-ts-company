@@ -146,7 +146,7 @@ export const ExportModal = () => {
           if (attendanceForDate) {
             const day =
               attendanceForDate.shift === 1
-                ? ['N', 'LN'].includes(attendanceForDate.hnhc ?? '')
+                ? ['N', 'LN', 'NN'].includes(attendanceForDate.hnhc ?? '')
                   ? attendanceForDate.administrative_hours || 0
                   : ['D', 'TC', 'X'].includes(attendanceForDate.hnhc ?? '')
                     ? `${attendanceForDate.administrative_hours || 0}\nĐổi lịch`
@@ -157,7 +157,9 @@ export const ExportModal = () => {
               attendanceForDate.shift === 2
                 ? ['D', 'TC'].includes(attendanceForDate.hnhc ?? '')
                   ? attendanceForDate.administrative_hours || 0
-                  : ['N', 'LN', 'X'].includes(attendanceForDate.hnhc ?? '')
+                  : ['N', 'LN', 'X', 'NN'].includes(
+                        attendanceForDate.hnhc ?? ''
+                      )
                     ? `${attendanceForDate.administrative_hours || 0}\nĐổi lịch`
                     : 0
                 : 0;

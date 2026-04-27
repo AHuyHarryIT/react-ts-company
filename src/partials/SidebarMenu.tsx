@@ -1,5 +1,6 @@
 import { MenuItem } from '@/types/menuItem';
 import logo from '@assets/images/logo/logoAsset.svg';
+import { useHolidayMode } from '@hooks/useHolidayMode';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 import { Link, useLocation } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
@@ -263,6 +264,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
 }) => {
   const { pathname } = useLocation();
   const { isMobile, isSidebarClose } = useStore(uiStore);
+  const { isHoliday } = useHolidayMode();
 
   const [openKey, setOpenKey] = React.useState<string | null>(null);
 
@@ -300,7 +302,24 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
             />
           </Link>
         </div>
-        <div className="mx-5 h-px bg-gradient-to-r from-transparent via-gray-200/80 to-transparent dark:via-gray-700/60" />
+
+        {/* Holiday ribbon under logo */}
+        {isHoliday && !isSidebarClose ? (
+          <div className="mx-3 mb-2 overflow-hidden rounded-lg">
+            <div
+              className="py-1.5 text-center text-[10px] font-bold tracking-wide text-white sm:text-[11px]"
+              style={{
+                background:
+                  'linear-gradient(90deg, #da251d 0%, #c41e18 50%, #da251d 100%)',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+              }}
+            >
+              🇻🇳 Mừng 30/4 — 1/5 🇻🇳
+            </div>
+          </div>
+        ) : (
+          <div className="mx-5 h-px bg-gradient-to-r from-transparent via-gray-200/80 to-transparent dark:via-gray-700/60" />
+        )}
       </div>
 
       {/* ── Header Slot (profile card on mobile) ── */}

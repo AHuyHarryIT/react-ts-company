@@ -8,8 +8,9 @@ export interface LoginHistoryItemType {
   user_agent: string;
   login_count: number;
   description: string;
-  created_at: string;
-  updated_at: string;
+  last_activity_time?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface PaginationLinkType {

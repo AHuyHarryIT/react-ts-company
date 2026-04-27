@@ -1,10 +1,17 @@
 import Echo from 'laravel-echo';
+import type { Broadcaster } from 'laravel-echo';
 import Pusher from 'pusher-js';
+
+declare global {
+  interface Window {
+    Echo: Echo<keyof Broadcaster>;
+    Pusher: typeof Pusher;
+  }
+}
 
 // Pusher logs for dev:
 // Pusher.logToConsole = false;
 
-// @ts-expect-error - make Pusher available to Echo at runtime
 window.Pusher = Pusher;
 
 export const echo = new Echo({
@@ -14,3 +21,5 @@ export const echo = new Echo({
   forceTLS: true,
   enabledTransports: ['ws', 'wss']
 });
+
+window.Echo = echo;

@@ -27,8 +27,12 @@ import {
   RequestForm,
   RequestFormFilters as RequestFormFiltersType
 } from '@/types/requestFormType';
-import { SUPERVISOR_IDS } from '@/constants/supervisors';
-import { getUserApprovalType } from '@utils/authUtil';
+import {
+  SUPERVISOR_IDS,
+  SUPERVISOR_ROLE_IDS,
+  SUPERVISOR_ROLE_NAMES
+} from '@/constants/supervisors';
+import { getUserApprovalType, isAllowRole } from '@utils/authUtil';
 import { FaFileAlt, FaCheckDouble } from 'react-icons/fa';
 
 export default function RequestFormList() {
@@ -37,8 +41,9 @@ export default function RequestFormList() {
 
   // Check if user is supervisor
   const isSupervisor =
-    user?.id &&
-    (SUPERVISOR_IDS as readonly string[]).includes(user.id.toString());
+    !!user &&
+    ((SUPERVISOR_IDS as readonly string[]).includes(user.id.toString()) ||
+      isAllowRole(user, [...SUPERVISOR_ROLE_NAMES, ...SUPERVISOR_ROLE_IDS]));
   const userType = getUserApprovalType(user, [...SUPERVISOR_IDS]);
 
   // Active tab state

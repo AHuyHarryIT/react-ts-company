@@ -34,7 +34,7 @@ interface TableColumns {
   time_in: string;
   time_out: string;
   shift: number;
-  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
+  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | 'NN' | null;
   day_type: string;
   is_schedule_change: boolean;
   total_hours: number | null;
@@ -243,6 +243,8 @@ export default function Records() {
         }
         if (value === 'Ca ngày') return <Tag color="blue">Ca 1</Tag>;
         if (value === 'Ca đêm') return <Tag color="purple">Ca 2</Tag>;
+        if (value === 'Nghỉ nửa ngày')
+          return <Tag color="red">Nghỉ nửa ngày</Tag>;
         return <Tag color="green">Nghỉ</Tag>;
       }
     },

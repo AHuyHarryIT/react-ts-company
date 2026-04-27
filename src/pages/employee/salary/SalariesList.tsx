@@ -1,31 +1,25 @@
 import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
-import { customPaginationProps } from '@components/custom/PaginationProps.custom';
-import { DateRangeCard } from '@components/ui/DateRangeCard';
 import { fetchEmpSalaries, fetchSalaryDetail } from '@services/SalaryService';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import {
-  Alert,
-  Drawer,
-  Empty,
-  Input,
-  Pagination,
-  PaginationProps,
-  Spin,
-  Tag
-} from 'antd';
+import { Alert, Empty, Input, Select, Spin, Tag } from 'antd';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 import { useEffect, useState } from 'react';
-import { FaSearch, FaMoneyBillWave, FaMoneyCheckAlt } from 'react-icons/fa';
-import { SalaryDetailContent } from './SalaryDetailContent';
+import {
+  FaCalendarAlt,
+  FaSearch,
+  FaMoneyBillWave,
+  FaMoneyCheckAlt
+} from 'react-icons/fa';
+import { PayslipDetailContent } from '@components/salaries/PayslipDetailContent';
 import { useSearch } from '@tanstack/react-router';
 
 export default function SalariesList() {
   const [params, setParams] = useState<QueryParams>({
-    page: 1,
-    limit: 12
+    limit: 0,
+    sort: '-end_date'
   });
   const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
   const search = useSearch({ strict: false }) as { openId?: string };
@@ -67,20 +61,25 @@ export default function SalariesList() {
     retry: false
   });
 
-  const paginationProps: PaginationProps = {
-    ...customPaginationProps,
-    pageSizeOptions: ['12', '24', '48', '60', '120', '240'],
-    current: salaries?.current_page ?? 1,
-    pageSize: salaries?.per_page ?? 12,
-    total: salaries?.total ?? 0,
-    onChange: (page, pageSize) => {
-      setParams((prev) => ({
-        ...prev,
-        page: page,
-        limit: pageSize
-      }));
+  useEffect(() => {
+    if (selectedSalaryId || search.openId || !salaries?.data.length) {
+      return;
     }
-  };
+
+    setSelectedSalaryId(String(salaries.data[0].id));
+  }, [salaries?.data, search.openId, selectedSalaryId]);
+
+  const selectedSalary = salaries?.data.find(
+    (item) => String(item.id) === selectedSalaryId
+  );
+
+  const salaryOptions =
+    salaries?.data.map((item) => ({
+      value: String(item.id),
+      label: item.title,
+      startDate: item.start_date,
+      endDate: item.end_date
+    })) ?? [];
 
   const handleSearch = debounce((value: string) => {
     setParams((prev) => ({
@@ -104,8 +103,9 @@ export default function SalariesList() {
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <RefreshButton isLoading={isFetching} refresh={refetch} />
             <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
+              <FaMoneyCheckAlt className="text-xs text-emerald-500" />
               <Tag color="blue" className="!m-0 !text-xs">
-                📋 Tổng: <strong>{salaries?.total ?? 0}</strong> bảng lương
+                Tổng: <strong>{salaries?.total ?? 0}</strong> bảng lương
               </Tag>
             </div>
           </div>
@@ -143,56 +143,71 @@ export default function SalariesList() {
           {/* ── Content ────────────────────────────────────────── */}
           <Spin spinning={isLoading}>
             {salaries && salaries.data.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                {salaries.data.map((item) => (
-                  <div
-                    key={item.id}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedSalaryId(String(item.id))}
-                  >
-                    <DateRangeCard
-                      key={`schedule_${item.id}-${item.start_date}-${item.end_date}`}
-                      title={item.title}
-                      startDate={dayjs(item.start_date)}
-                      endDate={dayjs(item.end_date)}
-                    />
+              <div className="space-y-5">
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                  <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="min-w-0">
+                      <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+                        Phiếu lương đang xem
+                      </h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {selectedSalary
+                          ? `${selectedSalary.title} (${dayjs(selectedSalary.start_date).format('DD/MM/YYYY')} - ${dayjs(selectedSalary.end_date).format('DD/MM/YYYY')})`
+                          : 'Đang tải phiếu lương'}
+                      </p>
+                    </div>
+                    <div className="w-full xl:w-[360px]">
+                      <label className="mb-1.5 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <FaCalendarAlt className="text-emerald-500" />
+                        Đổi kỳ lương
+                      </label>
+                      <Select
+                        value={selectedSalaryId ?? undefined}
+                        options={salaryOptions}
+                        onChange={setSelectedSalaryId}
+                        placeholder="Chọn kỳ lương"
+                        className="w-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-emerald-200 [&_.ant-select-selector]:!bg-white [&_.ant-select-selector]:!shadow-sm dark:[&_.ant-select-selector]:!border-emerald-900 dark:[&_.ant-select-selector]:!bg-gray-900"
+                        showSearch
+                        optionFilterProp="label"
+                        size="large"
+                        suffixIcon={<FaCalendarAlt className="text-gray-400" />}
+                        dropdownStyle={{ minWidth: 340 }}
+                        optionRender={(option) => {
+                          const data = option.data as {
+                            label: string;
+                            startDate: string;
+                            endDate: string;
+                          };
+
+                          return (
+                            <div className="py-1">
+                              <div className="font-medium text-gray-900 dark:text-gray-100">
+                                {data.label}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {dayjs(data.startDate).format('DD/MM/YYYY')} -{' '}
+                                {dayjs(data.endDate).format('DD/MM/YYYY')}
+                              </div>
+                            </div>
+                          );
+                        }}
+                      />
+                    </div>
                   </div>
-                ))}
+
+                  <PayslipDetailContent
+                    salaryDetails={salaryDetails}
+                    isLoading={isDetailLoading}
+                    error={detailError}
+                  />
+                </div>
               </div>
             ) : (
               <Empty description="Không có dữ liệu" />
             )}
-            <div className="mt-4">
-              <Pagination {...paginationProps} />
-            </div>
           </Spin>
         </div>
       </ComponentCard>
-
-      {/* ── Salary Detail Drawer ──────────────────────────────── */}
-      <Drawer
-        title={
-          <div className="flex items-center gap-3">
-            <FaMoneyCheckAlt className="text-emerald-500" />
-            <span className="font-semibold">Chi tiết bảng lương</span>
-          </div>
-        }
-        open={!!selectedSalaryId}
-        onClose={() => setSelectedSalaryId(null)}
-        width={600}
-        placement="right"
-        styles={{
-          body: { padding: '16px', background: '#f9fafb' }
-        }}
-      >
-        {selectedSalaryId && (
-          <SalaryDetailContent
-            salaryDetails={salaryDetails}
-            isLoading={isDetailLoading}
-            error={detailError}
-          />
-        )}
-      </Drawer>
     </>
   );
 }

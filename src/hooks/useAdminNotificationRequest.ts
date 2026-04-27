@@ -31,7 +31,7 @@ export function useNotificationRequest(
     if (
       !isAuthenticated ||
       !user ||
-      !isAllowRole(user, ['super admin', 'qa-qc', 'qc'])
+      !isAllowRole(user, ['super admin', 'qa-qc', 'qc', 'tổ trưởng qc', 23])
     ) {
       return;
     }

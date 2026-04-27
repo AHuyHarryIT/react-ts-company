@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { employeeService } from '@/services/EmployeeService';
 import { employeeRequestFormService } from '@/services/RequestFormService';
 import { EmployeeType } from '@/types/employeeType';
+import { AuthorizableEmployee } from '@/types/requestFormType';
 import { authStore } from '@/stores/authStore';
 
 export interface AuthorizedEmployeeInfo {
@@ -80,9 +81,9 @@ export const useAuthorizedEmployee = (
         }
 
         // Employee users: Try to get from cache first
-        const cachedEmployees = queryClient.getQueryData<EmployeeType[]>(
-          AUTHORIZABLE_EMPLOYEES_CACHE_KEY
-        );
+        const cachedEmployees = queryClient.getQueryData<
+          AuthorizableEmployee[]
+        >(AUTHORIZABLE_EMPLOYEES_CACHE_KEY);
 
         if (cachedEmployees) {
           const employee = cachedEmployees.find(
@@ -93,12 +94,8 @@ export const useAuthorizedEmployee = (
               id: employee.id.toString(),
               name: employee.name,
               employee_code: employee.id.toString(),
-              gender: (employee as Record<string, unknown>).gender as
-                | string
-                | undefined,
-              role_name: (employee as Record<string, unknown>).role_name as
-                | string
-                | undefined
+              gender: employee.gender,
+              role_name: employee.role_name
             };
           }
         }
@@ -121,12 +118,8 @@ export const useAuthorizedEmployee = (
               id: employee.id.toString(),
               name: employee.name,
               employee_code: employee.id.toString(),
-              gender: (employee as Record<string, unknown>).gender as
-                | string
-                | undefined,
-              role_name: (employee as Record<string, unknown>).role_name as
-                | string
-                | undefined
+              gender: employee.gender,
+              role_name: employee.role_name
             };
           }
         }

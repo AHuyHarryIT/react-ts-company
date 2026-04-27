@@ -40,7 +40,10 @@ export function useEmployeeNotification(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
 
-    const channel = echo.channel('employee.notifications');
+    const channelName = 'employee.notifications';
+    const salaryEventName = '.salary.created';
+    const scheduleEventName = '.schedule.created';
+    const channel = echo.channel(channelName);
 
     // Friendly notification messages
     const salaryMessages = [
@@ -96,13 +99,13 @@ export function useEmployeeNotification(enabled: boolean) {
       });
     };
 
-    channel.listen('.salary.created', salaryHandler);
-    channel.listen('.schedule.created', scheduleHandler);
+    channel.listen(salaryEventName, salaryHandler);
+    channel.listen(scheduleEventName, scheduleHandler);
 
     return () => {
-      channel.stopListening('.salary.created');
-      channel.stopListening('.schedule.created');
-      echo.leaveChannel('employee.notifications');
+      channel.stopListening(salaryEventName);
+      channel.stopListening(scheduleEventName);
+      echo.leaveChannel(channelName);
     };
   }, [enabled]);
 

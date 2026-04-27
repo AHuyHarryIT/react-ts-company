@@ -30,6 +30,7 @@ import { ScheduleDetailType } from '@/types/scheduleDetailType';
 import { ScheduleType } from '@/types/scheduleType';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
+import { useAuth } from '@hooks/useAuth';
 import { useCrudList } from '@hooks/useCrudList';
 import { scheduleDetailService } from '@services/ScheduleDetailService';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
@@ -57,6 +58,20 @@ interface HNHCGroupedData {
   group_name: string;
   data: HnhcTableType[];
 }
+
+const normalizeText = (value?: string | null) => value?.toLowerCase().trim();
+
+const QC_LEADER_EMPLOYEE_IDS = ['24030400', '21120700'] as const;
+const WAREHOUSE_LEADER_EMPLOYEE_IDS = ['24021900', '22022200'] as const;
+const PRODUCTION_LEADER_CATEGORY_NAMES = [
+  'Nhóm Đi Xoay Ca - Hàng Nhật',
+  'Nhóm Kỹ Thuật',
+  'Nhóm Đi Xoay Ca - Hàng Chợ'
+] as const;
+const OUTSOURCING_LEADER_CATEGORY_NAMES = [
+  'Nhóm QC Ca Ngày',
+  'Nhóm Làm Việc Hành Chính'
+] as const;
 
 export function ScheduleDetailDrawer({
   open,
@@ -89,6 +104,7 @@ export default function Detail({
   scheduleId?: string | null;
   isDrawer?: boolean;
 }) {
+  const { user } = useAuth();
   const routeParams = useParams({ strict: false });
   const id = (scheduleId ||
     (routeParams as Record<string, string>)?.id) as string;
@@ -127,13 +143,75 @@ export default function Detail({
     queryFn: () => fetchWorkScheduleCategories({ limit: 0 })
   });
 
-  const categoryOptions = categories?.workScheduleCategories.map((item) => ({
-    label: item.name,
-    value: item.id
-  }));
+  const workScheduleAccess = useMemo(() => {
+    const roleName = normalizeText(user?.role.name);
+    const roleId = user?.role.id?.toString();
 
-  const employees = scheduleDetails.reduce(
-    (acc: { [key: string]: typeof scheduleDetails }, item) => {
+    const allowedEmployeeIds = new Set<string>();
+    const allowedCategoryNames = new Set<string>();
+
+    if (roleName === 'tổ trưởng qc' || roleId === '23') {
+      QC_LEADER_EMPLOYEE_IDS.forEach((employeeId) =>
+        allowedEmployeeIds.add(employeeId)
+      );
+    }
+
+    if (roleName === 'tổ trưởng kho' || roleId === '24') {
+      WAREHOUSE_LEADER_EMPLOYEE_IDS.forEach((employeeId) =>
+        allowedEmployeeIds.add(employeeId)
+      );
+    }
+
+    if (roleName === 'tổ trưởng sản xuất' || roleName === 'tổ phó sản xuất') {
+      PRODUCTION_LEADER_CATEGORY_NAMES.forEach((categoryName) =>
+        allowedCategoryNames.add(normalizeText(categoryName) || '')
+      );
+    }
+
+    if (roleName === 'tổ trưởng ngoại quan') {
+      OUTSOURCING_LEADER_CATEGORY_NAMES.forEach((categoryName) =>
+        allowedCategoryNames.add(normalizeText(categoryName) || '')
+      );
+    }
+
+    return {
+      allowedEmployeeIds,
+      allowedCategoryNames,
+      hasRestriction:
+        allowedEmployeeIds.size > 0 || allowedCategoryNames.size > 0
+    };
+  }, [user?.role.id, user?.role.name]);
+
+  const categoryOptions = categories?.workScheduleCategories
+    .filter((item) => {
+      if (workScheduleAccess.allowedCategoryNames.size === 0) return true;
+      return workScheduleAccess.allowedCategoryNames.has(
+        normalizeText(item.name) || ''
+      );
+    })
+    .map((item) => ({
+      label: item.name,
+      value: item.id
+    }));
+
+  const visibleScheduleDetails = useMemo(() => {
+    if (!workScheduleAccess.hasRestriction) return scheduleDetails;
+
+    return scheduleDetails.filter((item) => {
+      const employeeId = item.employee_id?.toString();
+      const categoryName = normalizeText(
+        item.employees?.calendar_category?.name
+      );
+
+      return (
+        workScheduleAccess.allowedEmployeeIds.has(employeeId) ||
+        workScheduleAccess.allowedCategoryNames.has(categoryName || '')
+      );
+    });
+  }, [scheduleDetails, workScheduleAccess]);
+
+  const employees = visibleScheduleDetails.reduce(
+    (acc: { [key: string]: typeof visibleScheduleDetails }, item) => {
       const employee_id = item.employee_id;
       if (!acc[employee_id]) {
         acc[employee_id] = [];

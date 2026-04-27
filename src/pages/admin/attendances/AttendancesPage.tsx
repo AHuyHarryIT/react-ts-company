@@ -56,7 +56,7 @@ interface RecordTableColumns {
   time_in: string;
   time_out: string;
   shift: number;
-  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
+  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | 'NN' | null;
   day_type: string;
   is_schedule_change: boolean;
   total_hours: number | null;
@@ -762,6 +762,8 @@ function RecordsTab() {
         }
         if (value === 'Ca ngày') return <Tag color="blue">Ca 1</Tag>;
         if (value === 'Ca đêm') return <Tag color="purple">Ca 2</Tag>;
+        if (value === 'Nghỉ nửa ngày')
+          return <Tag color="red">Nghỉ nửa ngày</Tag>;
         return <Tag color="green">Nghỉ</Tag>;
       }
     },
@@ -1081,6 +1083,8 @@ function RecordsTab() {
                             <Tag color="blue">Ca 1</Tag>
                           ) : record.day_type === 'Ca đêm' ? (
                             <Tag color="purple">Ca 2</Tag>
+                          ) : record.day_type === 'Nghỉ nửa ngày' ? (
+                            <Tag color="red">Nghỉ nửa ngày</Tag>
                           ) : (
                             <Tag color="green">Nghỉ</Tag>
                           ))}

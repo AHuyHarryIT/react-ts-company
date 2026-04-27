@@ -10,16 +10,22 @@ import { getMonthlyQuantities } from '@services/TotalQuantityService';
 import { authLogout } from '@services/AuthService';
 import { fetchImages } from '@services/UploadService';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { isAdmin } from '@utils/authUtil';
+import { isAdmin, isAllowRole } from '@utils/authUtil';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { FaCircle } from 'react-icons/fa';
 import * as FaIcons from 'react-icons/fa';
 import type { IconType } from 'react-icons';
 import { MdApproval } from 'react-icons/md';
-import { SUPERVISOR_IDS } from '@/constants/supervisors';
+import {
+  SUPERVISOR_IDS,
+  SUPERVISOR_ROLE_IDS,
+  SUPERVISOR_ROLE_NAMES
+} from '@/constants/supervisors';
 import { ProductChart } from './ProductChart';
 import { SalaryChart } from './SalaryChart';
 import { motion } from 'framer-motion';
+import { useHolidayMode } from '@hooks/useHolidayMode';
+import HolidayBanner from '@components/holiday/HolidayBanner';
 
 // ─── FA class → react-icons mapper (shared with Sidebar) ─────────────────────
 
@@ -98,13 +104,19 @@ export default function Dashboard() {
   const { user } = useAuth();
   const admin = isAdmin(user?.role.name || '');
 
+  // ── Holiday mode ──
+  const { isHoliday, daysUntilHoliday, holidayPhase } = useHolidayMode();
+
   const permissions = useMemo(() => user?.permissions ?? [], [user]);
 
   // Check if current user is a supervisor
   const isSupervisor = useMemo(() => {
     if (!user?.id) return false;
-    return (SUPERVISOR_IDS as readonly string[]).includes(user.id.toString());
-  }, [user?.id]);
+    return (
+      (SUPERVISOR_IDS as readonly string[]).includes(user.id.toString()) ||
+      isAllowRole(user, [...SUPERVISOR_ROLE_NAMES, ...SUPERVISOR_ROLE_IDS])
+    );
+  }, [user]);
 
   // ── Dashboard statistics (admin only) ──
   const { data: dashboardResponse, isLoading: isDashboardLoading } = useQuery({
@@ -297,6 +309,25 @@ export default function Dashboard() {
       const h = new Date().getHours();
       const wCode = weather?.code;
 
+      // ── Holiday override (30/4 – 1/5) ──
+      if (isHoliday) {
+        const holidayPool = [
+          {
+            text: 'Mừng ngày Giải phóng miền Nam 30/4 thống nhất đất nước!',
+            emoji: '🇻🇳'
+          },
+          { text: 'Chúc mừng Ngày Quốc tế Lao động 1/5!', emoji: '🌟' },
+          { text: 'Tự hào dân tộc Việt Nam anh hùng!', emoji: '🇻🇳' },
+          { text: 'Chúc nghỉ lễ vui vẻ, an toàn & hạnh phúc!', emoji: '⭐' },
+          { text: 'Hòa bình – Độc lập – Tự do – Hạnh phúc!', emoji: '🇻🇳' },
+          { text: 'Chúc toàn thể CBCNV một mùa lễ an lành!', emoji: '✨' }
+        ];
+        const pick =
+          holidayPool[Math.floor(Math.random() * holidayPool.length)];
+        setGreeting(pick);
+        return;
+      }
+
       // Weather-aware greetings
       const isSunny = wCode !== undefined && wCode <= 1;
       const isCloudy = wCode !== undefined && (wCode === 2 || wCode === 3);
@@ -416,7 +447,7 @@ export default function Dashboard() {
     pickGreeting();
     const timer = setInterval(pickGreeting, 60_000);
     return () => clearInterval(timer);
-  }, [weather]);
+  }, [weather, isHoliday]);
 
   // Fetch weather using Open-Meteo (free, no API key, accurate)
   // Uses fixed coordinates (Biên Hòa / HCM) — no geolocation prompt needed
@@ -512,6 +543,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* ── Holiday Banner (30/4 – 1/5) ────────────────────────── */}
+      {isHoliday && (
+        <HolidayBanner daysUntil={daysUntilHoliday} phase={holidayPhase} />
+      )}
+
       {/* ── Slide Carousel ─────────────────────────────────────── */}
       {imageList?.data && imageList.data.length > 0 && (
         <motion.div

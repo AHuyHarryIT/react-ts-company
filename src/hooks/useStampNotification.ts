@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 export type StampNotificationPayload = {
   message: string;
   recordId: string;
+  roleId?: string | number;
   meta?: HistoryPrintStampType;
   sent_at?: string;
 };
@@ -27,7 +28,13 @@ export function useStampNotification() {
   const { authenticated } = Route.useRouteContext();
   const { user } = authenticated;
   const roleId = user?.role.id;
-  const allow = isAllowRole(user, ['super admin', 'qa-qc', 'qc']);
+  const allow = isAllowRole(user, [
+    'super admin',
+    'qa-qc',
+    'qc',
+    'tổ trưởng qc',
+    23
+  ]);
 
   // Only show notifications for admin
   const items = allow ? notifications : [];
@@ -37,20 +44,24 @@ export function useStampNotification() {
   };
 
   useEffect(() => {
-    const channel = echo.channel(`public.stamps.${roleId}`);
+    if (!allow || !roleId) return;
+
+    const channelName = `public.stamps.${roleId}`;
+    const eventName = '.stamp.created';
+    const channel = echo.channel(channelName);
 
     const handler = (payload: StampNotificationPayload) => {
       setStampNotifications(payload);
       handleNotification();
     };
 
-    channel.listen(`.stamp.created.${roleId}`, handler);
+    channel.listen(eventName, handler);
 
     return () => {
-      channel.stopListening(`.stamp.created.${roleId}`);
-      echo.leaveChannel(`public.stamps.${roleId}`);
+      channel.stopListening(eventName);
+      echo.leaveChannel(channelName);
     };
-  }, [roleId]);
+  }, [allow, roleId]);
 
   const handleRemoveNotification = (recordId: string) => {
     removeStampNotification(recordId);

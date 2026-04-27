@@ -719,7 +719,7 @@ export const SalaryDetailTable: React.FC<SalaryDetailTableProps> = ({
       }
     },
     {
-      title: <div className="capitalize">Phí công đoàn (1%)</div>,
+      title: <div className="capitalize">Phí công đoàn (0.5%)</div>,
       dataIndex: 'unicon_deduction',
       align: 'center',
       render: (value) => {

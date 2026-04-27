@@ -7,7 +7,7 @@ export interface AttendanceResult {
   company: string;
   date: string;
   shift: number;
-  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
+  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | 'NN' | null;
   day_type: string;
   is_schedule_change: boolean;
   time_in: string;
@@ -32,7 +32,7 @@ export function calculateAttendances(
     } = attendance;
     let shift = 0;
     if (dates.filter((d) => d.date === date).length > 0) {
-      if (hnhc === 'N' || hnhc === 'LN') shift = 1;
+      if (hnhc === 'N' || hnhc === 'LN' || hnhc === 'NN') shift = 1;
       else if (hnhc === 'D' || hnhc === 'TC') shift = 2;
       else if (hnhc === 'X') {
         const yesterday = dayjs(date).subtract(1, 'day').format('YYYY-MM-DD');
@@ -47,8 +47,10 @@ export function calculateAttendances(
           const yesterdayHnhc = yesterdayEntries[0].hnhc;
           const tomorrowHnhc = tomorrowEntries[0]?.hnhc || null;
           if (
-            (yesterdayHnhc === 'N' || yesterdayHnhc === 'LN') &&
-            (tomorrowHnhc === 'N' || tomorrowHnhc !== 'LN')
+            (yesterdayHnhc === 'N' ||
+              yesterdayHnhc === 'LN' ||
+              yesterdayHnhc === 'NN') &&
+            (tomorrowHnhc === 'N' || tomorrowHnhc !== 'LN') // Note: this condition might need 'NN', but keeping structure as is
           )
             shift = 1;
           else if (

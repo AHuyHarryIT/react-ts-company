@@ -1,12 +1,16 @@
 import { RequestForm, RequestFormStatus } from '@/types/requestFormType';
-import { SUPERVISOR_IDS } from '@/constants/supervisors';
+import {
+  SUPERVISOR_IDS,
+  SUPERVISOR_ROLE_IDS,
+  SUPERVISOR_ROLE_NAMES
+} from '@/constants/supervisors';
 
 /**
  * User type definition for request form utilities
  */
 export interface RequestFormUser {
   id: string | number;
-  role?: string | { name: string };
+  role?: string | { id?: string | number; name: string };
 }
 
 /**
@@ -22,6 +26,8 @@ export function getUserApprovalType(
   // Get role name
   const roleName =
     typeof user.role === 'string' ? user.role : user.role?.name || '';
+  const roleId =
+    typeof user.role === 'string' ? undefined : user.role?.id?.toString();
 
   // Check if user is admin/manager
   const adminRoles = ['admin', 'super admin', 'co admin', 'manager'];
@@ -38,8 +44,13 @@ export function getUserApprovalType(
       supId.toString() === userId ||
       supId.toString().replace(/^0+/, '') === userId.replace(/^0+/, '')
   );
+  const isSupervisorRole =
+    SUPERVISOR_ROLE_NAMES.includes(
+      roleName.toLowerCase() as (typeof SUPERVISOR_ROLE_NAMES)[number]
+    ) ||
+    (!!roleId && (SUPERVISOR_ROLE_IDS as readonly string[]).includes(roleId));
 
-  if (isSupervisor) return 'supervisor';
+  if (isSupervisor || isSupervisorRole) return 'supervisor';
 
   return null;
 }

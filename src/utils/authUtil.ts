@@ -1,46 +1,58 @@
 import { User } from '@/types/authType';
+import {
+  SUPERVISOR_ROLE_IDS,
+  SUPERVISOR_ROLE_NAMES
+} from '@/constants/supervisors';
 import { redirect } from '@tanstack/react-router';
 
-export const isAdmin = (role: string): boolean => {
-  return ['admin', 'super admin', 'co admin'].includes(role.toLowerCase());
+type RoleMatcher = string | number;
+
+const normalizeRoleName = (role: string) => role.toLowerCase().trim();
+const normalizeRoleId = (role: string | number) => role.toString().trim();
+
+const hasRole = (user: User, roles: RoleMatcher[]) => {
+  const userRoleName = normalizeRoleName(user.role.name);
+  const userRoleId = normalizeRoleId(user.role.id);
+
+  return roles.some((role) => {
+    if (typeof role === 'number') return userRoleId === normalizeRoleId(role);
+    return (
+      normalizeRoleName(role) === userRoleName ||
+      normalizeRoleId(role) === userRoleId
+    );
+  });
 };
 
-export function requireRole(user: User | null, allowedRoles: string[]) {
+export const isAdmin = (role: string): boolean => {
+  return ['admin', 'super admin', 'co admin'].includes(normalizeRoleName(role));
+};
+
+export function requireRole(user: User | null, allowedRoles: RoleMatcher[]) {
   if (!user) {
     throw redirect({ to: '/login' });
   }
 
-  if (
-    !allowedRoles
-      .map((role) => role.toLowerCase())
-      .includes(user.role.name.toLowerCase())
-  ) {
+  if (!hasRole(user, allowedRoles)) {
     throw redirect({ to: '/forbidden', statusCode: 403 });
   }
 }
 
-export function disableRole(user: User | null, disallowedRoles: string[]) {
+export function disableRole(user: User | null, disallowedRoles: RoleMatcher[]) {
   if (!user) {
     throw redirect({ to: '/login' });
   }
 
-  if (
-    disallowedRoles
-      .map((role) => role.toLowerCase())
-      .includes(user.role.name.toLowerCase())
-  ) {
+  if (hasRole(user, disallowedRoles)) {
     throw redirect({ to: '/forbidden', statusCode: 403 });
   }
 }
 
-export const isAllowRole = (user: User | null, allowedRoles: string[]) => {
+export const isAllowRole = (user: User | null, allowedRoles: RoleMatcher[]) => {
   if (!user) {
     return false;
   }
 
-  return allowedRoles
-    .map((role) => role.toLowerCase())
-    .includes(user.role.name.toLowerCase());
+  return hasRole(user, allowedRoles);
 };
 
 export function requireAdminOrSupervisor(
@@ -53,9 +65,7 @@ export function requireAdminOrSupervisor(
 
   // Cho phép admin roles
   const adminRoles = ['admin', 'super admin', 'co admin'];
-  const isAdminRole = adminRoles
-    .map((role) => role.toLowerCase())
-    .includes(user.role.name.toLowerCase());
+  const isAdminRole = hasRole(user, adminRoles);
 
   // Cho phép các supervisor có user ID đặc biệt
   // Normalize cả user.id và supervisorIds để so sánh (bỏ qua leading zeros và convert về string)
@@ -65,7 +75,8 @@ export function requireAdminOrSupervisor(
   );
   const isSupervisor =
     normalizedSupervisorIds.includes(normalizedUserId) ||
-    supervisorIds.includes(user.id);
+    supervisorIds.includes(user.id) ||
+    hasRole(user, [...SUPERVISOR_ROLE_NAMES, ...SUPERVISOR_ROLE_IDS]);
 
   if (!isAdminRole && !isSupervisor) {
     throw redirect({ to: '/forbidden', statusCode: 403 });
@@ -80,9 +91,7 @@ export function getUserApprovalType(
 
   // Check if user is admin
   const adminRoles = ['admin', 'super admin', 'co admin'];
-  const isAdminRole = adminRoles
-    .map((role) => role.toLowerCase())
-    .includes(user.role.name.toLowerCase());
+  const isAdminRole = hasRole(user, adminRoles);
 
   if (isAdminRole) return 'admin';
 
@@ -94,7 +103,8 @@ export function getUserApprovalType(
   );
   const isSupervisor =
     normalizedSupervisorIds.includes(normalizedUserId) ||
-    supervisorIds.includes(user.id);
+    supervisorIds.includes(user.id) ||
+    hasRole(user, [...SUPERVISOR_ROLE_NAMES, ...SUPERVISOR_ROLE_IDS]);
 
   if (isSupervisor) return 'supervisor';
 
@@ -148,7 +158,7 @@ export function requirePermission(user: User | null, currentPath: string) {
 
   // Admin-level roles bypass tất cả (align với BE middleware api.can)
   const adminRoles = ['super admin', 'admin', 'co admin'];
-  if (adminRoles.includes(user.role.name.toLowerCase())) {
+  if (hasRole(user, adminRoles)) {
     return;
   }
 
@@ -165,7 +175,7 @@ export function requirePermission(user: User | null, currentPath: string) {
  */
 export function hasPermissionUrl(user: User | null, path: string): boolean {
   if (!user) return false;
-  if (user.role.name.toLowerCase() === 'super admin') return true;
+  if (hasRole(user, ['super admin'])) return true;
   return isUrlAllowed(path, getAllowedUrls(user));
 }
 
@@ -174,7 +184,7 @@ export function hasPermissionUrl(user: User | null, path: string): boolean {
  */
 export function hasPermissionKey(user: User | null, key: string): boolean {
   if (!user) return false;
-  if (user.role.name.toLowerCase() === 'super admin') return true;
+  if (hasRole(user, ['super admin'])) return true;
   return (user.permissions ?? []).some((p) => p.key === key);
 }
 
@@ -187,6 +197,6 @@ export function hasModulePermission(
   module: string
 ): boolean {
   if (!user) return false;
-  if (user.role.name.toLowerCase() === 'super admin') return true;
+  if (hasRole(user, ['super admin'])) return true;
   return (user.permissions ?? []).some((p) => p.module === module);
 }

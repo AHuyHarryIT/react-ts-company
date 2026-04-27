@@ -41,7 +41,7 @@ interface CalculatedRow {
   calendar_category_id: string;
   date: string;
   shift: number;
-  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | null;
+  hnhc: 'N' | 'LN' | 'D' | 'TC' | 'X' | 'NN' | null;
   day_type: string;
   is_schedule_change: boolean;
   time_in: string;
@@ -108,6 +108,34 @@ const fmtTime = (v: string) => {
   });
 };
 
+const isAdditionalShift = (hnhc: CalculatedRow['hnhc']) =>
+  hnhc === 'TC' || hnhc === 'LN';
+
+const hnhcDisplayMap: Record<
+  Exclude<CalculatedRow['hnhc'], null>,
+  { code: string; label: string; color: string }
+> = {
+  N: { code: 'N', label: 'Ca ngày', color: 'processing' },
+  D: { code: 'D', label: 'Ca đêm', color: 'purple' },
+  TC: { code: 'TC', label: 'Tăng cường ca đêm', color: 'purple' },
+  LN: { code: 'LN', label: 'Tăng cường ca ngày', color: 'gold' },
+  NN: { code: 'NN', label: 'Nghỉ nửa ngày', color: 'red' },
+  X: { code: 'X', label: 'Nghỉ', color: 'success' }
+};
+
+const getDisplayAdministrativeHours = (row: CalculatedRow) =>
+  isAdditionalShift(row.hnhc) ? 0 : row.administrative_hours || 0;
+
+const getDisplayOvertimeHours = (row: CalculatedRow) =>
+  isAdditionalShift(row.hnhc) ? row.total_hours || 0 : row.overtime_hours || 0;
+
+const getDisplayDayType = (row: Pick<CalculatedRow, 'hnhc' | 'day_type'>) => {
+  if (row.hnhc === 'TC' || row.hnhc === 'LN') {
+    return hnhcDisplayMap[row.hnhc].label;
+  }
+  return row.day_type;
+};
+
 // ── Summary Stats ────────────────────────────────────────────────────────────
 
 function SummaryStats({
@@ -120,9 +148,9 @@ function SummaryStats({
   const stats = useMemo(() => {
     const workDays = data.filter((d) => d.shift > 0).length;
     const totalHours = data.reduce((s, d) => s + (d.total_hours || 0), 0);
-    const otHours = data.reduce((s, d) => s + (d.overtime_hours || 0), 0);
+    const otHours = data.reduce((s, d) => s + getDisplayOvertimeHours(d), 0);
     const adminHours = data.reduce(
-      (s, d) => s + (d.administrative_hours || 0),
+      (s, d) => s + getDisplayAdministrativeHours(d),
       0
     );
     const missingDays = data.filter(
@@ -225,7 +253,7 @@ function SummaryStats({
             className="text-[11px] text-gray-400"
             style={{ fontSize: '11px', color: '#9ca3af' }}
           >
-            Hành chính
+            Giờ chính
           </div>
           <div
             className="text-base leading-tight font-bold text-gray-800"
@@ -354,7 +382,7 @@ function SummaryStats({
         <Statistic
           title={
             <span className="text-xs text-violet-600 dark:text-violet-400">
-              Giờ hành chính
+              Giờ chính
             </span>
           }
           value={Math.round(stats.adminHours * 100) / 100}
@@ -405,6 +433,8 @@ function SummaryStats({
 // ── Mobile Card for Calculate ───────────────────────────────────────────────
 
 function MobileCalculateRow({ item }: { item: CalculatedRow }) {
+  const dayType = getDisplayDayType(item);
+  const displayOvertimeHours = getDisplayOvertimeHours(item);
   const isMissing =
     item.shift > 0 &&
     (!item.time_in ||
@@ -452,6 +482,11 @@ function MobileCalculateRow({ item }: { item: CalculatedRow }) {
           >
             {dayjs(item.date).format('dddd')}
           </span>
+          {dayType ? (
+            <span className="ml-1.5 text-[12px] font-medium text-amber-600">
+              {dayType}
+            </span>
+          ) : null}
         </div>
         {item.shift > 0 ? (
           <div className="text-right" style={{ textAlign: 'right' }}>
@@ -464,7 +499,7 @@ function MobileCalculateRow({ item }: { item: CalculatedRow }) {
             >
               giờ
             </span>
-            {(item.overtime_hours ?? 0) > 0 && (
+            {displayOvertimeHours > 0 && (
               <span
                 className="ml-1.5 text-sm text-amber-500 tabular-nums"
                 style={{
@@ -473,7 +508,7 @@ function MobileCalculateRow({ item }: { item: CalculatedRow }) {
                   color: '#f59e0b'
                 }}
               >
-                +{item.overtime_hours}h TC
+                +{displayOvertimeHours}h TC
               </span>
             )}
           </div>
@@ -553,10 +588,11 @@ function MobileCalculateRow({ item }: { item: CalculatedRow }) {
 // ── Mobile Card for History ────────────────────────────────────────────────
 const hnhcLabels: Record<string, { label: string; color: string }> = {
   N: { label: 'Ca ngày', color: 'text-orange-500' },
+  NN: { label: 'Nghỉ nửa ngày', color: 'text-red-500' },
   D: { label: 'Ca đêm', color: 'text-indigo-600' },
   X: { label: 'Nghỉ', color: 'text-gray-400' },
-  TC: { label: 'Tăng cường đêm', color: 'text-purple-600' },
-  LN: { label: 'Làm thêm ca ngày', color: 'text-amber-600' }
+  TC: { label: hnhcDisplayMap.TC.label, color: 'text-purple-600' },
+  LN: { label: hnhcDisplayMap.LN.label, color: 'text-amber-600' }
 };
 
 function MobileHistoryRow({ item }: { item: AttendanceResponse }) {
@@ -632,8 +668,7 @@ export const AttendancePage = () => {
     mode === 'payroll' ? getPayrollRange(d) : getMonthRange(d);
 
   const [historyParams, setHistoryParams] = useState<QueryParams>({
-    page: 1,
-    limit: 15,
+    limit: 0,
     'filter[date_between]': getMonthRange(dayjs())
   });
 
@@ -737,29 +772,52 @@ export const AttendancePage = () => {
       filters: [
         { text: 'Ca ngày', value: 'Ca ngày' },
         { text: 'Ca đêm', value: 'Ca đêm' },
+        { text: 'Tăng cường ca ngày', value: 'Tăng cường ca ngày' },
+        { text: 'Tăng cường ca đêm', value: 'Tăng cường ca đêm' },
+        { text: 'Nghỉ nửa ngày', value: 'Nghỉ nửa ngày' },
         { text: 'Nghỉ', value: '' }
       ],
       onFilter: (value, record) => {
-        if (value === '') return !record.day_type || record.day_type === '';
-        return record.day_type === value;
+        const displayDayType = getDisplayDayType(record);
+        if (value === '') return !displayDayType || displayDayType === '';
+        return displayDayType === value;
       },
-      render: (v, record) => {
+      render: (_v, record) => {
+        const displayDayType = getDisplayDayType(record);
+        if (record.hnhc === 'TC')
+          return (
+            <Tag color="purple" className="!m-0">
+              Tăng cường ca đêm
+            </Tag>
+          );
+        if (record.hnhc === 'LN')
+          return (
+            <Tag color="gold" className="!m-0">
+              Tăng cường ca ngày
+            </Tag>
+          );
         if (record.is_schedule_change)
           return (
             <Tag color="warning" className="!m-0">
-              {v}
+              {displayDayType}
             </Tag>
           );
-        if (v === 'Ca ngày')
+        if (displayDayType === 'Ca ngày')
           return (
             <Tag color="processing" className="!m-0">
               Ca ngày
             </Tag>
           );
-        if (v === 'Ca đêm')
+        if (displayDayType === 'Ca đêm')
           return (
             <Tag color="purple" className="!m-0">
               Ca đêm
+            </Tag>
+          );
+        if (displayDayType === 'Nghỉ nửa ngày')
+          return (
+            <Tag color="red" className="!m-0">
+              Nghỉ nửa ngày
             </Tag>
           );
         return (
@@ -790,15 +848,18 @@ export const AttendancePage = () => {
       }
     },
     {
-      title: 'Hành chính',
+      title: 'Giờ chính',
       dataIndex: 'administrative_hours',
       key: 'administrative_hours',
       width: 100,
       align: 'center',
-      render: (v, record) => {
+      render: (_v, record) => {
         if (!record.shift) return <span className="text-gray-300">-</span>;
-        return v ? (
-          <span className="font-medium text-violet-600">{v}h</span>
+        const displayHours = getDisplayAdministrativeHours(record);
+        return displayHours ? (
+          <span className="font-medium text-violet-600">{displayHours}h</span>
+        ) : isAdditionalShift(record.hnhc) ? (
+          <span className="text-gray-300">-</span>
         ) : (
           <Tooltip title="Chấm công chưa đủ">
             <Tag color="error" className="!m-0 cursor-help">
@@ -814,13 +875,15 @@ export const AttendancePage = () => {
       key: 'overtime_hours',
       width: 80,
       align: 'center',
-      sorter: (a, b) => (a.overtime_hours || 0) - (b.overtime_hours || 0),
-      render: (v) =>
-        v ? (
-          <span className="font-semibold text-amber-600">{v}h</span>
+      sorter: (a, b) => getDisplayOvertimeHours(a) - getDisplayOvertimeHours(b),
+      render: (_v, record) => {
+        const displayHours = getDisplayOvertimeHours(record);
+        return displayHours ? (
+          <span className="font-semibold text-amber-600">{displayHours}h</span>
         ) : (
           <span className="text-gray-300">-</span>
-        )
+        );
+      }
     }
   ];
 
@@ -831,8 +894,7 @@ export const AttendancePage = () => {
       rowScope: 'row',
       align: 'center',
       width: 50,
-      render: (_v, _r, i) =>
-        i + 1 + (historyParams.limit ?? 15) * ((historyParams.page ?? 1) - 1)
+      render: (_v, _r, i) => i + 1
     },
     {
       title: 'Ngày',
@@ -851,32 +913,27 @@ export const AttendancePage = () => {
       )
     },
     {
-      title: 'HNHC',
+      title: 'Ca làm việc',
       dataIndex: 'hnhc',
       key: 'hnhc',
-      width: 80,
+      width: 180,
       align: 'center',
-      render: (v: string | null) =>
-        v ? (
-          <Tag
-            color={
-              v === 'N'
-                ? 'blue'
-                : v === 'D' || v === 'TC'
-                  ? 'purple'
-                  : v === 'X'
-                    ? 'green'
-                    : v === 'LN'
-                      ? 'cyan'
-                      : 'default'
-            }
-            className="!m-0"
-          >
-            {v}
+      render: (v: CalculatedRow['hnhc']) => {
+        if (!v) {
+          return <span className="text-gray-300">-</span>;
+        }
+
+        const display = hnhcDisplayMap[v];
+
+        return display ? (
+          <Tag color={display.color} className="!m-0">
+            <span className="font-semibold">{display.code}</span>
+            <span className="ml-1">{display.label}</span>
           </Tag>
         ) : (
           <span className="text-gray-300">-</span>
-        )
+        );
+      }
     },
     {
       title: 'Số lần quẹt',
@@ -887,7 +944,7 @@ export const AttendancePage = () => {
         const sameDateEntries =
           record.dates?.filter((d) => d.date === record.date) ?? [];
         return (
-          <span className="font-semibold text-blue-600">
+          <span className="inline-flex min-w-8 justify-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-600">
             {sameDateEntries.length}
           </span>
         );
@@ -900,9 +957,13 @@ export const AttendancePage = () => {
         const sameDateEntries =
           record.dates?.filter((d) => d.date === record.date) ?? [];
         return sameDateEntries.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {sameDateEntries.map((d, idx) => (
-              <Tag key={idx} className="!m-0 !text-xs">
+              <Tag
+                key={idx}
+                color="cyan"
+                className="!m-0 !rounded-full !px-2 !text-xs"
+              >
                 {fmtTime(d.datetime)}
               </Tag>
             ))}
@@ -942,18 +1003,7 @@ export const AttendancePage = () => {
     columns: historyColumns,
     dataSource: historyData,
     loading: historyLoading,
-    pagination: {
-      ...customTableProps.pagination,
-      current: historyResponse?.current_page || 1,
-      pageSize: historyResponse?.per_page || 15,
-      total: historyResponse?.total || 0,
-      onShowSizeChange: (_current, size) => {
-        setHistoryParams((prev) => ({ ...prev, limit: size }));
-      },
-      onChange: (page) => {
-        setHistoryParams((prev) => ({ ...prev, page }));
-      }
-    }
+    pagination: false
   };
 
   // ── Month change handler ───────────────────────────────────────────────
@@ -962,7 +1012,6 @@ export const AttendancePage = () => {
     setMonth(d);
     setHistoryParams((prev) => ({
       ...prev,
-      page: 1,
       'filter[date_between]': getDateRange(d, cycleMode)
     }));
   };
@@ -971,7 +1020,6 @@ export const AttendancePage = () => {
     setCycleMode(mode);
     setHistoryParams((prev) => ({
       ...prev,
-      page: 1,
       'filter[date_between]': getDateRange(month, mode)
     }));
   };

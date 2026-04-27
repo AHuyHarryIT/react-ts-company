@@ -10,4 +10,8 @@ export const SUPERVISOR_IDS = [
   '20102800'
 ] as const;
 
+export const SUPERVISOR_ROLE_IDS = ['23', '24'] as const;
+export const SUPERVISOR_ROLE_NAMES = ['tổ trưởng qc', 'tổ trưởng kho'] as const;
+
 export type SupervisorId = (typeof SUPERVISOR_IDS)[number];
+export type SupervisorRoleId = (typeof SUPERVISOR_ROLE_IDS)[number];

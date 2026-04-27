@@ -1,155 +1,235 @@
-import { Link } from '@tanstack/react-router';
-import { Pagination, Table, TableColumnsType, TableProps, Tag } from 'antd';
-import { useState } from 'react';
-import { FaMoneyBillWave } from 'react-icons/fa';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { Alert, Empty, Radio, Select, Spin, Tabs, TabsProps } from 'antd';
+import dayjs from 'dayjs';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  FaCalendarAlt,
+  FaClock,
+  FaFileInvoiceDollar,
+  FaListAlt,
+  FaMoneyBillWave,
+  FaMoneyCheckAlt,
+  FaReceipt,
+  FaUser
+} from 'react-icons/fa';
 import { useIsMobile } from '@hooks/useIsMobile';
 
 import { useCrudList } from '@/hooks/useCrudList';
-import { SalaryType } from '@/types/salaryType';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { AddSalary } from '@components/salaries/AddModal';
-import { salariesService } from '@services/SalaryService';
+import { AttendanceTable } from '@components/salaries/AttendanceTable';
+import CategoryTable from '@components/salaries/CategoryTable';
+import { PayslipDetailContent } from '@components/salaries/PayslipDetailContent';
+import { SalaryDetailTable } from '@components/salaries/SalaryDetailTable';
+import { SalaryTable } from '@components/salaries/SalaryTable';
+import { fetchSalary, salariesService } from '@services/SalaryService';
 
-import { customTableProps } from '@components/custom/TableProps.custom';
-import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
-import { ActionGroup, ViewButton } from '@components/common/ActionButtons';
+type CompanyType = 'vvp' | 'a7a';
 
 export default function SalaryList() {
   const isMobile = useIsMobile();
-  const [limit, setLimit] = useState(10);
-  const [page, setPage] = useState(1);
+  const [company, setCompany] = useState<CompanyType>('vvp');
+  const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
+  const [selectedSalaryDetailId, setSelectedSalaryDetailId] = useState<
+    number | null
+  >(null);
 
   const { data, pagination, queryResult } = useCrudList({
     service: salariesService,
     queryKey: 'salaries',
     initialFilters: {
-      page,
-      limit
+      limit: 0,
+      sort: '-end_date'
     }
   });
 
   const { isLoading, isFetching, refetch } = queryResult;
 
-  const salaries = data || [];
+  const salaries = useMemo(() => data || [], [data]);
   const total = pagination.total || 0;
 
-  const columns: TableColumnsType<SalaryType> = [
+  const {
+    data: selectedSalaryData,
+    isLoading: isDetailLoading,
+    isFetching: isDetailFetching,
+    isError: isDetailError
+  } = useQuery({
+    queryKey: ['adminSalaryPreview', selectedSalaryId, company],
+    queryFn: () => fetchSalary({ id: selectedSalaryId!, company }),
+    enabled: !!selectedSalaryId,
+    placeholderData: keepPreviousData
+  });
+
+  const category = selectedSalaryData?.category ?? [];
+  const salary = selectedSalaryData?.salary ?? [];
+  const attendance = selectedSalaryData?.attendance ?? [];
+
+  const salaryDetail = useMemo(
+    () => selectedSalaryData?.salaryDetail ?? [],
+    [selectedSalaryData?.salaryDetail]
+  );
+
+  const selectedSalary = useMemo(
+    () => salaries.find((item) => String(item.id) === selectedSalaryId) || null,
+    [salaries, selectedSalaryId]
+  );
+
+  const salaryOptions = useMemo(
+    () =>
+      salaries.map((item) => ({
+        value: String(item.id),
+        label: item.title,
+        startDate: item.start_date,
+        endDate: item.end_date
+      })),
+    [salaries]
+  );
+
+  const salaryDetailOptions = useMemo(
+    () =>
+      salaryDetail.map((item) => ({
+        value: item.id,
+        label: `${item.employee?.name || 'Chưa có tên'} - NV${item.employee_id}`,
+        searchText: [
+          item.employee?.name,
+          item.employee_id,
+          item.employee?.role?.role_name
+        ]
+          .filter(Boolean)
+          .join(' ')
+      })),
+    [salaryDetail]
+  );
+
+  const selectedSalaryDetail = useMemo(
+    () =>
+      salaryDetail.find((item) => item.id === selectedSalaryDetailId) ||
+      salaryDetail[0] ||
+      null,
+    [salaryDetail, selectedSalaryDetailId]
+  );
+
+  useEffect(() => {
+    if (selectedSalaryId || !salaries.length) return;
+    setSelectedSalaryId(String(salaries[0].id));
+  }, [salaries, selectedSalaryId]);
+
+  useEffect(() => {
+    setSelectedSalaryDetailId(null);
+  }, [selectedSalaryId, company]);
+
+  useEffect(() => {
+    if (!salaryDetail.length) {
+      setSelectedSalaryDetailId(null);
+      return;
+    }
+
+    const hasSelected = salaryDetail.some(
+      (item) => item.id === selectedSalaryDetailId
+    );
+
+    if (!hasSelected) {
+      setSelectedSalaryDetailId(salaryDetail[0].id);
+    }
+  }, [salaryDetail, selectedSalaryDetailId]);
+
+  const salaryTabs: TabsProps['items'] = [
     {
-      title: 'STT',
-      rowScope: 'row',
-      width: 60,
-      align: 'center',
-      render: (_value, _record, index) => (
-        <span className="font-mono text-xs text-gray-500">
-          {index + 1 + limit * (page - 1)}
+      key: 'category',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaListAlt className="text-blue-500" />
+          Danh mục
         </span>
-      )
+      ),
+      children: <CategoryTable data={category} loading={isDetailLoading} />
     },
     {
-      title: 'Mã',
-      dataIndex: 'id',
-      hidden: true
-    },
-    {
-      title: 'Tiêu đề',
-      dataIndex: 'title',
-      render: (value) => (
-        <span className="font-medium text-gray-800 dark:text-white/90">
-          {value || <span className="text-gray-400 italic">Chưa có</span>}
+      key: 'salary',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaMoneyCheckAlt className="text-emerald-500" />
+          Bảng lương thanh toán
         </span>
+      ),
+      children: (
+        <SalaryTable
+          data={salary}
+          company={company}
+          loading={isDetailLoading}
+        />
       )
     },
     {
-      title: 'Tổng (VNĐ)',
-      dataIndex: 'total',
-      align: 'center',
-      render: (value) => (
-        <span className="font-semibold text-emerald-600">
-          {new Intl.NumberFormat('vi-VN', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-          }).format(value)}
-          <span className="ml-1 text-xs text-gray-400">₫</span>
+      key: 'salaryDetail',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaFileInvoiceDollar className="text-purple-500" />
+          Bảng lương chi tiết
         </span>
+      ),
+      children: (
+        <SalaryDetailTable data={salaryDetail} loading={isDetailLoading} />
       )
     },
     {
-      title: 'Ngày bắt đầu',
-      dataIndex: 'start_date',
-      align: 'center',
-      render: (value) => (
-        <Tag color="blue" className="!text-xs">
-          {new Date(value).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-          })}
-        </Tag>
+      key: 'timekeeping',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaClock className="text-orange-500" />
+          Bảng lương chấm công
+        </span>
+      ),
+      children: (
+        <AttendanceTable
+          data={attendance}
+          company={company}
+          loading={isDetailLoading}
+        />
       )
     },
     {
-      title: 'Ngày kết thúc',
-      dataIndex: 'end_date',
-      align: 'center',
-      render: (value) => (
-        <Tag color="purple" className="!text-xs">
-          {new Date(value).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-          })}
-        </Tag>
-      )
-    },
-    {
-      title: 'Hành động',
-      align: 'center',
-      width: 180,
-      render: (_value, _record) => {
-        return (
-          <ActionGroup>
-            <Link to={`/admin/salaries/$id`} params={{ id: _record.id }}>
-              <ViewButton />
-            </Link>
-            <ConfirmButton
-              id={_record.id}
-              service={salariesService}
-              content={
-                <p>
-                  Bạn có chắc chắn muốn xóa bản lương{' '}
-                  <strong>
-                    {_record.title} - {_record.id}
-                  </strong>{' '}
-                  không?
-                </p>
-              }
+      key: 'payslip',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaReceipt className="text-pink-500" />
+          Phiếu lương
+        </span>
+      ),
+      children: (
+        <div className="space-y-4">
+          <div className="rounded-xl border border-gray-100 bg-white/80 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <label className="mb-1.5 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+              <FaUser className="text-emerald-500" />
+              Nhân viên
+            </label>
+            <Select
+              className="w-full sm:max-w-md"
+              placeholder="Chọn nhân viên để xem phiếu lương"
+              value={selectedSalaryDetail?.id}
+              options={salaryDetailOptions}
+              showSearch
+              optionFilterProp="searchText"
+              onChange={setSelectedSalaryDetailId}
+              loading={isDetailLoading || isDetailFetching}
             />
-          </ActionGroup>
-        );
-      }
+          </div>
+
+          {selectedSalaryDetail ? (
+            <PayslipDetailContent
+              salaryDetails={selectedSalaryDetail}
+              isLoading={isDetailLoading}
+              error={null}
+              showAttendanceComparison={false}
+            />
+          ) : (
+            <Empty description="Không có phiếu lương trong kỳ này" />
+          )}
+        </div>
+      )
     }
   ];
-
-  const tableProps: TableProps<SalaryType> = {
-    ...(customTableProps as unknown as TableProps<SalaryType>),
-    rowKey: (record) => ['salary', record.id].join('-'),
-    columns: columns,
-    dataSource: salaries,
-    loading: isLoading,
-    pagination: {
-      ...customTableProps.pagination,
-      pageSize: limit,
-      total: total,
-      showTotal: (total) => `Tổng ${total} bản lương`,
-      onShowSizeChange: (_current, size) => {
-        setLimit(size);
-      },
-      onChange: (page) => {
-        setPage(page);
-      }
-    }
-  };
 
   return (
     <ComponentCard title="Quản lý bảng lương">
@@ -166,89 +246,103 @@ export default function SalaryList() {
           </div>
         </div>
 
-        {/* ── Content ────────────────────────────────────────────── */}
-        {isMobile ? (
-          <div className="flex flex-col gap-3">
-            {salaries.map((record, index) => (
-              <div
-                key={record.id}
-                className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
-              >
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
-                    {index + 1 + limit * (page - 1)}
-                  </span>
-                  <span className="line-clamp-1 text-[15px] font-semibold text-gray-800 dark:text-white/90">
-                    {record.title || (
-                      <span className="text-gray-400 italic">Chưa có</span>
-                    )}
-                  </span>
-                </div>
-                <div className="space-y-1.5 pl-8 text-[13px]">
-                  <div className="text-lg font-semibold text-emerald-600">
-                    {new Intl.NumberFormat('vi-VN', {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0
-                    }).format(record.total)}
-                    <span className="ml-1 text-xs text-gray-400">₫</span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Tag color="blue" className="!m-0 !text-xs">
-                      {new Date(record.start_date).toLocaleDateString('vi-VN', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                      })}
-                    </Tag>
-                    <span className="text-gray-400">→</span>
-                    <Tag color="purple" className="!m-0 !text-xs">
-                      {new Date(record.end_date).toLocaleDateString('vi-VN', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                      })}
-                    </Tag>
-                  </div>
-                </div>
-                {/* Actions */}
-                <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
-                  <Link to={`/admin/salaries/$id`} params={{ id: record.id }}>
-                    <ViewButton size="small" />
-                  </Link>
-                  <ConfirmButton
-                    id={record.id}
-                    service={salariesService}
-                    size="small"
-                    content={
-                      <p>
-                        Bạn có chắc chắn muốn xóa bản lương{' '}
-                        <strong>
-                          {record.title} - {record.id}
-                        </strong>{' '}
-                        không?
-                      </p>
-                    }
-                  />
-                </ActionGroup>
+        <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+          <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
+                <FaReceipt className="text-emerald-500" />
+                Phiếu lương đang xem
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {selectedSalary
+                  ? `${selectedSalary.title} (${dayjs(selectedSalary.start_date).format('DD/MM/YYYY')} - ${dayjs(selectedSalary.end_date).format('DD/MM/YYYY')})`
+                  : 'Chọn kỳ lương để xem thông tin chi tiết'}
+              </p>
+            </div>
+
+            <div className="grid w-full gap-3 xl:w-auto xl:grid-cols-[360px_220px]">
+              <div>
+                <label className="mb-1.5 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <FaCalendarAlt className="text-emerald-500" />
+                  Kỳ lương
+                </label>
+                <Select
+                  value={selectedSalaryId ?? undefined}
+                  options={salaryOptions}
+                  onChange={setSelectedSalaryId}
+                  placeholder="Chọn kỳ lương"
+                  className="w-full"
+                  showSearch
+                  optionFilterProp="label"
+                  size="large"
+                  loading={isLoading}
+                  optionRender={(option) => {
+                    const optionData = option.data as {
+                      label: string;
+                      startDate: string;
+                      endDate: string;
+                    };
+
+                    return (
+                      <div className="py-1">
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                          {optionData.label}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {dayjs(optionData.startDate).format('DD/MM/YYYY')} -{' '}
+                          {dayjs(optionData.endDate).format('DD/MM/YYYY')}
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
               </div>
-            ))}
-            <div className="flex justify-end pt-2">
-              <Pagination
-                size="small"
-                current={page}
-                pageSize={limit}
-                total={total}
-                showTotal={(t) => `Tổng ${t} bản lương`}
-                onChange={(p, size) => {
-                  setPage(p);
-                  setLimit(size);
-                }}
-              />
+
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Công ty
+                </label>
+                <Radio.Group
+                  className="w-full"
+                  value={company}
+                  onChange={(event) => setCompany(event.target.value)}
+                  optionType="button"
+                  buttonStyle="solid"
+                  size="large"
+                  options={[
+                    { label: 'VVP', value: 'vvp' },
+                    { label: 'A7A', value: 'a7a' }
+                  ]}
+                />
+              </div>
             </div>
           </div>
-        ) : (
-          <Table<SalaryType> {...tableProps} />
-        )}
+
+          {isDetailError && (
+            <div className="mb-4 rounded-xl border border-red-100 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-900/20">
+              <Alert
+                message="Không tải được thông tin bảng lương"
+                description="Vui lòng thử lại hoặc chọn kỳ lương khác."
+                type="error"
+                showIcon
+              />
+            </div>
+          )}
+
+          <Spin spinning={isDetailLoading}>
+            {selectedSalaryId ? (
+              <Tabs
+                items={salaryTabs}
+                size={isMobile ? 'small' : 'large'}
+                type={isMobile ? 'line' : 'card'}
+                animated
+                tabBarStyle={isMobile ? { marginBottom: 12 } : undefined}
+              />
+            ) : (
+              <Empty description="Không có dữ liệu bảng lương" />
+            )}
+          </Spin>
+        </div>
       </div>
     </ComponentCard>
   );
