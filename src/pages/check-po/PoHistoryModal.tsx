@@ -62,12 +62,22 @@ interface BatchGroup {
   batchId: string;
   date: string;
   fileName: string;
+  fileType: string; // 'FAPV' | 'FASV' | 'FAVV' | 'Khác'
   note: string;
   employeeName: string;
   createdAt: string;
   productCount: number;
   totalQuantity: number;
   records: DailyQuantitiesType[];
+}
+
+interface FileTypeGroup {
+  fileType: string;
+  color: string;
+  batchCount: number;
+  productCount: number;
+  totalQuantity: number;
+  batches: BatchGroup[];
 }
 
 interface ImportDateGroup {
@@ -77,6 +87,7 @@ interface ImportDateGroup {
   productCount: number;
   totalQuantity: number;
   batches: BatchGroup[];
+  fileTypeGroups: FileTypeGroup[];
 }
 
 // ── Component ────────────────────────────────────────────────
@@ -281,6 +292,12 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       map.get(key)!.push(item);
     }
 
+    const FILE_TYPES = ['FAPV', 'FASV', 'FAVV'];
+    const getFileType = (fileName: string): string => {
+      const upper = (fileName || '').toUpperCase();
+      return FILE_TYPES.find((t) => upper.startsWith(t)) || 'Khác';
+    };
+
     return (
       [...map.entries()]
         .map(([batchId, records]) => {
@@ -294,10 +311,12 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
             });
           });
 
+          const rawFileName = sortedRecords[0]?.file_name || '';
           return {
             batchId,
             date: sortedRecords[0]?.date || '',
-            fileName: sortedRecords[0]?.file_name || '',
+            fileName: rawFileName,
+            fileType: getFileType(rawFileName),
             note: sortedRecords[0]?.note || '',
             employeeName: sortedRecords[0]?.employee?.name || '—',
             createdAt:
@@ -324,6 +343,14 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     );
   }, [filteredHistoryData]);
 
+  const FILE_TYPE_CONFIG: Record<string, { color: string; tagColor: string }> =
+    {
+      FAPV: { color: 'blue', tagColor: 'blue' },
+      FASV: { color: 'green', tagColor: 'green' },
+      FAVV: { color: 'purple', tagColor: 'purple' },
+      Khác: { color: 'default', tagColor: 'default' }
+    };
+
   const importDateGroups: ImportDateGroup[] = useMemo(() => {
     const map = new Map<string, BatchGroup[]>();
 
@@ -337,23 +364,49 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     }
 
     return [...map.entries()]
-      .map(([key, groupedBatches]) => ({
-        key,
-        label:
-          key === 'unknown'
-            ? 'Không rõ ngày nhập'
-            : dayjs(key).format('DD/MM/YYYY'),
-        batchCount: groupedBatches.length,
-        productCount: groupedBatches.reduce(
-          (sum, batch) => sum + batch.productCount,
-          0
-        ),
-        totalQuantity: groupedBatches.reduce(
-          (sum, batch) => sum + batch.totalQuantity,
-          0
-        ),
-        batches: groupedBatches
-      }))
+      .map(([key, groupedBatches]) => {
+        // Build fileTypeGroups
+        const ftMap = new Map<string, BatchGroup[]>();
+        for (const batch of groupedBatches) {
+          const ft = batch.fileType;
+          if (!ftMap.has(ft)) ftMap.set(ft, []);
+          ftMap.get(ft)!.push(batch);
+        }
+        const FILE_TYPE_ORDER = ['FAPV', 'FASV', 'FAVV', 'Khác'];
+        const fileTypeGroups: FileTypeGroup[] = [...ftMap.entries()]
+          .map(([ft, batches]) => ({
+            fileType: ft,
+            color: FILE_TYPE_CONFIG[ft]?.color || 'default',
+            batchCount: batches.length,
+            productCount: batches.reduce((s, b) => s + b.productCount, 0),
+            totalQuantity: batches.reduce((s, b) => s + b.totalQuantity, 0),
+            batches
+          }))
+          .sort(
+            (a, b) =>
+              FILE_TYPE_ORDER.indexOf(a.fileType) -
+              FILE_TYPE_ORDER.indexOf(b.fileType)
+          );
+
+        return {
+          key,
+          label:
+            key === 'unknown'
+              ? 'Không rõ ngày nhập'
+              : dayjs(key).format('DD/MM/YYYY'),
+          batchCount: groupedBatches.length,
+          productCount: groupedBatches.reduce(
+            (sum, batch) => sum + batch.productCount,
+            0
+          ),
+          totalQuantity: groupedBatches.reduce(
+            (sum, batch) => sum + batch.totalQuantity,
+            0
+          ),
+          batches: groupedBatches,
+          fileTypeGroups
+        };
+      })
       .sort((a, b) => {
         if (a.key === 'unknown') return 1;
         if (b.key === 'unknown') return -1;
@@ -361,9 +414,9 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       });
   }, [batchGroups]);
 
-  const renderMobileBatchGroup = (group: ImportDateGroup) => (
+  const renderMobileBatchGroup = (batches: BatchGroup[]) => (
     <div className="flex flex-col gap-3">
-      {group.batches.map((batch, index) => {
+      {batches.map((batch, index) => {
         const hasBatchId =
           batch.batchId && !batch.batchId.startsWith('no-batch-');
         const isExpanded = expandedBatchId === batch.batchId;
@@ -869,6 +922,34 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     }
   };
 
+  // ── File-type tabs (FAPV / FASV / FAVV / Khác) ──────────────
+  const renderFileTypeTab = (ftGroup: FileTypeGroup) => (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2 dark:border-gray-700 dark:bg-gray-800/40">
+        <Tag
+          color={FILE_TYPE_CONFIG[ftGroup.fileType]?.tagColor || 'default'}
+          className="!m-0 font-semibold"
+        >
+          {ftGroup.fileType}
+        </Tag>
+        <Tag color="cyan" className="!m-0">
+          {ftGroup.batchCount} file
+        </Tag>
+        <Tag color="green" className="!m-0">
+          {ftGroup.productCount} SP
+        </Tag>
+        <Tag color="blue" className="!m-0">
+          Tổng {ftGroup.totalQuantity.toLocaleString('vi-VN')}
+        </Tag>
+      </div>
+      {isMobile ? (
+        renderMobileBatchGroup(ftGroup.batches)
+      ) : (
+        <Table<BatchGroup> {...batchTableProps} dataSource={ftGroup.batches} />
+      )}
+    </div>
+  );
+
   const importDateTabItems: TabsProps['items'] = importDateGroups.map(
     (group) => ({
       key: group.key,
@@ -893,12 +974,35 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
               Tổng {group.totalQuantity.toLocaleString('vi-VN')}
             </Tag>
           </div>
-          {isMobile ? (
-            renderMobileBatchGroup(group)
+          {group.fileTypeGroups.length <= 1 ? (
+            // Chỉ có 1 loại file → không cần Tabs con
+            group.fileTypeGroups.map((ftGroup) => (
+              <div key={ftGroup.fileType}>{renderFileTypeTab(ftGroup)}</div>
+            ))
           ) : (
-            <Table<BatchGroup>
-              {...batchTableProps}
-              dataSource={group.batches}
+            // Nhiều loại file → hiển thị Tabs con FAPV / FASV / FAVV
+            <Tabs
+              type="line"
+              size="small"
+              className="po-history-filetype-tabs"
+              items={group.fileTypeGroups.map((ftGroup) => ({
+                key: ftGroup.fileType,
+                label: (
+                  <span className="flex items-center gap-1.5">
+                    <span className="font-semibold">{ftGroup.fileType}</span>
+                    <Tag
+                      color={
+                        FILE_TYPE_CONFIG[ftGroup.fileType]?.tagColor ||
+                        'default'
+                      }
+                      className="!m-0 !text-[11px]"
+                    >
+                      {ftGroup.batchCount}
+                    </Tag>
+                  </span>
+                ),
+                children: renderFileTypeTab(ftGroup)
+              }))}
             />
           )}
         </div>
