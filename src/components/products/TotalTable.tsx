@@ -245,16 +245,32 @@ export const TotalTable: React.FC<TotalTableProps> = ({
   const tableData = response?.data || [];
   const total = response?.total || 0;
 
-  const { data: monthlyQuantities } = useQuery({
-    queryKey: ['month-quantities', 'po-export'],
-    queryFn: () => {
-      return getMonthlyQuantities({ limit: 0, status: 8 });
-    }
+  /**
+   * Query cả 2 status song song:
+   * - status 3: dữ liệu cũ (trước tháng 05-2026) — BE chưa migrate
+   * - status 8: dữ liệu mới (từ tháng 05-2026 trở đi)
+   *
+   * TODO (BE): Sau khi BE thống nhất 1 status duy nhất thì xoá query status3.
+   */
+  const { data: monthlyQuantitiesStatus8 } = useQuery({
+    queryKey: ['month-quantities', 'po-export', 8],
+    queryFn: () => getMonthlyQuantities({ limit: 0, status: 8 })
   });
+
+  const { data: monthlyQuantitiesStatus3 } = useQuery({
+    queryKey: ['month-quantities', 'po-export', 3],
+    queryFn: () => getMonthlyQuantities({ limit: 0, status: 3 })
+  });
+
+  // Merge cả 2 nguồn dữ liệu xuất hàng
+  const monthlyQuantities = [
+    ...(monthlyQuantitiesStatus8 ?? []),
+    ...(monthlyQuantitiesStatus3 ?? [])
+  ];
 
   const dataSource = calculateTotalProduct(
     tableData,
-    monthlyQuantities ?? [],
+    monthlyQuantities,
     params.month?.toString()
   ) as TotalTableType[];
 
