@@ -52,3 +52,8 @@ export const deleteBatchPurchaseOrder = async (batchId: string) => {
   const response = await axiosPrivate.delete(`${ENDPOINT}/batch/${batchId}`);
   return response;
 };
+
+export const deleteAllPurchaseOrders = async () => {
+  const response = await axiosPrivate.delete(`${ENDPOINT}/all`);
+  return response;
+};

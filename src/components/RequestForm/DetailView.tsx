@@ -57,13 +57,14 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
   // Backend data.employee KHÔNG có role_name, phải fetch từ API
   const { data: delegatorEmployee, isLoading: isLoadingDelegator } =
     useAuthorizedEmployee(
-      data.employee.id?.toString(),
+      data.employee?.id?.toString() || data.employee_id?.toString(),
       // Placeholder data để hiển thị name ngay (optimistic UI)
       {
-        id: data.employee.id?.toString(),
-        name: data.employee.name,
-        employee_code: data.employee.id?.toString(),
-        gender: (data.employee as Record<string, unknown>)?.gender as
+        id: data.employee?.id?.toString() || data.employee_id?.toString(),
+        name: data.employee?.name || '',
+        employee_code:
+          data.employee?.id?.toString() || data.employee_id?.toString(),
+        gender: (data.employee as Record<string, unknown> | null)?.gender as
           | string
           | undefined
         // KHÔNG set role_name ở đây - cần fetch từ API
@@ -91,11 +92,15 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
   };
 
   // Thông tin người ủy quyền - ưu tiên dữ liệu có sẵn từ data.employee, sau đó mới fetch thêm
-  const delegatorName = data.employee.name || delegatorEmployee?.name || '';
-  const delegatorMSNV = data.employee.id || delegatorEmployee?.id || '';
+  const delegatorName =
+    data.employee?.name || delegatorEmployee?.name || 'Chưa xác định';
+  const delegatorMSNV =
+    data.employee?.id || delegatorEmployee?.id || data.employee_id || '';
   const delegatorGender =
     getGenderText(
-      (data.employee as Record<string, unknown>)?.gender as string | undefined
+      (data.employee as Record<string, unknown> | null)?.gender as
+        | string
+        | undefined
     ) || getGenderText(delegatorEmployee?.gender);
   // role_name phải lấy từ API fetch, hiển thị loading nếu đang fetch
   const delegatorPosition =
@@ -371,7 +376,7 @@ const AuthorizationDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
             </div>
             <div className="border-t border-gray-400 pt-1 sm:pt-2">
               <Text className="text-[11px] font-medium sm:text-base">
-                {data.employee.name}
+                {delegatorName}
               </Text>
             </div>
           </div>
@@ -920,7 +925,7 @@ const StandardDetailView: React.FC<{ data: RequestForm }> = ({ data }) => {
                   isEmployeeSupervisor ? 'Tổ trưởng làm đơn' : 'Người làm đơn'
                 }
                 signaturePath={data.digital_signature_applicant}
-                name={data.employee.name}
+                name={data.employee?.name || 'Người làm đơn'}
                 placeholder="[Vùng chữ ký]"
               />
 

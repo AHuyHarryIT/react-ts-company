@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Button, Input, Radio, notification, Alert } from 'antd';
+import { Input, Radio, notification, Alert } from 'antd';
 import type { InputRef } from 'antd';
-import { ScanOutlined } from '@ant-design/icons';
+import { ScanOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { productService } from '@/services/ProductService';
 import { isBarcode } from '@/utils/barcodeUtil';
@@ -394,7 +394,7 @@ const BarcodeScanner: React.FC = () => {
 
           {/* Barcode Input */}
           <div className="flex-1">
-            <Input.Search
+            <Input
               ref={barcodeInputRef}
               placeholder={
                 operation === 'in'
@@ -405,14 +405,11 @@ const BarcodeScanner: React.FC = () => {
               }
               value={barcode}
               onChange={handleBarcodeChange}
-              onSearch={handleManualScan}
-              enterButton={
-                <Button type="primary" icon={<ScanOutlined />}>
-                  Quét
-                </Button>
-              }
+              onPressEnter={handleManualScan}
+              suffix={<SearchOutlined />}
               size="large"
               allowClear
+              className="stock-search-input"
             />
           </div>
 

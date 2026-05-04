@@ -5,14 +5,14 @@ import { motion } from 'framer-motion';
 export default function AuthLayout() {
   return (
     <>
-      <div className="relative z-1 flex h-screen w-full overflow-hidden bg-white px-4 py-6 sm:p-0 dark:bg-gray-900">
+      <div className="glass-app-shell relative z-1 flex h-screen w-full overflow-hidden px-4 py-6 sm:p-0">
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="flex flex-1 flex-col rounded-2xl p-6 sm:rounded-none sm:border-0 sm:p-8"
+          className="flex min-w-0 flex-1 flex-col rounded-2xl p-6 sm:rounded-none sm:border-0 sm:p-8"
         >
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
+          <div className="mx-auto flex w-full max-w-md min-w-0 flex-1 flex-col justify-center">
             <Outlet />
           </div>
         </motion.div>
@@ -20,7 +20,7 @@ export default function AuthLayout() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
-          className="relative z-1 hidden flex-1 items-center justify-center bg-blue-950 p-8 lg:flex dark:bg-white/5"
+          className="glass-panel relative z-1 hidden flex-1 items-center justify-center rounded-l-[32px] p-8 lg:flex"
         >
           {/* <!-- ===== Common Grid Shape Start ===== --> */}
           <GridShape />

@@ -527,12 +527,12 @@ const RawTransactionHistory: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="stock-filter-row flex flex-wrap items-center gap-1.5">
           <Select
             placeholder="Sản phẩm"
             allowClear
             size="small"
-            className="!w-full sm:!w-[180px]"
+            className="stock-filter-control !w-full sm:!w-[180px]"
             options={productOptions}
             value={filterProductId}
             onChange={(value) => setFilterProductId(value || undefined)}
@@ -570,7 +570,7 @@ const RawTransactionHistory: React.FC = () => {
                 placeholder={['Từ ngày', 'Đến ngày']}
                 value={dateRange}
                 onChange={handleDateChange}
-                className="!w-auto"
+                className="stock-filter-control stock-filter-range !w-auto"
                 presets={[
                   { label: 'Hôm nay', value: [dayjs(), dayjs()] },
                   {
@@ -599,7 +599,7 @@ const RawTransactionHistory: React.FC = () => {
               size="small"
               type="dashed"
               onClick={() => handleDateChange([dayjs(), dayjs()])}
-              className="text-xs"
+              className="stock-filter-control stock-filter-quick-btn text-xs"
             >
               Hôm nay
             </Button>
@@ -612,7 +612,7 @@ const RawTransactionHistory: React.FC = () => {
                   dayjs().subtract(1, 'day')
                 ])
               }
-              className="text-xs"
+              className="stock-filter-control stock-filter-quick-btn text-xs"
             >
               Hôm qua
             </Button>
@@ -623,6 +623,7 @@ const RawTransactionHistory: React.FC = () => {
               placeholder="Loại"
               allowClear
               style={{ width: 75 }}
+              className="stock-filter-control"
               value={apiFilters.type}
               onChange={handleTypeChange}
               size="small"
@@ -632,8 +633,8 @@ const RawTransactionHistory: React.FC = () => {
             </Select>
             <Input
               placeholder="Tìm..."
-              allowClear
-              style={{ width: 100 }}
+              allowClear={false}
+              className="stock-search-input !w-full sm:!w-[160px]"
               suffix={<SearchOutlined />}
               onChange={(e) => setSearchText(e.target.value)}
               size="small"
@@ -642,6 +643,7 @@ const RawTransactionHistory: React.FC = () => {
               onClick={() => loadTransactions(paginationMeta.current_page)}
               loading={loading}
               size="small"
+              className="stock-filter-control"
             />
           </div>
         </div>

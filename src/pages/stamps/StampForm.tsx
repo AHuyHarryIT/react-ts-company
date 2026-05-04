@@ -177,46 +177,60 @@ export default function StampForm() {
             <button
               tabIndex={-1}
               onClick={() => navigate({ to: '/stamps/history' })}
-              className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition-all hover:bg-amber-100 hover:shadow-md active:scale-[0.97] dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+              className="header-action-btn header-action-btn--warning"
             >
               <FaClockRotateLeft />
               Xem Lịch Sử In Tem
             </button>
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex min-w-[min(100%,24rem)] items-center gap-2">
               {/* ── Stamp Type Selector ── */}
-              <div className="flex items-center overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
+              <div className="stamp-type-selector grid w-full grid-cols-2 gap-2 rounded-2xl border border-white/70 bg-white/55 p-1.5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-slate-900/45">
                 <button
                   tabIndex={-1}
+                  type="button"
+                  aria-pressed={type === 'bag'}
                   onClick={() => {
                     setType('bag');
                     setStampData(undefined);
                     form.resetFields();
                   }}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-all ${
-                    type === 'bag'
-                      ? 'bg-indigo-500 text-white shadow-sm'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300'
+                  className={`stamp-type-option stamp-type-option--bag rounded-xl border p-3 text-left transition-all ${
+                    type === 'bag' ? 'is-selected' : ''
                   }`}
                 >
-                  <FaStamp className="text-xs" />
-                  Tem Bịch
+                  <span className="stamp-type-check" aria-hidden="true" />
+                  <span className="stamp-type-icon" aria-hidden="true">
+                    <FaStamp />
+                  </span>
+                  <span className="stamp-type-copy">
+                    <span className="stamp-type-title">Tem Bịch</span>
+                    <span className="stamp-type-meta">
+                      Tem nhỏ, đóng gói bịch
+                    </span>
+                  </span>
                 </button>
                 <button
                   tabIndex={-1}
+                  type="button"
+                  aria-pressed={type === 'box'}
                   onClick={() => {
                     setType('box');
                     setStampData(undefined);
                     form.resetFields();
                   }}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-all ${
-                    type === 'box'
-                      ? 'bg-indigo-500 text-white shadow-sm'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300'
+                  className={`stamp-type-option stamp-type-option--box rounded-xl border p-3 text-left transition-all ${
+                    type === 'box' ? 'is-selected' : ''
                   }`}
                 >
-                  <FaBoxOpen className="text-xs" />
-                  Tem Thùng
+                  <span className="stamp-type-check" aria-hidden="true" />
+                  <span className="stamp-type-icon" aria-hidden="true">
+                    <FaBoxOpen />
+                  </span>
+                  <span className="stamp-type-copy">
+                    <span className="stamp-type-title">Tem Thùng</span>
+                    <span className="stamp-type-meta">Tem lớn, đóng thùng</span>
+                  </span>
                 </button>
               </div>
             </div>
@@ -452,7 +466,13 @@ export default function StampForm() {
           <ComponentCard title="Xem trước khi in">
             <div className="space-y-5">
               {/* Print Info Header */}
-              <div className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 dark:border-gray-700 dark:from-blue-900/20 dark:to-indigo-900/20">
+              <div
+                className={`flex flex-wrap items-start justify-between gap-4 rounded-xl border p-5 ${
+                  type === 'bag'
+                    ? 'border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 dark:border-orange-800/60 dark:from-orange-900/20 dark:to-amber-900/10'
+                    : 'border-cyan-200 bg-gradient-to-r from-cyan-50 to-sky-50 dark:border-cyan-800/60 dark:from-cyan-900/20 dark:to-sky-900/10'
+                }`}
+              >
                 <div className="space-y-2">
                   <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
                     {stampData.product.name}
@@ -466,8 +486,11 @@ export default function StampForm() {
                     </Tag>
                     <Tag color="purple">Ca {stampData.shift}</Tag>
                     <Tag color="cyan">SL: {stampData.totalStamp}</Tag>
-                    <Tag color={type === 'bag' ? 'orange' : 'lime'}>
-                      {type === 'bag' ? 'Tem Bịch' : 'Tem Thùng'}
+                    <Tag
+                      color={type === 'bag' ? 'volcano' : 'cyan'}
+                      className="!font-bold"
+                    >
+                      {type === 'bag' ? 'TEM BỊCH' : 'TEM THÙNG'}
                     </Tag>
                     {(() => {
                       const startStr = String(stampData.startStamp || '');

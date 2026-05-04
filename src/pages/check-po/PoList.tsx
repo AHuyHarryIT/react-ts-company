@@ -23,7 +23,6 @@ import { AddQuantityModal } from './AddQuantityModal';
 import { AddExportQuantityModal } from './AddExportQuantityModal';
 import { InventoryQuantityModal } from './InventoryQuantityModal';
 import { PoHistoryModal } from './PoHistoryModal';
-import { ExcelToCsvModal } from './ExcelToCsvModal';
 
 export const PoList = () => {
   const isMobile = useIsMobile();
@@ -120,7 +119,7 @@ export const PoList = () => {
   ];
 
   return (
-    <ComponentCard title="Quản lý PO">
+    <ComponentCard title="Quản lý PO" className="!overflow-visible">
       <div className="space-y-5">
         {/* ── Action Bar ────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
@@ -161,7 +160,6 @@ export const PoList = () => {
             Lịch sử nhập PO
           </Button>
           <ExportPoModal />
-          <ExcelToCsvModal />
 
           <div className="ml-auto flex w-full flex-wrap items-center gap-3 md:w-auto">
             <div className="flex flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 lg:flex-none dark:border-gray-600 dark:bg-gray-800">

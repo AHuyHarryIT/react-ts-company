@@ -13,7 +13,8 @@ import {
   Tag
 } from 'antd';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { SearchOutlined } from '@ant-design/icons';
+import { CSSProperties, useEffect, useMemo, useState, useRef } from 'react';
 import {
   FaCalendarCheck,
   FaUtensils,
@@ -35,6 +36,7 @@ import { useCrudList } from '@hooks/useCrudList';
 import { scheduleDetailService } from '@services/ScheduleDetailService';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
 import { scheduleService } from '@services/workScheduleService';
+import { canViewTotalWorkSchedules } from '@utils/authUtil';
 import { countDayOfWeekInMonth } from '@utils/countDayOfWeekInMonth';
 
 interface HnhcTableType {
@@ -61,8 +63,14 @@ interface HNHCGroupedData {
 
 const normalizeText = (value?: string | null) => value?.toLowerCase().trim();
 
-const QC_LEADER_EMPLOYEE_IDS = ['24030400', '21120700'] as const;
+const QC_LEADER_EMPLOYEE_IDS = ['24030400', '21120700', '19010400'] as const;
 const WAREHOUSE_LEADER_EMPLOYEE_IDS = ['24021900', '22022200'] as const;
+const MOLD_LEADER_EMPLOYEE_IDS = [
+  '20050400',
+  '24050201',
+  '25080800',
+  '26030301'
+] as const;
 const PRODUCTION_LEADER_CATEGORY_NAMES = [
   'Nhóm Đi Xoay Ca - Hàng Nhật',
   'Nhóm Kỹ Thuật',
@@ -89,7 +97,6 @@ export function ScheduleDetailDrawer({
       title="Chi tiết lịch làm việc"
       width="100%"
       placement="right"
-      destroyOnClose
       styles={{ body: { padding: '16px' } }}
     >
       {scheduleId && <Detail scheduleId={scheduleId} isDrawer />}
@@ -105,6 +112,7 @@ export default function Detail({
   isDrawer?: boolean;
 }) {
   const { user } = useAuth();
+  const isLimitedTotalWorkScheduleViewer = canViewTotalWorkSchedules(user);
   const routeParams = useParams({ strict: false });
   const id = (scheduleId ||
     (routeParams as Record<string, string>)?.id) as string;
@@ -158,6 +166,12 @@ export default function Detail({
 
     if (roleName === 'tổ trưởng kho' || roleId === '24') {
       WAREHOUSE_LEADER_EMPLOYEE_IDS.forEach((employeeId) =>
+        allowedEmployeeIds.add(employeeId)
+      );
+    }
+
+    if (roleName === 'tổ trưởng khuôn' || roleId === '25') {
+      MOLD_LEADER_EMPLOYEE_IDS.forEach((employeeId) =>
         allowedEmployeeIds.add(employeeId)
       );
     }
@@ -222,7 +236,7 @@ export default function Detail({
     {}
   );
 
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSearch = (value: string, type: 'name' | 'code') => {
     if (searchTimeoutRef.current) {
@@ -291,6 +305,21 @@ export default function Detail({
     return data;
   }, [employees]);
 
+  const allEmployees = useMemo(() => {
+    if (!scheduleDetails) return {};
+    return scheduleDetails.reduce(
+      (acc: { [key: string]: typeof scheduleDetails }, item) => {
+        const employee_id = item.employee_id;
+        if (!acc[employee_id]) {
+          acc[employee_id] = [];
+        }
+        acc[employee_id].push(item);
+        return acc;
+      },
+      {}
+    );
+  }, [scheduleDetails]);
+
   const columnsDefault = [
     {
       title: 'Nhân viên',
@@ -316,6 +345,29 @@ export default function Detail({
       )
     }
   ];
+
+  const todayColumnClass =
+    '!border-l-2 !border-r-2 !border-blue-400 !bg-blue-100/70 dark:!bg-blue-900/40';
+  const todayColumnStyle: CSSProperties = {
+    backgroundColor: '#dbeafe',
+    borderLeft: '2px solid #60a5fa',
+    borderRight: '2px solid #60a5fa'
+  };
+  const getTodayColumnProps = (isToday: boolean) =>
+    isToday
+      ? {
+          className: todayColumnClass,
+          onHeaderCell: () => ({
+            className: todayColumnClass,
+            style: todayColumnStyle
+          }),
+          onCell: () => ({
+            className: todayColumnClass,
+            style: todayColumnStyle
+          })
+        }
+      : {};
+
   const columnsHNHC: TableColumnsType<HnhcTableType> = [
     ...(columnsDefault as TableColumnsType<HnhcTableType>),
     ...Array.from({ length: maxDay }).map((_, index) => {
@@ -340,9 +392,7 @@ export default function Detail({
         dataIndex: 'day' + (index + 1),
         key: 'day' + (index + 1),
         align: 'center' as const,
-        className: isToday
-          ? '!bg-blue-100/70 dark:!bg-blue-900/40 !border-l-2 !border-r-2 !border-blue-400'
-          : '',
+        ...getTodayColumnProps(isToday),
         render: (value: string) => {
           if (!value) return null;
           return (
@@ -377,9 +427,7 @@ export default function Detail({
         ),
         dataIndex: 'day' + (index + 1),
         align: 'center' as const,
-        className: isToday
-          ? '!bg-blue-100/70 dark:!bg-blue-900/40 !border-l-2 !border-r-2 !border-blue-400'
-          : '',
+        ...getTodayColumnProps(isToday),
         render: (value: boolean) => {
           if (!value) return null;
           return (
@@ -414,9 +462,7 @@ export default function Detail({
         ),
         dataIndex: 'day' + day.date(),
         align: 'center' as const,
-        className: isToday
-          ? '!bg-blue-100/70 dark:!bg-blue-900/40 !border-l-2 !border-r-2 !border-blue-400'
-          : '',
+        ...getTodayColumnProps(isToday),
         render: (value: boolean) => {
           if (!value) return null;
           return (
@@ -428,9 +474,15 @@ export default function Detail({
       };
     })
   ];
+  const tableScroll: TableProps<unknown>['scroll'] = { x: 'max-content' };
+  const tableSticky: TableProps<unknown>['sticky'] = {
+    offsetHeader: isDrawer ? 64 : 56
+  };
 
   const { eatRoomData, wcMenData, wcWomenData, wcTrashData } = useMemo(() => {
-    if (Object.keys(employees).length === 0) {
+    const sourceEmployees =
+      user?.role.id?.toString() === '25' ? allEmployees : employees;
+    if (Object.keys(sourceEmployees).length === 0) {
       return {
         eatRoomData: [],
         wcMenData: [],
@@ -443,7 +495,7 @@ export default function Detail({
     const wcMenData: WcTableType[] = [];
     const wcWomenData: WcTableType[] = [];
     const wcTrashData: WcTableType[] = [];
-    Object.entries(employees).forEach(([employee_id, records]) => {
+    Object.entries(sourceEmployees).forEach(([employee_id, records]) => {
       const eatRoomRow: WcTableType = {
         key: employee_id,
         employee_id: employee_id,
@@ -515,7 +567,7 @@ export default function Detail({
       wcWomenData,
       wcTrashData
     };
-  }, [employees, maxDay]);
+  }, [employees, allEmployees, maxDay, user?.role.id]);
 
   const items: TabsProps['items'] = [
     {
@@ -547,7 +599,9 @@ export default function Detail({
                   ].join('-')
                 }
                 bordered
-                scroll={{ x: 'max-content' }}
+                className="smooth-sticky-table"
+                scroll={tableScroll}
+                sticky={tableSticky}
                 pagination={false}
                 size="small"
               />
@@ -576,7 +630,9 @@ export default function Detail({
             ].join('-')
           }
           bordered
-          scroll={{ x: 'max-content' }}
+          className="smooth-sticky-table"
+          scroll={tableScroll}
+          sticky={tableSticky}
           pagination={false}
           size="small"
         />
@@ -602,7 +658,9 @@ export default function Detail({
             ].join('-')
           }
           bordered
-          scroll={{ x: 'max-content' }}
+          className="smooth-sticky-table"
+          scroll={tableScroll}
+          sticky={tableSticky}
           pagination={false}
           size="small"
         />
@@ -628,7 +686,9 @@ export default function Detail({
             ].join('-')
           }
           bordered
-          scroll={{ x: 'max-content' }}
+          className="smooth-sticky-table"
+          scroll={tableScroll}
+          sticky={tableSticky}
           pagination={false}
           size="small"
         />
@@ -654,19 +714,35 @@ export default function Detail({
             ].join('-')
           }
           bordered
-          scroll={{ x: 'max-content' }}
+          className="smooth-sticky-table"
+          scroll={tableScroll}
+          sticky={tableSticky}
           pagination={false}
           size="small"
         />
       )
     }
-  ];
+  ].filter((item) => {
+    const roleId = user?.role.id?.toString();
+
+    // Tab 4 (Trực WC nữ): Hide for role_id 25 only
+    if (item.key === '4') {
+      return roleId !== '25';
+    }
+
+    // All other tabs: Visible to all
+    return true;
+  });
+
+  const visibleWorkLegends = Object.entries(workLegends).filter(
+    ([key]) => !isLimitedTotalWorkScheduleViewer || key === 'VS'
+  );
 
   const mainContent = (
     <div className={isDrawer ? 'flex flex-col gap-6' : 'space-y-5'}>
       {/* ── Legends ──────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
-        {Object.entries(workLegends).map(([key, legend]) => (
+        {visibleWorkLegends.map(([key, legend]) => (
           <div
             key={key}
             className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-800"
@@ -712,9 +788,10 @@ export default function Detail({
               <FaSearch className="mr-1 inline-block text-gray-400" />
               Tìm kiếm nhân viên
             </label>
-            <Input.Search
+            <Input
               placeholder="Mã hoặc tên nhân viên..."
               allowClear
+              suffix={<SearchOutlined />}
               className="!rounded-lg"
               onChange={(e) => {
                 const inputValue = e.target.value;
@@ -749,6 +826,7 @@ export default function Detail({
         mainContent
       ) : (
         <ComponentCard
+          className="!overflow-visible"
           title={
             isLoadingSchedule
               ? 'Chi tiết lịch làm việc'

@@ -6,6 +6,7 @@ import {
 import { redirect } from '@tanstack/react-router';
 
 type RoleMatcher = string | number;
+const TOTAL_WORK_SCHEDULE_VIEWER_IDS = ['23030100'] as const;
 
 const normalizeRoleName = (role: string) => role.toLowerCase().trim();
 const normalizeRoleId = (role: string | number) => role.toString().trim();
@@ -53,6 +54,13 @@ export const isAllowRole = (user: User | null, allowedRoles: RoleMatcher[]) => {
   }
 
   return hasRole(user, allowedRoles);
+};
+
+export const canViewTotalWorkSchedules = (user: User | null) => {
+  if (!user?.id) return false;
+  return (TOTAL_WORK_SCHEDULE_VIEWER_IDS as readonly string[]).includes(
+    user.id.toString()
+  );
 };
 
 export function requireAdminOrSupervisor(

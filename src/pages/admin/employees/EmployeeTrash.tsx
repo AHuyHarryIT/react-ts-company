@@ -14,6 +14,7 @@ import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { debounce } from 'lodash';
 import { FaUser } from 'react-icons/fa';
+import { SearchOutlined } from '@ant-design/icons';
 
 export default function EmployeeTrash() {
   const [params, setParams] = useState<QueryParams>({
@@ -213,10 +214,11 @@ export default function EmployeeTrash() {
       <ComponentCard title="Danh sách nhân viên đã nghỉ việc">
         <RefreshButton refresh={refetch} isLoading={isFetching} />
         <div>
-          <Input.Search
+          <Input
             className="max-w-3xs"
             placeholder="Tìm kiếm nhân viên"
             allowClear
+            suffix={<SearchOutlined />}
             onChange={(e) => {
               const inputValue = e.target.value;
               if (/^\d+$/.test(inputValue)) {

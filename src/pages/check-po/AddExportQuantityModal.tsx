@@ -1,5 +1,11 @@
 import { AddPoExportRequest } from '@/types/purchaseOrdersType';
 import { ProductType } from '@/types/productType';
+import {
+  APP_PAGE_TRANSITION,
+  MOTION_DURATION,
+  SECTION_ITEM_VARIANTS,
+  SECTION_STAGGER_TRANSITION
+} from '@constants/motion';
 import { productService } from '@services/ProductService';
 import { AddPurchaseOrdersQuantitiesExport } from '@services/PurchaseOrdersService';
 import {
@@ -11,6 +17,9 @@ import {
 import {
   Button,
   DatePicker,
+  Form,
+  Input,
+  InputNumber,
   message,
   Modal,
   Spin,
@@ -18,13 +27,20 @@ import {
   Tag,
   Upload,
   Collapse,
-  Badge
+  Badge,
+  Alert
 } from 'antd';
 import type { TableColumnsType } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import React, { useState, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect
+} from 'react';
 import { FaTruck } from 'react-icons/fa6';
 import {
   FaFileCsv,
@@ -32,9 +48,12 @@ import {
   FaCheckCircle,
   FaPlus,
   FaTrash,
-  FaFilePdf
+  FaFilePdf,
+  FaRedo
 } from 'react-icons/fa';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import * as XLSX from 'xlsx';
+import { SearchOutlined } from '@ant-design/icons';
 
 dayjs.extend(customParseFormat);
 
@@ -65,13 +84,36 @@ interface FileBatch {
   fileName: string;
   sheetName: string;
   date: Dayjs | null;
+  note?: string | null;
   products: ParsedProduct[];
+}
+
+type UploadResultStatus = 'success' | 'warning' | 'error';
+
+interface UploadResult {
+  id: string;
+  fileName: string;
+  status: UploadResultStatus;
+  message: string;
+  file?: File;
 }
 
 interface AddExportQuantityModalProps {
   open: boolean;
   onClose: () => void;
 }
+
+interface ManualEntryFields {
+  date?: Dayjs;
+  fileName?: string;
+  note?: string;
+  [key: `manual_product_${string}`]: number | undefined;
+}
+
+const getBatchDisplayName = (
+  batch: Pick<FileBatch, 'fileName' | 'sheetName'>
+) =>
+  batch.sheetName ? `${batch.fileName} - ${batch.sheetName}` : batch.fileName;
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -412,15 +454,44 @@ const extractDateFromFilename = (filename: string): Dayjs | null => {
   return null;
 };
 
+const yieldToMainThread = async () => {
+  await new Promise<void>((resolve) => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => resolve());
+      return;
+    }
+    setTimeout(() => resolve(), 0);
+  });
+};
+
 // ── Component ────────────────────────────────────────────────
 export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
   open,
   onClose
 }) => {
+  const [manualForm] = Form.useForm<ManualEntryFields>();
   const [batches, setBatches] = useState<FileBatch[]>([]);
   const [activeKeys, setActiveKeys] = useState<string[] | string>([]);
+  const [uploadResults, setUploadResults] = useState<UploadResult[]>([]);
+  const [manualModalOpen, setManualModalOpen] = useState(false);
+  const [manualSearch, setManualSearch] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [isParsingFiles, setIsParsingFiles] = useState(false);
+  const [parsingFileName, setParsingFileName] = useState('');
+  const uploadSummaryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const batchRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const uploadQueueRef = useRef<File[]>([]);
+  const isQueueProcessingRef = useRef(false);
+  const uploadSessionRef = useRef(0);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    return () => {
+      if (uploadSummaryTimer.current) {
+        clearTimeout(uploadSummaryTimer.current);
+      }
+    };
+  }, []);
 
   const { mutateAsync } = useMutation({
     mutationKey: ['add', 'exportQuantities'],
@@ -438,6 +509,60 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
   const productList = useMemo(
     () => productsData?.data ?? [],
     [productsData?.data]
+  );
+  const manualProductList = useMemo(() => {
+    const keyword = manualSearch.trim().toLowerCase();
+    if (!keyword) return productList;
+
+    return productList.filter((product) => {
+      const name = product.name?.toLowerCase() || '';
+      const code = product.code?.toLowerCase() || '';
+      return name.includes(keyword) || code.includes(keyword);
+    });
+  }, [manualSearch, productList]);
+
+  const showUploadSummary = useCallback((results: UploadResult[]) => {
+    const failedResults = results.filter((r) => r.status !== 'success');
+    const successCount = results.length - failedResults.length;
+
+    if (failedResults.length > 0) {
+      message.warning({
+        key: 'po-export-upload-summary',
+        content: `Đã đọc ${successCount}/${results.length} file. ${failedResults.length} file không import được, xem chi tiết ngay trong modal.`,
+        duration: 8
+      });
+      return;
+    }
+
+    message.success({
+      key: 'po-export-upload-summary',
+      content: `Đã đọc thành công ${successCount} file.`,
+      duration: 3
+    });
+  }, []);
+
+  const recordUploadResult = useCallback(
+    (result: Omit<UploadResult, 'id'>, replaceFileName?: string) => {
+      setUploadResults((prev) => {
+        const updated = [
+          ...prev.filter((item) => item.fileName !== replaceFileName),
+          {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            ...result
+          }
+        ];
+
+        if (uploadSummaryTimer.current) {
+          clearTimeout(uploadSummaryTimer.current);
+        }
+        uploadSummaryTimer.current = setTimeout(() => {
+          showUploadSummary(updated);
+        }, 500);
+
+        return updated;
+      });
+    },
+    [showUploadSummary]
   );
 
   // ── Smart parse a single sheet ─────────────────────────────
@@ -945,7 +1070,17 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
 
   // ── Handle file(s) upload ──────────────────────────────────
   const handleFilesUpload = useCallback(
-    async (file: File) => {
+    async (
+      file: File,
+      options?: { replaceResult?: boolean; sessionId?: number }
+    ) => {
+      if (
+        options?.sessionId != null &&
+        options.sessionId !== uploadSessionRef.current
+      ) {
+        return false;
+      }
+
       try {
         const isPdf =
           file.name.toLowerCase().endsWith('.pdf') ||
@@ -967,7 +1102,15 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
           });
 
           if (!wb.SheetNames?.length) {
-            message.error(`${file.name}: Không có dữ liệu!`);
+            recordUploadResult(
+              {
+                fileName: file.name,
+                status: 'warning',
+                message: 'Không có dữ liệu trong file.',
+                file
+              },
+              options?.replaceResult ? file.name : undefined
+            );
             return false;
           }
 
@@ -1003,9 +1146,22 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
           }
         }
 
+        if (
+          options?.sessionId != null &&
+          options.sessionId !== uploadSessionRef.current
+        ) {
+          return false;
+        }
+
         if (newBatches.length === 0) {
-          message.warning(
-            `${file.name}: Không tìm thấy sản phẩm nào khớp hệ thống.`
+          recordUploadResult(
+            {
+              fileName: file.name,
+              status: 'warning',
+              message: 'Không tìm thấy sản phẩm nào khớp hệ thống.',
+              file
+            },
+            options?.replaceResult ? file.name : undefined
           );
           return false;
         }
@@ -1020,16 +1176,62 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
             })
           );
         });
-        setActiveKeys((prev) => [...prev, ...newBatches.map((b) => b.id)]);
-        message.success(
-          `${file.name}: Thêm ${newBatches.length} bảng dữ liệu.`
+        recordUploadResult(
+          {
+            fileName: file.name,
+            status: 'success',
+            message: `Thêm ${newBatches.length} bảng dữ liệu.`,
+            file
+          },
+          options?.replaceResult ? file.name : undefined
         );
       } catch {
-        message.error(`${file.name}: Không thể đọc file.`);
+        recordUploadResult(
+          {
+            fileName: file.name,
+            status: 'error',
+            message: 'Không thể đọc file.',
+            file
+          },
+          options?.replaceResult ? file.name : undefined
+        );
       }
       return false;
     },
-    [parseSheet, parsePdfFile]
+    [parseSheet, parsePdfFile, recordUploadResult]
+  );
+
+  const processUploadQueue = useCallback(async () => {
+    if (isQueueProcessingRef.current) return;
+
+    isQueueProcessingRef.current = true;
+    setIsParsingFiles(true);
+
+    try {
+      while (uploadQueueRef.current.length > 0) {
+        const nextFile = uploadQueueRef.current.shift();
+        if (!nextFile) continue;
+
+        const currentSession = uploadSessionRef.current;
+        setParsingFileName(nextFile.name);
+        await yieldToMainThread();
+        await handleFilesUpload(nextFile, { sessionId: currentSession });
+        await yieldToMainThread();
+      }
+    } finally {
+      isQueueProcessingRef.current = false;
+      setIsParsingFiles(false);
+      setParsingFileName('');
+    }
+  }, [handleFilesUpload]);
+
+  const enqueueUploadFile = useCallback(
+    (file: File) => {
+      uploadQueueRef.current.push(file);
+      void processUploadQueue();
+      return false;
+    },
+    [processUploadQueue]
   );
 
   // ── Update date for a batch ────────────────────────────────
@@ -1039,9 +1241,108 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
     );
   };
 
+  const updateBatchNote = (batchId: string, note: string) => {
+    setBatches((prev) =>
+      prev.map((b) =>
+        b.id === batchId ? { ...b, note: note.trim() || null } : b
+      )
+    );
+  };
+
   // ── Remove a batch ─────────────────────────────────────────
   const removeBatch = (batchId: string) => {
     setBatches((prev) => prev.filter((b) => b.id !== batchId));
+    setActiveKeys((prev) =>
+      Array.isArray(prev) ? prev.filter((key) => key !== batchId) : prev
+    );
+  };
+
+  const removeUploadResult = (resultId: string) => {
+    setUploadResults((prev) => prev.filter((r) => r.id !== resultId));
+  };
+
+  const retryUploadResult = (result: UploadResult) => {
+    if (!result.file) {
+      message.info('Vui lòng chọn lại file từ vùng upload.');
+      return;
+    }
+    removeUploadResult(result.id);
+    uploadQueueRef.current.push(result.file);
+    void processUploadQueue();
+  };
+
+  const handleOpenManualModal = () => {
+    setManualModalOpen(true);
+  };
+
+  const handleCloseManualModal = () => {
+    manualForm.resetFields();
+    setManualSearch('');
+    setManualModalOpen(false);
+  };
+
+  const handleManualSubmit = async () => {
+    const values = await manualForm.validateFields();
+    const products = productList
+      .map((product, index) => {
+        const quantity = values[`manual_product_${product.id}`];
+        if (!quantity || quantity <= 0) return null;
+
+        return {
+          key: `manual-${product.id}-${index}`,
+          csvName: product.code || product.name,
+          csvQuantity: quantity,
+          matchedProductId: product.id,
+          matchedProductName: product.name
+        };
+      })
+      .filter(Boolean) as ParsedProduct[];
+
+    if (products.length === 0) {
+      message.warning('Vui lòng nhập ít nhất một sản phẩm.');
+      return;
+    }
+
+    const manualBatch: FileBatch = {
+      id: `manual-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      fileName: values.fileName?.trim() || 'Nhập tay PO xuất hàng',
+      sheetName: 'Nhập tay',
+      date: values.date ?? null,
+      note: values.note?.trim() || null,
+      products
+    };
+
+    setBatches((prev) =>
+      [...prev, manualBatch].sort((a, b) =>
+        a.fileName.localeCompare(b.fileName, undefined, {
+          numeric: true,
+          sensitivity: 'base'
+        })
+      )
+    );
+    setActiveKeys((prev) => {
+      const keys = Array.isArray(prev) ? prev : prev ? [prev] : [];
+      return [...keys, manualBatch.id];
+    });
+    handleCloseManualModal();
+    window.setTimeout(() => {
+      scrollToBatch(manualBatch.id);
+    }, 160);
+    message.success('Đã thêm bảng nhập tay vào danh sách chờ import.');
+  };
+
+  const scrollToBatch = (batchId: string) => {
+    setActiveKeys((prev) => {
+      const keys = Array.isArray(prev) ? prev : prev ? [prev] : [];
+      return keys.includes(batchId) ? keys : [...keys, batchId];
+    });
+
+    window.setTimeout(() => {
+      batchRefs.current[batchId]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }, 120);
   };
 
   // ── Submit all batches ─────────────────────────────────────
@@ -1050,6 +1351,10 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
 
     const missingDate = batches.filter((b) => !b.date);
     if (missingDate.length > 0) {
+      setActiveKeys(missingDate.map((batch) => batch.id));
+      window.setTimeout(() => {
+        scrollToBatch(missingDate[0].id);
+      }, 120);
       message.warning(
         `Còn ${missingDate.length} bảng chưa xác định được ngày — vui lòng chọn thủ công!`
       );
@@ -1064,20 +1369,25 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
     setSubmitting(true);
     let successCount = 0;
     let errorCount = 0;
+    const successBatchIds: string[] = [];
+    const failedBatchNames: string[] = [];
 
     for (const batch of validBatches) {
       try {
         await mutateAsync({
           date: batch.date!.format('YYYY-MM-DD'),
-          fileName: batch.fileName,
+          fileName: getBatchDisplayName(batch),
+          note: batch.note?.trim() || null,
           products: batch.products.map((p) => ({
             productId: p.matchedProductId,
             quantity: p.csvQuantity
           }))
         });
         successCount++;
+        successBatchIds.push(batch.id);
       } catch {
         errorCount++;
+        failedBatchNames.push(getBatchDisplayName(batch));
       }
     }
 
@@ -1085,22 +1395,43 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
       message.success(
         `Import thành công ${successCount}/${validBatches.length} bảng!`
       );
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['purchaseOrdersHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['products-daily'] });
+      queryClient.invalidateQueries({ queryKey: ['products-weekly'] });
+      queryClient.invalidateQueries({ queryKey: ['products-error'] });
     }
     if (errorCount > 0) {
-      message.error(`${errorCount} bảng lỗi khi import.`);
+      message.error(
+        `${errorCount} bảng lỗi khi import: ${failedBatchNames.join(', ')}. Mình đã giữ lại để bạn import lại hoặc xóa.`
+      );
     }
 
     setSubmitting(false);
     if (errorCount === 0) {
       handleReset();
       onClose();
+    } else if (successBatchIds.length > 0) {
+      setBatches((prev) =>
+        prev.filter((batch) => !successBatchIds.includes(batch.id))
+      );
+      setActiveKeys((prev) =>
+        Array.isArray(prev)
+          ? prev.filter((key) => !successBatchIds.includes(String(key)))
+          : prev
+      );
     }
   };
 
   const handleReset = () => {
+    uploadSessionRef.current += 1;
+    uploadQueueRef.current = [];
+    if (uploadSummaryTimer.current) {
+      clearTimeout(uploadSummaryTimer.current);
+    }
     setBatches([]);
     setActiveKeys([]);
+    setUploadResults([]);
+    handleCloseManualModal();
   };
   const handleCancel = () => {
     handleReset();
@@ -1113,6 +1444,34 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
     0
   );
   const allDatesSet = batches.length > 0 && batches.every((b) => b.date);
+  const missingDateBatches = batches.filter((batch) => !batch.date);
+  const failedUploadResults = uploadResults.filter(
+    (result) => result.status !== 'success'
+  );
+  const failedUploadFileNames = failedUploadResults.map(
+    (result) => result.fileName
+  );
+  const shouldReduceMotion = useReducedMotion();
+
+  const contentAnimate = shouldReduceMotion
+    ? {}
+    : {
+        initial: 'initial' as const,
+        animate: 'animate' as const,
+        variants: {
+          initial: {},
+          animate: {
+            transition: SECTION_STAGGER_TRANSITION
+          }
+        }
+      };
+
+  const sectionMotion = shouldReduceMotion
+    ? {}
+    : {
+        variants: SECTION_ITEM_VARIANTS,
+        transition: APP_PAGE_TRANSITION
+      };
 
   // ── Table columns for each batch ───────────────────────────
   const productColumns: TableColumnsType<ParsedProduct> = [
@@ -1137,8 +1496,9 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
       key: 'matchedProductName',
       ellipsis: true,
       render: (value) => (
-        <span className="flex items-center gap-1 text-green-600">
-          <FaCheckCircle /> {value}
+        <span className="flex min-w-0 items-center gap-1 text-green-600">
+          <FaCheckCircle className="shrink-0" />
+          <span className="truncate">{value}</span>
         </span>
       )
     },
@@ -1152,6 +1512,56 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         <span className="font-semibold text-blue-600">
           {Number(value).toLocaleString('vi-VN')}
         </span>
+      )
+    }
+  ];
+
+  const manualProductColumns: TableColumnsType<ProductType> = [
+    {
+      title: 'STT',
+      width: 56,
+      align: 'center',
+      render: (_, __, index) => (
+        <span className="font-mono text-xs text-gray-400">{index + 1}</span>
+      )
+    },
+    {
+      title: 'Mã SP',
+      dataIndex: 'code',
+      key: 'code',
+      width: 150,
+      ellipsis: true,
+      render: (value) => (
+        <span className="font-mono text-xs font-semibold text-gray-600">
+          {value || '—'}
+        </span>
+      )
+    },
+    {
+      title: 'Tên sản phẩm',
+      dataIndex: 'name',
+      key: 'name',
+      ellipsis: true,
+      render: (value) => <span className="text-sm font-medium">{value}</span>
+    },
+    {
+      title: 'Số lượng xuất',
+      key: 'quantity',
+      width: 160,
+      align: 'right',
+      render: (_, product) => (
+        <Form.Item<ManualEntryFields>
+          name={`manual_product_${product.id}`}
+          className="!mb-0"
+          rules={[{ type: 'number', min: 0, message: 'Min 0' }]}
+        >
+          <InputNumber
+            min={0}
+            className="!w-full"
+            placeholder="0"
+            controls={false}
+          />
+        </Form.Item>
       )
     }
   ];
@@ -1171,24 +1581,37 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
       footer={null}
       width={1100}
       destroyOnHidden
-      styles={{ body: { maxHeight: '80vh', overflowY: 'auto' } }}
+      style={{ maxWidth: 'calc(100vw - 24px)' }}
+      styles={{
+        body: {
+          maxHeight: '80vh',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: '16px 20px'
+        }
+      }}
     >
-      <Spin spinning={submitting || isLoadingProducts}>
-        <div className="space-y-4">
+      <Spin spinning={submitting || isLoadingProducts || isParsingFiles}>
+        <motion.div className="space-y-4" {...contentAnimate}>
           {/* ── Upload Area (always visible) ───────────────── */}
-          <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white p-4 transition-colors hover:border-blue-300 dark:border-gray-600 dark:from-gray-800/50 dark:to-gray-900/50">
+          <motion.div
+            className="rounded-lg border border-dashed border-gray-200 bg-gray-50/70 p-3 transition-colors hover:border-blue-300 dark:border-gray-600 dark:bg-gray-800/60"
+            whileHover={shouldReduceMotion ? undefined : { y: -1 }}
+            transition={{
+              duration: MOTION_DURATION.fast
+            }}
+            {...sectionMotion}
+          >
             <Upload.Dragger
               accept=".csv,.xlsx,.xls,.pdf"
               showUploadList={false}
               multiple
-              beforeUpload={(file) => {
-                handleFilesUpload(file);
-                return false;
-              }}
+              disabled={submitting || isParsingFiles}
+              beforeUpload={(file) => enqueueUploadFile(file)}
               className="!border-0 !bg-transparent"
             >
-              <div className="flex flex-col items-center gap-2 py-3">
-                <div className="rounded-2xl bg-blue-500/10 p-3">
+              <div className="flex flex-col items-center gap-2 py-2">
+                <div className="rounded-lg bg-blue-500/10 p-2.5">
                   {batches.length === 0 ? (
                     <div className="flex items-center gap-2">
                       <FaFileUpload className="text-3xl text-blue-500" />
@@ -1210,145 +1633,415 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
                     Hỗ trợ nhiều file cùng lúc · .csv, .xlsx, .xls, .pdf · Tự
                     nhận diện multi-sheet / multi-page
                   </p>
+                  {isParsingFiles && (
+                    <p className="mt-1 text-xs text-blue-500">
+                      Đang đọc file: {parsingFileName || 'Vui lòng chờ...'}
+                    </p>
+                  )}
                 </div>
               </div>
             </Upload.Dragger>
-          </div>
+          </motion.div>
+
+          <motion.div
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+            {...sectionMotion}
+          >
+            <span className="text-xs text-gray-500">
+              File đặc biệt không đọc được? Nhập tay để vẫn import chung với các
+              file khác.
+            </span>
+            <Button
+              size="small"
+              icon={<FaPlus />}
+              onClick={handleOpenManualModal}
+              disabled={productList.length === 0}
+            >
+              Nhập tay
+            </Button>
+          </motion.div>
+
+          <AnimatePresence initial={false}>
+            {failedUploadResults.length > 0 ? (
+              <motion.div
+                key="failed-upload-results"
+                className="space-y-3 rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800"
+                initial={shouldReduceMotion ? false : { opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={
+                  shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }
+                }
+                transition={{
+                  duration: shouldReduceMotion ? 0 : MOTION_DURATION.fast
+                }}
+              >
+                <Alert
+                  type="warning"
+                  showIcon
+                  message={
+                    failedUploadResults.length === 1
+                      ? `Không import được: ${failedUploadFileNames[0]}`
+                      : `${failedUploadResults.length} file không import được`
+                  }
+                  description={
+                    failedUploadResults.length === 1
+                      ? 'Bạn có thể thử lại file vừa chọn, hoặc xóa khỏi danh sách rồi chọn lại bản đã sửa.'
+                      : `File lỗi: ${failedUploadFileNames.join(', ')}`
+                  }
+                />
+                <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+                  {failedUploadResults.map((result) => {
+                    const badgeStatus =
+                      result.status === 'success'
+                        ? 'success'
+                        : result.status === 'warning'
+                          ? 'warning'
+                          : 'error';
+                    const tagColor =
+                      result.status === 'success'
+                        ? 'green'
+                        : result.status === 'warning'
+                          ? 'gold'
+                          : 'red';
+                    const statusLabel =
+                      result.status === 'success'
+                        ? 'OK'
+                        : result.status === 'warning'
+                          ? 'Không import được'
+                          : 'Lỗi đọc file';
+
+                    return (
+                      <div
+                        key={result.id}
+                        className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border border-gray-100 px-3 py-2 text-sm sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] dark:border-gray-700"
+                      >
+                        <Badge status={badgeStatus} />
+                        <span className="min-w-0 flex-1 truncate font-medium">
+                          {result.fileName}
+                        </span>
+                        <Tag color={tagColor} className="!m-0">
+                          {statusLabel}
+                        </Tag>
+                        <span className="col-span-3 min-w-0 text-gray-500 sm:col-span-1 sm:truncate">
+                          {result.message}
+                        </span>
+                        <div className="col-span-3 flex justify-end gap-1 sm:col-span-4">
+                          {result.status !== 'success' && (
+                            <Button
+                              size="small"
+                              type="text"
+                              icon={<FaRedo />}
+                              onClick={() => retryUploadResult(result)}
+                            >
+                              Thử lại
+                            </Button>
+                          )}
+                          <Button
+                            size="small"
+                            type="text"
+                            danger={result.status !== 'success'}
+                            icon={<FaTrash />}
+                            onClick={() => removeUploadResult(result.id)}
+                          >
+                            Xóa
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
 
           {/* ── Batches ───────────────────────────────────── */}
-          {batches.length > 0 && (
-            <>
-              {/* Summary bar */}
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-blue-100 bg-blue-50/50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950/30">
-                <div className="flex items-center gap-1">
-                  <FaFileCsv className="text-lg text-green-600" />
-                  <FaFilePdf className="text-lg text-red-500" />
-                </div>
-                <Tag color="cyan">{batches.length} bảng dữ liệu</Tag>
-                <Tag color="green">{totalProducts} sản phẩm</Tag>
-                <Tag color="blue">Tổng: {totalQty.toLocaleString('vi-VN')}</Tag>
-                <Button
-                  size="small"
-                  type="text"
-                  danger
-                  onClick={handleReset}
-                  className="ml-auto"
-                >
-                  Xóa tất cả
-                </Button>
-              </div>
-
-              {/* Batch list */}
-              <Collapse
-                activeKey={activeKeys}
-                onChange={(keys) => setActiveKeys(keys)}
-                className="!border-0 !bg-transparent"
-                items={batches.map((batch) => {
-                  const batchQty = batch.products.reduce(
-                    (s, p) => s + p.csvQuantity,
-                    0
-                  );
-                  return {
-                    key: batch.id,
-                    className:
-                      '!mb-3 !rounded-xl !border !border-gray-100 !bg-white dark:!border-gray-700 dark:!bg-gray-800',
-                    label: (
-                      <div className="flex items-center gap-3">
-                        <Badge status={batch.date ? 'success' : 'warning'} />
-                        <span className="font-medium">
-                          {batch.fileName}
-                          {batch.sheetName && (
-                            <span className="ml-1 text-xs text-gray-400">
-                              ({batch.sheetName})
-                            </span>
-                          )}
-                        </span>
-                        <Tag color="green" className="!ml-auto">
-                          {batch.products.length} SP
-                        </Tag>
-                        <Tag color="blue">
-                          {batchQty.toLocaleString('vi-VN')}
-                        </Tag>
-                        {batch.date && (
-                          <Tag color="purple">
-                            {batch.date.format('DD/MM/YYYY')}
-                          </Tag>
-                        )}
-                        {!batch.date && (
-                          <Tag color="warning">Chưa chọn ngày</Tag>
-                        )}
-                      </div>
-                    ),
-                    extra: (
-                      <Button
-                        size="small"
-                        type="text"
-                        danger
-                        icon={<FaTrash />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeBatch(batch.id);
-                        }}
-                      />
-                    ),
-                    children: (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-gray-600">
-                            Ngày xuất hàng:
-                          </span>
-                          <DatePicker
-                            value={batch.date}
-                            onChange={(d) => updateBatchDate(batch.id, d)}
-                            placeholder="Chọn ngày"
-                            format="DD/MM/YYYY"
-                            size="small"
-                            status={!batch.date ? 'warning' : undefined}
-                          />
-                        </div>
-                        <Table<ParsedProduct>
-                          columns={productColumns}
-                          dataSource={batch.products}
-                          size="small"
-                          bordered
-                          pagination={false}
-                          scroll={{ y: 200 }}
-                        />
-                      </div>
-                    )
-                  };
-                })}
-              />
-
-              {/* ── Actions ──────────────────────────────────── */}
-              <div className="flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-700">
-                <span className="text-sm text-gray-500">
-                  Sẽ import{' '}
-                  <strong className="text-blue-600">{batches.length}</strong>{' '}
-                  bảng,{' '}
-                  <strong className="text-blue-600">{totalProducts}</strong> sản
-                  phẩm, tổng{' '}
-                  <strong className="text-blue-600">
-                    {totalQty.toLocaleString('vi-VN')}
-                  </strong>
-                </span>
-                <div className="flex gap-2">
-                  <Button onClick={handleCancel}>Hủy</Button>
+          <AnimatePresence initial={false}>
+            {batches.length > 0 ? (
+              <motion.section
+                key="batches"
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={
+                  shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }
+                }
+                transition={
+                  shouldReduceMotion ? { duration: 0 } : APP_PAGE_TRANSITION
+                }
+                className="space-y-3"
+              >
+                {/* Summary bar */}
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-900 dark:bg-blue-950/30">
+                  <div className="flex items-center gap-1">
+                    <FaFileCsv className="text-lg text-green-600" />
+                    <FaFilePdf className="text-lg text-red-500" />
+                  </div>
+                  <Tag color="cyan">{batches.length} bảng dữ liệu</Tag>
+                  <Tag color="green">{totalProducts} sản phẩm</Tag>
+                  <Tag color="blue">
+                    Tổng: {totalQty.toLocaleString('vi-VN')}
+                  </Tag>
                   <Button
-                    variant="solid"
-                    color="blue"
-                    onClick={handleSubmit}
-                    disabled={!allDatesSet || batches.length === 0}
-                    loading={submitting}
+                    size="small"
+                    type="text"
+                    danger
+                    onClick={handleReset}
+                    className="ml-auto"
                   >
-                    Import {batches.length} bảng
+                    Xóa tất cả
                   </Button>
                 </div>
-              </div>
-            </>
-          )}
-        </div>
+
+                {missingDateBatches.length > 0 && (
+                  <Alert
+                    type="warning"
+                    showIcon
+                    message={`${missingDateBatches.length} bảng đã đọc được data nhưng chưa chọn ngày`}
+                    description={
+                      missingDateBatches.length === 1
+                        ? missingDateBatches[0].fileName
+                        : `Thiếu ngày: ${missingDateBatches.map((batch) => batch.fileName).join(', ')}`
+                    }
+                    action={
+                      <Button
+                        size="small"
+                        type="primary"
+                        onClick={() => scrollToBatch(missingDateBatches[0].id)}
+                      >
+                        Đi tới bảng thiếu ngày
+                      </Button>
+                    }
+                  />
+                )}
+
+                {/* Batch list */}
+                <Collapse
+                  activeKey={activeKeys}
+                  onChange={(keys) => setActiveKeys(keys)}
+                  className="!border-0 !bg-transparent"
+                  items={batches.map((batch) => {
+                    const batchQty = batch.products.reduce(
+                      (s, p) => s + p.csvQuantity,
+                      0
+                    );
+                    return {
+                      key: batch.id,
+                      className:
+                        '!mb-3 !rounded-xl !border !border-gray-100 !bg-white dark:!border-gray-700 dark:!bg-gray-800',
+                      label: (
+                        <div
+                          ref={(node) => {
+                            batchRefs.current[batch.id] = node;
+                          }}
+                          className="flex min-w-0 flex-wrap items-center gap-2 pr-2"
+                        >
+                          <Badge status={batch.date ? 'success' : 'warning'} />
+                          <span className="max-w-full min-w-0 truncate font-medium sm:max-w-[360px]">
+                            <span className="truncate">{batch.fileName}</span>
+                            {batch.sheetName && (
+                              <span className="ml-1 text-xs text-gray-400">
+                                ({batch.sheetName})
+                              </span>
+                            )}
+                          </span>
+                          <Tag color="green" className="!m-0">
+                            {batch.products.length} SP
+                          </Tag>
+                          <Tag color="blue" className="!m-0">
+                            {batchQty.toLocaleString('vi-VN')}
+                          </Tag>
+                          {batch.date && (
+                            <Tag color="purple" className="!m-0">
+                              {batch.date.format('DD/MM/YYYY')}
+                            </Tag>
+                          )}
+                          {!batch.date && (
+                            <Tag color="warning" className="!m-0">
+                              Chưa chọn ngày
+                            </Tag>
+                          )}
+                          {batch.note && (
+                            <Tag color="gold" className="!m-0">
+                              Có ghi chú
+                            </Tag>
+                          )}
+                        </div>
+                      ),
+                      extra: (
+                        <Button
+                          size="small"
+                          type="text"
+                          danger
+                          icon={<FaTrash />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeBatch(batch.id);
+                          }}
+                        />
+                      ),
+                      children: (
+                        <div className="min-w-0 space-y-3">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-sm font-medium text-gray-600">
+                              Ngày xuất hàng:
+                            </span>
+                            <DatePicker
+                              value={batch.date}
+                              onChange={(d) => updateBatchDate(batch.id, d)}
+                              placeholder="Chọn ngày"
+                              format="DD/MM/YYYY"
+                              size="small"
+                              status={!batch.date ? 'warning' : undefined}
+                            />
+                          </div>
+                          <div>
+                            <div className="mb-1 text-sm font-medium text-gray-600">
+                              Ghi chú:
+                            </div>
+                            <Input.TextArea
+                              allowClear
+                              autoSize={{ minRows: 2, maxRows: 3 }}
+                              maxLength={500}
+                              showCount
+                              value={batch.note || ''}
+                              placeholder="Ghi chú cho bảng/file này nếu cần..."
+                              onChange={(e) =>
+                                updateBatchNote(batch.id, e.target.value)
+                              }
+                            />
+                          </div>
+                          <Table<ParsedProduct>
+                            columns={productColumns}
+                            dataSource={batch.products}
+                            size="small"
+                            bordered
+                            pagination={false}
+                            scroll={{ x: 720, y: 200 }}
+                          />
+                        </div>
+                      )
+                    };
+                  })}
+                />
+
+                {/* ── Actions ──────────────────────────────────── */}
+                <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700">
+                  <span className="text-sm text-gray-500">
+                    Sẽ import{' '}
+                    <strong className="text-blue-600">{batches.length}</strong>{' '}
+                    bảng,{' '}
+                    <strong className="text-blue-600">{totalProducts}</strong>{' '}
+                    sản phẩm, tổng{' '}
+                    <strong className="text-blue-600">
+                      {totalQty.toLocaleString('vi-VN')}
+                    </strong>
+                  </span>
+                  <div className="flex justify-end gap-2">
+                    <Button onClick={handleCancel}>Hủy</Button>
+                    <Button
+                      variant="solid"
+                      color="blue"
+                      onClick={handleSubmit}
+                      disabled={!allDatesSet || batches.length === 0}
+                      loading={submitting}
+                    >
+                      Import {batches.length} bảng
+                    </Button>
+                  </div>
+                </div>
+              </motion.section>
+            ) : null}
+          </AnimatePresence>
+        </motion.div>
       </Spin>
+      <Modal
+        title="Nhập tay PO xuất hàng"
+        open={manualModalOpen}
+        onCancel={handleCloseManualModal}
+        width={900}
+        destroyOnHidden
+        footer={[
+          <Button key="cancel" onClick={handleCloseManualModal}>
+            Hủy
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleManualSubmit}>
+            Thêm vào danh sách import
+          </Button>
+        ]}
+        styles={{
+          body: {
+            maxHeight: '70vh',
+            overflowY: 'auto',
+            padding: '16px 20px'
+          }
+        }}
+      >
+        <Form<ManualEntryFields>
+          form={manualForm}
+          layout="vertical"
+          initialValues={{ fileName: 'Nhập tay PO xuất hàng' }}
+        >
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[220px_minmax(0,1fr)]">
+            <Form.Item
+              label="Ngày xuất hàng"
+              name="date"
+              rules={[{ required: true, message: 'Chọn ngày xuất hàng' }]}
+            >
+              <DatePicker
+                className="!w-full"
+                format="DD/MM/YYYY"
+                placeholder="Chọn ngày"
+              />
+            </Form.Item>
+            <Form.Item label="Tên nguồn/file" name="fileName">
+              <Input placeholder="VD: File đặc biệt - nhập tay" />
+            </Form.Item>
+          </div>
+          <Form.Item label="Ghi chú" name="note">
+            <Input.TextArea
+              allowClear
+              autoSize={{ minRows: 2, maxRows: 4 }}
+              maxLength={500}
+              showCount
+              placeholder="VD: File này không đọc tự động được, nhập tay theo PO giấy..."
+            />
+          </Form.Item>
+
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-100 bg-blue-50/50 px-3 py-2 dark:border-blue-900 dark:bg-blue-950/30">
+            <div className="flex flex-wrap items-center gap-2">
+              <Tag color="cyan" className="!m-0">
+                {productList.length} sản phẩm
+              </Tag>
+              {manualSearch && (
+                <Tag color="blue" className="!m-0">
+                  Đang lọc: {manualProductList.length}
+                </Tag>
+              )}
+            </div>
+            <Input
+              allowClear
+              suffix={<SearchOutlined />}
+              size="small"
+              placeholder="Tìm mã hoặc tên sản phẩm..."
+              className="!w-full sm:!w-72"
+              value={manualSearch}
+              onChange={(e) => setManualSearch(e.target.value)}
+            />
+          </div>
+
+          <Spin spinning={isLoadingProducts}>
+            <Table<ProductType>
+              rowKey="id"
+              columns={manualProductColumns}
+              dataSource={manualProductList}
+              size="small"
+              bordered
+              pagination={false}
+              scroll={{ x: 680, y: 420 }}
+              locale={{ emptyText: 'Không tìm thấy sản phẩm' }}
+            />
+          </Spin>
+        </Form>
+      </Modal>
     </Modal>
   );
 };

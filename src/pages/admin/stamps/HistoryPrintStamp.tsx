@@ -1,12 +1,17 @@
 import { QueryParams } from '@/types/queryParams';
-import { ActionGroup, PrintButton } from '@components/common/ActionButtons';
+import {
+  ActionGroup,
+  DeleteButton,
+  PrintButton
+} from '@components/common/ActionButtons';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import {
+  checkDuplicateStamps,
+  deleteStampHistory,
   getStampHistory,
-  HistoryPrintStampType,
-  checkDuplicateStamps
+  HistoryPrintStampType
 } from '@services/StampService';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { Route } from '@routes/_authenticated/stamps/history';
@@ -15,13 +20,15 @@ import {
   DatePicker,
   Modal,
   Pagination,
+  Popconfirm,
   Select,
   Spin,
   Table,
   TableColumnsType,
   TableProps,
   Tag,
-  Input
+  Input,
+  message
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -38,9 +45,13 @@ import { PrintBagStamp } from '@components/print/PrintBagStamp';
 import { PrintBoxStamp } from '@components/print/PrintBoxStamp';
 import { RejectModal } from './RejectModal';
 import { useIsMobile } from '@hooks/useIsMobile';
+import { useAuth } from '@hooks/useAuth';
+import { isAllowRole } from '@utils/authUtil';
 
 export default function HistoryPrintStamp() {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const canDeleteStampHistory = isAllowRole(user, ['super admin']);
   const [lotDate, setLotDate] = useState<Dayjs | null>(null);
   const [createdDate, setCreatedDate] = useState<Dayjs | null>(dayjs());
   const [params, setParams] = useState<QueryParams>({
@@ -51,6 +62,7 @@ export default function HistoryPrintStamp() {
   });
   const [selectedRecord, setSelectedRecord] =
     useState<HistoryPrintStampType | null>(null);
+  const [deletingStampId, setDeletingStampId] = useState<string | null>(null);
   const printPreviewRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -167,6 +179,25 @@ export default function HistoryPrintStamp() {
     };
 
     checkDuplicate(requestData);
+  };
+
+  const handleDeleteClick = async (record: HistoryPrintStampType) => {
+    if (!canDeleteStampHistory) return;
+
+    setDeletingStampId(record.id);
+    try {
+      await deleteStampHistory(record.id);
+      message.success('Xóa lịch sử in tem thành công');
+      if (selectedRecord?.id === record.id) {
+        setSelectedRecord(null);
+      }
+      await queryResult.refetch();
+    } catch (error) {
+      console.error('Error deleting stamp history:', error);
+      message.error('Xóa lịch sử in tem thất bại. Vui lòng thử lại.');
+    } finally {
+      setDeletingStampId(null);
+    }
   };
 
   // Keyboard shortcuts cho phím Enter:
@@ -315,8 +346,20 @@ export default function HistoryPrintStamp() {
       key: 'stamp_type',
       dataIndex: 'type',
       render: (value) => {
-        if (value === 'bag') return <Tag color="orange">Tem Bịch</Tag>;
-        if (value === 'box') return <Tag color="cyan">Tem Thùng</Tag>;
+        if (value === 'bag') {
+          return (
+            <Tag color="volcano" className="!font-bold">
+              TEM BỊCH
+            </Tag>
+          );
+        }
+        if (value === 'box') {
+          return (
+            <Tag color="cyan" className="!font-bold">
+              TEM THÙNG
+            </Tag>
+          );
+        }
         return <Tag>{value}</Tag>;
       }
     },
@@ -410,10 +453,26 @@ export default function HistoryPrintStamp() {
       align: 'center',
       minWidth: 100,
       render: (_, record) => {
-        if (record.status == 'approve' || record.status == 'rejected') {
+        if (record.status === 'approve') {
+          return <span className="text-gray-300">—</span>;
+        }
+
+        if (record.status === 'rejected') {
           return (
             <ActionGroup>
               <PrintButton disabled />
+              {canDeleteStampHistory && (
+                <Popconfirm
+                  title="Xóa lịch sử in tem?"
+                  description="Dữ liệu đã xóa không thể khôi phục."
+                  okText="Xóa"
+                  cancelText="Hủy"
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => handleDeleteClick(record)}
+                >
+                  <DeleteButton loading={deletingStampId === record.id} />
+                </Popconfirm>
+              )}
             </ActionGroup>
           );
         }
@@ -421,6 +480,18 @@ export default function HistoryPrintStamp() {
           <ActionGroup>
             <PrintButton onClick={() => handlePrintClick(record)} />
             <RejectModal stampId={record.id} />
+            {canDeleteStampHistory && (
+              <Popconfirm
+                title="Xóa lịch sử in tem?"
+                description="Dữ liệu đã xóa không thể khôi phục."
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+                onConfirm={() => handleDeleteClick(record)}
+              >
+                <DeleteButton loading={deletingStampId === record.id} />
+              </Popconfirm>
+            )}
           </ActionGroup>
         );
       }
@@ -715,12 +786,12 @@ export default function HistoryPrintStamp() {
                         </div>
                         <div className="flex items-center gap-1">
                           {record.type === 'bag' ? (
-                            <Tag color="orange" className="!m-0">
-                              Tem Bịch
+                            <Tag color="volcano" className="!m-0 !font-bold">
+                              TEM BỊCH
                             </Tag>
                           ) : (
-                            <Tag color="cyan" className="!m-0">
-                              Tem Thùng
+                            <Tag color="cyan" className="!m-0 !font-bold">
+                              TEM THÙNG
                             </Tag>
                           )}
                         </div>
@@ -813,6 +884,41 @@ export default function HistoryPrintStamp() {
                             onClick={() => handlePrintClick(record)}
                           />
                           <RejectModal stampId={record.id} />
+                          {canDeleteStampHistory && (
+                            <Popconfirm
+                              title="Xóa lịch sử in tem?"
+                              description="Dữ liệu đã xóa không thể khôi phục."
+                              okText="Xóa"
+                              cancelText="Hủy"
+                              okButtonProps={{ danger: true }}
+                              onConfirm={() => handleDeleteClick(record)}
+                            >
+                              <DeleteButton
+                                size="small"
+                                loading={deletingStampId === record.id}
+                              />
+                            </Popconfirm>
+                          )}
+                        </ActionGroup>
+                      )}
+                      {record.status === 'rejected' && (
+                        <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
+                          <PrintButton size="small" disabled />
+                          {canDeleteStampHistory && (
+                            <Popconfirm
+                              title="Xóa lịch sử in tem?"
+                              description="Dữ liệu đã xóa không thể khôi phục."
+                              okText="Xóa"
+                              cancelText="Hủy"
+                              okButtonProps={{ danger: true }}
+                              onConfirm={() => handleDeleteClick(record)}
+                            >
+                              <DeleteButton
+                                size="small"
+                                loading={deletingStampId === record.id}
+                              />
+                            </Popconfirm>
+                          )}
                         </ActionGroup>
                       )}
                     </div>
@@ -857,12 +963,16 @@ export default function HistoryPrintStamp() {
                     </Tag>
                     <Tag color="purple">Ca {selectedRecord.shift}</Tag>
                     <Tag color="cyan">SL: {selectedRecord.binCount}</Tag>
-                    <Tag color="orange">
-                      {selectedRecord.type === 'box' ||
-                      selectedRecord.type === 'Tem Thùng'
-                        ? 'Tem Thùng'
-                        : 'Tem Bịch'}
-                    </Tag>
+                    {selectedRecord.type === 'box' ||
+                    selectedRecord.type === 'Tem Thùng' ? (
+                      <Tag color="cyan" className="!font-bold">
+                        TEM THÙNG
+                      </Tag>
+                    ) : (
+                      <Tag color="volcano" className="!font-bold">
+                        TEM BỊCH
+                      </Tag>
+                    )}
                     {(() => {
                       const startStr = String(selectedRecord.binStart || '');
                       const count = Number(selectedRecord.binCount || 1);

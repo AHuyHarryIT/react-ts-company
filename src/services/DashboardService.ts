@@ -2,7 +2,7 @@ import axiosPrivate from '@/api/axiosInstance';
 import { DashboardDataType } from '@/types/dashboardType';
 import { SalaryType } from '@/types/salaryType';
 import { handleApiError } from '@utils/handleApiError';
-import { CalendarType } from 'antd/es/calendar';
+import { WorkCalendarTableType } from '@/types/dashboardType';
 
 type DashboardDataResponse = {
   totalEmployee: number;
@@ -17,7 +17,7 @@ type DashboardDataResponse = {
   totalRequestForms: number;
   totalFeedback: number;
   salaryManagers: SalaryType[];
-  celenders: CalendarType[];
+  celenders: WorkCalendarTableType[];
 };
 
 export const fetchDashboardData = async () => {
@@ -42,7 +42,8 @@ export const fetchDashboardData = async () => {
 
     const salaryTableData: SalaryType[] = response.salaryManagers || [];
 
-    const workCalendarTableData: CalendarType[] = response.celenders || [];
+    const workCalendarTableData: WorkCalendarTableType[] =
+      response.celenders || [];
 
     return { dashboardData, salaryTableData, workCalendarTableData };
   } catch (error) {

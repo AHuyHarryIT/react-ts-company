@@ -9,9 +9,14 @@ import { BiTrash } from 'react-icons/bi';
 interface DeleteModalProps {
   id: string;
   title: string;
+  onDeleted?: () => void;
 }
 
-export const DeleteModal: React.FC<DeleteModalProps> = ({ id, title }) => {
+export const DeleteModal: React.FC<DeleteModalProps> = ({
+  id,
+  title,
+  onDeleted
+}) => {
   const [open, setOpen] = useState(false);
   const [modalText, setModalText] = useState<ReactNode>(
     <p>
@@ -41,7 +46,9 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({ id, title }) => {
     onSuccess: () => {
       setOpen(false);
       message.success('Xóa bảng lương thành công');
-      queryClient.invalidateQueries({ queryKey: ['fetchSalaries'] });
+      onDeleted?.();
+      queryClient.invalidateQueries({ queryKey: ['salaries'] });
+      queryClient.invalidateQueries({ queryKey: ['adminSalaryPreview'] });
     },
     onError: (error) => {
       console.error(error);

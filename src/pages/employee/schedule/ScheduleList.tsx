@@ -5,6 +5,7 @@ import RefreshButton from '@components/common/RefreshButton';
 import { useCrudList } from '@hooks/useCrudList';
 import { empScheduleService } from '@services/workScheduleService';
 import { Alert, Empty, Input, Select, Spin, Tag } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 import { useState, useEffect } from 'react';
@@ -95,9 +96,10 @@ export const ScheduleList = () => {
                 <FaSearch className="mr-1 inline-block text-gray-400" />
                 Tìm kiếm
               </label>
-              <Input.Search
+              <Input
                 className="max-w-sm !rounded-lg"
                 allowClear
+                suffix={<SearchOutlined />}
                 placeholder="Nhập tiêu đề lịch làm việc..."
                 onChange={(e) => {
                   const inputValue = e.target.value;

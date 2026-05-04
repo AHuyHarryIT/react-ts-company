@@ -77,8 +77,8 @@ function SidebarItem({
       whileTap={{ scale: 0.98 }}
       className={`group mx-2.5 my-0.5 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-out ${
         isActive
-          ? 'bg-blue-50/60 font-semibold text-black dark:bg-blue-900/20 dark:text-white'
-          : 'font-medium text-black hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/5 dark:hover:text-white'
+          ? 'glass-control sidebar-active-item font-semibold text-black dark:text-white'
+          : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white'
       }`}
     >
       {icon && (
@@ -171,8 +171,8 @@ function SidebarSubmenu({
         onClick={onToggle}
         className={`group mx-2.5 my-0.5 flex w-[calc(100%-20px)] items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-out ${
           hasActiveChild
-            ? 'bg-blue-50/40 font-semibold text-black dark:bg-blue-900/15 dark:text-white'
-            : 'font-medium text-black hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/5 dark:hover:text-white'
+            ? 'glass-control sidebar-active-item font-semibold text-black dark:text-white'
+            : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white'
         }`}
       >
         {icon && (
@@ -235,8 +235,8 @@ function SidebarSubmenu({
                       whileTap={{ scale: 0.98 }}
                       className={`mx-2 my-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 transition-all duration-200 ease-out ${
                         isChildActive
-                          ? 'bg-blue-50/50 font-semibold text-black dark:bg-blue-900/15 dark:text-white'
-                          : 'font-medium text-black hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white'
+                          ? 'glass-control sidebar-active-item font-semibold text-black dark:text-white'
+                          : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
                       }`}
                     >
                       {childIcon && (
@@ -297,7 +297,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               whileHover={{ scale: 1.05, rotate: [-2, 2, -2, 0] }}
               whileTap={{ scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              transition={{
+                scale: { type: 'spring', stiffness: 300, damping: 20 },
+                rotate: { type: 'tween', duration: 0.35, ease: 'easeInOut' }
+              }}
               className={`drop-shadow-sm transition-all duration-300 ${isSidebarClose ? 'h-[52px]' : 'h-[88px]'}`}
             />
           </Link>

@@ -147,7 +147,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
   return (
     <div className="h-full w-full">
       <Card
-        className="!rounded-2xl !border-gray-100 !shadow-sm dark:!border-gray-700 dark:!bg-gray-800/50"
+        className="dashboard-glass-chart !rounded-[26px]"
         title={
           <div className="flex items-center gap-3">
             <div>
@@ -166,7 +166,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
         }
         extra={
           <div className="hidden items-center gap-4 lg:flex">
-            <span className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 text-xs font-bold text-blue-600 dark:from-blue-900/30 dark:to-indigo-900/30 dark:text-blue-400">
+            <span className="glass-control rounded-xl px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-300">
               📊 Top sản phẩm
             </span>
           </div>
@@ -175,10 +175,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
         {/* Stats Cards */}
         <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {statCards.map((stat, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
-            >
+            <div key={i} className="glass-control rounded-2xl p-4">
               <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
                 {stat.icon} {stat.label}
               </div>
@@ -191,7 +188,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
 
         {/* Chart */}
         <div className="relative">
-          <div className="w-full rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/30">
+          <div className="glass-control w-full rounded-2xl p-4">
             <div
               className="w-full"
               style={{ height: 'clamp(300px, 50vh, 400px)' }}
@@ -201,7 +198,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
           </div>
 
           {chartData.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800/80">
+            <div className="glass-card absolute inset-0 flex items-center justify-center rounded-2xl">
               <div className="p-6 text-center">
                 <p className="mb-1 text-base font-medium text-gray-600 dark:text-gray-300">
                   Chưa có dữ liệu sản phẩm
@@ -216,12 +213,12 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
 
         {/* Production Analysis */}
         {chartData.length > 0 && (
-          <div className="mt-6 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+          <div className="glass-control mt-6 rounded-2xl p-4">
             <h4 className="mb-3 text-sm font-bold text-gray-800 dark:text-white">
               📋 Báo cáo sản lượng
             </h4>
             <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
-              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+              <div className="glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Sản phẩm chính:
                 </span>
@@ -229,7 +226,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
                   {chartData[0]?.product || 'N/A'}
                 </span>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+              <div className="glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Sản lượng cao nhất:
                 </span>
@@ -237,7 +234,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
                   {formatNumber(maxQuantity)}
                 </span>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800/50">
+              <div className="glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Chênh lệch:
                 </span>

@@ -17,6 +17,7 @@ import { FaFingerprint } from 'react-icons/fa6';
 import { LuUserRoundPlus } from 'react-icons/lu';
 import { BiTrash } from 'react-icons/bi';
 import { useIsMobile } from '@hooks/useIsMobile';
+import { SearchOutlined } from '@ant-design/icons';
 
 import { useCrudList } from '@/hooks/useCrudList';
 import { EmployeeType } from '@/types/employeeType';
@@ -269,20 +270,20 @@ export default function EmployeeList() {
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
           <RefreshButton refresh={refetch} isLoading={isFetching} />
           <Link to="/admin/employees/add">
-            <button className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97]">
+            <button className="header-action-btn header-action-btn--success">
               <LuUserRoundPlus className="text-sm" />
               Thêm nhân viên
             </button>
           </Link>
           <Link to="/admin/employees/trash">
-            <button className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition-all hover:bg-amber-100 hover:shadow-md active:scale-[0.97] dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+            <button className="header-action-btn header-action-btn--warning">
               <BiTrash className="text-sm" />
               Thùng rác
             </button>
           </Link>
           <button
             onClick={handleAttendanceClick}
-            className="inline-flex items-center gap-2 rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-700 hover:shadow-md active:scale-[0.97]"
+            className="header-action-btn header-action-btn--neutral"
           >
             <FaFingerprint className="text-sm" />
             Thêm chấm công
@@ -305,9 +306,10 @@ export default function EmployeeList() {
                 <FaSearch className="mr-1 inline-block text-gray-400" />
                 Tìm kiếm nhân viên
               </label>
-              <Input.Search
+              <Input
                 placeholder="Mã hoặc tên nhân viên..."
                 allowClear
+                suffix={<SearchOutlined />}
                 className="!rounded-lg"
                 onChange={(e) => {
                   const inputValue = e.target.value;

@@ -54,14 +54,10 @@ const accentStyles = {
 
 function AttendanceComparisonWidget({
   startDate,
-  endDate,
-  salaryCoreHours,
-  salaryOvertimeHours
+  endDate
 }: {
   startDate: string;
   endDate: string;
-  salaryCoreHours: number;
-  salaryOvertimeHours: number;
 }) {
   const { data: calcResponse, isLoading } = useQuery({
     queryKey: ['emp-attendance-comparison', startDate, endDate],
@@ -78,23 +74,31 @@ function AttendanceComparisonWidget({
   const stats = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = (calcResponse?.data || []) as any[];
-    const workDays = data.filter((d) => d.shift > 0).length;
-    const attendanceTotalHours = data.reduce(
-      (s, d) => s + (d.total_hours || 0),
+    const workDays = data.filter(
+      (d) =>
+        d.shift > 0 &&
+        !!d.time_in &&
+        !!d.time_out &&
+        d.time_in !== '' &&
+        d.time_out !== ''
+    ).length;
+    const adminHours = data.reduce(
+      (s, d) =>
+        s +
+        (d.hnhc === 'TC' || d.hnhc === 'LN' ? 0 : d.administrative_hours || 0),
       0
     );
-    const hasSalaryHours = salaryCoreHours > 0 || salaryOvertimeHours > 0;
-    const adminHours = hasSalaryHours
-      ? salaryCoreHours
-      : data.reduce((s, d) => s + (d.administrative_hours || 0), 0);
-    const otHours = hasSalaryHours
-      ? salaryOvertimeHours
-      : data.reduce((s, d) => s + (d.overtime_hours || 0), 0);
-    const totalHours = hasSalaryHours
-      ? salaryCoreHours + salaryOvertimeHours
-      : attendanceTotalHours;
+    const otHours = data.reduce(
+      (s, d) =>
+        s +
+        (d.hnhc === 'TC' || d.hnhc === 'LN'
+          ? d.total_hours || 0
+          : d.overtime_hours || 0),
+      0
+    );
+    const totalHours = adminHours + otHours;
     return { workDays, totalHours, otHours, adminHours };
-  }, [calcResponse, salaryCoreHours, salaryOvertimeHours]);
+  }, [calcResponse]);
 
   if (!startDate || !endDate) return null;
 
@@ -544,8 +548,6 @@ export const PayslipDetailContent = ({
               <AttendanceComparisonWidget
                 startDate={salary_manager.start_date}
                 endDate={salary_manager.end_date}
-                salaryCoreHours={salaryDetails?.core_hours || 0}
-                salaryOvertimeHours={salaryDetails?.overtime_hours_detail || 0}
               />
             )}
 

@@ -286,8 +286,8 @@ const TransactionList: React.FC = () => {
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <Input
               placeholder="Tìm kiếm..."
-              allowClear
-              style={{ width: 150 }}
+              allowClear={false}
+              className="stock-search-input !w-full sm:!w-[160px]"
               suffix={<SearchOutlined />}
               onChange={(e) => handleSearch(e.target.value)}
               size="small"

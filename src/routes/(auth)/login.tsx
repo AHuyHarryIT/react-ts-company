@@ -239,7 +239,7 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="glass-card auth-glass-card flex min-w-0 flex-col items-center rounded-[28px] px-6 py-8 sm:px-8">
       {/* ── Logo ── */}
       <div className="mb-8">
         <img src={logo} alt="Logo" className="mx-auto h-28" />
@@ -256,7 +256,7 @@ function RouteComponent() {
       </div>
 
       {/* ── Form ── */}
-      <div className="w-full">
+      <div className="w-full min-w-0">
         <Form
           form={form}
           name="auth-login"
@@ -280,7 +280,7 @@ function RouteComponent() {
               disabled={isPending}
               autoComplete="username"
               size="large"
-              className="!rounded-xl !border-gray-200 !bg-gray-50/50 !py-3 !text-black placeholder:!text-black/30 hover:!border-gray-300 focus:!border-blue-400 dark:!border-gray-700 dark:!bg-gray-800/50 dark:!text-white"
+              className="!rounded-xl !text-black placeholder:!text-black/30 hover:!border-gray-300 focus:!border-blue-400 dark:!text-white"
             />
           </Form.Item>
 
@@ -296,7 +296,7 @@ function RouteComponent() {
               disabled={isPending}
               autoComplete="current-password"
               size="large"
-              className="!rounded-xl !border-gray-200 !bg-gray-50/50 !py-3 !text-black placeholder:!text-black/30 hover:!border-gray-300 focus:!border-blue-400 dark:!border-gray-700 dark:!bg-gray-800/50 dark:!text-white"
+              className="!rounded-xl !text-black placeholder:!text-black/30 hover:!border-gray-300 focus:!border-blue-400 dark:!text-white"
             />
           </Form.Item>
 
@@ -308,7 +308,7 @@ function RouteComponent() {
               loading={isPending}
               disabled={isPending}
               size="large"
-              className="!h-12 !rounded-xl !border-0 !bg-blue-600 !text-base !font-semibold !shadow-none hover:!bg-blue-700 active:!scale-[0.98]"
+              className="glass-button !h-12 !rounded-xl !text-base !font-semibold active:!scale-[0.98]"
             >
               Đăng Nhập
             </Button>
@@ -317,14 +317,14 @@ function RouteComponent() {
       </div>
 
       {/* ── Notice ── */}
-      <p className="mt-4 text-center text-xs leading-relaxed text-black/50 dark:text-gray-400">
+      {/* <p className="mt-4 text-center text-xs leading-relaxed text-black/50 dark:text-gray-400">
         Khi đăng nhập thành công, trình duyệt sẽ hỏi bạn có muốn lưu mật khẩu.
         Nhấn{' '}
         <span className="inline-block rounded bg-black/5 px-1.5 py-0.5 font-bold text-black/70 dark:bg-white/10 dark:text-gray-200">
           "Lưu"
         </span>{' '}
         để đăng nhập nhanh hơn lần sau.
-      </p>
+      </p> */}
 
       {/* ── Footer ── */}
       <p className="mt-6 text-center text-xs text-black/25 dark:text-gray-600">

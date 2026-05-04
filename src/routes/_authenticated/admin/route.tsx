@@ -1,7 +1,8 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 import { isAllowRole, requirePermission, requireRole } from '@utils/authUtil';
 
 export const Route = createFileRoute('/_authenticated/admin')({
+  component: () => <Outlet />,
   beforeLoad: async ({ context, location }) => {
     const { user } = context.authenticated;
     requireRole(user, ['admin', 'super admin', 'co admin', 'tổ trưởng qc', 23]);

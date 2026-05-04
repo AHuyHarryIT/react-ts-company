@@ -24,6 +24,7 @@ import {
   Tooltip,
   Typography
 } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FaCircle,
@@ -2456,10 +2457,13 @@ function AdminManager() {
             ]}
             className="!w-32"
           />
-          <Input.Search
+          <Input
             placeholder="Tìm tên, tài khoản..."
             allowClear
-            onSearch={(v) => setSearch(v)}
+            suffix={<SearchOutlined />}
+            onPressEnter={(e) =>
+              setSearch((e.target as HTMLInputElement).value)
+            }
             onChange={(e) => {
               if (!e.target.value) setSearch('');
             }}

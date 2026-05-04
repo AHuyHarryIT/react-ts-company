@@ -75,13 +75,13 @@ export const UpdateQuantityError = () => {
           {/* ── Action Bar ─────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <Link to="/employee/todo/add-product">
-              <button className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-[0.97]">
+              <button className="header-action-btn header-action-btn--primary">
                 <FaBoxOpen className="text-xs" />
                 NHẬP SẢN PHẨM
               </button>
             </Link>
             <Link to="/employee/todo/history">
-              <button className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition-all hover:bg-amber-100 hover:shadow-md active:scale-[0.97] dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+              <button className="header-action-btn header-action-btn--warning">
                 <IconHistory />
                 LỊCH SỬ
               </button>

@@ -221,10 +221,16 @@ export const PrintBagStamp = ({
           }
           .bag-print-container table {
             border-collapse: collapse !important;
-            ${printMode === 'single' ? 'width: 94mm !important; height: 76mm !important;' : ''}
+            table-layout: fixed !important;
+            ${printMode === 'single' ? 'width: 96mm !important; height: 76mm !important;' : ''}
           }
 
           @media print {
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              overflow: visible !important;
+            }
             .bag-print-container {
               margin: 0 !important;
               padding: 0 !important;
@@ -238,16 +244,24 @@ export const PrintBagStamp = ({
               printMode === 'single'
                 ? `
             .stamp-item {
-              width: 100vw !important;
-              height: 100vh !important;
+              width: 100mm !important;
+              height: 80mm !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
               page-break-after: always !important;
+              break-after: page !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
               position: relative !important;
+              overflow: hidden !important;
+            }
+            .stamp-item:last-child {
+              page-break-after: auto !important;
+              break-after: auto !important;
             }
             .stamp-item table {
-              width: 94mm !important;
+              width: 96mm !important;
               height: 76mm !important;
               margin: 0 auto !important;
             }
@@ -257,21 +271,41 @@ export const PrintBagStamp = ({
           }
         `}
       </style>
-      <div className="mb-4 space-y-3">
+      <div className="mb-4 space-y-3 rounded-2xl border border-orange-200 bg-orange-50/70 p-4 dark:border-orange-800/60 dark:bg-orange-900/15">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-xs font-bold tracking-wide text-orange-500 uppercase">
+              Đang xem
+            </div>
+            <div className="text-base font-bold text-orange-700 dark:text-orange-300">
+              Tem Bịch
+            </div>
+          </div>
+          <span className="rounded-full border border-orange-300 bg-white/70 px-3 py-1 text-xs font-bold text-orange-700 dark:border-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
+            Nhãn túi/bịch
+          </span>
+        </div>
         <div>
-          <label className="mb-2 block text-sm font-medium">Chế độ in:</label>
+          <label className="mb-2 block text-sm font-medium text-orange-900 dark:text-orange-100">
+            Chế độ in tem bịch:
+          </label>
           <Radio.Group
             value={printMode}
             onChange={(e) => setPrintMode(e.target.value)}
-            className="flex gap-4"
+            className="flex flex-wrap gap-4"
           >
-            <Radio value="single">In (100 x 80)</Radio>
-            <Radio value="grid">In (A4)</Radio>
+            <Radio value="single">Tem bịch lẻ (100 x 80)</Radio>
+            <Radio value="grid">Tem bịch A4</Radio>
           </Radio.Group>
         </div>
         <div>
-          <Button color="default" variant="solid" onClick={handleSavePrintLog}>
-            Print
+          <Button
+            color="orange"
+            variant="solid"
+            className="stamp-print-action stamp-print-action--bag"
+            onClick={handleSavePrintLog}
+          >
+            In tem bịch
           </Button>
         </div>
       </div>
@@ -307,7 +341,7 @@ export const PrintBagStamp = ({
               .map((page, pageIndex) => (
                 <div
                   key={`page-${pageIndex}`}
-                  className="print-grid print:page-break-after-always mr-2 grid grid-cols-2 grid-rows-4 gap-4 not-print:mx-auto not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-green-400 not-print:p-4 not-print:lg:grid-cols-2 print:min-h-screen"
+                  className="print-grid print:page-break-after-always mr-2 grid grid-cols-2 grid-rows-4 gap-4 not-print:mx-auto not-print:mb-8 not-print:max-w-7xl not-print:grid-cols-1 not-print:border not-print:border-orange-400 not-print:p-4 not-print:lg:grid-cols-2 print:min-h-screen"
                 >
                   {page.map(({ item, index }) => (
                     <div
@@ -316,11 +350,11 @@ export const PrintBagStamp = ({
                     >
                       <table className="text-center">
                         <colgroup>
-                          <col className="w-[80px]" />
-                          <col className="w-[120px]" />
-                          <col className="w-[120px]" />
-                          <col className="w-[120px]" />
-                          <col className="w-[120px]" />
+                          <col className="w-[14%]" />
+                          <col className="w-[21.5%]" />
+                          <col className="w-[21.5%]" />
+                          <col className="w-[21.5%]" />
+                          <col className="w-[21.5%]" />
                         </colgroup>
                         <tbody>
                           <tr>
@@ -459,15 +493,15 @@ export const PrintBagStamp = ({
                 return allStamps.map((stamp, index) => (
                   <div
                     key={`stamp-${index}-${product.code}-${stamp}`}
-                    className="stamp-item not-print:mx-auto not-print:mb-8 not-print:max-w-fit not-print:border not-print:border-green-400 not-print:p-4 print:flex print:items-center print:justify-center"
+                    className="stamp-item not-print:mx-auto not-print:mb-8 not-print:max-w-fit not-print:border not-print:border-orange-400 not-print:p-4 print:flex print:items-center print:justify-center"
                   >
                     <table className="text-center">
                       <colgroup>
-                        <col className="w-[80px]" />
-                        <col className="w-[120px]" />
-                        <col className="w-[120px]" />
-                        <col className="w-[120px]" />
-                        <col className="w-[120px]" />
+                        <col className="w-[14%]" />
+                        <col className="w-[21.5%]" />
+                        <col className="w-[21.5%]" />
+                        <col className="w-[21.5%]" />
+                        <col className="w-[21.5%]" />
                       </colgroup>
                       <tbody>
                         <tr>

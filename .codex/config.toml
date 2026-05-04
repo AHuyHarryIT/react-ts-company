@@ -1,0 +1,2 @@
+[mcp_servers.gitnexus]
+command = "./plugins/gitnexus/scripts/gitnexus-mcp-node20.sh"

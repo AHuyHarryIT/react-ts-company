@@ -229,27 +229,31 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
   const dateColumns: TableColumnsType<ProduceTableType> = Array.from({
     length: dayjs(month).daysInMonth()
   }).map((_, index) => {
-    const date = dayjs(month)
-      .date(index + 1)
-      .format('DD-MM-YYYY');
+    const dateObj = dayjs(month).date(index + 1);
+    const date = dateObj.format('DD-MM-YYYY');
+    const isToday = dateObj.isSame(dayjs(), 'day');
+    const dayColumnClass = isToday
+      ? 'product-day-current'
+      : index % 2 === 0
+        ? 'product-day-alt'
+        : '';
+
     return {
       title: (
-        <span className="text-xs">
-          {dayjs(month)
-            .date(index + 1)
-            .format('DD/MM')}
-        </span>
+        <div className={`product-day-pill ${isToday ? 'is-today' : ''}`}>
+          {dateObj.format('DD/MM')}
+        </div>
       ),
       align: 'center',
-      width: 90,
+      width: 120,
       children: [
         {
-          title: 'Ca 1',
+          title: <span className="product-shift-label">Ca 1</span>,
           key: `${date}_shift1`,
           dataIndex: ['times', date, 'shift1'],
           align: 'center',
-          className: index % 2 === 0 ? 'bg-indigo-200' : '',
-          minWidth: 45,
+          className: dayColumnClass,
+          width: 60,
           render: (value) => {
             if (!value) return '0';
             return value.toLocaleString({
@@ -258,12 +262,12 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
           }
         },
         {
-          title: 'Ca 2',
+          title: <span className="product-shift-label">Ca 2</span>,
           key: `${date}_shift2`,
           dataIndex: ['times', date, 'shift2'],
           align: 'center',
-          className: index % 2 === 0 ? 'bg-indigo-200' : '',
-          minWidth: 45,
+          className: dayColumnClass,
+          width: 60,
           render: (value) => {
             if (!value) return '0';
             return value.toLocaleString({
@@ -311,10 +315,10 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
       responsive: ['lg']
     },
     {
-      title: <div className="text-xs">Tổng</div>,
+      title: <div className="text-sm font-semibold">Tổng</div>,
       key: 'total',
       dataIndex: 'total',
-      width: 70,
+      width: 88,
       fixed: 'left',
       align: 'center',
       render: (value) => {
@@ -336,10 +340,14 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
 
   const tableProps: TableProps<ProduceTableType> = {
     ...(customTableProps as unknown as TableProps<ProduceTableType>),
+    className: 'product-sticky-table',
     rowKey: (record) => ['produce', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
+    sticky: {
+      offsetHeader: 0
+    },
     scroll: {
       x: 'max-content',
       scrollToFirstRowOnChange: false

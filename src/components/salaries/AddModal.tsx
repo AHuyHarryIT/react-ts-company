@@ -24,7 +24,11 @@ type FormField = {
   importA7A: File;
 };
 
-export const AddSalary = () => {
+type AddSalaryProps = {
+  onCreated?: () => void;
+};
+
+export const AddSalary: React.FC<AddSalaryProps> = ({ onCreated }) => {
   const queryClient = useQueryClient();
   const [form] = Form.useForm<FormField>();
 
@@ -32,20 +36,14 @@ export const AddSalary = () => {
   const [vvpFile, setVvpFile] = useState<File>();
   const [a7aFile, setA7aFile] = useState<File>();
 
-  const calculateDefaultDates = () => {
-    const now = dayjs();
-    // End date: 15 của tháng hiện tại
-    let endDate = now.clone().date(15);
-    // Start date: 16 của tháng trước
-    let startDate = now.clone().subtract(1, 'month').date(16);
+  const getSalaryPeriodByMonth = (month: number, year: number) => {
+    if (month < 1 || month > 12 || year < 1900) return null;
 
-    // Ensure dates are valid
-    if (!endDate.isValid()) {
-      endDate = now.clone().endOf('month');
-    }
-    if (!startDate.isValid()) {
-      startDate = now.clone().subtract(1, 'month').startOf('month');
-    }
+    const formattedMonth = String(month).padStart(2, '0');
+    const endDate = dayjs(`${year}-${formattedMonth}-15`);
+    const startDate = dayjs(`${year}-${formattedMonth}-01`)
+      .subtract(1, 'month')
+      .date(16);
 
     return { startDate, endDate };
   };
@@ -54,8 +52,37 @@ export const AddSalary = () => {
     return `Bảng Lương Tháng ${salaryMonth.format('MM-YYYY')}`;
   };
 
+  const syncSalaryPeriodFromTitle = (title: string) => {
+    const match = title.match(/tháng\s*(\d{1,2})(?:\s*[./-]\s*(\d{4}))?/i);
+    if (!match) return;
+
+    const month = Number(match[1]);
+    const year = Number(match[2] || dayjs().year());
+    const salaryPeriod = getSalaryPeriodByMonth(month, year);
+    if (!salaryPeriod) return;
+
+    form.setFieldsValue({
+      start_date: salaryPeriod.startDate,
+      end_date: salaryPeriod.endDate
+    });
+  };
+
   const showModal = () => {
+    const currentMonth = dayjs().month() + 1;
+    const currentYear = dayjs().year();
+    const currentSalaryPeriod = getSalaryPeriodByMonth(
+      currentMonth,
+      currentYear
+    );
+
     setOpen(true);
+    if (!currentSalaryPeriod) return;
+
+    form.setFieldsValue({
+      title: formatDefaultTitle(currentSalaryPeriod.endDate),
+      start_date: currentSalaryPeriod.startDate,
+      end_date: currentSalaryPeriod.endDate
+    });
   };
 
   const onCancel = () => {
@@ -79,7 +106,8 @@ export const AddSalary = () => {
     onSuccess: () => {
       message.success('Thêm bản lương thành công');
       onCancel();
-      queryClient.invalidateQueries();
+      onCreated?.();
+      queryClient.invalidateQueries({ queryKey: ['salaries'] });
     },
     onError: () => {
       message.error('Lỗi khi thêm bản lương');
@@ -125,16 +153,6 @@ export const AddSalary = () => {
         destroyOnHidden
         centered
         footer={null}
-        afterOpenChange={(isOpen) => {
-          if (isOpen) {
-            const { startDate, endDate } = calculateDefaultDates();
-            form.setFieldsValue({
-              title: formatDefaultTitle(endDate),
-              start_date: startDate,
-              end_date: endDate
-            });
-          }
-        }}
       >
         <Form {...formProps}>
           <Form.Item<FormField>
@@ -142,7 +160,9 @@ export const AddSalary = () => {
             label="Tiêu đề"
             rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
           >
-            <Input />
+            <Input
+              onChange={(e) => syncSalaryPeriodFromTitle(e.target.value)}
+            />
           </Form.Item>
           <Form.Item<FormField>
             name="start_date"

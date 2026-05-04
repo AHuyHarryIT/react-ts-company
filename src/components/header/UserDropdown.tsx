@@ -72,10 +72,7 @@ export default function UserDropdown() {
       </button>
 
       {open && (
-        <div
-          className="absolute top-full right-0 z-50 mt-3 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
-          style={{ animation: 'slideDown 0.2s ease-out' }}
-        >
+        <div className="glass-dropdown app-dropdown-enter absolute top-full right-0 mt-3 w-56 overflow-hidden rounded-2xl">
           {/* ── User Info ── */}
           <div className="flex items-center gap-3 px-4 py-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
@@ -139,14 +136,6 @@ export default function UserDropdown() {
           </div>
         </div>
       )}
-
-      {/* ── Animation Keyframes ── */}
-      <style>{`
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-8px) scale(0.96); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-      `}</style>
     </div>
   );
 }

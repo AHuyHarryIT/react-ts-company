@@ -17,6 +17,7 @@ import { debounce } from 'lodash';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
+import { SearchOutlined } from '@ant-design/icons';
 import {
   FaHistory,
   FaCalculator,
@@ -174,9 +175,10 @@ function FilterBar({
         <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
           🔍 Tìm kiếm
         </label>
-        <Input.Search
+        <Input
           placeholder="Mã hoặc tên nhân viên..."
           allowClear
+          suffix={<SearchOutlined />}
           onChange={(e) => {
             const inputValue = e.target.value;
             if (/^\d+$/.test(inputValue)) {

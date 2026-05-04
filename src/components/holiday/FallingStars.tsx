@@ -19,13 +19,18 @@ const FallingStars: React.FC<FallingStarsProps> = ({ count = 18 }) => {
   const stars = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({
+        // Use negative delay so stars appear mid-flight on initial paint
+        // instead of lining up at the top while waiting for delay.
+        duration: 8 + Math.random() * 10,
+        initialOffset: Math.random(),
         id: i,
         char: STAR_CHARS[i % STAR_CHARS.length],
         left: `${(i * 5.5 + Math.random() * 3) % 100}%`,
         size: 11 + Math.random() * 10,
-        duration: 8 + Math.random() * 10,
-        delay: Math.random() * 12,
         opacity: 0.15 + Math.random() * 0.2
+      })).map((star) => ({
+        ...star,
+        delay: -(star.duration * star.initialOffset)
       })),
     [count]
   );

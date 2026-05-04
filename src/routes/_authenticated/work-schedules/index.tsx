@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import WorkScheduleList from '@pages/admin/workSchedule/WorkScheduleList';
+import WorkScheduleManagementTabs from '@pages/admin/workSchedule/WorkScheduleManagementTabs';
 
 export const Route = createFileRoute('/_authenticated/work-schedules/')({
-  component: WorkScheduleList
+  component: WorkScheduleManagementTabs
 });

@@ -203,10 +203,7 @@ export default function NotificationDropdown() {
 
       {/* ── Dropdown Panel ── */}
       {open && (
-        <div
-          className="absolute top-full right-0 z-50 mt-1.5 w-72 overflow-hidden rounded-xl border border-gray-100/80 bg-white/95 shadow-lg backdrop-blur-xl sm:w-80 dark:border-gray-700/50 dark:bg-gray-800/95"
-          style={{ animation: 'slideDown 0.2s ease-out' }}
-        >
+        <div className="glass-dropdown app-dropdown-enter absolute top-full right-0 mt-1.5 w-72 overflow-hidden rounded-xl sm:w-80">
           {/* ── Header ── */}
           <div className="flex items-center justify-between px-3.5 py-2.5">
             <div className="flex items-center gap-2">
@@ -379,14 +376,6 @@ export default function NotificationDropdown() {
           </div>
         </div>
       )}
-
-      {/* ── Animation ── */}
-      <style>{`
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-8px) scale(0.96); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-      `}</style>
     </div>
   );
 }

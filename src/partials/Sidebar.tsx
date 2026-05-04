@@ -7,6 +7,7 @@ import { authLogout } from '@services/AuthService';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
+import { canViewTotalWorkSchedules } from '@utils/authUtil';
 import { Drawer, Layout, message } from 'antd';
 import React, { useMemo, useState } from 'react';
 import type { IconType } from 'react-icons';
@@ -17,6 +18,14 @@ import { FaCommentDots, FaServer, FaTerminal } from 'react-icons/fa';
 import FeedbackDrawer from '@components/feedback/FeedbackDrawer';
 
 const { Sider } = Layout;
+
+const normalizeLegacySidebarUrl = (url?: string | null): string => {
+  if (!url) return '/';
+  if (url === '/admin/work-schedule-categories') {
+    return '/work-schedules?tab=categories';
+  }
+  return url;
+};
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -137,7 +146,7 @@ function Sidebar() {
       return <DefaultIcon className="text-lg" />;
     };
 
-    return permissions
+    const rbacItems = permissions
       .filter((p) => ['sidebar', 'both'].includes(p.display_area))
       .map((perm) => {
         if (perm.sidebar_items?.length > 0) {
@@ -148,7 +157,7 @@ function Sidebar() {
             children: perm.sidebar_items.map((item) => ({
               key: item.key,
               label: (
-                <Link to={(item.url || '/') as string}>
+                <Link to={normalizeLegacySidebarUrl(item.url) as string}>
                   <span className="capitalize">{item.title}</span>
                 </Link>
               ),
@@ -160,14 +169,33 @@ function Sidebar() {
         return {
           key: perm.key,
           label: (
-            <Link to={(perm.url || '/') as string}>
+            <Link to={normalizeLegacySidebarUrl(perm.url) as string}>
               <span className="capitalize">{perm.name}</span>
             </Link>
           ),
           icon: renderPermissionIcon(perm)
         };
       });
-  }, [permissions]);
+
+    const alreadyHasWorkSchedules = rbacItems.some((item) => {
+      if (!item || typeof item !== 'object') return false;
+      return item.key === 'work-schedules';
+    });
+
+    if (!alreadyHasWorkSchedules && canViewTotalWorkSchedules(user)) {
+      rbacItems.push({
+        key: 'work-schedules',
+        label: (
+          <Link to="/work-schedules">
+            <span className="capitalize">Lịch Làm Việc Tổng</span>
+          </Link>
+        ),
+        icon: <FaIcons.FaUsers className="text-lg" />
+      });
+    }
+
+    return rbacItems;
+  }, [permissions, user]);
 
   const sidebarStyle: React.CSSProperties = {
     overflow: 'auto',
@@ -177,8 +205,11 @@ function Sidebar() {
     top: 0,
     bottom: 0,
     scrollbarWidth: 'none',
-    background: '#ffffff',
-    borderRight: '1px solid rgba(229, 231, 235, 0.6)'
+    background: 'var(--glass-surface-strong)',
+    borderRight: '1px solid var(--glass-border)',
+    boxShadow: 'var(--glass-shadow-soft)',
+    backdropFilter: 'blur(8px) saturate(130%)',
+    WebkitBackdropFilter: 'blur(8px) saturate(130%)'
   };
 
   const sidebarContent = (
@@ -311,7 +342,7 @@ function Sidebar() {
             wrapper: { boxShadow: '4px 0 24px rgba(0,0,0,0.06)' }
           }}
         >
-          <div className="flex h-full flex-col bg-white dark:bg-gray-900">
+          <div className="glass-panel flex h-full flex-col rounded-none">
             {/* ── Menu (reuse SidebarMenu — logo is inside) ── */}
             <div
               className="flex-1 overflow-y-auto"

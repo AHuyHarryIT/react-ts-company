@@ -10,7 +10,11 @@ import { getMonthlyQuantities } from '@services/TotalQuantityService';
 import { authLogout } from '@services/AuthService';
 import { fetchImages } from '@services/UploadService';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { isAdmin, isAllowRole } from '@utils/authUtil';
+import {
+  canViewTotalWorkSchedules,
+  isAdmin,
+  isAllowRole
+} from '@utils/authUtil';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { FaCircle } from 'react-icons/fa';
 import * as FaIcons from 'react-icons/fa';
@@ -251,11 +255,26 @@ export default function Dashboard() {
     };
   }, [isSupervisor]);
 
+  const totalWorkScheduleWidget: WidgetType | null = useMemo(() => {
+    if (!canViewTotalWorkSchedules(user)) return null;
+    const alreadyHasWidget = listWidget.some(
+      (widget) => widget.navLink === '/work-schedules'
+    );
+    if (alreadyHasWidget) return null;
+
+    return {
+      title: 'Lịch Làm Việc Tổng',
+      icon: <FaIcons.FaUsers />,
+      navLink: '/work-schedules'
+    };
+  }, [listWidget, user]);
+
   const finalWidgetList = useMemo(() => {
     const widgets = [...listWidget];
     if (supervisorWidget) widgets.unshift(supervisorWidget);
+    if (totalWorkScheduleWidget) widgets.unshift(totalWorkScheduleWidget);
     return widgets;
-  }, [listWidget, supervisorWidget]);
+  }, [listWidget, supervisorWidget, totalWorkScheduleWidget]);
 
   // Tính số cột desktop động: chẵn → 2 hàng, lẻ → 3 hàng
   const xlCols = useMemo(() => {
@@ -272,6 +291,9 @@ export default function Dashboard() {
   const showProductChart = homePermissions.some(
     (p) => p.key === 'view_chart_product'
   );
+  const visibleChartCount = [showSalaryChart, showProductChart].filter(
+    Boolean
+  ).length;
   const chartColSpan =
     showSalaryChart && showProductChart ? 'xl:col-span-6' : 'xl:col-span-12';
 
@@ -554,7 +576,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="overflow-hidden rounded-2xl shadow-sm transition-shadow duration-300 dark:shadow-none"
+          className="glass-card rounded-[26px] transition-shadow duration-300"
         >
           <SlideCarousel images={imageList.data} />
         </motion.div>
@@ -565,10 +587,9 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.05, ease: 'easeOut' }}
-        className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow duration-300 lg:hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+        className="glass-card rounded-[26px] p-5 transition-shadow duration-300"
       >
-        <div className="absolute top-0 right-0 h-64 w-64 translate-x-1/3 -translate-y-1/2 rounded-full bg-blue-50/50 blur-3xl dark:bg-blue-900/10" />
-        <div className="absolute bottom-0 left-0 h-64 w-64 -translate-x-1/2 translate-y-1/2 rounded-full bg-purple-50/50 blur-3xl dark:bg-purple-900/10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(96,165,250,0.22),transparent_32%),radial-gradient(circle_at_8%_100%,rgba(45,212,191,0.16),transparent_30%)] dark:bg-[radial-gradient(circle_at_88%_0%,rgba(59,130,246,0.16),transparent_32%),radial-gradient(circle_at_8%_100%,rgba(20,184,166,0.1),transparent_30%)]" />
         <div className="relative z-10">
           {/* Mobile logo */}
           <div className="mb-3 flex justify-center sm:hidden">
@@ -620,7 +641,7 @@ export default function Dashboard() {
             transition={{ duration: 0.4, delay: 0.2 }}
             className="mb-4 flex items-center gap-2"
           >
-            <div className="h-4 w-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <div className="h-4 w-1 rounded-full bg-blue-400/70 shadow-[0_0_14px_rgba(96,165,250,0.45)] dark:bg-blue-300/60" />
             <h2 className="text-xs font-bold tracking-wide text-black/60 uppercase dark:text-gray-500">
               Truy cập nhanh
             </h2>
@@ -654,7 +675,7 @@ export default function Dashboard() {
       )}
 
       {/* ── Charts ─────────────────────────────────────────────── */}
-      {(showSalaryChart || showProductChart) && (
+      {visibleChartCount > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -662,7 +683,7 @@ export default function Dashboard() {
         >
           {/* Section label */}
           <div className="mb-4 flex items-center gap-2">
-            <div className="h-4 w-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <div className="h-4 w-1 rounded-full bg-blue-400/70 shadow-[0_0_14px_rgba(96,165,250,0.45)] dark:bg-blue-300/60" />
             <h2 className="text-xs font-bold tracking-wide text-black/60 uppercase dark:text-gray-500">
               Biểu đồ thống kê
             </h2>
@@ -688,38 +709,36 @@ export default function Dashboard() {
       )}
 
       {/* ── Empty State ────────────────────────────────────────── */}
-      {finalWidgetList.length === 0 &&
-        !showSalaryChart &&
-        !showProductChart && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="rounded-2xl border border-gray-100 bg-white p-16 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800"
-          >
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-700">
-              <svg
-                className="h-8 w-8 text-gray-300 dark:text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-white">
-              Chào mừng bạn đến Dashboard
-            </h3>
-            <p className="mx-auto max-w-sm text-sm text-gray-400 dark:text-gray-500">
-              Hệ thống đang chuẩn bị quyền truy cập cho tài khoản của bạn.
-            </p>
-          </motion.div>
-        )}
+      {finalWidgetList.length === 0 && visibleChartCount === 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="glass-card rounded-[26px] p-16 text-center"
+        >
+          <div className="glass-icon-tile mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[22px]">
+            <svg
+              className="h-8 w-8 text-gray-300 dark:text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-white">
+            Chào mừng bạn đến Dashboard
+          </h3>
+          <p className="mx-auto max-w-sm text-sm text-gray-400 dark:text-gray-500">
+            Hệ thống đang chuẩn bị quyền truy cập cho tài khoản của bạn.
+          </p>
+        </motion.div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import RefreshButton from '@components/common/RefreshButton';
 import { fetchEmpSalaries, fetchSalaryDetail } from '@services/SalaryService';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Alert, Empty, Input, Select, Spin, Tag } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 import { useEffect, useState } from 'react';
@@ -117,9 +118,10 @@ export default function SalariesList() {
                 <FaSearch className="mr-1 inline-block text-gray-400" />
                 Tìm kiếm
               </label>
-              <Input.Search
+              <Input
                 className="max-w-sm !rounded-lg"
                 allowClear
+                suffix={<SearchOutlined />}
                 placeholder="Nhập tiêu đề bảng lương..."
                 onChange={(e) => {
                   const inputValue = e.target.value;

@@ -1,17 +1,9 @@
-import {
-  Empty,
-  Pagination,
-  Spin,
-  Table,
-  TableColumnsType,
-  TableProps
-} from 'antd';
+import { Table, TableColumnsType, TableProps } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import type { Dayjs } from 'dayjs';
 
 import { useCrudList } from '@hooks/useCrudList';
-import { useIsMobile } from '@hooks/useIsMobile';
 import { productService } from '@services/ProductService';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { ErrorTableType } from '@/types/poTableType';
@@ -23,7 +15,6 @@ interface ErrorTableProps {
 }
 
 export const ErrorTable: React.FC<ErrorTableProps> = ({ month, search }) => {
-  const isMobile = useIsMobile();
   const [dataSource, setDataSource] = useState<ErrorTableType[]>([]);
   const [dayList, setDayList] = useState<string[]>([]);
   const [page, setPage] = useState(1);
@@ -77,13 +68,34 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month, search }) => {
     setDataSource(data);
   }, [tableData, search]);
 
+  const nameColumnWidth = Math.min(
+    240,
+    Math.max(
+      120,
+      ...dataSource.map((item) => (item.name?.length || 0) * 6.2 + 28)
+    )
+  );
+
   const dateColumns: TableColumnsType<ErrorTableType> = dayList.map(
     (date, index) => {
+      const dateObj = dayjs(date, 'DD-MM-YYYY');
+      const isToday = dateObj.isSame(dayjs(), 'day');
+      const dayColumnClass = isToday
+        ? 'product-day-current'
+        : index % 2 === 0
+          ? 'product-day-alt'
+          : '';
+
       return {
-        title: date,
+        title: (
+          <div className={`product-day-pill ${isToday ? 'is-today' : ''}`}>
+            {dateObj.format('DD/MM')}
+          </div>
+        ),
+        width: 88,
         align: 'center',
         dataIndex: ['times', date, 'quantity'],
-        className: index % 2 === 0 ? 'bg-indigo-200' : '',
+        className: dayColumnClass,
         key: `${date}_quantity`,
         render: (value) => {
           if (!value) return '0';
@@ -99,18 +111,20 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month, search }) => {
     {
       title: <div className="capitalize">STT</div>,
       rowScope: 'row',
-      minWidth: 50,
+      width: 64,
       align: 'center',
       render: (_value, _record, index) => index + 1 + limit * (page - 1)
     },
     {
       title: <div>Tên sản phẩm</div>,
+      width: nameColumnWidth,
       fixed: 'left',
       dataIndex: 'name'
     },
     {
       title: <div>Tổng cộng</div>,
       align: 'center',
+      width: 120,
       dataIndex: 'total',
       fixed: 'left',
       render: (value) => {
@@ -125,12 +139,21 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month, search }) => {
 
   const tableProps: TableProps<ErrorTableType> = {
     ...(customTableProps as unknown as TableProps<ErrorTableType>),
+    className: 'product-sticky-table',
     rowKey: (record) => ['error', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
+    sticky: {
+      offsetHeader: 0
+    },
+    scroll: {
+      x: 'max-content',
+      scrollToFirstRowOnChange: false
+    },
     pagination: {
       ...customTableProps.pagination,
+      position: ['bottomRight'],
       pageSize: limit,
       current: page,
       total: total,
@@ -142,108 +165,6 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month, search }) => {
       }
     }
   };
-
-  if (isMobile) {
-    return (
-      <Spin spinning={queryResult.isLoading}>
-        {dataSource.length === 0 && !queryResult.isLoading ? (
-          <Empty description="Không có dữ liệu" />
-        ) : (
-          <div className="flex flex-col gap-3">
-            {dataSource.map((record, index) => {
-              const activeDates = Object.entries(record.times ?? {}).filter(
-                ([, vals]: [
-                  string,
-                  { quantity?: number | string; [key: string]: unknown }
-                ]) => Number(vals.quantity) > 0
-              );
-              return (
-                <div
-                  key={record.id}
-                  className="rounded-xl border border-red-100 bg-white p-4 shadow-sm dark:border-red-900/40 dark:bg-gray-800"
-                >
-                  <div className="flex items-start gap-2 border-b border-gray-100 pb-2 dark:border-gray-700">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-600 dark:bg-red-900/50 dark:text-red-400">
-                      {index + 1 + limit * (page - 1)}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-gray-800 dark:text-white/90">
-                        {record.name}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-2 flex items-center justify-between rounded-lg bg-red-50 px-3 py-2 dark:bg-red-900/20">
-                    <span className="text-xs font-medium text-red-700 dark:text-red-400">
-                      Tổng lỗi
-                    </span>
-                    <span className="text-sm font-bold text-red-600 dark:text-red-400">
-                      {record.total?.toLocaleString() || '0'}
-                    </span>
-                  </div>
-
-                  {activeDates.length > 0 && (
-                    <details className="group mt-2">
-                      <summary className="cursor-pointer rounded-lg bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:bg-gray-900/40 dark:text-gray-400 dark:hover:bg-gray-900/60">
-                        Chi tiết {activeDates.length} ngày phát sinh lỗi
-                      </summary>
-                      <div className="mt-2 overflow-hidden rounded-lg border border-gray-100 dark:border-gray-700">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="bg-gray-50 text-gray-500 dark:bg-gray-900/40">
-                              <th className="px-2 py-1.5 text-left font-medium">
-                                Ngày
-                              </th>
-                              <th className="px-2 py-1.5 text-right font-medium">
-                                SL Lỗi
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {activeDates.map(
-                              ([date, vals]: [
-                                string,
-                                { quantity?: number; [key: string]: unknown }
-                              ]) => (
-                                <tr
-                                  key={date}
-                                  className="border-t border-gray-50 dark:border-gray-800"
-                                >
-                                  <td className="px-2 py-1 text-gray-600 dark:text-gray-300">
-                                    {date}
-                                  </td>
-                                  <td className="px-2 py-1 text-right font-medium text-red-600">
-                                    {vals.quantity?.toLocaleString() || '-'}
-                                  </td>
-                                </tr>
-                              )
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </details>
-                  )}
-                </div>
-              );
-            })}
-
-            <div className="mt-4 flex justify-center">
-              <Pagination
-                size="small"
-                current={page}
-                total={total}
-                pageSize={limit}
-                onChange={(p, s) => {
-                  setPage(p);
-                  setLimit(s);
-                }}
-              />
-            </div>
-          </div>
-        )}
-      </Spin>
-    );
-  }
 
   return <Table {...tableProps} />;
 };

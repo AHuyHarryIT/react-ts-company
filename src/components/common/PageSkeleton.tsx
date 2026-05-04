@@ -1,4 +1,10 @@
 import { Card, Skeleton } from 'antd';
+import {
+  LIST_CONTAINER_VARIANTS,
+  SECTION_ITEM_VARIANTS,
+  SURFACE_TRANSITION
+} from '@constants/motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface PageSkeletonProps {
   /** Số dòng skeleton hiển thị */
@@ -21,14 +27,32 @@ export default function PageSkeleton({
   title = true,
   cards = 1
 }: PageSkeletonProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
-    <div className="space-y-4">
+    <motion.div
+      variants={shouldReduceMotion ? undefined : LIST_CONTAINER_VARIANTS}
+      initial="initial"
+      animate="animate"
+      className="space-y-4"
+    >
       {Array.from({ length: cards }).map((_, i) => (
-        <Card key={i} className="!rounded-xl">
-          <Skeleton active avatar={avatar} title={title} paragraph={{ rows }} />
-        </Card>
+        <motion.div
+          key={i}
+          variants={shouldReduceMotion ? undefined : SECTION_ITEM_VARIANTS}
+          transition={shouldReduceMotion ? { duration: 0 } : SURFACE_TRANSITION}
+        >
+          <Card className="!rounded-xl">
+            <Skeleton
+              active
+              avatar={avatar}
+              title={title}
+              paragraph={{ rows }}
+            />
+          </Card>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }
 
@@ -36,8 +60,15 @@ export default function PageSkeleton({
  * Skeleton cho Table - hiển thị dạng bảng giả
  */
 export function TableSkeleton({ rows = 8 }: { rows?: number }) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
-    <div className="space-y-3 p-4">
+    <motion.div
+      initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={shouldReduceMotion ? { duration: 0 } : SURFACE_TRANSITION}
+      className="space-y-3 p-4"
+    >
       {/* Header row */}
       <div className="flex gap-4">
         {[1, 2, 3, 4, 5].map((col) => (
@@ -64,6 +95,6 @@ export function TableSkeleton({ rows = 8 }: { rows?: number }) {
           ))}
         </div>
       ))}
-    </div>
+    </motion.div>
   );
 }

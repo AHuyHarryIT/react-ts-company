@@ -11,13 +11,15 @@ interface DeleteModalProps {
   name: string;
   isIconOnly?: boolean;
   transparent?: boolean;
+  onDeleted?: () => void;
 }
 
 export const DeleteModal: React.FC<DeleteModalProps> = ({
   id,
   name,
   isIconOnly,
-  transparent
+  transparent,
+  onDeleted
 }) => {
   const queryClient = useQueryClient();
 
@@ -48,7 +50,10 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
     onSuccess: () => {
       message.success('Xóa lịch làm việc thành công');
       handleCancel();
+      onDeleted?.();
       queryClient.invalidateQueries({ queryKey: ['workSchedules'] });
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
+      queryClient.invalidateQueries({ queryKey: ['scheduleDetails'] });
     },
     onError: (error) => {
       message.error(error.message);

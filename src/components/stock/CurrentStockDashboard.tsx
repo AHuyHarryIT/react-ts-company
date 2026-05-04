@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Table, Button, Typography, message, Spin, Input, Select } from 'antd';
+import {
+  Table,
+  Button,
+  Typography,
+  message,
+  Spin,
+  Input,
+  Select,
+  Drawer
+} from 'antd';
+import { InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import RefreshButton from '@/components/common/RefreshButton';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
@@ -9,7 +19,6 @@ import {
 } from '@/types/stockTransaction.types';
 
 const { Text } = Typography;
-const { Search } = Input;
 
 // Match the new BE response format from GET /current-stock
 interface CurrentStockApiResponse {
@@ -49,6 +58,22 @@ interface GroupedStockItem {
   exported_quantity: number;
   exported_bins: number[];
   total_bins_init: number;
+  has_exported: boolean;
+}
+
+interface ProductStockGroup {
+  key: string;
+  product_id: number;
+  product_code: string;
+  product_name: string;
+  lots: GroupedStockItem[];
+  lot_count: number;
+  total_quantity: number;
+  total_bins_init: number;
+  remaining_bins: number;
+  exported_quantity: number;
+  exported_bins_count: number;
+  exported_lot_count: number;
 }
 
 // Parse lot code "A-ddmmyyyy-shift" → { date, shift, sortableDate }
@@ -87,6 +112,11 @@ const CurrentStockDashboard: React.FC = () => {
   const [exportData, setExportData] = useState<
     Map<string, { qty: number; bins: number[] }>
   >(new Map());
+  const [detailRecord, setDetailRecord] = useState<ProductStockGroup | null>(
+    null
+  );
+  const [exportedDetailRecord, setExportedDetailRecord] =
+    useState<ProductStockGroup | null>(null);
 
   // Build product options for filter dropdown
   const productOptions = useMemo(() => {
@@ -235,6 +265,10 @@ const CurrentStockDashboard: React.FC = () => {
         .map((item: CurrentStockRow) => {
           const lotInfo = parseLotInfo(item.lot);
           const expInfo = exportData.get(`${item.product_id}_${item.lot}`);
+          const currentQuantity = Number(item.current_quantity || 0);
+          const binCount = Number(item.bin_count || 0);
+          const exportedQty = expInfo?.qty || 0;
+          const exportedBins = expInfo?.bins || [];
           return {
             key: `${item.product_id}_${item.lot}`,
             product_id: item.product_id,
@@ -250,11 +284,12 @@ const CurrentStockDashboard: React.FC = () => {
                   .map((b) => parseInt(b.trim()))
                   .filter((n) => !isNaN(n))
               : [],
-            total_quantity: item.current_quantity,
-            bin_count: item.bin_count,
-            exported_quantity: expInfo?.qty || 0,
-            exported_bins: expInfo?.bins || [],
-            total_bins_init: item.bin_count + (expInfo?.bins?.length || 0)
+            total_quantity: currentQuantity,
+            bin_count: binCount,
+            exported_quantity: exportedQty,
+            exported_bins: exportedBins,
+            total_bins_init: binCount + exportedBins.length,
+            has_exported: exportedQty > 0
           };
         })
         // Default sort: product name → newest date first
@@ -269,6 +304,52 @@ const CurrentStockDashboard: React.FC = () => {
     );
   }, [stockData, filters, exportData]);
 
+  const productStockGroups = useMemo((): ProductStockGroup[] => {
+    const map = new Map<number, ProductStockGroup>();
+
+    groupedStockItems.forEach((item) => {
+      const existing = map.get(item.product_id);
+      if (existing) {
+        existing.lots.push(item);
+        existing.lot_count += 1;
+        existing.total_quantity += item.total_quantity;
+        existing.total_bins_init += item.total_bins_init;
+        existing.remaining_bins += item.bin_count;
+        existing.exported_quantity += item.exported_quantity;
+        existing.exported_bins_count += item.exported_bins.length;
+        if (item.has_exported) {
+          existing.exported_lot_count += 1;
+        }
+      } else {
+        map.set(item.product_id, {
+          key: String(item.product_id),
+          product_id: item.product_id,
+          product_code: item.product_code,
+          product_name: item.product_name,
+          lots: [item],
+          lot_count: 1,
+          total_quantity: item.total_quantity,
+          total_bins_init: item.total_bins_init,
+          remaining_bins: item.bin_count,
+          exported_quantity: item.exported_quantity,
+          exported_bins_count: item.exported_bins.length,
+          exported_lot_count: item.has_exported ? 1 : 0
+        });
+      }
+    });
+
+    return Array.from(map.values())
+      .map((group) => ({
+        ...group,
+        lots: [...group.lots].sort((a, b) => {
+          const dateCompare = b.lotDate.localeCompare(a.lotDate);
+          if (dateCompare !== 0) return dateCompare;
+          return a.lot.localeCompare(b.lot);
+        })
+      }))
+      .sort((a, b) => a.product_id - b.product_id);
+  }, [groupedStockItems]);
+
   const handleRefresh = () => {
     loadCurrentStock();
     loadExportData();
@@ -278,7 +359,7 @@ const CurrentStockDashboard: React.FC = () => {
     setFilters((prev) => ({ ...prev, lot: value || undefined }));
   };
 
-  const stockColumns = [
+  const productColumns = [
     {
       title: 'STT',
       key: 'index',
@@ -288,10 +369,11 @@ const CurrentStockDashboard: React.FC = () => {
     {
       title: 'Sản phẩm',
       key: 'product',
-      width: 180,
-      sorter: (a: GroupedStockItem, b: GroupedStockItem) =>
-        a.product_name.localeCompare(b.product_name, 'vi'),
-      render: (record: GroupedStockItem) => (
+      width: 220,
+      sorter: (a: ProductStockGroup, b: ProductStockGroup) =>
+        a.product_id - b.product_id,
+      defaultSortOrder: 'ascend' as const,
+      render: (record: ProductStockGroup) => (
         <div>
           <div>
             <Text strong>{record.product_name}</Text>
@@ -303,136 +385,128 @@ const CurrentStockDashboard: React.FC = () => {
       )
     },
     {
-      title: 'Ngày',
-      key: 'lotDate',
-      width: 100,
+      title: 'Lots',
+      dataIndex: 'lot_count',
+      key: 'lot_count',
+      width: 90,
       align: 'center' as const,
-      sorter: (a: GroupedStockItem, b: GroupedStockItem) =>
-        a.lotDate.localeCompare(b.lotDate),
-      render: (record: GroupedStockItem) => (
-        <div>
-          <div>
-            <Text>{record.lotDateDisplay}</Text>
-          </div>
-          {record.shift && (
-            <Text type="secondary" style={{ fontSize: '11px' }}>
-              Ca {record.shift}
-            </Text>
-          )}
-        </div>
+      sorter: (a: ProductStockGroup, b: ProductStockGroup) =>
+        a.lot_count - b.lot_count,
+      render: (_: number, record: ProductStockGroup) => (
+        <span
+          onClick={() => setDetailRecord(record)}
+          className="cursor-pointer text-blue-500 hover:text-blue-700"
+          style={{ borderBottom: '1px dashed currentColor' }}
+        >
+          {record.lot_count} lots{' '}
+          <InfoCircleOutlined style={{ fontSize: 10 }} />
+        </span>
       )
-    },
-    {
-      title: 'Lot',
-      dataIndex: 'lot',
-      key: 'lot',
-      width: 120,
-      align: 'center' as const,
-      render: (lot: string) => <Text code>{lot}</Text>
     },
     {
       title: 'Tồn kho',
       dataIndex: 'total_quantity',
       key: 'total_quantity',
-      width: 100,
+      width: 110,
       align: 'center' as const,
-      render: (quantity: number) => (
-        <Text strong style={{ color: quantity > 0 ? '#52c41a' : '#f5222d' }}>
-          {Number(quantity || 0).toLocaleString('vi-VN')}
-        </Text>
-      )
-    },
-    {
-      title: 'Tổng số thùng',
-      dataIndex: 'total_bins_init',
-      key: 'total_bins_init',
-      width: 120,
-      align: 'center' as const,
-      sorter: (a: GroupedStockItem, b: GroupedStockItem) =>
-        a.total_bins_init - b.total_bins_init,
-      render: (count: number) => <Text strong>{count} thùng</Text>
-    },
-    {
-      title: 'SL đã xuất',
-      dataIndex: 'exported_quantity',
-      key: 'exported_quantity',
-      width: 100,
-      align: 'center' as const,
-      sorter: (a: GroupedStockItem, b: GroupedStockItem) =>
-        a.exported_quantity - b.exported_quantity,
+      sorter: (a: ProductStockGroup, b: ProductStockGroup) =>
+        a.total_quantity - b.total_quantity,
       render: (quantity: number) => (
         <Text
-          style={{
-            color: quantity > 0 ? '#fa8c16' : '#d9d9d9',
-            fontWeight: quantity > 0 ? 600 : 400
-          }}
+          strong
+          className="whitespace-nowrap"
+          style={{ color: quantity > 0 ? '#52c41a' : '#f5222d' }}
         >
           {Number(quantity || 0).toLocaleString('vi-VN')}
         </Text>
       )
     },
     {
-      title: 'Thùng đã xuất',
-      dataIndex: 'exported_bins',
-      key: 'exported_bins',
-      width: 180,
+      title: 'Tổng thùng',
+      dataIndex: 'total_bins_init',
+      key: 'total_bins_init',
+      width: 120,
       align: 'center' as const,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (bins: any[]) => (
-        <div className="flex flex-col items-center gap-1.5 py-1">
-          <Text
-            style={{
-              fontSize: '12px',
-              fontWeight: 600,
-              color: bins?.length > 0 ? '#fa541c' : '#d9d9d9'
-            }}
-          >
-            {bins?.length > 0 ? `${bins.length} thùng` : '—'}
-          </Text>
-          {bins && bins.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-1">
-              {[...bins]
-                .sort((a: number, b: number) => a - b)
-                .map((b) => (
-                  <div
-                    key={b}
-                    className="min-w-[24px] rounded border border-orange-200 bg-orange-50 px-1 py-px text-center text-[10px] font-semibold text-orange-600 shadow-sm"
-                  >
-                    {b}
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
+      sorter: (a: ProductStockGroup, b: ProductStockGroup) =>
+        a.total_bins_init - b.total_bins_init,
+      render: (count: number) => <Text strong>{count} thùng</Text>
+    },
+    {
+      title: 'Thùng còn',
+      dataIndex: 'remaining_bins',
+      key: 'remaining_bins',
+      width: 110,
+      align: 'center' as const,
+      sorter: (a: ProductStockGroup, b: ProductStockGroup) =>
+        a.remaining_bins - b.remaining_bins,
+      render: (_: number, record: ProductStockGroup) => (
+        <span
+          onClick={() => setDetailRecord(record)}
+          className="cursor-pointer font-semibold text-blue-500 hover:text-blue-700"
+          style={{ borderBottom: '1px dashed currentColor' }}
+        >
+          {record.remaining_bins} thùng{' '}
+          <InfoCircleOutlined style={{ fontSize: 10 }} />
+        </span>
       )
     },
     {
-      title: 'Thùng còn lại',
-      key: 'bins_info',
-      width: 250,
+      title: 'Đã xuất',
+      key: 'exported',
+      width: 140,
       align: 'center' as const,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (_: unknown, record: any) => (
-        <div className="flex flex-col items-center gap-1.5 py-1">
-          <Text strong style={{ color: '#1890ff' }}>
-            {record.bin_count} thùng
-          </Text>
-          {record.bins && record.bins.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-1">
-              {[...record.bins]
-                .sort((a: number, b: number) => a - b)
-                .map((b) => (
-                  <div
-                    key={b}
-                    className="min-w-[24px] rounded border border-gray-300 bg-gray-50 px-1 py-px text-center text-[11px] font-semibold text-gray-700 shadow-sm"
-                  >
-                    {b}
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-      )
+      render: (_: unknown, record: ProductStockGroup) => {
+        if (record.exported_lot_count > 0) {
+          const label = `${record.exported_lot_count} lots`;
+          return (
+            <span
+              onClick={() => {
+                const exportedLots = record.lots.filter(
+                  (lot) => lot.has_exported
+                );
+                const exportedRecord: ProductStockGroup = {
+                  ...record,
+                  lots: exportedLots,
+                  lot_count: exportedLots.length,
+                  total_quantity: exportedLots.reduce(
+                    (sum, lot) => sum + lot.exported_quantity,
+                    0
+                  ),
+                  total_bins_init: exportedLots.reduce(
+                    (sum, lot) => sum + lot.exported_bins.length,
+                    0
+                  ),
+                  remaining_bins: exportedLots.reduce(
+                    (sum, lot) => sum + lot.bin_count,
+                    0
+                  ),
+                  exported_quantity: exportedLots.reduce(
+                    (sum, lot) => sum + lot.exported_quantity,
+                    0
+                  ),
+                  exported_bins_count: exportedLots.reduce(
+                    (sum, lot) => sum + lot.exported_bins.length,
+                    0
+                  ),
+                  exported_lot_count: exportedLots.length
+                };
+                setExportedDetailRecord(exportedRecord);
+              }}
+              className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap text-orange-500 hover:text-orange-700"
+              style={{
+                borderBottom: '1px dashed currentColor'
+              }}
+            >
+              <span>{label}</span>
+              <InfoCircleOutlined
+                className="shrink-0"
+                style={{ fontSize: 10 }}
+              />
+            </span>
+          );
+        }
+        return <Text style={{ color: '#d9d9d9' }}>Chưa có lot đã xuất</Text>;
+      }
     }
   ];
 
@@ -512,12 +586,12 @@ const CurrentStockDashboard: React.FC = () => {
         )}
 
         {/* Row 2: Filters */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="stock-filter-row flex flex-wrap items-center gap-2">
           <Select
             placeholder="Lọc sản phẩm"
             allowClear
             size="small"
-            className="!w-full sm:!w-[200px]"
+            className="stock-filter-control !w-full sm:!w-[200px]"
             options={productOptions}
             onChange={(value) =>
               setFilters((prev) => ({ ...prev, productId: value || undefined }))
@@ -527,17 +601,19 @@ const CurrentStockDashboard: React.FC = () => {
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
           />
-          <Search
+          <Input
             placeholder="Tìm lot..."
-            allowClear
+            allowClear={false}
+            suffix={<SearchOutlined />}
             size="small"
-            className="!w-full sm:!w-[160px]"
+            className="stock-search-input !w-full sm:!w-[160px]"
             onChange={(e) => handleLotSearch(e.target.value)}
           />
           <RefreshButton
             refresh={handleRefresh}
             isLoading={loading}
             size="small"
+            className="stock-filter-control"
           />
         </div>
       </div>
@@ -545,8 +621,8 @@ const CurrentStockDashboard: React.FC = () => {
       {/* Desktop: Table */}
       <div className="hidden sm:block">
         <Table
-          columns={stockColumns}
-          dataSource={groupedStockItems}
+          columns={productColumns}
+          dataSource={productStockGroups}
           rowKey="key"
           loading={loading}
           pagination={{
@@ -560,7 +636,7 @@ const CurrentStockDashboard: React.FC = () => {
               setTablePagination({ current: page, pageSize })
           }}
           size="small"
-          scroll={{ x: 1100 }}
+          scroll={{ x: 900 }}
         />
       </div>
 
@@ -568,29 +644,28 @@ const CurrentStockDashboard: React.FC = () => {
       <div className="block sm:hidden">
         {loading ? (
           <div className="py-8 text-center text-gray-400">Đang tải...</div>
-        ) : groupedStockItems.length === 0 ? (
+        ) : productStockGroups.length === 0 ? (
           <div className="py-8 text-center text-gray-400">Không có dữ liệu</div>
         ) : (
           <>
             <div className="space-y-2">
-              {groupedStockItems
+              {productStockGroups
                 .slice(
                   (tablePagination.current - 1) * tablePagination.pageSize,
                   tablePagination.current * tablePagination.pageSize
                 )
-                .map((item) => (
+                .map((product) => (
                   <div
-                    key={item.key}
+                    key={product.key}
                     className="rounded-lg border border-gray-100 bg-white px-3 py-2.5"
                   >
-                    {/* Row 1: Product name + quantity */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <Text strong className="text-sm">
-                          {item.product_name}
+                          {product.product_name}
                         </Text>
                         <div className="text-[10px] text-gray-400">
-                          {item.product_code}
+                          {product.product_code}
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
@@ -598,11 +673,13 @@ const CurrentStockDashboard: React.FC = () => {
                           strong
                           style={{
                             color:
-                              item.total_quantity > 0 ? '#52c41a' : '#f5222d',
+                              product.total_quantity > 0
+                                ? '#52c41a'
+                                : '#f5222d',
                             fontSize: '15px'
                           }}
                         >
-                          {Number(item.total_quantity || 0).toLocaleString(
+                          {Number(product.total_quantity || 0).toLocaleString(
                             'vi-VN'
                           )}
                         </Text>
@@ -610,113 +687,114 @@ const CurrentStockDashboard: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Row 2: Lot + Date + Shift */}
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                      <span>
-                        Lot:{' '}
-                        <Text code className="!text-[13px] !font-semibold">
-                          {item.lot}
-                        </Text>
+                      <span>{product.lot_count} lots</span>
+                      <span>{product.total_bins_init} thùng tổng</span>
+                      <span className="font-semibold text-blue-600">
+                        {product.remaining_bins} thùng còn
                       </span>
-                      {item.lotDateDisplay && (
-                        <span>
-                          {item.lotDateDisplay}
-                          {item.shift ? ` · Ca ${item.shift}` : ''}
+                      {product.exported_bins_count > 0 && (
+                        <span className="text-xs font-medium text-orange-600">
+                          {product.exported_bins_count} thùng xuất
                         </span>
                       )}
                     </div>
 
-                    {/* Row 3: Bins info */}
-                    <div className="mt-1.5 flex flex-col gap-1 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500">Tổng thùng:</span>
-                        <Text strong>{item.total_bins_init} thùng</Text>
-                        <span className="text-gray-300">|</span>
-                        <span className="text-gray-500">Còn lại:</span>
-                        <Text strong style={{ color: '#1890ff' }}>
-                          {item.bin_count} thùng
-                        </Text>
-                      </div>
-                      {item.bins?.length > 0 && (
-                        <div className="flex w-full flex-wrap gap-1 border-t border-dashed border-gray-100 pt-1">
-                          <span className="mt-0.5 mr-1 block text-gray-500">
-                            Danh sách:
-                          </span>
-                          {[...item.bins]
-                            .sort((a, b) => a - b)
-                            .map((b) => (
-                              <span
-                                key={b}
-                                className="rounded border border-gray-300 bg-gray-50 px-1 text-[10px] font-semibold text-gray-700"
-                              >
-                                {b}
-                              </span>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Row 4: Export info */}
-                    {(item.exported_quantity > 0 ||
-                      item.exported_bins.length > 0) && (
-                      <div className="mt-1.5 flex flex-col gap-1 text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-400">Đã xuất:</span>
-                          <Text style={{ color: '#fa8c16' }}>
-                            {Number(item.exported_quantity || 0).toLocaleString(
-                              'vi-VN'
-                            )}{' '}
-                            SP
-                          </Text>
-                          {item.exported_bins.length > 0 && (
-                            <>
-                              <span className="text-gray-300">|</span>
-                              <Text
-                                style={{
-                                  color: '#fa541c',
-                                  fontSize: '11px',
-                                  fontWeight: 600
-                                }}
-                              >
-                                {item.exported_bins.length} thùng
+                    <div className="mt-2 space-y-2">
+                      {product.lots.map((lot) => (
+                        <div
+                          key={lot.key}
+                          className="rounded border border-gray-100 bg-gray-50 px-2 py-2"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <Text code className="!text-[12px] !font-bold">
+                                {lot.lot}
                               </Text>
-                            </>
-                          )}
-                        </div>
-                        {item.exported_bins.length > 0 && (
-                          <div className="flex w-full flex-wrap items-center gap-1 border-t border-dashed border-orange-100/50 pt-1">
-                            <span className="mt-0.5 mr-1 block text-[10px] text-gray-400">
-                              Đã xuất:
+                              {lot.lotDateDisplay && (
+                                <div className="text-[10px] text-gray-400">
+                                  {lot.lotDateDisplay}
+                                  {lot.shift ? ` · Ca ${lot.shift}` : ''}
+                                </div>
+                              )}
+                            </div>
+                            <Text strong style={{ color: '#16a34a' }}>
+                              {Number(lot.total_quantity || 0).toLocaleString(
+                                'vi-VN'
+                              )}
+                            </Text>
+                          </div>
+
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                            <span className="text-gray-500">
+                              Còn: {lot.bin_count} thùng
                             </span>
-                            {[...item.exported_bins]
-                              .sort((a, b) => a - b)
-                              .map((b) => (
+                            <span className="text-gray-300">|</span>
+                            <span className="text-gray-500">
+                              Tổng: {lot.total_bins_init} thùng
+                            </span>
+                            {lot.exported_quantity > 0 && (
+                              <>
+                                <span className="text-gray-300">|</span>
+                                <span className="text-orange-600">
+                                  Xuất:{' '}
+                                  {Number(
+                                    lot.exported_quantity || 0
+                                  ).toLocaleString('vi-VN')}
+                                </span>
+                              </>
+                            )}
+                          </div>
+
+                          {lot.bins.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1 border-t border-dashed border-gray-200 pt-1">
+                              <span className="mr-1 text-[10px] text-gray-500">
+                                Thùng còn:
+                              </span>
+                              {lot.bins.map((bin) => (
                                 <span
-                                  key={b}
-                                  className="rounded border border-orange-200 bg-orange-50 px-1 text-[10px] font-semibold text-orange-600"
+                                  key={`${lot.key}-bin-${bin}`}
+                                  className="rounded border border-gray-300 bg-white px-1 text-[10px] font-semibold text-gray-700"
                                 >
-                                  {b}
+                                  {bin}
                                 </span>
                               ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                            </div>
+                          )}
+
+                          {lot.exported_bins.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1 border-t border-dashed border-orange-100 pt-1">
+                              <span className="mr-1 text-[10px] text-orange-500">
+                                Thùng xuất:
+                              </span>
+                              {lot.exported_bins.map((bin) => (
+                                <span
+                                  key={`${lot.key}-export-bin-${bin}`}
+                                  className="rounded border border-orange-200 bg-orange-50 px-1 text-[10px] font-semibold text-orange-600"
+                                >
+                                  {bin}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
             </div>
 
             {/* Mobile pagination */}
-            {groupedStockItems.length > tablePagination.pageSize && (
+            {productStockGroups.length > tablePagination.pageSize && (
               <div className="flex items-center justify-between pt-3 text-xs text-gray-500">
                 <span>
                   {(tablePagination.current - 1) * tablePagination.pageSize + 1}
                   -
                   {Math.min(
                     tablePagination.current * tablePagination.pageSize,
-                    groupedStockItems.length
+                    productStockGroups.length
                   )}{' '}
-                  / {groupedStockItems.length}
+                  / {productStockGroups.length}
                 </span>
                 <div className="flex items-center gap-1">
                   <Button
@@ -734,14 +812,14 @@ const CurrentStockDashboard: React.FC = () => {
                   <span className="px-1.5 text-xs font-medium text-gray-600">
                     {tablePagination.current} /{' '}
                     {Math.ceil(
-                      groupedStockItems.length / tablePagination.pageSize
+                      productStockGroups.length / tablePagination.pageSize
                     )}
                   </span>
                   <Button
                     size="small"
                     disabled={
                       tablePagination.current * tablePagination.pageSize >=
-                      groupedStockItems.length
+                      productStockGroups.length
                     }
                     onClick={() =>
                       setTablePagination((p) => ({
@@ -758,6 +836,193 @@ const CurrentStockDashboard: React.FC = () => {
           </>
         )}
       </div>
+
+      <Drawer
+        title={
+          <span className="text-base font-semibold text-gray-800">
+            Lots / thùng của sản phẩm: {detailRecord?.product_name}
+          </span>
+        }
+        placement="right"
+        onClose={() => setDetailRecord(null)}
+        open={!!detailRecord}
+        width={480}
+        styles={{
+          body: { padding: '12px' },
+          header: { borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }
+        }}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-3">
+            {detailRecord.lots.map((lot) => (
+              <div
+                key={lot.key}
+                className="rounded-lg border border-gray-200 bg-white p-3"
+              >
+                <div className="mb-2 flex items-start justify-between">
+                  <div>
+                    <Text code className="text-sm font-bold text-gray-800">
+                      {lot.lot}
+                    </Text>
+                    {lot.lotDateDisplay && (
+                      <div className="mt-0.5 text-xs text-gray-400">
+                        {lot.lotDateDisplay}
+                        {lot.shift ? ` · Ca ${lot.shift}` : ''}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-emerald-600">
+                      {Number(lot.total_quantity || 0).toLocaleString('vi-VN')}
+                    </div>
+                    <div className="text-[10px] text-gray-400">còn tồn</div>
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-500">
+                  <span>Tổng: {lot.total_bins_init} thùng · </span>
+                  <span className="font-semibold text-blue-600">
+                    Còn: {lot.bin_count} thùng
+                  </span>
+                </div>
+
+                {lot.bins.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1 border-t border-gray-100 pt-2">
+                    {lot.bins
+                      .sort((a, b) => a - b)
+                      .map((bin) => (
+                        <span
+                          key={bin}
+                          className="rounded border border-gray-300 bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-700"
+                        >
+                          {bin}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5">
+              <div className="grid grid-cols-3 gap-3 text-center text-xs">
+                <div>
+                  <div className="text-gray-400">Lots</div>
+                  <div className="text-lg font-bold text-blue-600">
+                    {detailRecord.lot_count}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-400">Tồn kho</div>
+                  <div className="text-lg font-bold text-emerald-600">
+                    {Number(detailRecord.total_quantity || 0).toLocaleString(
+                      'vi-VN'
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-400">Thùng còn</div>
+                  <div className="text-lg font-bold text-blue-600">
+                    {detailRecord.remaining_bins}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Drawer>
+
+      <Drawer
+        title={
+          <span className="text-base font-semibold text-gray-800">
+            Lots / thùng đã xuất: {exportedDetailRecord?.product_name}
+          </span>
+        }
+        placement="right"
+        onClose={() => setExportedDetailRecord(null)}
+        open={!!exportedDetailRecord}
+        width={480}
+        styles={{
+          body: { padding: '12px' },
+          header: { borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }
+        }}
+      >
+        {exportedDetailRecord && (
+          <div className="flex flex-col gap-3">
+            {exportedDetailRecord.lots.map((lot) => (
+              <div
+                key={lot.key}
+                className="rounded-lg border border-orange-200 bg-white p-3"
+              >
+                <div className="mb-2 flex items-start justify-between">
+                  <div>
+                    <Text code className="text-sm font-bold text-gray-800">
+                      {lot.lot}
+                    </Text>
+                    {lot.lotDateDisplay && (
+                      <div className="mt-0.5 text-xs text-gray-400">
+                        {lot.lotDateDisplay}
+                        {lot.shift ? ` · Ca ${lot.shift}` : ''}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-orange-600">
+                      {Number(lot.exported_quantity || 0).toLocaleString(
+                        'vi-VN'
+                      )}
+                    </div>
+                    <div className="text-[10px] text-gray-400">đã xuất</div>
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-500">
+                  <span>Tổng xuất: {lot.exported_bins.length} thùng</span>
+                </div>
+
+                {lot.exported_bins.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1 border-t border-orange-100 pt-2">
+                    {lot.exported_bins
+                      .sort((a, b) => a - b)
+                      .map((bin) => (
+                        <span
+                          key={bin}
+                          className="rounded border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-xs font-medium text-orange-600"
+                        >
+                          {bin}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="mt-2 rounded-lg border border-orange-100 bg-orange-50 px-3 py-2.5">
+              <div className="grid grid-cols-3 gap-3 text-center text-xs">
+                <div>
+                  <div className="text-gray-400">Lots đã xuất</div>
+                  <div className="text-lg font-bold text-orange-600">
+                    {exportedDetailRecord.lot_count}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-400">Tổng SL xuất</div>
+                  <div className="text-lg font-bold text-orange-600">
+                    {Number(
+                      exportedDetailRecord.exported_quantity || 0
+                    ).toLocaleString('vi-VN')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-400">Thùng đã xuất</div>
+                  <div className="text-lg font-bold text-orange-600">
+                    {exportedDetailRecord.exported_bins_count}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Drawer>
     </div>
   );
 };

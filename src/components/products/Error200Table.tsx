@@ -242,22 +242,26 @@ export const Error200Table: React.FC<Error200TableProps> = ({
   const dateColumns: TableColumnsType<Error200TableType> = Array.from({
     length: dayjs(month).daysInMonth()
   }).map((_, index) => {
-    const date = dayjs(month)
-      .date(index + 1)
-      .format('DD-MM-YYYY');
+    const dateObj = dayjs(month).date(index + 1);
+    const date = dateObj.format('DD-MM-YYYY');
+    const isToday = dateObj.isSame(dayjs(), 'day');
+    const dayColumnClass = isToday
+      ? 'product-day-current'
+      : index % 2 === 0
+        ? 'product-day-alt'
+        : '';
+
     return {
       title: (
-        <span className="text-xs">
-          {dayjs(month)
-            .date(index + 1)
-            .format('DD/MM')}
-        </span>
+        <div className={`product-day-pill ${isToday ? 'is-today' : ''}`}>
+          {dateObj.format('DD/MM')}
+        </div>
       ),
       align: 'center',
       dataIndex: ['times', date, 'quantity'],
       key: `${date}_quantity`,
-      width: 75,
-      className: index % 2 === 0 ? 'bg-indigo-200' : '',
+      width: 88,
+      className: dayColumnClass,
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({
@@ -303,8 +307,8 @@ export const Error200Table: React.FC<Error200TableProps> = ({
       responsive: ['lg']
     },
     {
-      title: <div className="text-xs">Tổng</div>,
-      width: 70,
+      title: <div className="text-sm font-semibold">Tổng</div>,
+      width: 88,
       fixed: 'left',
       align: 'center',
       dataIndex: 'total',
@@ -327,12 +331,16 @@ export const Error200Table: React.FC<Error200TableProps> = ({
 
   const tableProps: TableProps<Error200TableType> = {
     ...(customTableProps as unknown as TableProps<Error200TableType>),
+    className: 'product-sticky-table',
 
     rowKey: (record) => ['error', record.id].join('-'),
     bordered: true,
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
+    sticky: {
+      offsetHeader: 0
+    },
     scroll: {
       x: 'max-content',
       scrollToFirstRowOnChange: false

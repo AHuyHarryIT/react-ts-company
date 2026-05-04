@@ -513,21 +513,41 @@ export const PrintBoxStamp = ({
           }
         `}
       </style>
-      <div className="mb-4 space-y-3">
+      <div className="mb-4 space-y-3 rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4 dark:border-cyan-800/60 dark:bg-cyan-900/15">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-xs font-bold tracking-wide text-cyan-500 uppercase">
+              Đang xem
+            </div>
+            <div className="text-base font-bold text-cyan-700 dark:text-cyan-300">
+              Tem Thùng
+            </div>
+          </div>
+          <span className="rounded-full border border-cyan-300 bg-white/70 px-3 py-1 text-xs font-bold text-cyan-700 dark:border-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300">
+            Nhãn thùng/carton
+          </span>
+        </div>
         <div>
-          <label className="mb-2 block text-sm font-medium">Chế độ in:</label>
+          <label className="mb-2 block text-sm font-medium text-cyan-900 dark:text-cyan-100">
+            Chế độ in tem thùng:
+          </label>
           <Radio.Group
             value={printMode}
             onChange={(e) => setPrintMode(e.target.value)}
-            className="flex gap-4"
+            className="flex flex-wrap gap-4"
           >
-            <Radio value="single">In (100 x 80)</Radio>
-            <Radio value="grid">In (A4)</Radio>
+            <Radio value="single">Tem thùng lẻ (100 x 80)</Radio>
+            <Radio value="grid">Tem thùng A4</Radio>
           </Radio.Group>
         </div>
         <div>
-          <Button color="default" variant="solid" onClick={handleSavePrintLog}>
-            Print
+          <Button
+            color="cyan"
+            variant="solid"
+            className="stamp-print-action stamp-print-action--box"
+            onClick={handleSavePrintLog}
+          >
+            In tem thùng
           </Button>
         </div>
       </div>
@@ -672,7 +692,7 @@ export const PrintBoxStamp = ({
                 return (
                   <div
                     key={`page-${pageIndex}`}
-                    className="grid-page grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mx-auto not-print:mb-8 not-print:max-w-7xl not-print:border not-print:border-green-500 not-print:p-4"
+                    className="grid-page grid grid-cols-3 grid-rows-2 place-items-center gap-4 not-print:mx-auto not-print:mb-8 not-print:max-w-7xl not-print:border not-print:border-cyan-500 not-print:p-4"
                   >
                     {pageLayout.map((stamp, itemIndex) => {
                       const globalIndex = pageIndex * 6 + itemIndex;
@@ -724,7 +744,7 @@ export const PrintBoxStamp = ({
                 return allStamps.map((stamp, index) => (
                   <div
                     key={`stamp-${index}-${product.code}-${stamp}`}
-                    className="stamp-item not-print:mx-auto not-print:mb-8 not-print:max-w-fit not-print:border not-print:border-green-500 not-print:p-4 print:flex print:items-center print:justify-center"
+                    className="stamp-item not-print:mx-auto not-print:mb-8 not-print:max-w-fit not-print:border not-print:border-cyan-500 not-print:p-4 print:flex print:items-center print:justify-center"
                   >
                     {renderStampTable(stamp)}
                   </div>

@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 
 import { DatePicker, Input, Modal, Select, Tabs, TabsProps } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { useMemo, useState } from 'react';
 import { FaSearch, FaRulerCombined, FaTag } from 'react-icons/fa';
 import {
@@ -210,7 +211,7 @@ export default function ProductList() {
 
   return (
     <ProductDrawerProvider>
-      <ComponentCard title="Quản lý sản phẩm">
+      <ComponentCard title="Quản lý sản phẩm" className="!overflow-clip">
         <div className="space-y-5">
           {/* ── Action Bar ───────────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 dark:border-gray-700 dark:bg-gray-800/50">
@@ -221,7 +222,7 @@ export default function ProductList() {
 
             <button
               onClick={() => setActiveModal('add')}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+              className="header-action-btn header-action-btn--success !gap-1.5 !px-3 !py-1.5 !text-xs"
             >
               <FaPlus className="text-[10px] text-gray-500" />
               Thêm SP
@@ -229,7 +230,7 @@ export default function ProductList() {
 
             <button
               onClick={() => setActiveModal('quantityAdd')}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+              className="header-action-btn header-action-btn--primary !gap-1.5 !px-3 !py-1.5 !text-xs"
             >
               <FaIndustry className="text-[10px] text-gray-500" />
               Thêm SL
@@ -237,7 +238,7 @@ export default function ProductList() {
 
             <button
               onClick={() => setActiveModal('quantityUpdate')}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+              className="header-action-btn header-action-btn--info !gap-1.5 !px-3 !py-1.5 !text-xs"
             >
               <FaBox6 className="text-[10px] text-gray-500" />
               Cập nhật SL
@@ -245,7 +246,7 @@ export default function ProductList() {
 
             <button
               onClick={() => setActiveModal('trash')}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+              className="header-action-btn header-action-btn--warning !gap-1.5 !px-3 !py-1.5 !text-xs"
             >
               <FaTrashCan className="text-[10px] text-gray-500" />
               Thùng rác
@@ -358,9 +359,10 @@ export default function ProductList() {
                   <FaSearch className="mr-1 inline-block text-gray-400" />
                   Tìm kiếm
                 </label>
-                <Input.Search
+                <Input
                   placeholder="Tìm kiếm sản phẩm..."
                   allowClear
+                  suffix={<SearchOutlined />}
                   className="!rounded-lg"
                   onChange={(e) => {
                     const inputValue = e.target.value;

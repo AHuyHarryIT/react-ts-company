@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { addWorkSchedule } from '@services/workScheduleService';
 
 import { FaPlus } from 'react-icons/fa';
+import dayjs from 'dayjs';
 
 type FormField = {
   title: string;
@@ -21,24 +22,52 @@ type FormField = {
   fileImport: File;
 };
 
-export const AddWorkSchedule = () => {
+type AddWorkScheduleProps = {
+  onCreated?: () => void;
+};
+
+export const AddWorkSchedule: React.FC<AddWorkScheduleProps> = ({
+  onCreated
+}) => {
   const queryClient = useQueryClient();
+  const [form] = Form.useForm<FormField>();
 
   const [open, setOpen] = useState(false);
   const [scheduleFile, setScheduleFile] = useState<File>();
 
+  const formatDefaultTitle = () => {
+    return `LỊCH LÀM VIỆC THÁNG .${dayjs().year()}`;
+  };
+
+  const syncStartDateFromTitle = (title: string) => {
+    const match = title.match(/tháng\s*(\d{1,2})(?:\s*[./-]\s*(\d{4}))?/i);
+    if (!match) return;
+
+    const month = Number(match[1]);
+    const year = Number(match[2] || dayjs().year());
+    if (month < 1 || month > 12 || year < 1900) return;
+
+    form.setFieldValue('start_date', dayjs(`${year}-${month}-01`));
+  };
+
   const handleOpen = () => {
     setOpen(true);
+    form.setFieldsValue({
+      title: formatDefaultTitle()
+    });
   };
 
   const handleClose = () => {
     setOpen(false);
+    setScheduleFile(undefined);
+    form.resetFields();
   };
 
   const { mutate, isPending } = useMutation({
     mutationFn: addWorkSchedule,
     mutationKey: ['addWorkSchedule'],
     onSuccess: () => {
+      onCreated?.();
       queryClient.invalidateQueries({ queryKey: ['workSchedules'] });
       message.success('Thêm lịch làm việc thành công');
       handleClose();
@@ -60,6 +89,7 @@ export const AddWorkSchedule = () => {
   };
 
   const formProps: FormProps = {
+    form,
     layout: 'vertical',
     onFinish: onFinish
   };
@@ -88,7 +118,7 @@ export const AddWorkSchedule = () => {
             label="Tiêu đề"
             rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
           >
-            <Input />
+            <Input onChange={(e) => syncStartDateFromTitle(e.target.value)} />
           </Form.Item>
           <Form.Item<FormField>
             name="start_date"

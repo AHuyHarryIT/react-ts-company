@@ -30,6 +30,7 @@ export type WeekTableType = {
   totalQuantity: number;
   totalReamingOfWeek: number;
   exportQuantity: number;
+  checked200RemainingOfWeek: number;
   beginOfWeek: number;
   times: {
     [date: string]: {

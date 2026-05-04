@@ -80,6 +80,11 @@ export const rejectStamp = async (id: string) => {
   return response;
 };
 
+export const deleteStampHistory = async (id: string) => {
+  const response = await axiosPrivate.delete(`${ENDPOINT}/history/${id}`);
+  return response;
+};
+
 export const empStampRequest = async (data: { stamps: RequestStampType[] }) => {
   const response = await axiosPrivate.post(EMP_ENDPOINT + '/request', data);
   return response;

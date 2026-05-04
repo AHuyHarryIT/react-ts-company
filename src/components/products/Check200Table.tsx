@@ -230,22 +230,26 @@ export const Check200Table: React.FC<Check200TableProps> = ({
   const dateColumns: TableColumnsType<Check200TableType> = Array.from({
     length: dayjs(month).daysInMonth()
   }).map((_, index) => {
-    const date = dayjs(month)
-      .date(index + 1)
-      .format('DD-MM-YYYY');
+    const dateObj = dayjs(month).date(index + 1);
+    const date = dateObj.format('DD-MM-YYYY');
+    const isToday = dateObj.isSame(dayjs(), 'day');
+    const dayColumnClass = isToday
+      ? 'product-day-current'
+      : index % 2 === 0
+        ? 'product-day-alt'
+        : '';
+
     return {
       title: (
-        <span className="text-xs">
-          {dayjs(month)
-            .date(index + 1)
-            .format('DD/MM')}
-        </span>
+        <div className={`product-day-pill ${isToday ? 'is-today' : ''}`}>
+          {dateObj.format('DD/MM')}
+        </div>
       ),
       align: 'center',
       dataIndex: ['times', date, 'quantity'],
       key: `${date}_quantity`,
-      width: 75,
-      className: index % 2 === 0 ? 'bg-indigo-200' : '',
+      width: 88,
+      className: dayColumnClass,
       render: (value) => {
         if (!value) return '0';
         return value.toLocaleString({
@@ -292,13 +296,14 @@ export const Check200Table: React.FC<Check200TableProps> = ({
     },
     {
       title: (
-        <div className="text-xs leading-tight">
+        <div className="text-sm leading-tight font-semibold">
           Tồn ĐK
           <br />
           200%
         </div>
       ),
-      width: 80,
+      width: 88,
+      fixed: 'left',
       align: 'center',
       dataIndex: 'startStock',
       render: (value) => {
@@ -310,13 +315,14 @@ export const Check200Table: React.FC<Check200TableProps> = ({
     },
     {
       title: (
-        <div className="text-xs leading-tight">
+        <div className="text-sm leading-tight font-semibold">
           Phát sinh
           <br />
           KH 200%
         </div>
       ),
-      width: 80,
+      width: 88,
+      fixed: 'left',
       align: 'center',
       dataIndex: 'incurred',
       render: (value) => {
@@ -338,10 +344,14 @@ export const Check200Table: React.FC<Check200TableProps> = ({
 
   const tableProps: TableProps<Check200TableType> = {
     ...(customTableProps as unknown as TableProps<Check200TableType>),
+    className: 'product-sticky-table',
     rowKey: (record) => ['check', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
+    sticky: {
+      offsetHeader: 0
+    },
     scroll: {
       x: 'max-content',
       scrollToFirstRowOnChange: false

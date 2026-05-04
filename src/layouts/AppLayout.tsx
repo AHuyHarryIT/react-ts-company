@@ -1,7 +1,6 @@
 import { Outlet } from '@tanstack/react-router';
 import { ConfigProvider, Layout, theme as antTheme, message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 
 import BirthdayModal from '@components/BirthdayModal';
 import CleaningDutyModal from '@components/CleaningDuty/CleaningDutyModal';
@@ -20,6 +19,7 @@ import { fetchNotifications } from '@services/NotificationService';
 import { updateScreenSize } from '@stores/uiStore';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Route } from '@routes/__root';
+import { motion } from 'framer-motion';
 
 const { Content } = Layout;
 
@@ -32,7 +32,7 @@ function AppLayout() {
   }, []);
 
   const {
-    token: { colorBgContainer, borderRadiusLG }
+    token: { borderRadiusLG }
   } = antTheme.useToken();
 
   // ── Holiday mode (30/4 – 1/5) ──
@@ -105,11 +105,22 @@ function AppLayout() {
     notifications?.data.map((notification) => notification.message) || [];
   return (
     <>
-      <ConfigProvider>
+      <ConfigProvider
+        theme={{
+          token: {
+            borderRadius: 12,
+            borderRadiusLG: 16,
+            colorPrimary: '#2563eb',
+            colorBgContainer: 'rgba(255, 255, 255, 0.72)',
+            colorBorderSecondary: 'rgba(148, 163, 184, 0.22)',
+            boxShadowSecondary: '0 14px 34px rgba(15, 23, 42, 0.08)'
+          }
+        }}
+      >
         <Layout
+          className="glass-app-shell"
           style={{
             minHeight: '100vh',
-            background: colorBgContainer,
             borderRadius: borderRadiusLG
           }}
           hasSider
@@ -117,10 +128,7 @@ function AppLayout() {
           <Sidebar />
           <Layout>
             <Header />
-            <Content
-              style={{ overflow: 'initial' }}
-              className="p-4 dark:bg-gray-900"
-            >
+            <Content style={{ overflow: 'initial' }} className="glass-main p-4">
               {messages.length > 0 && (
                 <div className="mb-4">
                   <MarqueeAlert messages={messages} />

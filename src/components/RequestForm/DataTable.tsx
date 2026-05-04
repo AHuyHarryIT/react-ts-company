@@ -127,10 +127,8 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
       record.has_authorized_signature || !!record.digital_signature_authorized;
 
     // Nếu user là người tạo đơn (delegator) và chưa ký
-    if (
-      record.employee.id.toString() === currentUserId &&
-      !hasDelegatorSignature
-    ) {
+    const creatorEmployeeId = record.employee?.id?.toString();
+    if (creatorEmployeeId === currentUserId && !hasDelegatorSignature) {
       return true;
     }
 
@@ -380,9 +378,9 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
             responsive: ['sm' as const],
             render: (name: string, record: RequestForm) => (
               <div className="whitespace-nowrap">
-                <div className="text-sm font-medium">{name}</div>
+                <div className="text-sm font-medium">{name || '-'}</div>
                 <div className="text-xs text-gray-500">
-                  MSNV: {record.employee.id}
+                  MSNV: {record.employee?.id ?? '-'}
                 </div>
               </div>
             )
@@ -447,7 +445,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                   </div>
                   <div className="space-y-0.5 text-xs">
                     <div className="truncate font-medium text-gray-800">
-                      {delegatorInfo.name}
+                      {delegatorInfo?.name || 'Người ủy quyền'}
                     </div>
                     {delegatorApprovedAt && (
                       <div className="text-blue-600">
@@ -1099,8 +1097,10 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
         {isAdmin && record.employee?.name && (
           <div className="mb-1.5 text-xs text-gray-700 dark:text-gray-300">
             <span className="text-gray-400">NV: </span>
-            <span className="font-medium">{record.employee.name}</span>
-            <span className="ml-1 text-gray-400">(#{record.employee.id})</span>
+            <span className="font-medium">{record.employee?.name}</span>
+            <span className="ml-1 text-gray-400">
+              (#{record.employee?.id ?? '-'})
+            </span>
           </div>
         )}
 

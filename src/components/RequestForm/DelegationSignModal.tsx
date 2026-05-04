@@ -56,7 +56,7 @@ export const DelegationSignModal: React.FC<DelegationSignModalProps> = ({
 
   // Determine what type of signature user can provide
   const canSignDelegator =
-    record && record.employee.id.toString() === currentUserId;
+    record && record.employee?.id?.toString() === currentUserId;
   const canSignAuthorized =
     record &&
     (() => {
@@ -224,7 +224,7 @@ export const DelegationSignModal: React.FC<DelegationSignModalProps> = ({
           </div>
           <div>
             <Text strong>Người tạo đơn:</Text>
-            <div>{record.employee.name}</div>
+            <div>{record.employee?.name || 'Chưa xác định'}</div>
           </div>
           <div>
             <Text strong>Người được ủy quyền:</Text>

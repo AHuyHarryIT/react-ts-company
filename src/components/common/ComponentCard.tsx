@@ -18,10 +18,10 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className={`mb-4 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow duration-300 md:hover:shadow-md dark:border-gray-800 dark:bg-[#1f2937]/50 dark:backdrop-blur-sm ${className}`}
+      className={`glass-card mb-4 overflow-hidden rounded-[24px] transition-shadow duration-300 md:hover:shadow-md ${className}`}
     >
       {/* Card Header */}
-      <div className="border-b border-gray-100/80 px-4 py-3 sm:px-6 sm:py-4 dark:border-gray-800">
+      <div className="border-b border-white/45 px-4 py-3 sm:px-6 sm:py-4 dark:border-white/10">
         <h3 className="text-lg font-medium text-gray-800 uppercase sm:text-2xl dark:text-white/90">
           {title}
         </h3>
@@ -33,7 +33,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
       </div>
 
       {/* Card Body */}
-      <div className="border-t border-gray-100 p-4 sm:p-6 dark:border-gray-800">
+      <div className="border-t border-white/35 p-4 sm:p-6 dark:border-white/10">
         <div className="space-y-6">{children}</div>
       </div>
     </motion.div>

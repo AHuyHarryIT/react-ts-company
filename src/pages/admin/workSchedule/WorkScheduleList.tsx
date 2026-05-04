@@ -1,6 +1,6 @@
 import { Empty, Select, Spin } from 'antd';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FaCalendarCheck } from 'react-icons/fa';
 
 import ComponentCard from '@components/common/ComponentCard';
@@ -19,6 +19,9 @@ export default function WorkScheduleList() {
   const { user } = useAuth();
   const [params] = useState<QueryParams>({ limit: 0, sort: '-date' });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [shouldSelectLatestAfterCreate, setShouldSelectLatestAfterCreate] =
+    useState(false);
+  const hasObservedCreateRefetchRef = useRef(false);
   const canManageWorkSchedules = isAllowRole(user, [
     'admin',
     'super admin',
@@ -57,18 +60,51 @@ export default function WorkScheduleList() {
     setSelectedId(workSchedules[0].id);
   }, [selectedId, workSchedules]);
 
+  useEffect(() => {
+    if (!shouldSelectLatestAfterCreate) {
+      return;
+    }
+
+    if (isFetching) {
+      hasObservedCreateRefetchRef.current = true;
+      return;
+    }
+
+    if (!hasObservedCreateRefetchRef.current || !workSchedules.length) {
+      return;
+    }
+
+    setSelectedId(workSchedules[0].id);
+    setShouldSelectLatestAfterCreate(false);
+    hasObservedCreateRefetchRef.current = false;
+  }, [isFetching, shouldSelectLatestAfterCreate, workSchedules]);
+
   return (
     <ComponentCard title="Danh sách lịch làm việc">
       <div className="space-y-5">
         {/* ── Action Bar ────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
           <RefreshButton refresh={refetch} isLoading={isFetching} />
-          {canManageWorkSchedules && <AddWorkSchedule />}
+          {canManageWorkSchedules && (
+            <AddWorkSchedule
+              onCreated={() => {
+                hasObservedCreateRefetchRef.current = false;
+                setShouldSelectLatestAfterCreate(true);
+              }}
+            />
+          )}
           {canManageWorkSchedules && selectedSchedule && (
             <DeleteModal
               id={selectedSchedule.id}
               name={selectedSchedule.title}
               transparent
+              onDeleted={() => {
+                const nextSchedule = workSchedules.find(
+                  (item) => item.id !== selectedSchedule.id
+                );
+
+                setSelectedId(nextSchedule?.id ?? null);
+              }}
             />
           )}
           <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">

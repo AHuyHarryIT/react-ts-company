@@ -32,13 +32,13 @@ const DashboardWidget: React.FC<WidgetProps> = ({
       whileTap={{ scale: 0.96 }}
       className="group relative h-full"
     >
-      <div className="relative flex h-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 text-center shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] transition-all duration-300 lg:hover:border-blue-200 lg:hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:border-gray-700 dark:bg-gray-800 dark:lg:hover:border-gray-600 dark:lg:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
-        {/* Glow effect background on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 lg:group-hover:opacity-100 dark:from-white/5" />
+      <div className="glass-card relative flex h-full min-h-[132px] flex-col items-center justify-center gap-3 rounded-[26px] p-5 text-center transition-all duration-300 lg:hover:border-blue-200 lg:hover:shadow-[0_22px_46px_rgba(37,99,235,0.16)] dark:lg:hover:border-blue-400/30">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(96,165,250,0.22),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.18),transparent_62%)] opacity-70 transition-opacity duration-300 lg:group-hover:opacity-100 dark:bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.18),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.07),transparent_62%)]" />
+        <div className="absolute inset-x-8 top-0 h-px bg-white/80 dark:bg-white/20" />
 
         {/* Icon */}
         <motion.div
-          className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gray-50 transition-colors duration-300 lg:group-hover:bg-blue-100/50 dark:bg-gray-700 dark:lg:group-hover:bg-gray-600"
+          className="glass-icon-tile relative flex h-12 w-12 items-center justify-center rounded-[18px] transition-colors duration-300 lg:group-hover:bg-blue-100/55 dark:lg:group-hover:bg-blue-500/15"
           whileHover={{ rotate: [0, -10, 10, -10, 0] }}
           transition={{ duration: 0.4 }}
         >
@@ -48,7 +48,7 @@ const DashboardWidget: React.FC<WidgetProps> = ({
         </motion.div>
 
         {/* Title */}
-        <p className="relative z-10 text-sm leading-snug font-semibold text-black dark:text-gray-300">
+        <p className="relative z-10 text-sm leading-snug font-semibold text-black/75 dark:text-gray-200">
           {title}
         </p>
 
@@ -61,7 +61,7 @@ const DashboardWidget: React.FC<WidgetProps> = ({
                 ...
               </span>
             ) : (
-              <span className="text-2xl font-bold tracking-tight text-gray-900 drop-shadow-sm transition-transform duration-300 lg:group-hover:scale-105 dark:text-white">
+              <span className="text-2xl font-bold tracking-tight text-gray-950 drop-shadow-sm transition-transform duration-300 lg:group-hover:scale-105 dark:text-white">
                 {value}
               </span>
             )}

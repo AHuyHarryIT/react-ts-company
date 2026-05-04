@@ -609,10 +609,14 @@ export const TotalTable: React.FC<TotalTableProps> = ({
 
   const tableProps: TableProps<TotalTableType> = {
     ...(customTableProps as unknown as TableProps<TotalTableType>),
+    className: 'product-sticky-table',
     rowKey: (record) => ['product', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
+    sticky: {
+      offsetHeader: 0
+    },
     scroll: {
       x: 'max-content',
       scrollToFirstRowOnChange: false

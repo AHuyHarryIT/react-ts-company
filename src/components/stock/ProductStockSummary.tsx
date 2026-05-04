@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Table, Typography, message, Spin, Input, Select, Drawer } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import {
+  Table,
+  Typography,
+  message,
+  Spin,
+  Input,
+  Select,
+  Drawer,
+  DatePicker
+} from 'antd';
+import { InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import RefreshButton from '@/components/common/RefreshButton';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
@@ -11,7 +22,6 @@ import {
 } from '@/types/stockTransaction.types';
 
 const { Text } = Typography;
-const { Search } = Input;
 
 interface CurrentStockApiResponse {
   summary: {
@@ -29,6 +39,10 @@ interface CurrentStockApiResponse {
     bins: string;
     bin_count: number;
     current_quantity: number;
+    opening_quantity?: number;
+    opening_stock?: number;
+    stock_start_quantity?: number;
+    stockStartQuantity?: number;
   }[];
 }
 
@@ -39,18 +53,77 @@ interface LotDetail {
   bin_count: number;
 }
 
+interface ExportLotDetail {
+  lot: string;
+  quantity: number;
+  bins: number[];
+}
+
 interface ProductSummaryRow {
   key: number;
   product_id: number;
   product_code: string;
   product_name: string;
   lot_count: number;
+  opening_quantity: number;
+  production_quantity: number;
+  scanned_quantity: number;
+  unscanned_quantity: number;
+  over_scanned_quantity: number;
+  negative_stock_quantity: number;
   total_quantity: number;
   total_bins: number;
   exported_quantity: number;
   exported_bins: number;
+  exported_bin_numbers: number[];
+  exported_lots: ExportLotDetail[];
   lots: LotDetail[];
 }
+
+const getOpening200Quantity = (source: unknown): number => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const item = source as any;
+  const directValue =
+    item?.opening_quantity_200 ??
+    item?.openingQuantity200 ??
+    item?.opening_stock_200 ??
+    item?.stock_start_quantity_200 ??
+    item?.stockStartQuantity200 ??
+    item?.stock_quantity_200 ??
+    item?.stockQuantity200 ??
+    item?.stock_quantity200 ??
+    item?.stockQuan200;
+
+  if (Number.isFinite(Number(directValue))) return Number(directValue);
+
+  const stockStart200 = item?.totalmonthquantities?.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (quantity: any) => Number(quantity?.status) === 5
+  );
+
+  return Number(stockStart200?.totalQuan || 0);
+};
+
+const getMonthlyQuantityByStatus = (
+  source: unknown,
+  status: number
+): number => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const item = source as any;
+  const quantity = item?.totalmonthquantities?.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (entry: any) => Number(entry?.status) === status
+  );
+
+  return Number(quantity?.totalQuan || 0);
+};
+
+const getCompactCellFontSize = (text: string) => {
+  if (text.length > 28) return 11;
+  if (text.length > 24) return 12;
+  if (text.length > 20) return 13;
+  return 14;
+};
 
 const ProductStockSummary: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -58,13 +131,20 @@ const ProductStockSummary: React.FC = () => {
     null
   );
   const [allProducts, setAllProducts] = useState<
-    { id: number; code: string; name: string }[]
+    {
+      id: number;
+      code: string;
+      name: string;
+      opening_quantity: number;
+      production_quantity: number;
+    }[]
   >([]);
   const [exportData, setExportData] = useState<
-    Map<number, { qty: number; bins: number }>
+    Map<number, { qty: number; bins: number[]; lots: ExportLotDetail[] }>
   >(new Map());
   const [searchText, setSearchText] = useState('');
   const [filterProductId, setFilterProductId] = useState<number | undefined>();
+  const [month, setMonth] = useState<Dayjs>(dayjs());
   const [tablePagination, setTablePagination] = useState({
     current: 1,
     pageSize: 50
@@ -72,6 +152,8 @@ const ProductStockSummary: React.FC = () => {
   const [detailRecord, setDetailRecord] = useState<ProductSummaryRow | null>(
     null
   );
+  const [exportDetailRecord, setExportDetailRecord] =
+    useState<ProductSummaryRow | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -82,9 +164,15 @@ const ProductStockSummary: React.FC = () => {
           success?: boolean;
           data?: CurrentStockApiResponse;
         }>,
-        productService.list({ limit: 0 }),
+        productService.list({
+          limit: 0,
+          month: month.format('YYYY-MM'),
+          include: ['totalmonthquantities']
+        }),
         StockTransactionService.getTransactions({
           type: 'out',
+          from_date: month.startOf('month').format('YYYY-MM-DD'),
+          to_date: month.endOf('month').format('YYYY-MM-DD'),
           per_page: 10000
         })
       ]);
@@ -109,7 +197,9 @@ const ProductStockSummary: React.FC = () => {
         (p: any) => ({
           id: Number(p.id),
           code: String(p.code || ''),
-          name: String(p.name || '')
+          name: String(p.name || ''),
+          opening_quantity: getOpening200Quantity(p),
+          production_quantity: getMonthlyQuantityByStatus(p, 2)
         })
       );
       setAllProducts(productList);
@@ -123,28 +213,68 @@ const ProductStockSummary: React.FC = () => {
         )
       ) {
         const txData = (exportResult as TransactionListResponse).data || [];
-        const expMap = new Map<number, { qty: number; bins: Set<string> }>();
+        const expMap = new Map<
+          number,
+          {
+            qty: number;
+            bins: Set<number>;
+            lots: Map<string, { qty: number; bins: Set<number> }>;
+          }
+        >();
         txData.forEach((tx) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const flat = tx as any;
           const pId = Number(flat.product_id || tx.storage_product?.product_id);
           const bin = flat.bin ?? tx.storage_product?.bin;
+          const lot = String(flat.lot || tx.storage_product?.lot || '');
           const qty = Number(tx.quantity || 0);
           if (pId) {
             const existing = expMap.get(pId) || {
               qty: 0,
-              bins: new Set<string>()
+              bins: new Set<number>(),
+              lots: new Map<string, { qty: number; bins: Set<number> }>()
             };
             existing.qty += qty;
-            if (bin != null) existing.bins.add(String(bin));
+            if (bin != null && !Number.isNaN(Number(bin))) {
+              existing.bins.add(Number(bin));
+            }
+            if (lot) {
+              const lotInfo = existing.lots.get(lot) || {
+                qty: 0,
+                bins: new Set<number>()
+              };
+              lotInfo.qty += qty;
+              if (bin != null && !Number.isNaN(Number(bin))) {
+                lotInfo.bins.add(Number(bin));
+              }
+              existing.lots.set(lot, lotInfo);
+            }
             expMap.set(pId, existing);
           }
         });
-        const resultMap = new Map<number, { qty: number; bins: number }>();
-        expMap.forEach((v, k) =>
-          resultMap.set(k, { qty: v.qty, bins: v.bins.size })
-        );
+        const resultMap = new Map<
+          number,
+          { qty: number; bins: number[]; lots: ExportLotDetail[] }
+        >();
+        expMap.forEach((v, k) => {
+          const lots = Array.from(v.lots.entries())
+            .map(([lot, info]) => ({
+              lot,
+              quantity: info.qty,
+              bins: Array.from(info.bins).sort((a, b) => a - b)
+            }))
+            .sort((a, b) => a.lot.localeCompare(b.lot));
+          const exportedBinsByLot = lots.flatMap((lot) => lot.bins);
+
+          resultMap.set(k, {
+            qty: v.qty,
+            bins: exportedBinsByLot,
+            lots
+          });
+        });
         setExportData(resultMap);
+      } else {
+        setExportData(new Map());
       }
     } catch {
       message.error('Có lỗi xảy ra khi tải dữ liệu');
@@ -152,7 +282,7 @@ const ProductStockSummary: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [month]);
 
   useEffect(() => {
     loadData();
@@ -193,6 +323,7 @@ const ProductStockSummary: React.FC = () => {
       {
         code: string;
         name: string;
+        opening: number;
         qty: number;
         bins: number;
         lots: Set<string>;
@@ -202,6 +333,7 @@ const ProductStockSummary: React.FC = () => {
 
     stockItems.forEach((item) => {
       const existing = map.get(item.product_id);
+      const opening = getOpening200Quantity(item);
       const lotDetail: LotDetail = {
         lot: item.lot,
         quantity: Number(item.current_quantity || 0),
@@ -210,6 +342,7 @@ const ProductStockSummary: React.FC = () => {
       };
       if (existing) {
         existing.qty += Number(item.current_quantity || 0);
+        existing.opening = Math.max(existing.opening, opening);
         existing.bins += Number(item.bin_count || 0);
         existing.lots.add(item.lot);
         existing.lotDetails.push(lotDetail);
@@ -217,6 +350,7 @@ const ProductStockSummary: React.FC = () => {
         map.set(item.product_id, {
           code: item.product_code,
           name: item.product_name,
+          opening,
           qty: Number(item.current_quantity || 0),
           bins: Number(item.bin_count || 0),
           lots: new Set([item.lot]),
@@ -231,32 +365,91 @@ const ProductStockSummary: React.FC = () => {
       rows = allProducts.map((product) => {
         const stockInfo = map.get(product.id);
         const expInfo = exportData.get(product.id);
+        const openingQuantity =
+          product.opening_quantity || stockInfo?.opening || 0;
+        const productionQuantity = product.production_quantity || 0;
+        const monthlyQuantity = openingQuantity + productionQuantity;
+        const scannedQuantity = stockInfo?.qty || 0;
+        const exportedQuantity = expInfo?.qty || 0;
+        const unscannedQuantity = Math.max(
+          monthlyQuantity - scannedQuantity - exportedQuantity,
+          0
+        );
+        const overScannedQuantity = Math.max(
+          scannedQuantity + exportedQuantity - monthlyQuantity,
+          0
+        );
+        const remainingQuantity = Math.max(
+          monthlyQuantity - exportedQuantity,
+          0
+        );
+        const negativeStockQuantity = Math.max(
+          exportedQuantity - monthlyQuantity,
+          0
+        );
         return {
           key: product.id,
           product_id: product.id,
           product_code: stockInfo?.code || product.code,
           product_name: stockInfo?.name || product.name,
           lot_count: stockInfo?.lots.size || 0,
-          total_quantity: stockInfo?.qty || 0,
+          opening_quantity: openingQuantity,
+          production_quantity: productionQuantity,
+          scanned_quantity: scannedQuantity,
+          unscanned_quantity: unscannedQuantity,
+          over_scanned_quantity: overScannedQuantity,
+          negative_stock_quantity: negativeStockQuantity,
+          total_quantity: remainingQuantity,
           total_bins: stockInfo?.bins || 0,
-          exported_quantity: expInfo?.qty || 0,
-          exported_bins: expInfo?.bins || 0,
+          exported_quantity: exportedQuantity,
+          exported_bins: expInfo?.bins.length || 0,
+          exported_bin_numbers: expInfo?.bins || [],
+          exported_lots: expInfo?.lots || [],
           lots: stockInfo?.lotDetails || []
         };
       });
     } else {
       rows = Array.from(map.entries()).map(([id, data]) => {
         const expInfo = exportData.get(id);
+        const openingQuantity = data.opening || 0;
+        const productionQuantity = 0;
+        const monthlyQuantity = openingQuantity + productionQuantity;
+        const scannedQuantity = data.qty || 0;
+        const exportedQuantity = expInfo?.qty || 0;
+        const unscannedQuantity = Math.max(
+          monthlyQuantity - scannedQuantity - exportedQuantity,
+          0
+        );
+        const overScannedQuantity = Math.max(
+          scannedQuantity + exportedQuantity - monthlyQuantity,
+          0
+        );
+        const remainingQuantity = Math.max(
+          monthlyQuantity - exportedQuantity,
+          0
+        );
+        const negativeStockQuantity = Math.max(
+          exportedQuantity - monthlyQuantity,
+          0
+        );
         return {
           key: id,
           product_id: id,
           product_code: data.code,
           product_name: data.name,
           lot_count: data.lots.size,
-          total_quantity: data.qty,
+          opening_quantity: openingQuantity,
+          production_quantity: productionQuantity,
+          scanned_quantity: scannedQuantity,
+          unscanned_quantity: unscannedQuantity,
+          over_scanned_quantity: overScannedQuantity,
+          negative_stock_quantity: negativeStockQuantity,
+          total_quantity: remainingQuantity,
           total_bins: data.bins,
-          exported_quantity: expInfo?.qty || 0,
-          exported_bins: expInfo?.bins || 0,
+          exported_quantity: exportedQuantity,
+          exported_bins: expInfo?.bins.length || 0,
+          exported_bin_numbers: expInfo?.bins || [],
+          exported_lots: expInfo?.lots || [],
           lots: data.lotDetails
         };
       });
@@ -284,12 +477,30 @@ const ProductStockSummary: React.FC = () => {
     return summaryData.reduce(
       (acc, r) => ({
         qty: acc.qty + r.total_quantity,
+        openingQty: acc.openingQty + r.opening_quantity,
+        productionQty: acc.productionQty + r.production_quantity,
+        scannedQty: acc.scannedQty + r.scanned_quantity,
+        unscannedQty: acc.unscannedQty + r.unscanned_quantity,
+        overScannedQty: acc.overScannedQty + r.over_scanned_quantity,
+        negativeStockQty: acc.negativeStockQty + r.negative_stock_quantity,
         bins: acc.bins + r.total_bins,
         lots: acc.lots + r.lot_count,
         expQty: acc.expQty + r.exported_quantity,
         expBins: acc.expBins + r.exported_bins
       }),
-      { qty: 0, bins: 0, lots: 0, expQty: 0, expBins: 0 }
+      {
+        qty: 0,
+        openingQty: 0,
+        productionQty: 0,
+        scannedQty: 0,
+        unscannedQty: 0,
+        overScannedQty: 0,
+        negativeStockQty: 0,
+        bins: 0,
+        lots: 0,
+        expQty: 0,
+        expBins: 0
+      }
     );
   }, [summaryData]);
 
@@ -320,28 +531,164 @@ const ProductStockSummary: React.FC = () => {
       )
     },
     {
-      title: 'Chi tiết Lots / Thùng',
+      title: (
+        <div className="leading-tight">
+          <div>Lots / Thùng đã quét</div>
+          <div className="text-[10px] font-normal text-gray-400">
+            đang còn tồn
+          </div>
+        </div>
+      ),
       key: 'lot_count',
-      width: 150,
+      width: 180,
       align: 'center' as const,
       sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
         a.lot_count - b.lot_count,
-      render: (_: number, record: ProductSummaryRow) =>
-        record.lot_count > 0 || record.total_bins > 0 ? (
-          <span
-            onClick={() => setDetailRecord(record)}
-            className="cursor-pointer text-blue-500 hover:text-blue-700"
-            style={{ borderBottom: '1px dashed currentColor' }}
-          >
-            {record.lot_count} lots · {record.total_bins} thùng{' '}
-            <InfoCircleOutlined style={{ fontSize: 10 }} />
-          </span>
-        ) : (
-          <Text style={{ color: '#d9d9d9' }}>0 lots · 0 thùng</Text>
-        )
+      render: (_: number, record: ProductSummaryRow) => {
+        if (record.lot_count > 0 || record.total_bins > 0) {
+          const label = `${record.lot_count} lots · ${record.total_bins} thùng còn tồn`;
+          return (
+            <span
+              onClick={() => setDetailRecord(record)}
+              className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap text-blue-500 hover:text-blue-700"
+              style={{
+                borderBottom: '1px dashed currentColor',
+                fontSize: getCompactCellFontSize(label)
+              }}
+            >
+              <span>{label}</span>
+              <InfoCircleOutlined
+                className="shrink-0"
+                style={{ fontSize: 10 }}
+              />
+            </span>
+          );
+        }
+
+        return <Text style={{ color: '#d9d9d9' }}>Chưa có thùng đã quét</Text>;
+      }
     },
     {
-      title: 'Tổng tồn kho',
+      title: (
+        <div className="leading-tight">
+          <div>Tồn đầu kỳ</div>
+          <div className="text-[10px] font-normal text-gray-400">200%</div>
+        </div>
+      ),
+      dataIndex: 'opening_quantity',
+      key: 'opening_quantity',
+      width: 120,
+      align: 'center' as const,
+      sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
+        a.opening_quantity - b.opening_quantity,
+      render: (v: number) => (
+        <Text
+          strong
+          style={{ color: v > 0 ? '#2563eb' : '#d9d9d9', fontSize: '14px' }}
+        >
+          {Number(v || 0).toLocaleString('vi-VN')}
+        </Text>
+      )
+    },
+    {
+      title: (
+        <div className="leading-tight">
+          <div>Đã kiểm</div>
+          <div>200%</div>
+        </div>
+      ),
+      dataIndex: 'production_quantity',
+      key: 'production_quantity',
+      width: 120,
+      align: 'center' as const,
+      sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
+        a.production_quantity - b.production_quantity,
+      render: (v: number) => (
+        <Text
+          strong
+          style={{ color: v > 0 ? '#0f766e' : '#d9d9d9', fontSize: '14px' }}
+        >
+          {Number(v || 0).toLocaleString('vi-VN')}
+        </Text>
+      )
+    },
+    {
+      title: (
+        <div className="leading-tight">
+          <div>Đã quét</div>
+          <div className="text-[10px] font-normal text-gray-400">còn tồn</div>
+        </div>
+      ),
+      dataIndex: 'scanned_quantity',
+      key: 'scanned_quantity',
+      width: 110,
+      align: 'center' as const,
+      sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
+        a.scanned_quantity - b.scanned_quantity,
+      render: (v: number) => (
+        <Text
+          strong
+          style={{ color: v > 0 ? '#52c41a' : '#d9d9d9', fontSize: '14px' }}
+        >
+          {Number(v || 0).toLocaleString('vi-VN')}
+        </Text>
+      )
+    },
+    {
+      title: 'Chưa quét',
+      dataIndex: 'unscanned_quantity',
+      key: 'unscanned_quantity',
+      width: 120,
+      align: 'center' as const,
+      sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
+        a.unscanned_quantity - b.unscanned_quantity,
+      render: (v: number) => (
+        <Text
+          strong
+          style={{ color: v > 0 ? '#ea580c' : '#16a34a', fontSize: '14px' }}
+        >
+          {Number(v || 0).toLocaleString('vi-VN')}
+        </Text>
+      )
+    },
+    {
+      title: 'Kết quả kiểm',
+      key: 'scan_status',
+      width: 135,
+      align: 'center' as const,
+      render: (_: unknown, record: ProductSummaryRow) => (
+        <>
+          {record.negative_stock_quantity > 0 ? (
+            <div className="inline-flex min-w-[78px] flex-col rounded border border-red-400 bg-red-100 px-2 py-1 text-red-800">
+              <span className="text-[11px] font-semibold">Âm tồn</span>
+              <span className="text-xs font-bold">
+                -{record.negative_stock_quantity.toLocaleString('vi-VN')}
+              </span>
+            </div>
+          ) : record.unscanned_quantity > 0 ? (
+            <div className="inline-flex min-w-[78px] flex-col rounded border border-orange-300 bg-orange-50 px-2 py-1 text-orange-700">
+              <span className="text-[11px] font-semibold">Còn thiếu</span>
+              <span className="text-xs font-bold">
+                {record.unscanned_quantity.toLocaleString('vi-VN')}
+              </span>
+            </div>
+          ) : record.over_scanned_quantity > 0 ? (
+            <div className="inline-flex min-w-[78px] flex-col rounded border border-amber-300 bg-amber-50 px-2 py-1 text-amber-700">
+              <span className="text-[11px] font-semibold">Vượt tổng 200%</span>
+              <span className="text-xs font-bold">
+                +{record.over_scanned_quantity.toLocaleString('vi-VN')}
+              </span>
+            </div>
+          ) : (
+            <span className="inline-flex min-w-[78px] justify-center rounded border border-green-300 bg-green-50 px-2 py-1 text-xs font-bold text-green-700">
+              Đủ
+            </span>
+          )}
+        </>
+      )
+    },
+    {
+      title: 'Tồn còn lại',
       dataIndex: 'total_quantity',
       key: 'total_quantity',
       width: 130,
@@ -376,17 +723,34 @@ const ProductStockSummary: React.FC = () => {
     },
     {
       title: 'Thùng xuất',
-      dataIndex: 'exported_bins',
       key: 'exported_bins',
-      width: 90,
+      width: 180,
       align: 'center' as const,
       sorter: (a: ProductSummaryRow, b: ProductSummaryRow) =>
         a.exported_bins - b.exported_bins,
-      render: (v: number) => (
-        <Text strong style={{ color: v > 0 ? '#fa541c' : '#d9d9d9' }}>
-          {v}
-        </Text>
-      )
+      render: (_: unknown, record: ProductSummaryRow) => {
+        if (record.exported_bins > 0) {
+          const label = `${record.exported_lots.length} lots · ${record.exported_bins} thùng đã xuất`;
+          return (
+            <span
+              onClick={() => setExportDetailRecord(record)}
+              className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap text-orange-500 hover:text-orange-700"
+              style={{
+                borderBottom: '1px dashed currentColor',
+                fontSize: getCompactCellFontSize(label)
+              }}
+            >
+              <span>{label}</span>
+              <InfoCircleOutlined
+                className="shrink-0"
+                style={{ fontSize: 10 }}
+              />
+            </span>
+          );
+        }
+
+        return <Text style={{ color: '#d9d9d9' }}>Chưa xuất thùng</Text>;
+      }
     }
   ];
 
@@ -409,7 +773,7 @@ const ProductStockSummary: React.FC = () => {
       {/* Summary + Filters */}
       <div className="space-y-3 rounded-lg border border-gray-100 bg-gray-50/50 px-4 py-3">
         {/* Stats */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+        <div className="hidden flex-wrap items-center gap-x-5 gap-y-1 sm:flex">
           <span className="text-xs font-medium text-gray-500">
             Tổng hợp theo sản phẩm
           </span>
@@ -421,13 +785,37 @@ const ProductStockSummary: React.FC = () => {
             </span>
           </div>
           <div>
-            <span className="text-xs text-gray-400">Tổng SL</span>
+            <span className="text-xs text-gray-400">Tồn đầu kỳ 200%</span>
+            <span className="ml-1.5 text-base font-bold text-blue-600">
+              {totals.openingQty.toLocaleString('vi-VN')}
+            </span>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400">Đã kiểm 200%</span>
+            <span className="ml-1.5 text-base font-bold text-teal-600">
+              {totals.productionQty.toLocaleString('vi-VN')}
+            </span>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400">Đã quét còn tồn</span>
+            <span className="ml-1.5 text-base font-bold text-emerald-600">
+              {totals.scannedQty.toLocaleString('vi-VN')}
+            </span>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400">Chưa quét</span>
+            <span className="ml-1.5 text-base font-bold text-orange-600">
+              {totals.unscannedQty.toLocaleString('vi-VN')}
+            </span>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400">Tồn còn lại</span>
             <span className="ml-1.5 text-base font-bold text-green-600">
               {totals.qty.toLocaleString('vi-VN')}
             </span>
           </div>
           <div>
-            <span className="text-xs text-gray-400">Tổng thùng</span>
+            <span className="text-xs text-gray-400">Thùng còn tồn</span>
             <span className="ml-1.5 text-base font-bold text-blue-600">
               {totals.bins.toLocaleString('vi-VN')}
             </span>
@@ -437,6 +825,94 @@ const ProductStockSummary: React.FC = () => {
             <span className="ml-1.5 text-base font-bold text-orange-500">
               {totals.lots.toLocaleString('vi-VN')}
             </span>
+          </div>
+          {totals.overScannedQty > 0 && (
+            <div>
+              <span className="text-xs text-gray-400">Vượt tổng 200%</span>
+              <span className="ml-1.5 text-base font-bold text-amber-600">
+                +{totals.overScannedQty.toLocaleString('vi-VN')}
+              </span>
+            </div>
+          )}
+          {totals.negativeStockQty > 0 && (
+            <div>
+              <span className="text-xs text-gray-400">Âm tồn</span>
+              <span className="ml-1.5 text-base font-bold text-red-700">
+                -{totals.negativeStockQty.toLocaleString('vi-VN')}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-2 sm:hidden">
+          <span className="text-xs font-medium text-gray-500">
+            Tổng hợp theo sản phẩm
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg border border-purple-100 bg-purple-50 px-3 py-2">
+              <div className="text-[10px] text-gray-500">Sản phẩm</div>
+              <div className="text-base font-bold text-purple-600">
+                {summaryData.length.toLocaleString('vi-VN')}
+              </div>
+            </div>
+            <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+              <div className="text-[10px] text-gray-500">Tồn đầu kỳ 200%</div>
+              <div className="text-base font-bold text-blue-600">
+                {totals.openingQty.toLocaleString('vi-VN')}
+              </div>
+            </div>
+            <div className="rounded-lg border border-teal-100 bg-teal-50 px-3 py-2">
+              <div className="text-[10px] text-gray-500">Đã kiểm 200%</div>
+              <div className="text-base font-bold text-teal-600">
+                {totals.productionQty.toLocaleString('vi-VN')}
+              </div>
+            </div>
+            <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
+              <div className="text-[10px] text-gray-500">Đã quét còn tồn</div>
+              <div className="text-base font-bold text-emerald-600">
+                {totals.scannedQty.toLocaleString('vi-VN')}
+              </div>
+            </div>
+            <div className="rounded-lg border border-orange-100 bg-orange-50 px-3 py-2">
+              <div className="text-[10px] text-gray-500">Chưa quét</div>
+              <div className="text-base font-bold text-orange-600">
+                {totals.unscannedQty.toLocaleString('vi-VN')}
+              </div>
+            </div>
+            <div className="rounded-lg border border-green-100 bg-green-50 px-3 py-2">
+              <div className="text-[10px] text-gray-500">Tồn còn lại</div>
+              <div className="text-base font-bold text-green-600">
+                {totals.qty.toLocaleString('vi-VN')}
+              </div>
+            </div>
+            <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+              <div className="text-[10px] text-gray-500">Thùng còn tồn</div>
+              <div className="text-base font-bold text-blue-600">
+                {totals.bins.toLocaleString('vi-VN')}
+              </div>
+            </div>
+            <div className="rounded-lg border border-orange-100 bg-orange-50 px-3 py-2">
+              <div className="text-[10px] text-gray-500">Tổng lots</div>
+              <div className="text-base font-bold text-orange-500">
+                {totals.lots.toLocaleString('vi-VN')}
+              </div>
+            </div>
+            {totals.overScannedQty > 0 && (
+              <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2">
+                <div className="text-[10px] text-gray-500">Vượt tổng 200%</div>
+                <div className="text-base font-bold text-amber-600">
+                  +{totals.overScannedQty.toLocaleString('vi-VN')}
+                </div>
+              </div>
+            )}
+            {totals.negativeStockQty > 0 && (
+              <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2">
+                <div className="text-[10px] text-gray-500">Âm tồn</div>
+                <div className="text-base font-bold text-red-700">
+                  -{totals.negativeStockQty.toLocaleString('vi-VN')}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -454,11 +930,21 @@ const ProductStockSummary: React.FC = () => {
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
           />
-          <Search
-            placeholder="Tìm..."
-            allowClear
+          <DatePicker
+            picker="month"
+            value={month}
+            allowClear={false}
             size="small"
-            className="!w-full sm:!w-[160px]"
+            className="!w-full sm:!w-[130px]"
+            format="MM/YYYY"
+            onChange={(value) => setMonth(value || dayjs())}
+          />
+          <Input
+            placeholder="Tìm..."
+            allowClear={false}
+            suffix={<SearchOutlined />}
+            size="small"
+            className="stock-search-input !w-full sm:!w-[160px]"
             onChange={(e) => setSearchText(e.target.value)}
           />
           <RefreshButton refresh={loadData} isLoading={loading} size="small" />
@@ -483,7 +969,7 @@ const ProductStockSummary: React.FC = () => {
               setTablePagination({ current: page, pageSize })
           }}
           size="small"
-          scroll={{ x: 800 }}
+          scroll={{ x: 1330 }}
         />
       </div>
 
@@ -529,47 +1015,90 @@ const ProductStockSummary: React.FC = () => {
                           'vi-VN'
                         )}
                       </Text>
-                      <div className="text-[10px] text-gray-400">tồn kho</div>
+                      <div className="text-[10px] text-gray-400">
+                        tồn còn lại
+                      </div>
                     </div>
                   </div>
 
-                  {/* Row 2: Export info */}
-                  <div className="mt-1 flex items-center gap-3 text-xs">
-                    <span className="text-gray-400">Đã xuất:</span>
-                    <Text
-                      style={{
-                        color:
-                          item.exported_quantity > 0 ? '#fa8c16' : '#d9d9d9'
-                      }}
-                    >
-                      {Number(item.exported_quantity || 0).toLocaleString(
-                        'vi-VN'
-                      )}{' '}
-                      SP
-                    </Text>
-                    <Text
-                      style={{
-                        color: item.exported_bins > 0 ? '#fa541c' : '#d9d9d9'
-                      }}
-                    >
-                      {item.exported_bins} thùng
-                    </Text>
+                  {/* Row 2: Stats grid */}
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded bg-blue-50 p-2">
+                      <div className="text-gray-400">Đầu kỳ 200%</div>
+                      <div className="text-sm font-bold text-blue-600">
+                        {Number(item.opening_quantity || 0).toLocaleString(
+                          'vi-VN'
+                        )}
+                      </div>
+                    </div>
+                    <div className="rounded bg-teal-50 p-2">
+                      <div className="text-gray-400">Đã kiểm 200%</div>
+                      <div className="text-sm font-bold text-teal-600">
+                        {Number(item.production_quantity || 0).toLocaleString(
+                          'vi-VN'
+                        )}
+                      </div>
+                    </div>
+                    <div className="rounded bg-emerald-50 p-2">
+                      <div className="text-gray-400">Đã quét</div>
+                      <div className="text-sm font-bold text-emerald-600">
+                        {Number(item.scanned_quantity || 0).toLocaleString(
+                          'vi-VN'
+                        )}
+                      </div>
+                    </div>
+                    <div className="rounded bg-orange-50 p-2">
+                      <div className="text-gray-400">Chưa quét</div>
+                      <div className="text-sm font-bold text-orange-600">
+                        {Number(item.unscanned_quantity || 0).toLocaleString(
+                          'vi-VN'
+                        )}
+                      </div>
+                    </div>
+                    <div className="rounded bg-amber-50 p-2">
+                      <div className="text-gray-400">Vượt/Âm</div>
+                      <div className="text-sm font-bold text-amber-600">
+                        {Math.max(
+                          item.over_scanned_quantity,
+                          item.negative_stock_quantity
+                        ) || '-'}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Row 2: Lots + Bins (clickable for details) */}
-                  <div className="mt-1.5 flex items-center gap-4 text-xs">
-                    {item.lot_count > 0 || item.total_bins > 0 ? (
-                      <span
-                        onClick={() => setDetailRecord(item)}
-                        className="cursor-pointer text-blue-500 hover:text-blue-700"
-                        style={{ borderBottom: '1px dashed currentColor' }}
-                      >
-                        {item.lot_count} lots · {item.total_bins} thùng{' '}
-                        <InfoCircleOutlined style={{ fontSize: 10 }} />
+                  {/* Row 3: Export & Scan status */}
+                  <div className="mt-2 space-y-1.5">
+                    <div className="flex items-center justify-between rounded bg-orange-50 px-2 py-1.5">
+                      <span className="text-xs font-medium text-gray-600">
+                        Đã xuất
                       </span>
-                    ) : (
-                      <span className="text-gray-300">0 lots · 0 thùng</span>
-                    )}
+                      {item.exported_bins > 0 ? (
+                        <span
+                          onClick={() => setExportDetailRecord(item)}
+                          className="cursor-pointer text-xs font-semibold text-orange-600 hover:text-orange-700"
+                        >
+                          {item.exported_lots.length} lots ·{' '}
+                          {item.exported_bins} thùng
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">Chưa xuất</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between rounded bg-blue-50 px-2 py-1.5">
+                      <span className="text-xs font-medium text-gray-600">
+                        Đã quét còn tồn
+                      </span>
+                      {item.lot_count > 0 || item.total_bins > 0 ? (
+                        <span
+                          onClick={() => setDetailRecord(item)}
+                          className="cursor-pointer text-xs font-semibold text-blue-600 hover:text-blue-700"
+                        >
+                          {item.lot_count} lots · {item.total_bins} thùng
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">Chưa có</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -585,7 +1114,7 @@ const ProductStockSummary: React.FC = () => {
               <InfoCircleOutlined />
             </div>
             <span className="text-gray-800">
-              Các Lot của sản phẩm: {detailRecord?.product_name}
+              Lots / thùng đã quét còn tồn: {detailRecord?.product_name}
             </span>
           </div>
         }
@@ -623,6 +1152,7 @@ const ProductStockSummary: React.FC = () => {
                     <Text strong className="block text-sm text-emerald-600">
                       {Number(lot.quantity || 0).toLocaleString('vi-VN')} SP
                     </Text>
+                    <div className="text-[10px] text-gray-400">còn tồn</div>
                   </div>
                 </div>
 
@@ -633,7 +1163,7 @@ const ProductStockSummary: React.FC = () => {
                       type="secondary"
                       className="text-xs font-bold text-gray-500 uppercase"
                     >
-                      Danh sách Thùng
+                      Thùng đã quét còn tồn
                     </Text>
                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700">
                       {lot.bin_count} thùng
@@ -662,25 +1192,171 @@ const ProductStockSummary: React.FC = () => {
             ))}
 
             {/* Footer Summary */}
-            <div className="mt-2 flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50 p-3 shadow-sm">
-              <Text strong className="text-[13px] text-blue-800 uppercase">
-                Tổng cộng:
-              </Text>
-              <div className="text-right">
-                <Text
-                  strong
-                  className="mb-1 block text-base leading-none text-green-600"
-                >
+            <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3 shadow-sm">
+              <div className="mb-2 flex items-center justify-between">
+                <Text strong className="text-[13px] text-blue-800 uppercase">
+                  Tồn còn lại:
+                </Text>
+                <Text strong className="text-base leading-none text-green-600">
                   {Number(detailRecord.total_quantity || 0).toLocaleString(
                     'vi-VN'
                   )}{' '}
                   SP
                 </Text>
-                <Text
-                  strong
-                  className="block text-[13px] leading-none text-blue-600"
-                >
-                  {detailRecord.total_bins} thùng
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+                <div className="rounded bg-white/70 px-2 py-1">
+                  <div className="text-[10px] text-gray-400">Đầu kỳ 200%</div>
+                  <Text strong className="text-[13px] text-blue-600">
+                    {Number(detailRecord.opening_quantity || 0).toLocaleString(
+                      'vi-VN'
+                    )}
+                  </Text>
+                </div>
+                <div className="rounded bg-white/70 px-2 py-1">
+                  <div className="text-[10px] text-gray-400">Đã kiểm 200%</div>
+                  <Text strong className="text-[13px] text-teal-600">
+                    {Number(
+                      detailRecord.production_quantity || 0
+                    ).toLocaleString('vi-VN')}
+                  </Text>
+                </div>
+                <div className="rounded bg-white/70 px-2 py-1">
+                  <div className="text-[10px] text-gray-400">
+                    Đã quét còn tồn
+                  </div>
+                  <Text strong className="text-[13px] text-emerald-600">
+                    {Number(detailRecord.scanned_quantity || 0).toLocaleString(
+                      'vi-VN'
+                    )}
+                  </Text>
+                </div>
+                <div className="rounded bg-white/70 px-2 py-1">
+                  <div className="text-[10px] text-gray-400">Chưa quét</div>
+                  <Text strong className="text-[13px] text-orange-600">
+                    {Number(
+                      detailRecord.unscanned_quantity || 0
+                    ).toLocaleString('vi-VN')}
+                  </Text>
+                </div>
+              </div>
+              {detailRecord.over_scanned_quantity > 0 && (
+                <div className="mt-2 rounded bg-amber-50 px-2 py-1 text-center text-xs font-semibold text-amber-700">
+                  Đã đối soát nhiều hơn tổng 200%:{' '}
+                  {detailRecord.over_scanned_quantity.toLocaleString('vi-VN')}
+                </div>
+              )}
+              {detailRecord.negative_stock_quantity > 0 && (
+                <div className="mt-2 rounded bg-red-50 px-2 py-1 text-center text-xs font-semibold text-red-700">
+                  Đã xuất nhiều hơn tồn có thể đối soát:{' '}
+                  {detailRecord.negative_stock_quantity.toLocaleString('vi-VN')}
+                </div>
+              )}
+              <div className="mt-2 text-center">
+                <Text strong className="text-[13px] leading-none text-blue-600">
+                  {detailRecord.total_bins} thùng đã quét còn tồn
+                </Text>
+              </div>
+            </div>
+          </div>
+        )}
+      </Drawer>
+
+      <Drawer
+        title={
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+              <InfoCircleOutlined />
+            </div>
+            <span className="text-gray-800">
+              Thùng đã xuất: {exportDetailRecord?.product_name}
+            </span>
+          </div>
+        }
+        placement="right"
+        onClose={() => setExportDetailRecord(null)}
+        open={!!exportDetailRecord}
+        width={420}
+        styles={{
+          body: { backgroundColor: '#fff7ed', padding: '16px' },
+          header: { borderBottom: '2px solid #fed7aa' }
+        }}
+      >
+        {exportDetailRecord && (
+          <div className="flex flex-col gap-4">
+            {exportDetailRecord.exported_lots.map((lot, index) => (
+              <div
+                key={`${exportDetailRecord.product_id}-export-lot-${lot.lot}`}
+                className="overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm"
+              >
+                <div className="flex items-center justify-between border-b border-orange-100 bg-orange-50 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-200 text-xs font-bold text-orange-700">
+                      {index + 1}
+                    </span>
+                    <Text className="font-semibold text-gray-700">Mã Lot:</Text>
+                    <Text
+                      code
+                      className="border border-orange-200 bg-white text-sm font-bold text-orange-700"
+                    >
+                      {lot.lot}
+                    </Text>
+                  </div>
+                  <div className="text-right">
+                    <Text strong className="block text-sm text-orange-600">
+                      {Number(lot.quantity || 0).toLocaleString('vi-VN')} SP
+                    </Text>
+                    <div className="text-[10px] text-gray-400">đã xuất</div>
+                  </div>
+                </div>
+
+                <div className="px-4 py-3">
+                  <div className="mb-2 flex items-center justify-between space-x-2">
+                    <Text
+                      type="secondary"
+                      className="text-xs font-bold text-gray-500 uppercase"
+                    >
+                      Thùng đã xuất
+                    </Text>
+                    <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-700">
+                      {lot.bins.length} thùng
+                    </span>
+                  </div>
+                  <div className="rounded-lg border border-dashed border-orange-200 bg-orange-50 p-2.5">
+                    <div className="flex flex-wrap gap-1.5">
+                      {lot.bins.map((bin) => (
+                        <div
+                          key={`${exportDetailRecord.product_id}-${lot.lot}-drawer-exported-bin-${bin}`}
+                          className="min-w-[30px] rounded border border-orange-200 bg-white px-1.5 py-0.5 text-center text-[12px] font-semibold text-orange-700 shadow-sm"
+                        >
+                          {bin}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div className="rounded-lg border border-orange-100 bg-white p-3 shadow-sm">
+              <div className="mb-2 flex items-center justify-between">
+                <Text strong className="text-[13px] text-orange-800 uppercase">
+                  Tổng lots / thùng:
+                </Text>
+                <Text strong className="text-sm text-orange-600">
+                  {exportDetailRecord.exported_lots.length} lots ·{' '}
+                  {exportDetailRecord.exported_bins} thùng
+                </Text>
+              </div>
+              <div className="flex items-center justify-between">
+                <Text strong className="text-[13px] text-orange-800 uppercase">
+                  Số lượng đã xuất:
+                </Text>
+                <Text strong className="text-base text-orange-600">
+                  {Number(
+                    exportDetailRecord.exported_quantity || 0
+                  ).toLocaleString('vi-VN')}{' '}
+                  SP
                 </Text>
               </div>
             </div>

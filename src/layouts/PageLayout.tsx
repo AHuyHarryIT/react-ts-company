@@ -1,17 +1,34 @@
 import { Outlet } from '@tanstack/react-router';
-import { motion } from 'framer-motion';
+import {
+  LIST_CONTAINER_VARIANTS,
+  SECTION_ITEM_VARIANTS,
+  SURFACE_TRANSITION
+} from '@constants/motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface PageLayoutProps {
   title: string;
 }
 
 export const PageLayout = ({ title }: PageLayoutProps) => {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
-    <>
+    <motion.div
+      variants={shouldReduceMotion ? undefined : LIST_CONTAINER_VARIANTS}
+      initial="initial"
+      animate="animate"
+    >
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.4 }}
+        variants={
+          shouldReduceMotion
+            ? {
+                initial: { opacity: 0 },
+                animate: { opacity: 1 }
+              }
+            : SECTION_ITEM_VARIANTS
+        }
+        transition={shouldReduceMotion ? { duration: 0 } : SURFACE_TRANSITION}
         className="mb-6 flex flex-wrap items-center justify-between gap-3"
       >
         <h2
@@ -21,7 +38,19 @@ export const PageLayout = ({ title }: PageLayoutProps) => {
           {title}
         </h2>
       </motion.div>
-      <Outlet />
-    </>
+      <motion.div
+        variants={
+          shouldReduceMotion
+            ? {
+                initial: { opacity: 0 },
+                animate: { opacity: 1 }
+              }
+            : SECTION_ITEM_VARIANTS
+        }
+        transition={shouldReduceMotion ? { duration: 0 } : SURFACE_TRANSITION}
+      >
+        <Outlet />
+      </motion.div>
+    </motion.div>
   );
 };

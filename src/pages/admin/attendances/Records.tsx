@@ -15,6 +15,7 @@ import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 import { useState } from 'react';
 import type { Dayjs } from 'dayjs';
+import { SearchOutlined } from '@ant-design/icons';
 
 import { QueryParams } from '@/types/queryParams';
 import { EmployeeListModal } from '@components/attendances/EmployeeListModal';
@@ -428,9 +429,10 @@ export default function Records() {
             }));
           }}
         />
-        <Input.Search
+        <Input
           placeholder="Tìm kiếm nhân viên"
           allowClear
+          suffix={<SearchOutlined />}
           onChange={(e) => {
             const inputValue = e.target.value;
             if (/^\d+$/.test(inputValue)) {

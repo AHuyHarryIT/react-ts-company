@@ -56,7 +56,7 @@ export const TodoHistory = () => {
           {/* ── Action Bar ─────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <Link to="/employee/todo/add-product">
-              <button className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-[0.97]">
+              <button className="header-action-btn header-action-btn--primary">
                 ← NHẬP SẢN PHẨM
               </button>
             </Link>
