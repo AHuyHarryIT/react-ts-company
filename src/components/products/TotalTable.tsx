@@ -246,15 +246,16 @@ export const TotalTable: React.FC<TotalTableProps> = ({
   const total = response?.total || 0;
 
   const { data: monthlyQuantities } = useQuery({
-    queryKey: ['month-quantities'],
+    queryKey: ['month-quantities', 'po-export'],
     queryFn: () => {
-      return getMonthlyQuantities({ limit: 0, status: 3 });
+      return getMonthlyQuantities({ limit: 0, status: 8 });
     }
   });
 
   const dataSource = calculateTotalProduct(
     tableData,
-    monthlyQuantities ?? []
+    monthlyQuantities ?? [],
+    params.month?.toString()
   ) as TotalTableType[];
 
   /* ── Mobile view ── */

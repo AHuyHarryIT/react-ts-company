@@ -50,7 +50,6 @@ export const UpdateQuantityModal: React.FC<UpdateQuantityModalProps> = ({
       [
         productStatus.enum.PRODUCE,
         productStatus.enum.CHECK200,
-        productStatus.enum.EXPORT,
         productStatus.enum.ERROR
       ].includes(option.value)
   );

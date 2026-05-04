@@ -69,12 +69,12 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
             </div>
             <div>
               <div className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                {record.employee.name || (
+                {record.employee?.name || (
                   <span className="text-gray-400 italic">Chưa có tên</span>
                 )}
               </div>
               <Tag color="blue" className="!m-0 !text-[10px]">
-                {record.employee.id}
+                {record.employee?.id ?? record.employee_id}
               </Tag>
             </div>
           </div>
@@ -128,12 +128,16 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
           />
           <DeleteModal
             id={record.id}
+            status={record.status}
             description={
               <p>
                 Hành động không thể khôi phục!!
                 <br />
                 Bạn có chắc muốn xoá lịch sử cập nhật của{' '}
-                <strong>{record.employee.name}</strong> không?
+                <strong>
+                  {record.employee?.name ?? record.employee_id}
+                </strong>{' '}
+                không?
               </p>
             }
           />
@@ -152,7 +156,12 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
   const dataSourceMap: { [key: string]: ProductHistoryStatusType[] } = {
     status1: productHistoryDetail?.status1 ?? [],
     status2: productHistoryDetail?.status2 ?? [],
-    status3: productHistoryDetail?.status3 ?? [],
+    status8:
+      productHistoryDetail?.status8 ??
+      productHistoryDetail?.product.daily_quantities_po?.filter(
+        (item) => item.status === 8
+      ) ??
+      [],
     status6: productHistoryDetail?.status6 ?? []
   };
 
@@ -262,13 +271,14 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
           />
           <DeleteModal
             id={record.id}
+            status={record.status}
             description={
               <p>
                 Hành động không thể khôi phục!!
                 <br />
                 Bạn có chắc muốn xoá lịch sử cập{' '}
                 <strong>
-                  #{index + 1} - {record.employee.name} (
+                  #{index + 1} - {record.employee?.name ?? record.employee_id} (
                   {dayjs(record.updated_at).format('YYYY-MM-DD HH:mm:ss')})
                 </strong>{' '}
                 nhật sản phẩm không?
@@ -282,7 +292,8 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
 
   const tableProps: TableProps<ProductHistoryStatusType> = {
     ...(customTableProps as unknown as TableProps<ProductHistoryStatusType>),
-    rowKey: (record) => [record['employee'].id, record.id].join('-'),
+    rowKey: (record) =>
+      [record.employee?.id ?? record.employee_id, record.id].join('-'),
     columns: tableColumns,
     size: isMobile ? 'small' : 'middle',
     scroll: { x: 'max-content' },
@@ -308,7 +319,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
                 record={record}
                 index={index}
                 productId={productHistoryDetail?.product.id}
-                hideShift={statusKey === 'status3'}
+                hideShift={statusKey === 'status8'}
               />
             </List.Item>
           )}
@@ -317,7 +328,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
     }
 
     const cols =
-      statusKey === 'status3'
+      statusKey === 'status8'
         ? tableColumns.filter((col) => col.key !== 'shift')
         : tableColumns;
 
@@ -346,14 +357,14 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ id }) => {
       children: renderTabContent(dataSourceMap['status2'], 'status2')
     },
     {
-      key: 'status3',
+      key: 'status8',
       label: (
         <span className="flex items-center gap-2 text-sm font-medium">
           <FaTruck className="text-amber-500" />
           Xuất hàng (200%)
         </span>
       ),
-      children: renderTabContent(dataSourceMap['status3'], 'status3')
+      children: renderTabContent(dataSourceMap['status8'], 'status8')
     },
     {
       key: 'status6',

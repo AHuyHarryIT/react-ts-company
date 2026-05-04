@@ -158,7 +158,10 @@ export const ExportTable: React.FC<ExportTableProps> = ({
   const total = response?.total || 0;
 
   useEffect(() => {
-    if (!tableData.length) return;
+    if (!tableData.length) {
+      setDataSource([]);
+      return;
+    }
 
     const newDataSource = calculateExportProduct(
       tableData

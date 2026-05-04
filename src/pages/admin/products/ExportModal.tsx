@@ -42,9 +42,9 @@ export const ExportModal = () => {
   );
 
   const { data: monthlyQuantities } = useQuery({
-    queryKey: ['month-quantities'],
+    queryKey: ['month-quantities', 'po-export'],
     queryFn: () => {
-      return getMonthlyQuantities({ limit: 0, status: 3 });
+      return getMonthlyQuantities({ limit: 0, status: 8 });
     }
   });
 
@@ -56,7 +56,11 @@ export const ExportModal = () => {
       const { data: products } = response;
 
       // Process data for export
-      const fapvData = calculateTotalProduct(products, monthlyQuantities ?? []);
+      const fapvData = calculateTotalProduct(
+        products,
+        monthlyQuantities ?? [],
+        dayjs(month).format('YYYY-MM')
+      );
       const produceData = calculateProduceProduct(products);
       const exportData = calculateExportProduct(products);
       const check200Data = calculateCheck200Product(products);
@@ -685,7 +689,8 @@ export const ExportModal = () => {
       include: [
         'totaldailyquantities',
         'totalmonthquantities',
-        'dailyquantities'
+        'dailyquantities',
+        'totaldailyquantitiespo'
       ],
       month: dayjs(month).format('YYYY-MM')
     });

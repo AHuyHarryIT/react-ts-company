@@ -1,6 +1,16 @@
 import { ProductType } from '@/types/productType';
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 
+const toNumber = (value: number | string | undefined | null) =>
+  Number(value || 0);
+
+const toMonthKey = (month?: string) => {
+  if (!month) return undefined;
+  const [first, second] = month.split('-');
+
+  return first.length === 4 ? `${second}-${first}` : month;
+};
+
 export interface TotalTableResult {
   id: string;
   name: string;
@@ -33,27 +43,41 @@ export interface TotalTableResult {
 
 export function calculateTotalProduct(
   products: ProductType[],
-  monthlyQuantities: TotalMonthQuantityType[]
+  monthlyQuantities: TotalMonthQuantityType[],
+  currentMonth?: string
 ): TotalTableResult[] {
+  const currentMonthKey = toMonthKey(currentMonth);
+
   return products.map((product) => {
     const timeMap: TotalTableResult['times'] = {};
     const totalMonthQuantities: TotalMonthQuantityType[] =
       product?.totalmonthquantities || [];
 
-    const realityQuantity =
-      totalMonthQuantities.find((item) => item.status === 1)?.totalQuan || 0;
-    const importQuantity =
-      totalMonthQuantities.find((item) => item.status === 2)?.totalQuan || 0;
-    const exportQuantity =
-      totalMonthQuantities.find((item) => item.status === 3)?.totalQuan || 0;
-    const stockStartQuantity =
-      totalMonthQuantities.find((item) => item.status === 4)?.totalQuan || 0;
-    const stockQuantity200 =
-      totalMonthQuantities.find((item) => item.status === 5)?.totalQuan || 0;
-    const errorQuantity =
-      totalMonthQuantities.find((item) => item.status === 6)?.totalQuan || 0;
-    const stockQuantityMOQ =
-      totalMonthQuantities.find((item) => item.status === 7)?.totalQuan || 0;
+    const realityQuantity = toNumber(
+      totalMonthQuantities.find((item) => item.status === 1)?.totalQuan
+    );
+    const importQuantity = toNumber(
+      totalMonthQuantities.find((item) => item.status === 2)?.totalQuan
+    );
+    const exportQuantity = monthlyQuantities
+      .filter(
+        (item) =>
+          item.product_id === product.id &&
+          (!currentMonthKey || item.month === currentMonthKey)
+      )
+      .reduce((acc, item) => acc + toNumber(item.totalQuan), 0);
+    const stockStartQuantity = toNumber(
+      totalMonthQuantities.find((item) => item.status === 4)?.totalQuan
+    );
+    const stockQuantity200 = toNumber(
+      totalMonthQuantities.find((item) => item.status === 5)?.totalQuan
+    );
+    const errorQuantity = toNumber(
+      totalMonthQuantities.find((item) => item.status === 6)?.totalQuan
+    );
+    const stockQuantityMOQ = toNumber(
+      totalMonthQuantities.find((item) => item.status === 7)?.totalQuan
+    );
 
     const checked200 = stockQuantity200 + importQuantity - exportQuantity;
     const stockEndQuantity =
@@ -89,7 +113,7 @@ export function calculateTotalProduct(
         if (!timeMap[item.month]) {
           timeMap[item.month] = { quantity: 0 };
         }
-        timeMap[item.month].quantity += item.totalQuan;
+        timeMap[item.month].quantity += toNumber(item.totalQuan);
       });
 
     return {

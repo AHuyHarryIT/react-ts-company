@@ -167,10 +167,6 @@ export default function ProductQuantityAdd() {
                         {
                           label: 'Hàng lỗi',
                           value: productStatus.enum.ERROR
-                        },
-                        {
-                          label: 'Xuất hàng',
-                          value: productStatus.enum.EXPORT
                         }
                       ]}
                       placeholder="Chọn loại sản lượng"

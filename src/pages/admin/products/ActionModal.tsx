@@ -15,6 +15,7 @@ interface EditModalProps {
 
 interface DeleteModalProps {
   id: string;
+  status: ProductHistoryStatusType['status'];
   description: ReactNode;
 }
 
@@ -41,6 +42,7 @@ export const EditModal: React.FC<EditModalProps> = ({ id, children }) => {
 
 export const DeleteModal: React.FC<DeleteModalProps> = ({
   id,
+  status,
   description
 }) => {
   const [open, setOpen] = useState(false);
@@ -57,8 +59,8 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
 
   const { mutate, isPending } = useMutation({
     mutationKey: ['deleteProductDetail'],
-    mutationFn: (id: string) => {
-      return deleteProductHistoryDetail(id);
+    mutationFn: () => {
+      return deleteProductHistoryDetail(id, status);
     },
     onMutate: () => {
       message.loading({
@@ -83,7 +85,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
   });
 
   const handleDelete = () => {
-    mutate(id);
+    mutate();
   };
 
   return (

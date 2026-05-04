@@ -42,9 +42,12 @@ export const updateProductHistoryDetail = async (
 };
 
 export const deleteProductHistoryDetail = async (
-  id: ProductHistoryStatusType['id']
+  id: ProductHistoryStatusType['id'],
+  status?: ProductHistoryStatusType['status']
 ) => {
-  await axiosPrivate.delete(`${ENDPOINT}/detail/${id}`);
+  await axiosPrivate.delete(`${ENDPOINT}/detail/${id}`, {
+    params: { status }
+  });
 };
 
 export const updateProductQuantity = async (

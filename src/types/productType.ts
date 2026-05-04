@@ -17,12 +17,12 @@ export type ProductHistoryStatusType = {
   product_id: ProductType['id'];
   quantity: number;
   status: ProductStatusType;
-  shift: string | null;
+  shift?: string | null;
   date: string;
   employee_id: EmployeeType['id'];
   created_at: string;
   updated_at: string;
-  employee: {
+  employee?: {
     id: EmployeeType['id'];
     name: EmployeeType['name'];
   };
@@ -32,6 +32,6 @@ export type ProductHistoryDetailType = {
   product: ProductType;
   status1: ProductHistoryStatusType[];
   status2: ProductHistoryStatusType[];
-  status3: ProductHistoryStatusType[];
+  status8?: ProductHistoryStatusType[];
   status6: ProductHistoryStatusType[];
 };

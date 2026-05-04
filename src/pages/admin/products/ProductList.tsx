@@ -53,7 +53,8 @@ export default function ProductList() {
     include: [
       'totaldailyquantities',
       'totalmonthquantities',
-      'dailyquantities'
+      'dailyquantities',
+      'totaldailyquantitiespo'
     ],
     month: dayjs().format('YYYY-MM')
   });
