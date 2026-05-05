@@ -3,7 +3,6 @@ import {
   Table,
   Input,
   Select,
-  Button,
   Typography,
   message,
   DatePicker,
@@ -12,7 +11,12 @@ import {
   Tooltip
 } from 'antd';
 import { SearchOutlined, DeleteOutlined } from '@ant-design/icons';
+import AppButton from '@/components/common/AppButton';
 import RefreshButton from '@/components/common/RefreshButton';
+import {
+  customPaginationProps,
+  DEFAULT_PAGE_SIZE_OPTIONS
+} from '@components/custom/PaginationProps.custom';
 
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
@@ -417,7 +421,7 @@ const RawTransactionHistory: React.FC = () => {
           cancelText="Huỷ"
           okButtonProps={{ danger: true }}
         >
-          <Button
+          <AppButton
             type="text"
             danger
             size="small"
@@ -476,7 +480,7 @@ const RawTransactionHistory: React.FC = () => {
         cancelText="Huỷ"
         okButtonProps={{ danger: true }}
       >
-        <Button
+        <AppButton
           type="text"
           danger
           size="small"
@@ -595,15 +599,15 @@ const RawTransactionHistory: React.FC = () => {
 
           {/* Quick Date Buttons */}
           <div className="flex items-center gap-1">
-            <Button
+            <AppButton
               size="small"
               type="dashed"
               onClick={() => handleDateChange([dayjs(), dayjs()])}
               className="stock-filter-control stock-filter-quick-btn text-xs"
             >
               Hôm nay
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               size="small"
               type="dashed"
               onClick={() =>
@@ -615,7 +619,7 @@ const RawTransactionHistory: React.FC = () => {
               className="stock-filter-control stock-filter-quick-btn text-xs"
             >
               Hôm qua
-            </Button>
+            </AppButton>
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-1.5 sm:justify-start">
@@ -657,12 +661,11 @@ const RawTransactionHistory: React.FC = () => {
           rowKey="id"
           loading={loading}
           pagination={{
+            ...customPaginationProps,
             current: paginationMeta.current_page,
             pageSize: paginationMeta.per_page,
             total: paginationMeta.total,
-            showSizeChanger: true,
-            pageSizeOptions: ['10', '20', '50', '100'],
-            showTotal: (total, range) => `${range[0]}-${range[1]} / ${total}`,
+            pageSizeOptions: DEFAULT_PAGE_SIZE_OPTIONS,
             size: 'small',
             onChange: (page, pageSize) => loadTransactions(page, pageSize)
           }}
@@ -691,7 +694,7 @@ const RawTransactionHistory: React.FC = () => {
                   {paginationMeta.total}
                 </span>
                 <div className="flex items-center gap-1">
-                  <Button
+                  <AppButton
                     size="small"
                     disabled={paginationMeta.current_page <= 1}
                     onClick={() =>
@@ -699,11 +702,11 @@ const RawTransactionHistory: React.FC = () => {
                     }
                   >
                     ‹
-                  </Button>
+                  </AppButton>
                   <span className="px-1.5 text-xs font-medium text-gray-600">
                     {paginationMeta.current_page} / {paginationMeta.last_page}
                   </span>
-                  <Button
+                  <AppButton
                     size="small"
                     disabled={
                       paginationMeta.current_page >= paginationMeta.last_page
@@ -713,7 +716,7 @@ const RawTransactionHistory: React.FC = () => {
                     }
                   >
                     ›
-                  </Button>
+                  </AppButton>
                 </div>
               </div>
             )}

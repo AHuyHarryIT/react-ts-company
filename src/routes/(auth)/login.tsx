@@ -239,7 +239,7 @@ function RouteComponent() {
   };
 
   return (
-    <div className="glass-card auth-glass-card flex min-w-0 flex-col items-center rounded-[28px] px-6 py-8 sm:px-8">
+    <div className="liquid-glass-card auth-glass-card flex min-w-0 flex-col items-center rounded-[28px] px-6 py-8 sm:px-8">
       {/* ── Logo ── */}
       <div className="mb-8">
         <img src={logo} alt="Logo" className="mx-auto h-28" />
@@ -308,7 +308,7 @@ function RouteComponent() {
               loading={isPending}
               disabled={isPending}
               size="large"
-              className="glass-button !h-12 !rounded-xl !text-base !font-semibold active:!scale-[0.98]"
+              className="liquid-glass-button glass-button !h-12 !rounded-xl !text-base !font-semibold active:!scale-[0.98]"
             >
               Đăng Nhập
             </Button>

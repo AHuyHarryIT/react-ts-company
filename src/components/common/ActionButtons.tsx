@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, ButtonProps } from 'antd';
+import { ButtonProps } from 'antd';
 import { motion } from 'framer-motion';
 import {
   IconEdit,
@@ -7,6 +7,7 @@ import {
   IconRestore,
   IconPrint
 } from '@components/icons';
+import AppButton from '@components/common/AppButton';
 import { FaEye, FaBan } from 'react-icons/fa';
 
 /**
@@ -35,14 +36,9 @@ export const EditButton: React.FC<ButtonProps> = (props) => {
       whileTap={{ scale: 0.95 }}
       className="inline-block"
     >
-      <Button
-        type="default"
-        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400"
-        icon={<IconEdit />}
-        {...props}
-      >
+      <AppButton tone="primary" type="default" icon={<IconEdit />} {...props}>
         {props.children !== undefined ? props.children : 'Cập nhật'}
-      </Button>
+      </AppButton>
     </motion.div>
   );
 };
@@ -57,14 +53,9 @@ export const DeleteButton: React.FC<ButtonProps> = (props) => {
       whileTap={{ scale: 0.95 }}
       className="inline-block"
     >
-      <Button
-        type="default"
-        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-red-500 hover:!text-red-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-red-400 dark:hover:!text-red-400"
-        icon={<IconDelete />}
-        {...props}
-      >
+      <AppButton tone="danger" type="default" icon={<IconDelete />} {...props}>
         {props.children !== undefined ? props.children : 'Xóa'}
-      </Button>
+      </AppButton>
     </motion.div>
   );
 };
@@ -79,14 +70,14 @@ export const RestoreButton: React.FC<ButtonProps> = (props) => {
       whileTap={{ scale: 0.95 }}
       className="inline-block"
     >
-      <Button
+      <AppButton
+        tone="warning"
         type="default"
-        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-amber-500 hover:!text-amber-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-amber-400 dark:hover:!text-amber-400"
         icon={<IconRestore />}
         {...props}
       >
         {props.children !== undefined ? props.children : 'Khôi phục'}
-      </Button>
+      </AppButton>
     </motion.div>
   );
 };
@@ -101,14 +92,9 @@ export const ViewButton: React.FC<ButtonProps> = (props) => {
       whileTap={{ scale: 0.95 }}
       className="inline-block"
     >
-      <Button
-        type="default"
-        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-indigo-500 hover:!text-indigo-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-indigo-400 dark:hover:!text-indigo-400"
-        icon={<FaEye />}
-        {...props}
-      >
+      <AppButton tone="info" type="default" icon={<FaEye />} {...props}>
         {props.children !== undefined ? props.children : 'Chi tiết'}
-      </Button>
+      </AppButton>
     </motion.div>
   );
 };
@@ -123,14 +109,9 @@ export const PrintButton: React.FC<ButtonProps> = (props) => {
       whileTap={{ scale: 0.95 }}
       className="inline-block"
     >
-      <Button
-        type="default"
-        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-blue-500 hover:!text-blue-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-blue-400 dark:hover:!text-blue-400"
-        icon={<IconPrint />}
-        {...props}
-      >
+      <AppButton tone="primary" type="default" icon={<IconPrint />} {...props}>
         {props.children !== undefined ? props.children : 'IN'}
-      </Button>
+      </AppButton>
     </motion.div>
   );
 };
@@ -145,14 +126,9 @@ export const RejectButton: React.FC<ButtonProps> = (props) => {
       whileTap={{ scale: 0.95 }}
       className="inline-block"
     >
-      <Button
-        type="default"
-        className="!border-gray-800 !text-gray-800 transition-colors hover:!border-red-500 hover:!text-red-500 dark:!border-gray-400 dark:!text-gray-400 dark:hover:!border-red-400 dark:hover:!text-red-400"
-        icon={<FaBan />}
-        {...props}
-      >
+      <AppButton tone="danger" type="default" icon={<FaBan />} {...props}>
         {props.children !== undefined ? props.children : 'Từ chối'}
-      </Button>
+      </AppButton>
     </motion.div>
   );
 };

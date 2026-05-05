@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, message, Modal } from 'antd';
+import { message, Modal } from 'antd';
 import { ReactNode, useState } from 'react';
 
 import { deleteSalary } from '@services/SalaryService';
 
+import AppButton from '@components/common/AppButton';
 import { BiTrash } from 'react-icons/bi';
 
 interface DeleteModalProps {
@@ -82,14 +83,9 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
 
   return (
     <>
-      <Button
-        color="danger"
-        variant="solid"
-        icon={<BiTrash />}
-        onClick={showModal}
-      >
+      <AppButton tone="danger" icon={<BiTrash />} onClick={showModal}>
         Xóa
-      </Button>
+      </AppButton>
       <Modal
         title="Xóa bảng lương"
         open={open}

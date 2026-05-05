@@ -1,3 +1,4 @@
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
 import { changesPassword } from '@services/ProfileService';
@@ -104,13 +105,14 @@ export const ChangePassword = () => {
             <Input.Password />
           </Form.Item>
           <Form.Item>
-            <button
-              type="submit"
+            <AppButton
+              tone="primary"
+              htmlType="submit"
               disabled={isPending}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-[0.97] disabled:opacity-50"
+              className="px-6"
             >
               {isPending ? 'Đang cập nhật...' : 'Cập nhật'}
-            </button>
+            </AppButton>
           </Form.Item>
         </Form>
       </div>

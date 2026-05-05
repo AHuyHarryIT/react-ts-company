@@ -1,5 +1,6 @@
 import { ProductType } from '@/types/productType';
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
+import dayjs from 'dayjs';
 
 const toNumber = (value: number | string | undefined | null) =>
   Number(value || 0);
@@ -9,6 +10,21 @@ const toMonthKey = (month?: string) => {
   const [first, second] = month.split('-');
 
   return first.length === 4 ? `${second}-${first}` : month;
+};
+
+const EXPORT_STATUSES = [3, 8];
+
+const getCalculationCutoffDate = (currentMonth?: string) => {
+  if (!currentMonth) return dayjs().endOf('day');
+
+  const monthStart = dayjs(currentMonth).startOf('month');
+  const monthEnd = monthStart.endOf('month');
+  const today = dayjs().endOf('day');
+
+  if (today.isBefore(monthStart)) return monthStart.subtract(1, 'day');
+  if (today.isAfter(monthEnd)) return monthEnd;
+
+  return today;
 };
 
 export interface TotalTableResult {
@@ -47,6 +63,7 @@ export function calculateTotalProduct(
   currentMonth?: string
 ): TotalTableResult[] {
   const currentMonthKey = toMonthKey(currentMonth);
+  const calculationCutoffDate = getCalculationCutoffDate(currentMonth);
 
   return products.map((product) => {
     const timeMap: TotalTableResult['times'] = {};
@@ -59,13 +76,29 @@ export function calculateTotalProduct(
     const importQuantity = toNumber(
       totalMonthQuantities.find((item) => item.status === 2)?.totalQuan
     );
-    const exportQuantity = monthlyQuantities
+    const monthlyExportQuantity = monthlyQuantities
       .filter(
         (item) =>
           item.product_id === product.id &&
           (!currentMonthKey || item.month === currentMonthKey)
       )
       .reduce((acc, item) => acc + toNumber(item.totalQuan), 0);
+    const dailyExportQuantities = (product.totaldailyquantitiespo || []).filter(
+      (item) => {
+        const itemDate = dayjs(item.date);
+
+        return (
+          EXPORT_STATUSES.includes(item.status) &&
+          (!currentMonth || itemDate.isSame(currentMonth, 'month'))
+        );
+      }
+    );
+    const exportQuantity =
+      dailyExportQuantities.length > 0
+        ? dailyExportQuantities
+            .filter((item) => !dayjs(item.date).isAfter(calculationCutoffDate))
+            .reduce((acc, item) => acc + toNumber(item.totalQuan), 0)
+        : monthlyExportQuantity;
     const stockStartQuantity = toNumber(
       totalMonthQuantities.find((item) => item.status === 4)?.totalQuan
     );

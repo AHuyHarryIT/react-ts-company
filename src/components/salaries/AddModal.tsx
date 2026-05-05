@@ -1,19 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Button,
-  DatePicker,
-  Form,
-  FormProps,
-  Input,
-  message,
-  Modal
-} from 'antd';
+import { DatePicker, Form, FormProps, Input, message, Modal } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import { addSalary, AddSalaryParams } from '@services/SalaryService';
 
+import AppButton from '@components/common/AppButton';
 import { FaPlus } from 'react-icons/fa6';
 
 type FormField = {
@@ -137,14 +130,9 @@ export const AddSalary: React.FC<AddSalaryProps> = ({ onCreated }) => {
 
   return (
     <>
-      <Button
-        color="green"
-        variant="solid"
-        icon={<FaPlus />}
-        onClick={showModal}
-      >
+      <AppButton tone="success" icon={<FaPlus />} onClick={showModal}>
         Thêm bản lương
-      </Button>
+      </AppButton>
 
       <Modal
         title="Thêm bản lương"
@@ -217,14 +205,9 @@ export const AddSalary: React.FC<AddSalaryProps> = ({ onCreated }) => {
           </Form.Item>
 
           <div className="text-end">
-            <Button
-              color="green"
-              variant="solid"
-              htmlType="submit"
-              loading={isPending}
-            >
+            <AppButton tone="success" htmlType="submit" loading={isPending}>
               Import
-            </Button>
+            </AppButton>
           </div>
         </Form>
       </Modal>

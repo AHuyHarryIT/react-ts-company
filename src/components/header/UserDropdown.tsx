@@ -65,17 +65,17 @@ export default function UserDropdown() {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        className="cursor-pointer rounded-full ring-2 ring-transparent transition-all duration-300 hover:shadow-md hover:ring-blue-200 active:scale-95 dark:hover:ring-blue-700"
+        className="profile-trigger-btn cursor-pointer rounded-full ring-2 ring-transparent transition-all duration-300 hover:shadow-md hover:ring-blue-200 active:scale-95 dark:hover:ring-blue-700"
         onClick={() => setOpen((v) => !v)}
       >
         <Avatar src={user?.image_url} size={40} icon={<FaUser />} />
       </button>
 
       {open && (
-        <div className="glass-dropdown app-dropdown-enter absolute top-full right-0 mt-3 w-56 overflow-hidden rounded-2xl">
+        <div className="app-profile-dropdown glass-dropdown app-dropdown-enter absolute top-full right-0 mt-3 w-56 overflow-hidden rounded-2xl">
           {/* ── User Info ── */}
-          <div className="flex items-center gap-3 px-4 py-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+          <div className="app-profile-summary flex items-center gap-3 px-4 py-4">
+            <div className="app-profile-avatar flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
               {user?.image_url ? (
                 <img
                   src={user.image_url}
@@ -87,23 +87,23 @@ export default function UserDropdown() {
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-black dark:text-white">
+              <p className="app-profile-name truncate text-sm font-semibold text-black dark:text-white">
                 {firstName}
               </p>
-              <p className="truncate text-xs text-black/40 dark:text-gray-500">
+              <p className="app-profile-role truncate text-xs text-black/40 dark:text-gray-500">
                 {user?.role?.name || 'Nhân viên'}
               </p>
             </div>
           </div>
 
-          <div className="mx-4 h-px bg-gray-100 dark:bg-gray-800" />
+          <div className="app-dropdown-divider mx-4 h-px bg-gray-100 dark:bg-gray-800" />
 
           {/* ── Menu ── */}
           <div className="p-2">
             <Link
               to="/profile"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] !text-black/80 no-underline transition-all duration-200 hover:bg-gray-50 hover:!text-black active:scale-[0.98] dark:!text-gray-200 dark:hover:bg-white/5 dark:hover:!text-white"
+              className="app-profile-menu-item flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] !text-black/80 no-underline transition-all duration-200 hover:bg-gray-50 hover:!text-black active:scale-[0.98] dark:!text-gray-200 dark:hover:bg-white/5 dark:hover:!text-white"
             >
               <FaUserCircle className="text-base text-black/50 dark:text-gray-400" />
               <span>Hồ sơ</span>
@@ -113,7 +113,7 @@ export default function UserDropdown() {
               <Link
                 to="/employee/request-forms"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] !text-black/80 no-underline transition-all duration-200 hover:bg-gray-50 hover:!text-black active:scale-[0.98] dark:!text-gray-200 dark:hover:bg-white/5 dark:hover:!text-white"
+                className="app-profile-menu-item flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] !text-black/80 no-underline transition-all duration-200 hover:bg-gray-50 hover:!text-black active:scale-[0.98] dark:!text-gray-200 dark:hover:bg-white/5 dark:hover:!text-white"
               >
                 <FaFileAlt className="text-base text-black/50 dark:text-gray-400" />
                 <span>Đơn yêu cầu</span>
@@ -121,14 +121,14 @@ export default function UserDropdown() {
             )}
           </div>
 
-          <div className="mx-4 h-px bg-gray-100 dark:bg-gray-800" />
+          <div className="app-dropdown-divider mx-4 h-px bg-gray-100 dark:bg-gray-800" />
 
           {/* ── Logout ── */}
           <div className="p-2">
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 active:scale-[0.98] disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/15"
+              className="app-profile-logout flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 active:scale-[0.98] disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/15"
             >
               <IconLogOut className="text-base" />
               <span>{isLoggingOut ? 'Đang xuất...' : 'Đăng xuất'}</span>

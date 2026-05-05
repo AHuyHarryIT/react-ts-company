@@ -29,10 +29,11 @@ const normalizeLegacySidebarUrl = (url?: string | null): string => {
 
 function Sidebar() {
   const navigate = useNavigate();
-  const { isSidebarClose, isMobile } = useStore(uiStore);
+  const { appearance, isSidebarClose, isMobile } = useStore(uiStore);
   const { user } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const isLiquidAppearance = appearance === 'liquid';
 
   const permissions = useMemo(() => user?.permissions ?? [], [user]);
 
@@ -205,11 +206,11 @@ function Sidebar() {
     top: 0,
     bottom: 0,
     scrollbarWidth: 'none',
-    background: 'var(--glass-surface-strong)',
+    background: 'transparent',
     borderRight: '1px solid var(--glass-border)',
     boxShadow: 'var(--glass-shadow-soft)',
-    backdropFilter: 'blur(8px) saturate(130%)',
-    WebkitBackdropFilter: 'blur(8px) saturate(130%)'
+    backdropFilter: 'blur(22px) saturate(165%)',
+    WebkitBackdropFilter: 'blur(22px) saturate(165%)'
   };
 
   const sidebarContent = (
@@ -332,6 +333,11 @@ function Sidebar() {
     <>
       {isMobile ? (
         <Drawer
+          rootClassName={`app-sidebar-drawer ${
+            isLiquidAppearance
+              ? 'app-sidebar-drawer--liquid'
+              : 'app-sidebar-drawer--classic'
+          }`}
           closable={false}
           width={300}
           placement="left"
@@ -342,7 +348,7 @@ function Sidebar() {
             wrapper: { boxShadow: '4px 0 24px rgba(0,0,0,0.06)' }
           }}
         >
-          <div className="glass-panel flex h-full flex-col rounded-none">
+          <div className="app-sidebar-mobile liquid-glass-panel flex h-full flex-col rounded-none">
             {/* ── Menu (reuse SidebarMenu — logo is inside) ── */}
             <div
               className="flex-1 overflow-y-auto"
@@ -473,6 +479,7 @@ function Sidebar() {
         </Drawer>
       ) : (
         <Sider
+          className="app-sidebar-sider liquid-glass-panel"
           style={sidebarStyle}
           width={256}
           trigger={null}

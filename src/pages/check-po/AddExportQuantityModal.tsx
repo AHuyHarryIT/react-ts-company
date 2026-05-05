@@ -1,5 +1,6 @@
 import { AddPoExportRequest } from '@/types/purchaseOrdersType';
 import { ProductType } from '@/types/productType';
+import AppButton from '@components/common/AppButton';
 import {
   APP_PAGE_TRANSITION,
   MOTION_DURATION,
@@ -15,7 +16,6 @@ import {
   useQueryClient
 } from '@tanstack/react-query';
 import {
-  Button,
   DatePicker,
   Form,
   Input,
@@ -1651,14 +1651,15 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
               File đặc biệt không đọc được? Nhập tay để vẫn import chung với các
               file khác.
             </span>
-            <Button
+            <AppButton
+              tone="warning"
               size="small"
               icon={<FaPlus />}
               onClick={handleOpenManualModal}
               disabled={productList.length === 0}
             >
               Nhập tay
-            </Button>
+            </AppButton>
           </motion.div>
 
           <AnimatePresence initial={false}>
@@ -1727,16 +1728,16 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
                         </span>
                         <div className="col-span-3 flex justify-end gap-1 sm:col-span-4">
                           {result.status !== 'success' && (
-                            <Button
+                            <AppButton
                               size="small"
                               type="text"
                               icon={<FaRedo />}
                               onClick={() => retryUploadResult(result)}
                             >
                               Thử lại
-                            </Button>
+                            </AppButton>
                           )}
-                          <Button
+                          <AppButton
                             size="small"
                             type="text"
                             danger={result.status !== 'success'}
@@ -1744,7 +1745,7 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
                             onClick={() => removeUploadResult(result.id)}
                           >
                             Xóa
-                          </Button>
+                          </AppButton>
                         </div>
                       </div>
                     );
@@ -1780,15 +1781,14 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
                   <Tag color="blue">
                     Tổng: {totalQty.toLocaleString('vi-VN')}
                   </Tag>
-                  <Button
+                  <AppButton
+                    tone="danger"
                     size="small"
-                    type="text"
-                    danger
                     onClick={handleReset}
                     className="ml-auto"
                   >
                     Xóa tất cả
-                  </Button>
+                  </AppButton>
                 </div>
 
                 {missingDateBatches.length > 0 && (
@@ -1802,13 +1802,13 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
                         : `Thiếu ngày: ${missingDateBatches.map((batch) => batch.fileName).join(', ')}`
                     }
                     action={
-                      <Button
+                      <AppButton
+                        tone="primary"
                         size="small"
-                        type="primary"
                         onClick={() => scrollToBatch(missingDateBatches[0].id)}
                       >
                         Đi tới bảng thiếu ngày
-                      </Button>
+                      </AppButton>
                     }
                   />
                 )}
@@ -1867,7 +1867,7 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
                         </div>
                       ),
                       extra: (
-                        <Button
+                        <AppButton
                           size="small"
                           type="text"
                           danger
@@ -1936,16 +1936,17 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
                     </strong>
                   </span>
                   <div className="flex justify-end gap-2">
-                    <Button onClick={handleCancel}>Hủy</Button>
-                    <Button
-                      variant="solid"
-                      color="blue"
+                    <AppButton tone="neutral" onClick={handleCancel}>
+                      Hủy
+                    </AppButton>
+                    <AppButton
+                      tone="primary"
                       onClick={handleSubmit}
                       disabled={!allDatesSet || batches.length === 0}
                       loading={submitting}
                     >
                       Import {batches.length} bảng
-                    </Button>
+                    </AppButton>
                   </div>
                 </div>
               </motion.section>
@@ -1960,12 +1961,16 @@ export const AddExportQuantityModal: React.FC<AddExportQuantityModalProps> = ({
         width={900}
         destroyOnHidden
         footer={[
-          <Button key="cancel" onClick={handleCloseManualModal}>
+          <AppButton
+            key="cancel"
+            tone="neutral"
+            onClick={handleCloseManualModal}
+          >
             Hủy
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleManualSubmit}>
+          </AppButton>,
+          <AppButton key="submit" tone="warning" onClick={handleManualSubmit}>
             Thêm vào danh sách import
-          </Button>
+          </AppButton>
         ]}
         styles={{
           body: {

@@ -1,8 +1,9 @@
 import { QueryParams } from '@/types/queryParams';
+import AppButton from '@components/common/AppButton';
 import { IconExport } from '@components/icons';
 import { productService } from '@services/ProductService';
 import { useMutation } from '@tanstack/react-query';
-import { Button, DatePicker, Modal } from 'antd';
+import { DatePicker, Modal } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -391,14 +392,9 @@ export const ExportPoModal = () => {
 
   return (
     <>
-      <Button
-        variant="solid"
-        color="green"
-        icon={<IconExport />}
-        onClick={handleOpen}
-      >
+      <AppButton tone="success" icon={<IconExport />} onClick={handleOpen}>
         Export
-      </Button>
+      </AppButton>
       <Modal
         title={
           <div className="flex items-center gap-2.5">

@@ -2,10 +2,10 @@ import { SizeType } from 'antd/es/config-provider/SizeContext';
 import { Rule } from 'antd/es/form';
 
 import { FieldConfig } from '@/types/form';
+import AppButton from '@components/common/AppButton';
 import { UploadImage } from '@components/ui/upload/UploadImage';
 import { FileType } from '@utils/fileType';
 import {
-  Button,
   Checkbox,
   DatePicker,
   Flex,
@@ -224,25 +224,24 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
       )}
       <Flex gap={'small'} wrap justify="end">
         {resetForm && (
-          <Button
+          <AppButton
+            tone="neutral"
             onClick={resetForm}
-            variant="solid"
             size={size}
             loading={loading}
           >
             Reset
-          </Button>
+          </AppButton>
         )}
 
-        <Button
-          color="green"
-          variant="solid"
+        <AppButton
+          tone="success"
           htmlType="submit"
           size={size}
           loading={loading}
         >
           {submitButtonText}
-        </Button>
+        </AppButton>
       </Flex>
     </Form>
   );

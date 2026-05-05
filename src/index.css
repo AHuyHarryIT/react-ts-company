@@ -11,22 +11,19 @@
   --motion-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
   --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
   --glass-page-bg:
-    radial-gradient(
-      circle at 11% 8%,
-      rgba(96, 165, 250, 0.24),
-      transparent 26rem
+    linear-gradient(
+      118deg,
+      rgba(96, 165, 250, 0.24) 0%,
+      transparent 28% 64%,
+      rgba(45, 212, 191, 0.2) 100%
     ),
-    radial-gradient(
-      circle at 86% 10%,
-      rgba(45, 212, 191, 0.18),
-      transparent 28rem
+    linear-gradient(
+      152deg,
+      transparent 0% 46%,
+      rgba(255, 255, 255, 0.42) 47% 49%,
+      transparent 50% 100%
     ),
-    radial-gradient(
-      circle at 52% 88%,
-      rgba(167, 139, 250, 0.13),
-      transparent 26rem
-    ),
-    linear-gradient(135deg, #eef7ff 0%, #f8fbff 43%, #ffffff 100%);
+    linear-gradient(135deg, #dceeff 0%, #eef7ff 44%, #d9f7f4 100%);
   --glass-surface: rgba(255, 255, 255, 0.58);
   --glass-surface-strong: rgba(255, 255, 255, 0.78);
   --glass-border: rgba(255, 255, 255, 0.86);
@@ -43,20 +40,17 @@
 
 .dark {
   --glass-page-bg:
-    radial-gradient(
-      circle at 11% 8%,
-      rgba(37, 99, 235, 0.22),
-      transparent 26rem
+    linear-gradient(
+      118deg,
+      rgba(37, 99, 235, 0.2) 0%,
+      transparent 30% 62%,
+      rgba(20, 184, 166, 0.12) 100%
     ),
-    radial-gradient(
-      circle at 86% 10%,
-      rgba(20, 184, 166, 0.14),
-      transparent 28rem
-    ),
-    radial-gradient(
-      circle at 52% 88%,
-      rgba(124, 58, 237, 0.16),
-      transparent 26rem
+    linear-gradient(
+      152deg,
+      transparent 0% 46%,
+      rgba(255, 255, 255, 0.06) 47% 49%,
+      transparent 50% 100%
     ),
     linear-gradient(135deg, #07111f 0%, #0f172a 54%, #111827 100%);
   --glass-surface: rgba(15, 23, 42, 0.58);
@@ -96,6 +90,38 @@ body {
   background: var(--glass-page-bg) !important;
 }
 
+.glass-app-shell::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0% 18%,
+      rgba(255, 255, 255, 0.46) 19% 20%,
+      transparent 21% 100%
+    ),
+    linear-gradient(
+      156deg,
+      transparent 0% 68%,
+      rgba(59, 130, 246, 0.14) 69% 70%,
+      transparent 71% 100%
+    ),
+    linear-gradient(40deg, rgba(14, 165, 233, 0.12), transparent 36%),
+    linear-gradient(220deg, rgba(20, 184, 166, 0.1), transparent 42%);
+}
+
+.glass-app-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.glass-app-shell .ant-layout {
+  background: transparent !important;
+}
+
 .glass-main {
   background: transparent !important;
 }
@@ -111,6 +137,14 @@ body {
 }
 
 header.glass-panel {
+  overflow: visible;
+}
+
+header.liquid-glass-panel {
+  overflow: visible;
+}
+
+header.liquid-glass-panel > * {
   overflow: visible;
 }
 
@@ -148,10 +182,11 @@ header.glass-panel {
   border-radius: inherit;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.78), transparent 34%),
-    radial-gradient(
-      circle at 84% 10%,
-      rgba(255, 255, 255, 0.56),
-      transparent 22%
+    linear-gradient(
+      162deg,
+      transparent 0% 58%,
+      rgba(255, 255, 255, 0.34) 76%,
+      transparent 100%
     ),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.18), transparent 58%);
 }
@@ -215,6 +250,911 @@ header.glass-panel {
   background: rgba(30, 41, 59, 0.54);
 }
 
+.liquid-glass-panel,
+.liquid-glass-card,
+.liquid-glass-control,
+.liquid-glass-icon,
+.liquid-glass-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.liquid-glass-panel,
+.liquid-glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.68) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.18) 48%,
+      rgba(240, 249, 255, 0.36)
+    ),
+    rgba(255, 255, 255, 0.24) !important;
+  box-shadow:
+    0 24px 64px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.26) !important;
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+}
+
+.liquid-glass-panel::before,
+.liquid-glass-card::before,
+.liquid-glass-control::before,
+.liquid-glass-icon::before,
+.liquid-glass-button::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), transparent 34%),
+    linear-gradient(
+      164deg,
+      transparent 0% 58%,
+      rgba(255, 255, 255, 0.28) 76%,
+      transparent 100%
+    );
+}
+
+.liquid-glass-panel::after,
+.liquid-glass-card::after,
+.liquid-glass-control::after,
+.liquid-glass-icon::after,
+.liquid-glass-button::after {
+  position: absolute;
+  inset: 1px;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 14px 24px rgba(255, 255, 255, 0.14);
+}
+
+.liquid-glass-panel > *,
+.liquid-glass-card > *,
+.liquid-glass-control > *,
+.liquid-glass-icon > *,
+.liquid-glass-button > * {
+  position: relative;
+  z-index: 1;
+}
+
+.liquid-glass-control,
+.liquid-glass-icon,
+.liquid-glass-button {
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.42),
+      rgba(255, 255, 255, 0.16)
+    ),
+    rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.74),
+    0 10px 22px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(18px) saturate(156%);
+  -webkit-backdrop-filter: blur(18px) saturate(156%);
+}
+
+.dark .liquid-glass-panel,
+.dark .liquid-glass-card {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.72),
+      rgba(15, 23, 42, 0.46) 48%,
+      rgba(30, 41, 59, 0.58)
+    ),
+    rgba(15, 23, 42, 0.56) !important;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .liquid-glass-control,
+.dark .liquid-glass-icon,
+.dark .liquid-glass-button {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.56), rgba(15, 23, 42, 0.34)),
+    rgba(15, 23, 42, 0.44);
+}
+
+.dark .liquid-glass-panel::before,
+.dark .liquid-glass-card::before,
+.dark .liquid-glass-control::before,
+.dark .liquid-glass-icon::before,
+.dark .liquid-glass-button::before {
+  opacity: 0.24;
+}
+
+.app-sidebar-sider.ant-layout-sider,
+.app-sidebar-mobile,
+.app-sidebar-drawer .ant-drawer-content {
+  border-color: rgba(255, 255, 255, 0.72) !important;
+  background:
+    linear-gradient(
+      118deg,
+      rgba(96, 165, 250, 0.08) 0%,
+      transparent 42% 66%,
+      rgba(45, 212, 191, 0.06) 100%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.44),
+      rgba(255, 255, 255, 0.2) 48%,
+      rgba(255, 255, 255, 0.3)
+    ),
+    rgba(255, 255, 255, 0.22) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.72),
+    10px 0 32px rgba(37, 99, 235, 0.04) !important;
+  backdrop-filter: blur(22px) saturate(138%);
+  -webkit-backdrop-filter: blur(22px) saturate(138%);
+}
+
+.app-sidebar-sider.ant-layout-sider {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+}
+
+.app-sidebar-sider.ant-layout-sider::before,
+.app-sidebar-mobile::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.48), transparent 34%),
+    linear-gradient(
+      168deg,
+      transparent 0% 55%,
+      rgba(96, 165, 250, 0.07) 74%,
+      transparent 100%
+    ),
+    linear-gradient(
+      112deg,
+      transparent 0% 22%,
+      rgba(255, 255, 255, 0.2) 23% 24%,
+      transparent 25% 100%
+    );
+}
+
+.app-sidebar-sider .ant-layout-sider-children,
+.app-sidebar-drawer .ant-drawer-body {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+}
+
+.app-sidebar-drawer .ant-drawer-content {
+  border-radius: 0 24px 24px 0 !important;
+}
+
+.app-sidebar-drawer .ant-drawer-mask {
+  background:
+    linear-gradient(118deg, rgba(37, 99, 235, 0.06), rgba(15, 23, 42, 0.08)),
+    rgba(219, 234, 254, 0.08) !important;
+  backdrop-filter: blur(2px) saturate(118%);
+  -webkit-backdrop-filter: blur(2px) saturate(118%);
+}
+
+.dark .app-sidebar-sider.ant-layout-sider,
+.dark .app-sidebar-mobile,
+.dark .app-sidebar-drawer .ant-drawer-content {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background:
+    linear-gradient(
+      118deg,
+      rgba(37, 99, 235, 0.08) 0%,
+      transparent 42% 66%,
+      rgba(20, 184, 166, 0.05) 100%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.46),
+      rgba(15, 23, 42, 0.28) 48%,
+      rgba(30, 41, 59, 0.4)
+    ),
+    rgba(15, 23, 42, 0.34) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    10px 0 32px rgba(0, 0, 0, 0.16) !important;
+}
+
+.dark .app-sidebar-drawer .ant-drawer-mask {
+  background:
+    linear-gradient(118deg, rgba(37, 99, 235, 0.08), rgba(0, 0, 0, 0.14)),
+    rgba(15, 23, 42, 0.12) !important;
+}
+
+html body :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer)) {
+  --liquid-neutral-rgb: 148 163 184;
+  --liquid-blue-rgb: 37 99 235;
+  --liquid-cyan-rgb: 6 182 212;
+  --liquid-success-rgb: 5 150 105;
+  --liquid-warning-rgb: 217 119 6;
+  --liquid-danger-rgb: 220 38 38;
+  --liquid-purple-rgb: 124 58 237;
+  --liquid-surface-rgb: var(--liquid-neutral-rgb);
+  --liquid-surface-alpha: 0.08;
+  --liquid-surface-border-alpha: 0.2;
+  --liquid-surface-shadow-alpha: 0.07;
+}
+
+html
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer)) {
+  --liquid-surface-alpha: 0.14;
+  --liquid-surface-border-alpha: 0.24;
+  --liquid-surface-shadow-alpha: 0.18;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where([class*='blue-'], [class*='indigo-']) {
+  --liquid-surface-rgb: var(--liquid-blue-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where([class*='cyan-'], [class*='sky-']) {
+  --liquid-surface-rgb: var(--liquid-cyan-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where([class*='green-'], [class*='emerald-'], [class*='teal-']) {
+  --liquid-surface-rgb: var(--liquid-success-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where([class*='amber-'], [class*='orange-'], [class*='yellow-']) {
+  --liquid-surface-rgb: var(--liquid-warning-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where([class*='red-'], [class*='rose-']) {
+  --liquid-surface-rgb: var(--liquid-danger-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where([class*='purple-'], [class*='violet-']) {
+  --liquid-surface-rgb: var(--liquid-purple-rgb);
+}
+
+/* Bridge old Tailwind surface classes into the liquid glass template. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(div, section, article, aside, li, button)
+  :where([class*='rounded'], [class*='ant-card']):where(
+    [class*='border'],
+    [class*='shadow'],
+    [class*='backdrop-blur']
+  ):where(
+    [class*='bg-white'],
+    [class*='bg-gray-50'],
+    [class*='bg-slate-50'],
+    [class*='from-gray-50'],
+    [class*='to-white'],
+    [class*='bg-blue-50'],
+    [class*='bg-cyan-50'],
+    [class*='bg-sky-50'],
+    [class*='bg-indigo-50'],
+    [class*='bg-violet-50'],
+    [class*='bg-purple-50'],
+    [class*='bg-green-50'],
+    [class*='bg-emerald-50'],
+    [class*='bg-teal-50'],
+    [class*='bg-amber-50'],
+    [class*='bg-orange-50'],
+    [class*='bg-yellow-50'],
+    [class*='bg-red-50'],
+    [class*='bg-rose-50']
+  ):not([class*='print']):not([class*='stamp-item']):not(.bag-print-container) {
+  border-color: rgb(
+    var(--liquid-surface-rgb) / var(--liquid-surface-border-alpha)
+  ) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.42),
+      rgba(255, 255, 255, 0.16) 52%,
+      rgb(var(--liquid-surface-rgb) / var(--liquid-surface-alpha))
+    ),
+    rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 10px 26px
+      rgb(var(--liquid-surface-rgb) / var(--liquid-surface-shadow-alpha)) !important;
+  backdrop-filter: blur(16px) saturate(152%);
+  -webkit-backdrop-filter: blur(16px) saturate(152%);
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(div, section, article, aside, li, button)
+  :where([class*='rounded'], [class*='ant-card']):where(
+    [class*='border'],
+    [class*='shadow'],
+    [class*='backdrop-blur']
+  ):where(
+    [class*='bg-white'],
+    [class*='bg-gray-50'],
+    [class*='bg-slate-50'],
+    [class*='from-gray-50'],
+    [class*='to-white'],
+    [class*='bg-blue-50'],
+    [class*='bg-cyan-50'],
+    [class*='bg-sky-50'],
+    [class*='bg-indigo-50'],
+    [class*='bg-violet-50'],
+    [class*='bg-purple-50'],
+    [class*='bg-green-50'],
+    [class*='bg-emerald-50'],
+    [class*='bg-teal-50'],
+    [class*='bg-amber-50'],
+    [class*='bg-orange-50'],
+    [class*='bg-yellow-50'],
+    [class*='bg-red-50'],
+    [class*='bg-rose-50']
+  ):not([class*='print']):not([class*='stamp-item']):not(.bag-print-container) {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.46),
+      rgba(15, 23, 42, 0.28) 52%,
+      rgb(var(--liquid-surface-rgb) / var(--liquid-surface-alpha))
+    ),
+    rgba(15, 23, 42, 0.38) !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner
+  ) {
+  border-color: rgba(255, 255, 255, 0.58) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.46),
+      rgba(255, 255, 255, 0.18) 52%,
+      rgba(240, 249, 255, 0.3)
+    ),
+    rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    0 22px 58px rgba(15, 23, 42, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(22px) saturate(165%);
+  -webkit-backdrop-filter: blur(22px) saturate(165%);
+}
+
+html
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner
+  ) {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.62), rgba(15, 23, 42, 0.38)),
+    rgba(15, 23, 42, 0.52) !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .ant-card-head,
+    .ant-card-body,
+    .ant-modal-header,
+    .ant-modal-body,
+    .ant-modal-footer,
+    .ant-drawer-header,
+    .ant-drawer-body,
+    .ant-drawer-footer
+  ) {
+  background: transparent !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper
+  .ant-table {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.36),
+      rgba(255, 255, 255, 0.14)
+    ),
+    rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-thead
+  > tr
+  > th {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.58),
+      rgba(239, 246, 255, 0.3)
+    ),
+    rgba(255, 255, 255, 0.34) !important;
+}
+
+/* Classic appearance fallback foundation. */
+html.legacy-ui-mode body,
+html.legacy-ui-mode #root,
+html.legacy-ui-mode .glass-app-shell,
+html.legacy-ui-mode .glass-main,
+html.legacy-ui-mode :where(.ant-layout, .ant-layout-content) {
+  background: #f9fafb !important;
+  background-color: #f9fafb !important;
+}
+
+html.legacy-ui-mode.dark body,
+html.legacy-ui-mode.dark #root,
+html.legacy-ui-mode.dark .glass-app-shell,
+html.legacy-ui-mode.dark .glass-main,
+html.legacy-ui-mode.dark :where(.ant-layout, .ant-layout-content) {
+  background: #111827 !important;
+  background-color: #111827 !important;
+}
+
+html.legacy-ui-mode .glass-app-shell::before,
+html.legacy-ui-mode
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-button,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .liquid-glass-button
+  )::before,
+html.legacy-ui-mode
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-button,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .liquid-glass-button
+  )::after {
+  content: none !important;
+  display: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner,
+    .ant-dropdown-menu,
+    .ant-select-dropdown,
+    .ant-picker-panel-container,
+    .ant-table-wrapper .ant-table
+  ) {
+  border-color: #e5e7eb !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner,
+    .ant-dropdown-menu,
+    .ant-select-dropdown,
+    .ant-picker-panel-container,
+    .ant-table-wrapper .ant-table
+  ) {
+  border-color: #374151 !important;
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+  box-shadow: none !important;
+}
+
+html.legacy-ui-mode body #root header.liquid-glass-panel,
+html.legacy-ui-mode
+  body
+  #root
+  :where(.app-sidebar-sider.ant-layout-sider, .app-sidebar-mobile) {
+  border-color: #e5e7eb !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark body #root header.liquid-glass-panel,
+html.legacy-ui-mode.dark
+  body
+  #root
+  :where(.app-sidebar-sider.ant-layout-sider, .app-sidebar-mobile) {
+  border-color: #374151 !important;
+  background: #1f2937 !important;
+}
+
+html.legacy-ui-mode .app-sidebar-drawer .ant-drawer-mask {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Classic appearance fallback for legacy Tailwind boxes. */
+html.legacy-ui-mode body,
+html.legacy-ui-mode #root,
+html.legacy-ui-mode .glass-app-shell,
+html.legacy-ui-mode .glass-main,
+html.legacy-ui-mode :where(.ant-layout, .ant-layout-content) {
+  background: #f9fafb !important;
+  background-color: #f9fafb !important;
+}
+
+html.legacy-ui-mode.dark body,
+html.legacy-ui-mode.dark #root,
+html.legacy-ui-mode.dark .glass-app-shell,
+html.legacy-ui-mode.dark .glass-main,
+html.legacy-ui-mode.dark :where(.ant-layout, .ant-layout-content) {
+  background: #111827 !important;
+  background-color: #111827 !important;
+}
+
+html.legacy-ui-mode .glass-app-shell::before,
+html.legacy-ui-mode
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-button,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .liquid-glass-button
+  )::before,
+html.legacy-ui-mode
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-button,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .liquid-glass-button
+  )::after {
+  content: none !important;
+  display: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner,
+    .ant-dropdown-menu,
+    .ant-select-dropdown,
+    .ant-picker-panel-container
+  ) {
+  border-color: #e5e7eb !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner,
+    .ant-dropdown-menu,
+    .ant-select-dropdown,
+    .ant-picker-panel-container
+  ) {
+  border-color: #374151 !important;
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+  box-shadow: none !important;
+}
+
+html.legacy-ui-mode body #root header.liquid-glass-panel {
+  border-bottom: 1px solid #e5e7eb !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+html.legacy-ui-mode.dark body #root header.liquid-glass-panel {
+  border-bottom-color: #374151 !important;
+  background: #1f2937 !important;
+}
+
+html.legacy-ui-mode
+  body
+  #root
+  :where(.app-sidebar-sider.ant-layout-sider, .app-sidebar-mobile) {
+  border-color: #e5e7eb !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  #root
+  :where(.app-sidebar-sider.ant-layout-sider, .app-sidebar-mobile) {
+  border-color: #374151 !important;
+  background: #1f2937 !important;
+}
+
+html.legacy-ui-mode .app-sidebar-drawer .ant-drawer-mask {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(div, section, article, aside, li, button)
+  :where([class*='rounded'])
+  :where(
+    [class*='bg-white'],
+    [class*='bg-gray-50'],
+    [class*='bg-gray-100'],
+    [class*='bg-slate-50'],
+    [class*='bg-slate-100']
+  ):not([class*='print']):not([class*='stamp-item']):not(.bag-print-container) {
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Cover compact legacy boxes that used only rounded + padded white/gray backgrounds. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(div, section, article, aside, li)
+  :where([class*='rounded'])
+  :where(
+    [class^='p-'],
+    [class^='px-'],
+    [class^='py-'],
+    [class*=' p-'],
+    [class*=' px-'],
+    [class*=' py-']
+  )
+  :where(
+    [class*='bg-white'],
+    [class*='bg-gray-50'],
+    [class*='bg-gray-100'],
+    [class*='bg-slate-50'],
+    [class*='bg-slate-100'],
+    [class*='from-gray-50'],
+    [class*='from-slate-50'],
+    [class*='to-white'],
+    [class*='bg-blue-50'],
+    [class*='bg-cyan-50'],
+    [class*='bg-sky-50'],
+    [class*='bg-indigo-50'],
+    [class*='bg-violet-50'],
+    [class*='bg-purple-50'],
+    [class*='bg-green-50'],
+    [class*='bg-emerald-50'],
+    [class*='bg-teal-50'],
+    [class*='bg-amber-50'],
+    [class*='bg-orange-50'],
+    [class*='bg-yellow-50'],
+    [class*='bg-red-50'],
+    [class*='bg-rose-50']
+  ):not([class*='print']):not([class*='stamp-item']):not(.bag-print-container) {
+  border-color: rgb(
+    var(--liquid-surface-rgb, 148 163 184) /
+      var(--liquid-surface-border-alpha, 0.2)
+  ) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.38),
+      rgba(255, 255, 255, 0.14) 52%,
+      rgb(
+        var(--liquid-surface-rgb, 148 163 184) /
+          var(--liquid-surface-alpha, 0.08)
+      )
+    ),
+    rgba(255, 255, 255, 0.16) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.56),
+    0 8px 22px
+      rgb(
+        var(--liquid-surface-rgb, 148 163 184) /
+          var(--liquid-surface-shadow-alpha, 0.06)
+      ) !important;
+  backdrop-filter: blur(14px) saturate(148%);
+  -webkit-backdrop-filter: blur(14px) saturate(148%);
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(div, section, article, aside, li)
+  :where([class*='rounded'])
+  :where(
+    [class^='p-'],
+    [class^='px-'],
+    [class^='py-'],
+    [class*=' p-'],
+    [class*=' px-'],
+    [class*=' py-']
+  )
+  :where(
+    [class*='bg-white'],
+    [class*='bg-gray-50'],
+    [class*='bg-gray-100'],
+    [class*='bg-slate-50'],
+    [class*='bg-slate-100'],
+    [class*='from-gray-50'],
+    [class*='from-slate-50'],
+    [class*='to-white'],
+    [class*='bg-blue-50'],
+    [class*='bg-cyan-50'],
+    [class*='bg-sky-50'],
+    [class*='bg-indigo-50'],
+    [class*='bg-violet-50'],
+    [class*='bg-purple-50'],
+    [class*='bg-green-50'],
+    [class*='bg-emerald-50'],
+    [class*='bg-teal-50'],
+    [class*='bg-amber-50'],
+    [class*='bg-orange-50'],
+    [class*='bg-yellow-50'],
+    [class*='bg-red-50'],
+    [class*='bg-rose-50']
+  ):not([class*='print']):not([class*='stamp-item']):not(.bag-print-container) {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.42),
+      rgba(15, 23, 42, 0.24) 52%,
+      rgb(
+        var(--liquid-surface-rgb, 148 163 184) /
+          var(--liquid-surface-alpha, 0.14)
+      )
+    ),
+    rgba(15, 23, 42, 0.34) !important;
+}
+
+html
+  body
+  #root
+  :where(.ant-layout, .ant-layout-content, [class*='min-h-screen']) {
+  background-color: transparent !important;
+}
+
+html
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-thead
+  > tr
+  > th {
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.72), rgba(15, 23, 42, 0.48)),
+    rgba(15, 23, 42, 0.58) !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr
+  > td {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:hover
+  > td {
+  background: rgba(239, 246, 255, 0.34) !important;
+}
+
 .sidebar-active-item {
   border-color: rgba(37, 99, 235, 0.36) !important;
   box-shadow:
@@ -252,6 +1192,149 @@ header.glass-panel {
 .auth-glass-card {
   width: min(100%, 28rem);
   max-width: calc(100vw - 2rem);
+}
+
+.glass-app-shell:has(.auth-form-pane) {
+  background:
+    linear-gradient(
+      118deg,
+      rgba(37, 99, 235, 0.2) 0%,
+      rgba(219, 234, 254, 0.42) 35%,
+      transparent 64%,
+      rgba(20, 184, 166, 0.16) 100%
+    ),
+    linear-gradient(
+      154deg,
+      transparent 0% 42%,
+      rgba(255, 255, 255, 0.54) 43% 45%,
+      transparent 46% 100%
+    ),
+    linear-gradient(135deg, #dbeafe 0%, #f0f7ff 42%, #d8f3f8 100%) !important;
+}
+
+.auth-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0 33%,
+      rgba(255, 255, 255, 0.5) 34% 35%,
+      transparent 36% 100%
+    ),
+    linear-gradient(
+      156deg,
+      transparent 0 54%,
+      rgba(37, 99, 235, 0.12) 55% 56%,
+      transparent 57% 100%
+    ),
+    linear-gradient(38deg, rgba(59, 130, 246, 0.1) 0%, transparent 32% 100%);
+}
+
+.auth-form-pane {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-form-pane::before {
+  position: absolute;
+  inset: 9% -10% 8% 6%;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(128deg, rgba(255, 255, 255, 0.5), transparent 34% 100%),
+    linear-gradient(
+      42deg,
+      transparent 0% 50%,
+      rgba(59, 130, 246, 0.14) 74%,
+      transparent 100%
+    );
+  filter: blur(22px);
+}
+
+.auth-visual-panel:is(.glass-panel, .liquid-glass-panel) {
+  border-color: rgba(255, 255, 255, 0.56) !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.5),
+      rgba(219, 234, 254, 0.24) 42%,
+      rgba(125, 211, 252, 0.2)
+    ),
+    rgba(255, 255, 255, 0.28) !important;
+  box-shadow:
+    -22px 0 70px rgba(37, 99, 235, 0.12),
+    inset 1px 0 0 rgba(255, 255, 255, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(22px) saturate(155%);
+  -webkit-backdrop-filter: blur(22px) saturate(155%);
+}
+
+.auth-visual-panel::before {
+  background:
+    linear-gradient(132deg, rgba(255, 255, 255, 0.66), transparent 31%),
+    linear-gradient(62deg, rgba(96, 165, 250, 0.18), transparent 34% 100%),
+    linear-gradient(
+      148deg,
+      transparent 0% 48%,
+      rgba(20, 184, 166, 0.16) 76%,
+      transparent 100%
+    ),
+    linear-gradient(
+      115deg,
+      transparent 0 46%,
+      rgba(255, 255, 255, 0.34) 47% 48%,
+      transparent 49% 100%
+    );
+}
+
+.auth-visual-panel p {
+  color: rgba(30, 64, 175, 0.26) !important;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.auth-glass-card:is(.glass-card, .liquid-glass-card) {
+  border-color: rgba(255, 255, 255, 0.62) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.62),
+      rgba(191, 219, 254, 0.2) 48%,
+      rgba(255, 255, 255, 0.38)
+    ),
+    rgba(255, 255, 255, 0.34) !important;
+  box-shadow:
+    0 28px 80px rgba(30, 64, 175, 0.16),
+    0 10px 28px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+  backdrop-filter: blur(24px) saturate(168%);
+  -webkit-backdrop-filter: blur(24px) saturate(168%);
+}
+
+.auth-glass-card .ant-input-affix-wrapper {
+  border-color: rgba(37, 99, 235, 0.16) !important;
+  background: rgba(255, 255, 255, 0.44) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.74),
+    0 10px 24px rgba(37, 99, 235, 0.08) !important;
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+.auth-glass-card .ant-input-affix-wrapper-focused,
+.auth-glass-card .ant-input-affix-wrapper:focus-within {
+  border-color: rgba(37, 99, 235, 0.54) !important;
+  background: rgba(255, 255, 255, 0.58) !important;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.12),
+    0 14px 30px rgba(37, 99, 235, 0.12) !important;
+}
+
+.auth-glass-card .ant-input,
+.auth-glass-card .ant-input-password-icon {
+  background: transparent !important;
 }
 
 .glass-button:hover {
@@ -311,10 +1394,11 @@ header.glass-panel {
   border-radius: inherit;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.78), transparent 34%),
-    radial-gradient(
-      circle at 84% 10%,
-      rgba(255, 255, 255, 0.56),
-      transparent 22%
+    linear-gradient(
+      162deg,
+      transparent 0% 58%,
+      rgba(255, 255, 255, 0.34) 76%,
+      transparent 100%
     ),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.18), transparent 58%);
 }
@@ -348,6 +1432,163 @@ header.glass-panel {
 
 .dark .dashboard-glass-chart.ant-card > .ant-card-head {
   border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-charts-section,
+.dashboard-liquid-chart.ant-card,
+.dashboard-chart-surface,
+.dashboard-chart-canvas {
+  content-visibility: visible;
+  contain: none;
+}
+
+.dashboard-liquid-chart.ant-card {
+  overflow: visible !important;
+}
+
+.dashboard-liquid-chart.ant-card,
+.dashboard-chart-surface.liquid-glass-control {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.dashboard-chart-surface.liquid-glass-control {
+  isolation: auto;
+  overflow: visible;
+}
+
+.dashboard-chart-surface.liquid-glass-control::before,
+.dashboard-chart-surface.liquid-glass-control::after {
+  opacity: 0.62;
+}
+
+.dashboard-chart-canvas,
+.dashboard-chart-canvas > div {
+  min-height: 300px;
+}
+
+.dashboard-chart-canvas :where(canvas, svg) {
+  content-visibility: visible;
+}
+
+/* Dashboard has large cards; static glass avoids white repaint while scrolling. */
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  :where(.liquid-glass-card, .liquid-glass-control, .ant-card) {
+  content-visibility: visible;
+  contain: none;
+  transform: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode) body #root .dashboard-page .liquid-glass-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.84),
+      rgba(244, 250, 255, 0.74) 52%,
+      rgba(232, 250, 247, 0.58)
+    ),
+    rgba(255, 255, 255, 0.78) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 14px 34px rgba(15, 23, 42, 0.08) !important;
+}
+
+html:not(.legacy-ui-mode) body #root .dashboard-page .liquid-glass-control {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.8),
+      rgba(248, 250, 252, 0.68) 56%,
+      rgba(239, 246, 255, 0.5)
+    ),
+    rgba(255, 255, 255, 0.72) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 8px 18px rgba(15, 23, 42, 0.055) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  :where(.liquid-glass-card, .liquid-glass-control)::before {
+  opacity: 0.48;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  :where(.liquid-glass-card, .liquid-glass-control)::after {
+  opacity: 0.72;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  .dashboard-liquid-chart.ant-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.86),
+      rgba(244, 250, 255, 0.72) 50%,
+      rgba(229, 250, 247, 0.52)
+    ),
+    rgba(255, 255, 255, 0.78) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  .ant-card
+  :where(.ant-card-head, .ant-card-body) {
+  transform: none !important;
+  will-change: auto !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  .dashboard-chart-canvas
+  :where(canvas, svg, .g2-view, .g2-tooltip) {
+  transform: none !important;
+  will-change: auto !important;
+  opacity: 1 !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .dashboard-page .liquid-glass-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.86),
+      rgba(15, 23, 42, 0.76) 52%,
+      rgba(30, 58, 138, 0.42)
+    ),
+    rgba(15, 23, 42, 0.78) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  .dashboard-page
+  .liquid-glass-control {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.78),
+      rgba(15, 23, 42, 0.68) 56%,
+      rgba(30, 58, 138, 0.34)
+    ),
+    rgba(15, 23, 42, 0.72) !important;
 }
 
 @media (max-width: 1023px) {
@@ -421,13 +1662,16 @@ header.glass-panel {
 
 .app-dropdown-enter {
   transform-origin: top right;
-  z-index: 1050;
+  z-index: 1100;
   pointer-events: auto;
   animation: appDropdownIn var(--motion-duration-fast)
     var(--motion-ease-standard) both;
 }
 
 .glass-dropdown {
+  position: absolute;
+  z-index: 1100;
+  pointer-events: auto;
   border: 1px solid var(--glass-border) !important;
   background:
     linear-gradient(
@@ -445,6 +1689,601 @@ header.glass-panel {
   background:
     linear-gradient(145deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.72)),
     var(--glass-surface-strong) !important;
+}
+
+html:not(.legacy-ui-mode) body #root .appearance-toggle-btn {
+  min-width: 6.75rem;
+  gap: 0.45rem;
+  border-radius: 999px !important;
+  padding: 0.48rem 0.7rem !important;
+  color: #111827 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .appearance-toggle-btn__icon {
+  display: inline-flex;
+  height: 1.55rem;
+  width: 1.55rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+html:not(.legacy-ui-mode) body #root .appearance-toggle-btn__label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+html:not(.legacy-ui-mode) body #root .appearance-toggle-btn--liquid {
+  --liquid-btn-rgb: 37 99 235;
+  --liquid-btn-text-rgb: 17 24 39;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.96),
+      rgba(239, 246, 255, 0.84)
+    ),
+    rgba(255, 255, 255, 0.78) !important;
+}
+
+html:not(.legacy-ui-mode) body #root .appearance-toggle-btn--classic {
+  --liquid-btn-rgb: 71 85 105;
+  --liquid-btn-text-rgb: 17 24 39;
+}
+
+html:not(.legacy-ui-mode) body #root .appearance-toggle-btn:hover {
+  color: #000 !important;
+}
+
+.appearance-choice-modal {
+  max-width: calc(100vw - 24px);
+}
+
+.appearance-choice-modal .ant-modal-content {
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(241, 248, 255, 0.94)
+    ),
+    #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+}
+
+.appearance-choice-modal .ant-modal-header {
+  margin-bottom: 0;
+  padding-right: 2.25rem;
+  background: transparent;
+}
+
+.appearance-choice-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.appearance-choice-modal__title-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 2.15rem;
+  width: 2.15rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #dbeafe, #f0fdf4);
+  color: #2563eb;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 18px rgba(37, 99, 235, 0.16);
+}
+
+.appearance-choice-modal__description {
+  margin: 0.9rem 0 1.05rem;
+  color: #475569;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.appearance-choice-modal__options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.appearance-choice-option {
+  display: flex;
+  min-height: 5.4rem;
+  width: 100%;
+  align-items: center;
+  gap: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  padding: 0.9rem;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.appearance-choice-option:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 2px;
+}
+
+.appearance-choice-option:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.11);
+}
+
+.appearance-choice-option:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.appearance-choice-option__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 3rem;
+  width: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  font-size: 1.25rem;
+}
+
+.appearance-choice-option__content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.24rem;
+}
+
+.appearance-choice-option__label {
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.appearance-choice-option__text {
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.appearance-choice-option--classic {
+  background: linear-gradient(145deg, #f8fafc, #eef2ff);
+}
+
+.appearance-choice-option--classic .appearance-choice-option__icon {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.appearance-choice-option--classic:hover {
+  border-color: rgba(51, 65, 85, 0.36);
+}
+
+.appearance-choice-option--liquid {
+  background: linear-gradient(145deg, #ecfeff, #eff6ff);
+}
+
+.appearance-choice-option--liquid .appearance-choice-option__icon {
+  background: linear-gradient(145deg, #bae6fd, #ccfbf1);
+  color: #0f766e;
+}
+
+.appearance-choice-option--liquid:hover {
+  border-color: rgba(14, 116, 144, 0.38);
+}
+
+@media (min-width: 560px) {
+  .appearance-choice-modal__options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .appearance-choice-option {
+    min-height: 8.25rem;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .appearance-choice-modal .ant-modal-content {
+    border-radius: 18px;
+    padding: 1.1rem;
+  }
+
+  .appearance-choice-modal__title {
+    font-size: 0.98rem;
+  }
+
+  .appearance-choice-modal__description {
+    font-size: 0.86rem;
+  }
+}
+
+html.dark body .appearance-choice-modal .ant-modal-content {
+  border-color: rgba(148, 163, 184, 0.22);
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.94)),
+    #0f172a;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+}
+
+html.dark body .appearance-choice-modal__title,
+html.dark body .appearance-choice-option__label {
+  color: #f8fafc;
+}
+
+html.dark body .appearance-choice-modal__description,
+html.dark body .appearance-choice-option__text {
+  color: #cbd5e1;
+}
+
+html.dark body .appearance-choice-modal__title-icon {
+  background: linear-gradient(
+    145deg,
+    rgba(37, 99, 235, 0.34),
+    rgba(20, 184, 166, 0.22)
+  );
+  color: #bfdbfe;
+}
+
+html.dark body .appearance-choice-option--classic {
+  background: linear-gradient(
+    145deg,
+    rgba(51, 65, 85, 0.86),
+    rgba(30, 41, 59, 0.88)
+  );
+}
+
+html.dark
+  body
+  .appearance-choice-option--classic
+  .appearance-choice-option__icon {
+  background: rgba(148, 163, 184, 0.18);
+  color: #e2e8f0;
+}
+
+html.dark body .appearance-choice-option--liquid {
+  background: linear-gradient(
+    145deg,
+    rgba(8, 145, 178, 0.24),
+    rgba(37, 99, 235, 0.2)
+  );
+}
+
+html.dark
+  body
+  .appearance-choice-option--liquid
+  .appearance-choice-option__icon {
+  background: linear-gradient(
+    145deg,
+    rgba(56, 189, 248, 0.24),
+    rgba(45, 212, 191, 0.2)
+  );
+  color: #99f6e4;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .appearance-toggle-btn__icon {
+  background: rgba(15, 23, 42, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.22);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  :where(.notification-trigger-btn, .profile-trigger-btn) {
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-color: rgba(203, 213, 225, 0.68) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.96),
+      rgba(248, 250, 252, 0.78)
+    ),
+    rgba(255, 255, 255, 0.78) !important;
+  color: #111827 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 8px 18px rgba(15, 23, 42, 0.07) !important;
+  backdrop-filter: blur(16px) saturate(128%);
+  -webkit-backdrop-filter: blur(16px) saturate(128%);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  :where(.notification-trigger-btn, .profile-trigger-btn):hover {
+  border-color: rgba(59, 130, 246, 0.24) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(239, 246, 255, 0.82)
+    ),
+    rgba(255, 255, 255, 0.86) !important;
+  color: #000 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .profile-trigger-btn {
+  padding: 0 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .profile-trigger-btn .ant-avatar {
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.74);
+  color: #111827;
+}
+
+html:not(.legacy-ui-mode) body #root .ant-badge-count {
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(145deg, #ef4444, #dc2626) !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.82),
+    0 6px 12px rgba(220, 38, 38, 0.22) !important;
+  font-weight: 800;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  :where(.app-notification-dropdown, .app-profile-dropdown) {
+  border-color: rgba(203, 213, 225, 0.72) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.97),
+      rgba(255, 255, 255, 0.86) 54%,
+      rgba(246, 250, 255, 0.78)
+    ),
+    linear-gradient(118deg, rgba(37, 99, 235, 0.03), transparent 58%),
+    rgba(255, 255, 255, 0.86) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 18px 42px rgba(15, 23, 42, 0.13) !important;
+  color: #111827 !important;
+  backdrop-filter: blur(22px) saturate(132%);
+  -webkit-backdrop-filter: blur(22px) saturate(132%);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  :where(.app-notification-dropdown, .app-profile-dropdown)::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.54), transparent 35%),
+    linear-gradient(
+      166deg,
+      transparent 0% 62%,
+      rgba(37, 99, 235, 0.026) 78%,
+      transparent 100%
+    );
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  :where(.app-notification-dropdown, .app-profile-dropdown)
+  > * {
+  position: relative;
+  z-index: 1;
+}
+
+html:not(.legacy-ui-mode) body #root .app-dropdown-header {
+  background: rgba(255, 255, 255, 0.34);
+}
+
+html:not(.legacy-ui-mode) body #root .app-dropdown-title,
+html:not(.legacy-ui-mode) body #root .app-profile-name {
+  color: #000 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-profile-role,
+html:not(.legacy-ui-mode) body #root .app-notification-body,
+html:not(.legacy-ui-mode) body #root .app-notification-time {
+  color: #334155 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-dropdown-count {
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: rgba(239, 246, 255, 0.92) !important;
+  color: #1d4ed8 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-dropdown-clear-btn {
+  border: 1px solid rgba(220, 38, 38, 0.12);
+  background: rgba(255, 255, 255, 0.58);
+  color: #dc2626 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-dropdown-clear-btn:hover {
+  background: rgba(254, 242, 242, 0.92);
+  color: #b91c1c !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-dropdown-divider {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(148, 163, 184, 0.34),
+    transparent
+  ) !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-notification-item,
+html:not(.legacy-ui-mode) body #root .app-profile-menu-item,
+html:not(.legacy-ui-mode) body #root .app-profile-logout {
+  margin: 0.125rem 0.375rem;
+  border: 1px solid transparent;
+  border-radius: 0.85rem;
+  color: #111827 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-notification-title {
+  color: #000 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-notification-item:hover,
+html:not(.legacy-ui-mode) body #root .app-profile-menu-item:hover {
+  border-color: rgba(59, 130, 246, 0.14);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.86),
+      rgba(239, 246, 255, 0.68)
+    ),
+    rgba(255, 255, 255, 0.72) !important;
+  color: #000 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    0 8px 16px rgba(15, 23, 42, 0.06);
+}
+
+html:not(.legacy-ui-mode) body #root .app-profile-menu-item svg {
+  color: #111827 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-profile-summary {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.58),
+    rgba(239, 246, 255, 0.34)
+  );
+}
+
+html:not(.legacy-ui-mode) body #root .app-profile-avatar {
+  border: 1px solid rgba(59, 130, 246, 0.14);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(239, 246, 255, 0.72)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 8px 16px rgba(15, 23, 42, 0.08);
+}
+
+html:not(.legacy-ui-mode) body #root .app-profile-logout {
+  color: #dc2626 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-profile-logout:hover {
+  border-color: rgba(220, 38, 38, 0.16);
+  background: rgba(254, 242, 242, 0.88) !important;
+  color: #b91c1c !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-notification-empty {
+  color: #334155 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-notification-empty-icon {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(248, 250, 252, 0.72)
+  ) !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .appearance-toggle-btn {
+  color: #f8fafc !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  :where(.notification-trigger-btn, .profile-trigger-btn) {
+  border-color: rgba(148, 163, 184, 0.26) !important;
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.72)),
+    rgba(15, 23, 42, 0.68) !important;
+  color: #f8fafc !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 10px 22px rgba(0, 0, 0, 0.22) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  :where(.app-notification-dropdown, .app-profile-dropdown) {
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.94),
+      rgba(15, 23, 42, 0.84) 54%,
+      rgba(30, 58, 138, 0.34)
+    ),
+    rgba(15, 23, 42, 0.82) !important;
+  color: #f8fafc !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .app-dropdown-title,
+html:not(.legacy-ui-mode) body.dark #root .app-profile-name,
+html:not(.legacy-ui-mode) body.dark #root .app-notification-title {
+  color: #f8fafc !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .app-profile-role,
+html:not(.legacy-ui-mode) body.dark #root .app-notification-body,
+html:not(.legacy-ui-mode) body.dark #root .app-notification-time {
+  color: #cbd5e1 !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .app-dropdown-header,
+html:not(.legacy-ui-mode) body.dark #root .app-profile-summary {
+  background: rgba(15, 23, 42, 0.24);
+}
+
+html:not(.legacy-ui-mode) body.dark #root .app-dropdown-clear-btn {
+  background: rgba(127, 29, 29, 0.16);
+  color: #f87171 !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .app-notification-item:hover,
+html:not(.legacy-ui-mode) body.dark #root .app-profile-menu-item:hover {
+  border-color: rgba(147, 197, 253, 0.18);
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.82), rgba(30, 64, 175, 0.22)),
+    rgba(15, 23, 42, 0.62) !important;
+  color: #fff !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .app-profile-menu-item,
+html:not(.legacy-ui-mode) body.dark #root .app-profile-menu-item svg {
+  color: #f8fafc !important;
 }
 
 /* Global UI motion polish for Ant Design surfaces. */
@@ -488,6 +2327,12 @@ header.glass-panel {
 .ant-modal-close,
 .ant-drawer-close {
   position: absolute !important;
+  z-index: 2 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
   isolation: auto !important;
   overflow: visible !important;
   border-color: transparent !important;
@@ -497,6 +2342,17 @@ header.glass-panel {
   text-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+.ant-modal-close {
+  inset-block-start: 14px !important;
+  inset-inline-end: 14px !important;
+}
+
+.ant-drawer-close {
+  inset-block-start: 14px !important;
+  inset-inline-end: 16px !important;
+  margin: 0 !important;
 }
 
 .ant-modal-close::before,
@@ -580,10 +2436,20 @@ header.glass-panel {
 
 .ant-modal-header,
 .ant-drawer-header {
+  position: relative !important;
   margin-bottom: 0 !important;
   border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
   background: transparent !important;
   padding: 18px 22px !important;
+}
+
+.ant-drawer-header {
+  padding-inline-end: 64px !important;
+}
+
+.ant-drawer-header-title,
+.ant-drawer-title {
+  min-width: 0 !important;
 }
 
 .ant-modal-body,
@@ -639,6 +2505,54 @@ header.glass-panel {
 .dark .ant-input-number,
 .dark .ant-segmented {
   background-color: rgba(15, 23, 42, 0.62) !important;
+}
+
+.liquid-glass-card.ant-card,
+.dashboard-liquid-chart.ant-card {
+  border-color: rgba(255, 255, 255, 0.68) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.18) 48%,
+      rgba(240, 249, 255, 0.36)
+    ),
+    rgba(255, 255, 255, 0.2) !important;
+  box-shadow:
+    0 24px 64px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.26) !important;
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+}
+
+.liquid-glass-card.ant-card > .ant-card-head,
+.liquid-glass-card.ant-card > .ant-card-body,
+.dashboard-liquid-chart.ant-card > .ant-card-head,
+.dashboard-liquid-chart.ant-card > .ant-card-body {
+  background: transparent !important;
+}
+
+.dark .liquid-glass-card.ant-card,
+.dark .dashboard-liquid-chart.ant-card {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.72),
+      rgba(15, 23, 42, 0.46) 48%,
+      rgba(30, 41, 59, 0.58)
+    ),
+    rgba(15, 23, 42, 0.56) !important;
+}
+
+html:not(.legacy-ui-mode) body #root .dashboard-liquid-chart.ant-card,
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-chart-surface.liquid-glass-control {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .ant-input,
@@ -1416,6 +3330,38 @@ html body .ant-select-single .ant-select-arrow {
   margin-top: 0 !important;
 }
 
+html body .ant-pagination {
+  align-items: center !important;
+}
+
+html body .ant-pagination .ant-pagination-total-text,
+html body .ant-pagination .ant-pagination-options {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+html
+  body
+  .ant-pagination
+  .ant-pagination-options-size-changer.ant-select-single:not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector {
+  height: 32px !important;
+  min-height: 32px !important;
+}
+
+html
+  body
+  .ant-pagination
+  .ant-pagination-options-size-changer.ant-select-single:not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector
+  .ant-select-selection-item {
+  line-height: 30px !important;
+}
+
 html body .ant-picker {
   height: 40px !important;
   padding-block: 0 !important;
@@ -1718,6 +3664,28 @@ html
   line-height: 36px !important;
 }
 
+html
+  body
+  .ant-pagination.ant-pagination-mini
+  .ant-pagination-options-size-changer.ant-select-single:not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector {
+  height: 24px !important;
+  min-height: 24px !important;
+}
+
+html
+  body
+  .ant-pagination.ant-pagination-mini
+  .ant-pagination-options-size-changer.ant-select-single:not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector
+  .ant-select-selection-item {
+  line-height: 22px !important;
+}
+
 html body .ant-picker-small {
   padding-inline: 10px !important;
 }
@@ -1886,6 +3854,16 @@ html body .ant-picker-dropdown .ant-picker-cell-inner {
   will-change: transform;
 }
 
+.admin-sticky-table-card.liquid-glass-card,
+.admin-sticky-table-card
+  :where(.ant-tabs-content-holder, .ant-tabs-content, .ant-tabs-tabpane) {
+  overflow: visible !important;
+}
+
+.admin-page-sticky-table.ant-table-wrapper {
+  overflow: visible !important;
+}
+
 :where(.product-sticky-table, .smooth-sticky-table)
   .ant-table-sticky-holder
   .ant-table-thead
@@ -2026,10 +4004,46 @@ html body .ant-picker-dropdown .ant-picker-cell-inner {
   max-width: 100%;
 }
 
+/* Request form action cells need compact, touchable icon buttons. */
+html body #root .request-forms-table .request-form-actions-cell {
+  min-width: 136px;
+  padding-inline: 10px !important;
+}
+
+html body #root .request-forms-table .request-form-actions {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+html body #root .request-forms-table .request-form-action-btn.ant-btn {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 !important;
+  border-radius: 11px !important;
+}
+
+html body #root .request-forms-table .request-form-action-btn .anticon {
+  font-size: 18px;
+}
+
+html body #root .request-forms-table .request-form-action-btn--approve.ant-btn {
+  --liquid-btn-rgb: 5 150 105;
+  --liquid-btn-text-rgb: 4 120 87;
+}
+
+html body #root .request-forms-table .request-form-action-btn--info.ant-btn {
+  --liquid-btn-rgb: 6 182 212;
+  --liquid-btn-text-rgb: 14 116 144;
+}
+
 /* Canonical liquid button behavior.
    Normal: white surface with semantic text/border.
    Hover/selected: semantic fill with readable white text. */
-html body #root :where(.ant-btn, button) {
+html body #root :where(.ant-btn, .header-action-btn) {
   --liquid-btn-rgb: 71 85 105;
   --liquid-btn-text-rgb: 51 65 85;
   --liquid-btn-border-alpha: 0.28;
@@ -2105,14 +4119,13 @@ html
 html
   body
   #root
-  :where(.ant-btn, button, .stamp-type-option):not(.ant-modal-close):not(
-    .ant-drawer-close
-  ) {
+  :where(.ant-btn, .header-action-btn, .stamp-type-option):not(
+    .ant-modal-close
+  ):not(.ant-drawer-close) {
   border-style: solid !important;
   border-width: 1px !important;
-  border-color: rgba(
-    var(--liquid-btn-rgb),
-    var(--liquid-btn-border-alpha)
+  border-color: rgb(
+    var(--liquid-btn-rgb) / var(--liquid-btn-border-alpha)
   ) !important;
   background:
     radial-gradient(
@@ -2127,8 +4140,8 @@ html
     ) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.74),
-    inset 0 -1px 0 rgba(var(--liquid-btn-rgb), 0.06),
-    0 8px 18px rgba(var(--liquid-btn-rgb), var(--liquid-btn-shadow-alpha)) !important;
+    inset 0 -1px 0 rgb(var(--liquid-btn-rgb) / 0.06),
+    0 8px 18px rgb(var(--liquid-btn-rgb) / var(--liquid-btn-shadow-alpha)) !important;
   color: rgb(var(--liquid-btn-text-rgb)) !important;
   text-shadow: none !important;
 }
@@ -2136,9 +4149,9 @@ html
 html
   body
   #root
-  :where(.ant-btn, button, .stamp-type-option):not(.ant-modal-close):not(
-    .ant-drawer-close
-  )
+  :where(.ant-btn, .header-action-btn, .stamp-type-option):not(
+    .ant-modal-close
+  ):not(.ant-drawer-close)
   * {
   color: inherit !important;
 }
@@ -2146,11 +4159,11 @@ html
 html
   body
   #root
-  :where(.ant-btn, button, .stamp-type-option):not(.ant-modal-close):not(
-    .ant-drawer-close
-  ):not(:disabled):hover,
+  :where(.ant-btn, .header-action-btn, .stamp-type-option):not(
+    .ant-modal-close
+  ):not(.ant-drawer-close):not(:disabled):hover,
 html body #root button.stamp-type-option.is-selected {
-  border-color: rgba(var(--liquid-btn-rgb), 0.76) !important;
+  border-color: rgb(var(--liquid-btn-rgb) / 0.76) !important;
   background:
     radial-gradient(
       circle at 84% 14%,
@@ -2159,28 +4172,28 @@ html body #root button.stamp-type-option.is-selected {
     ),
     linear-gradient(
       145deg,
-      rgba(var(--liquid-btn-rgb), 0.12) 0%,
-      rgba(var(--liquid-btn-rgb), 0.18) 54%,
-      rgba(var(--liquid-btn-rgb), 0.24) 100%
+      rgb(var(--liquid-btn-rgb) / 0.12) 0%,
+      rgb(var(--liquid-btn-rgb) / 0.18) 54%,
+      rgb(var(--liquid-btn-rgb) / 0.24) 100%
     ) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.56),
-    0 10px 20px rgba(var(--liquid-btn-rgb), 0.14) !important;
+    0 10px 20px rgb(var(--liquid-btn-rgb) / 0.14) !important;
   color: rgb(var(--liquid-btn-text-rgb)) !important;
 }
 
 html
   body
   #root
-  :where(.ant-btn, button, .stamp-type-option):not(.ant-modal-close):not(
-    .ant-drawer-close
-  ):not(:disabled):hover
+  :where(.ant-btn, .header-action-btn, .stamp-type-option):not(
+    .ant-modal-close
+  ):not(.ant-drawer-close):not(:disabled):hover
   *,
 html body #root button.stamp-type-option.is-selected * {
   color: inherit !important;
 }
 
-html body #root :where(.ant-btn, button):disabled {
+html body #root :where(.ant-btn, .header-action-btn):disabled {
   color: rgba(100, 116, 139, 0.62) !important;
   transform: none !important;
 }
@@ -2285,9 +4298,9 @@ html body.dark #root .header-action-btn {
 html
   body.dark
   #root
-  :where(.ant-btn, button, .stamp-type-option):not(.ant-modal-close):not(
-    .ant-drawer-close
-  ) {
+  :where(.ant-btn, .header-action-btn, .stamp-type-option):not(
+    .ant-modal-close
+  ):not(.ant-drawer-close) {
   background:
     radial-gradient(
       circle at 84% 14%,
@@ -2362,18 +4375,18 @@ html
 html
   body
   #root
-  :where(.ant-btn, button):not(.ant-modal-close):not(.ant-drawer-close):not(
-    :hover
-  ):not(:disabled):not(.is-selected) {
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ):not(:hover):not(:disabled):not(.is-selected) {
   color: rgb(var(--liquid-btn-text-rgb, 51 65 85)) !important;
 }
 
 html
   body
   #root
-  :where(.ant-btn, button):not(.ant-modal-close):not(.ant-drawer-close):not(
-    :hover
-  ):not(:disabled):not(.is-selected)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ):not(:hover):not(:disabled):not(.is-selected)
   * {
   color: inherit !important;
 }
@@ -2381,18 +4394,18 @@ html
 html
   body
   #root
-  :where(.ant-btn, button):not(.ant-modal-close):not(.ant-drawer-close):not(
-    :disabled
-  ):hover {
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ):not(:disabled):hover {
   color: rgb(var(--liquid-btn-text-rgb, 51 65 85)) !important;
 }
 
 html
   body
   #root
-  :where(.ant-btn, button):not(.ant-modal-close):not(.ant-drawer-close):not(
-    :disabled
-  ):hover
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ):not(:disabled):hover
   * {
   color: inherit !important;
 }
@@ -2408,6 +4421,181 @@ html body #root .ant-layout-sider :where(button, .ant-btn):not(:disabled) {
 html body #root .stock-filter-row .stock-filter-control {
   height: 40px !important;
   min-height: 40px !important;
+}
+
+/* Native Tailwind action buttons keep readable contrast inside Liquid Glass. */
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-blue-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-sky-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-cyan-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-indigo-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-violet-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-purple-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-green-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-emerald-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-teal-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-amber-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-orange-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-red-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-rose-'] {
+  --native-btn-fill-rgb: 37 99 235;
+  --native-btn-shadow-rgb: var(--native-btn-fill-rgb);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-sky-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-cyan-'] {
+  --native-btn-fill-rgb: 6 182 212;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-green-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-emerald-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-teal-'] {
+  --native-btn-fill-rgb: 5 150 105;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-amber-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-orange-'] {
+  --native-btn-fill-rgb: 217 119 6;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-red-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-rose-'] {
+  --native-btn-fill-rgb: 220 38 38;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-indigo-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-violet-'],
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white'][class*='bg-purple-'] {
+  --native-btn-fill-rgb: 99 102 241;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white']:where(
+    [class*='bg-blue-'],
+    [class*='bg-sky-'],
+    [class*='bg-cyan-'],
+    [class*='bg-indigo-'],
+    [class*='bg-violet-'],
+    [class*='bg-purple-'],
+    [class*='bg-green-'],
+    [class*='bg-emerald-'],
+    [class*='bg-teal-'],
+    [class*='bg-amber-'],
+    [class*='bg-orange-'],
+    [class*='bg-red-'],
+    [class*='bg-rose-']
+  ):not(:disabled) {
+  border-color: rgb(var(--native-btn-fill-rgb) / 0.68) !important;
+  background: linear-gradient(
+    145deg,
+    rgb(var(--native-btn-fill-rgb) / 0.78),
+    rgb(var(--native-btn-fill-rgb) / 0.94)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 10px 22px rgb(var(--native-btn-shadow-rgb) / 0.16) !important;
+  color: #fff !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  button[class*='text-white']:where(
+    [class*='bg-blue-'],
+    [class*='bg-sky-'],
+    [class*='bg-cyan-'],
+    [class*='bg-indigo-'],
+    [class*='bg-violet-'],
+    [class*='bg-purple-'],
+    [class*='bg-green-'],
+    [class*='bg-emerald-'],
+    [class*='bg-teal-'],
+    [class*='bg-amber-'],
+    [class*='bg-orange-'],
+    [class*='bg-red-'],
+    [class*='bg-rose-']
+  ):disabled {
+  border-color: rgba(148, 163, 184, 0.26) !important;
+  background: rgba(226, 232, 240, 0.5) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+  color: rgba(71, 85, 105, 0.72) !important;
+  opacity: 0.78 !important;
 }
 
 html body #root .stock-filter-row .ant-select .ant-select-selector {
@@ -2508,4 +4696,4192 @@ html
   font-size: 14px !important;
   line-height: 1 !important;
   color: rgba(71, 85, 105, 0.9) !important;
+}
+
+/* Auth page keeps the login CTA stronger than the generic liquid button rules. */
+html body #root .auth-glass-card h1 {
+  color: rgba(15, 23, 42, 0.9) !important;
+}
+
+html body #root .auth-glass-card p {
+  color: rgba(71, 85, 105, 0.58) !important;
+}
+
+html body #root .auth-glass-card .ant-input,
+html body #root .auth-glass-card .ant-input::placeholder {
+  color: rgba(15, 23, 42, 0.78) !important;
+}
+
+html body #root .auth-glass-card .ant-input::placeholder {
+  color: rgba(71, 85, 105, 0.46) !important;
+}
+
+html
+  body
+  #root
+  .auth-glass-card
+  :where(.glass-button, .liquid-glass-button).ant-btn {
+  border-color: rgba(37, 99, 235, 0.54) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(96, 165, 250, 0.96),
+    rgba(37, 99, 235, 0.86) 54%,
+    rgba(29, 78, 216, 0.92)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 16px 34px rgba(37, 99, 235, 0.28) !important;
+  color: #fff !important;
+}
+
+html
+  body
+  #root
+  .auth-glass-card
+  :where(.glass-button, .liquid-glass-button).ant-btn
+  * {
+  color: #fff !important;
+}
+
+/* Fixed app button template.
+   Keep behavior in components, but force one visual system for native and AntD buttons. */
+html body :where(#root, .ant-modal-root) {
+  --app-btn-neutral-rgb: 71 85 105;
+  --app-btn-neutral-text-rgb: 51 65 85;
+  --app-btn-primary-rgb: 37 99 235;
+  --app-btn-primary-text-rgb: 29 78 216;
+  --app-btn-success-rgb: 5 150 105;
+  --app-btn-success-text-rgb: 4 120 87;
+  --app-btn-info-rgb: 6 182 212;
+  --app-btn-info-text-rgb: 14 116 144;
+  --app-btn-warning-rgb: 217 119 6;
+  --app-btn-warning-text-rgb: 180 83 9;
+  --app-btn-danger-rgb: 220 38 38;
+  --app-btn-danger-text-rgb: 185 28 28;
+  --app-btn-purple-rgb: 124 58 237;
+  --app-btn-purple-text-rgb: 109 40 217;
+}
+
+html body :where(#root, .ant-modal-root) :where(.ant-btn, .header-action-btn) {
+  --liquid-btn-rgb: var(--app-btn-neutral-rgb);
+  --liquid-btn-text-rgb: var(--app-btn-neutral-text-rgb);
+  --liquid-btn-border-alpha: 0.3;
+  --liquid-btn-shadow-alpha: 0.08;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(
+    .ant-btn-primary,
+    .ant-btn-color-primary,
+    .ant-btn-color-blue,
+    .glass-button,
+    .header-action-btn--primary,
+    button[class*='blue-'],
+    button[class*='primary']
+  ) {
+  --liquid-btn-rgb: var(--app-btn-primary-rgb);
+  --liquid-btn-text-rgb: var(--app-btn-primary-text-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(
+    .ant-btn-color-green,
+    .header-action-btn--success,
+    button[class*='green-'],
+    button[class*='emerald-'],
+    button[class*='success']
+  ) {
+  --liquid-btn-rgb: var(--app-btn-success-rgb);
+  --liquid-btn-text-rgb: var(--app-btn-success-text-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(
+    .ant-btn-color-cyan,
+    .ant-btn-color-geekblue,
+    .header-action-btn--info,
+    button[class*='cyan-'],
+    button[class*='sky-'],
+    button[class*='info']
+  ) {
+  --liquid-btn-rgb: var(--app-btn-info-rgb);
+  --liquid-btn-text-rgb: var(--app-btn-info-text-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(
+    .ant-btn-color-orange,
+    .ant-btn-color-gold,
+    .ant-btn-color-yellow,
+    .header-action-btn--warning,
+    button[class*='amber-'],
+    button[class*='orange-'],
+    button[class*='warning']
+  ) {
+  --liquid-btn-rgb: var(--app-btn-warning-rgb);
+  --liquid-btn-text-rgb: var(--app-btn-warning-text-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(
+    .ant-btn-dangerous,
+    .ant-btn-color-dangerous,
+    .ant-btn-color-danger,
+    .ant-btn-color-red,
+    .header-action-btn--danger,
+    button[class*='red-'],
+    button[class*='rose-'],
+    button[class*='danger']
+  ) {
+  --liquid-btn-rgb: var(--app-btn-danger-rgb);
+  --liquid-btn-text-rgb: var(--app-btn-danger-text-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(
+    .ant-btn-color-purple,
+    .ant-btn-color-volcano,
+    .header-action-btn--purple,
+    button[class*='indigo-'],
+    button[class*='violet-'],
+    button[class*='purple-']
+  ) {
+  --liquid-btn-rgb: var(--app-btn-purple-rgb);
+  --liquid-btn-text-rgb: var(--app-btn-purple-text-rgb);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ) {
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-color: rgb(
+    var(--liquid-btn-rgb) / var(--liquid-btn-border-alpha)
+  ) !important;
+  border-radius: 0.5rem !important;
+  background:
+    radial-gradient(
+      circle at 86% 12%,
+      rgba(255, 255, 255, 0.58),
+      transparent 24%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgb(var(--liquid-btn-rgb) / 0.08) 58%,
+      rgb(var(--liquid-btn-rgb) / 0.13)
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgb(var(--liquid-btn-rgb) / var(--liquid-btn-shadow-alpha)) !important;
+  color: rgb(var(--liquid-btn-text-rgb)) !important;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-shadow: none !important;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  )
+  * {
+  color: inherit !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ):not(:disabled):hover {
+  border-color: rgb(var(--liquid-btn-rgb) / 0.76) !important;
+  background:
+    radial-gradient(
+      circle at 86% 12%,
+      rgba(255, 255, 255, 0.44),
+      transparent 25%
+    ),
+    linear-gradient(
+      145deg,
+      rgb(var(--liquid-btn-rgb) / 0.14),
+      rgb(var(--liquid-btn-rgb) / 0.22) 58%,
+      rgb(var(--liquid-btn-rgb) / 0.3)
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    0 10px 22px rgb(var(--liquid-btn-rgb) / 0.14) !important;
+  color: rgb(var(--liquid-btn-text-rgb)) !important;
+  transform: translateY(-1px);
+}
+
+html
+  body
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):disabled {
+  color: rgba(100, 116, 139, 0.62) !important;
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none !important;
+}
+
+html
+  body.dark
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ) {
+  background:
+    radial-gradient(
+      circle at 86% 12%,
+      rgba(255, 255, 255, 0.14),
+      transparent 24%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(15, 23, 42, 0.78),
+      rgb(var(--liquid-btn-rgb) / 0.16)
+    ) !important;
+  color: rgb(var(--liquid-btn-text-rgb)) !important;
+}
+
+html body :where(#root, .ant-modal-root) .request-form-action-btn.ant-btn {
+  border-radius: 11px !important;
+}
+
+html body :where(#root, .ant-modal-root) .header-action-btn {
+  font-weight: 700 !important;
+}
+
+html.legacy-ui-mode body :where(#root, .ant-modal-root) .header-action-btn,
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ) {
+  border-color: #e5e7eb !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: #4b5563 !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark body :where(#root, .ant-modal-root) .header-action-btn,
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ) {
+  border-color: #374151 !important;
+  background: #1f2937 !important;
+  color: #d1d5db !important;
+}
+
+/* Final liquid glass pass: keep legacy page boxes from falling back to flat white. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner
+  ),
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(div, section, article, aside, li, button)
+  :where([class*='rounded'])
+  :where([class*='border'], [class*='shadow'], [class*='backdrop-blur'])
+  :where(
+    [class*='bg-white'],
+    [class*='bg-gray-50'],
+    [class*='bg-slate-50'],
+    [class*='from-gray-50'],
+    [class*='to-white'],
+    [class*='bg-blue-50'],
+    [class*='bg-cyan-50'],
+    [class*='bg-sky-50'],
+    [class*='bg-indigo-50'],
+    [class*='bg-violet-50'],
+    [class*='bg-purple-50'],
+    [class*='bg-green-50'],
+    [class*='bg-emerald-50'],
+    [class*='bg-teal-50'],
+    [class*='bg-amber-50'],
+    [class*='bg-orange-50'],
+    [class*='bg-yellow-50'],
+    [class*='bg-red-50'],
+    [class*='bg-rose-50']
+  ):not([class*='print']):not([class*='stamp-item']):not(.bag-print-container) {
+  border-color: rgb(
+    var(--liquid-surface-rgb, 148 163 184) /
+      var(--liquid-surface-border-alpha, 0.2)
+  ) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.42),
+      rgba(255, 255, 255, 0.16) 52%,
+      rgb(
+        var(--liquid-surface-rgb, 148 163 184) /
+          var(--liquid-surface-alpha, 0.08)
+      )
+    ),
+    rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 10px 26px
+      rgb(
+        var(--liquid-surface-rgb, 148 163 184) /
+          var(--liquid-surface-shadow-alpha, 0.07)
+      ) !important;
+  backdrop-filter: blur(16px) saturate(152%);
+  -webkit-backdrop-filter: blur(16px) saturate(152%);
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner
+  ),
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(div, section, article, aside, li, button)
+  :where([class*='rounded'])
+  :where([class*='border'], [class*='shadow'], [class*='backdrop-blur'])
+  :where(
+    [class*='bg-white'],
+    [class*='bg-gray-50'],
+    [class*='bg-slate-50'],
+    [class*='from-gray-50'],
+    [class*='to-white'],
+    [class*='bg-blue-50'],
+    [class*='bg-cyan-50'],
+    [class*='bg-sky-50'],
+    [class*='bg-indigo-50'],
+    [class*='bg-violet-50'],
+    [class*='bg-purple-50'],
+    [class*='bg-green-50'],
+    [class*='bg-emerald-50'],
+    [class*='bg-teal-50'],
+    [class*='bg-amber-50'],
+    [class*='bg-orange-50'],
+    [class*='bg-yellow-50'],
+    [class*='bg-red-50'],
+    [class*='bg-rose-50']
+  ):not([class*='print']):not([class*='stamp-item']):not(.bag-print-container) {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.46),
+      rgba(15, 23, 42, 0.28) 52%,
+      rgb(
+        var(--liquid-surface-rgb, 148 163 184) /
+          var(--liquid-surface-alpha, 0.14)
+      )
+    ),
+    rgba(15, 23, 42, 0.38) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .ant-card-head,
+    .ant-card-body,
+    .ant-modal-header,
+    .ant-modal-body,
+    .ant-modal-footer,
+    .ant-drawer-header,
+    .ant-drawer-body,
+    .ant-drawer-footer
+  ) {
+  background: transparent !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper
+  .ant-table {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.36),
+      rgba(255, 255, 255, 0.14)
+    ),
+    rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-thead
+  > tr
+  > th {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.58),
+      rgba(239, 246, 255, 0.3)
+    ),
+    rgba(255, 255, 255, 0.34) !important;
+}
+
+/* Liquid table surfaces: readable glass without making dense data feel washed out. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ) {
+  border-radius: 14px;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table, .ant-table-container, .ant-table-content) {
+  border-color: rgba(125, 169, 215, 0.28) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.42),
+      rgba(226, 242, 255, 0.22) 52%,
+      rgba(209, 250, 244, 0.18)
+    ),
+    rgba(255, 255, 255, 0.24) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(59, 130, 246, 0.08),
+    0 16px 38px rgba(15, 23, 42, 0.1) !important;
+  backdrop-filter: blur(14px) saturate(145%);
+  -webkit-backdrop-filter: blur(14px) saturate(145%);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-body {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: translateZ(0);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > th {
+  border-color: rgba(125, 169, 215, 0.3) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.78),
+      rgba(226, 242, 255, 0.58)
+    ),
+    rgba(255, 255, 255, 0.54) !important;
+  color: #334155 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    inset 0 -1px 0 rgba(59, 130, 246, 0.1) !important;
+  backdrop-filter: blur(18px) saturate(155%);
+  -webkit-backdrop-filter: blur(18px) saturate(155%);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr
+  > td,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-summary
+  > tr
+  > td {
+  border-color: rgba(125, 169, 215, 0.18) !important;
+  background: rgba(255, 255, 255, 0.34) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td {
+  background: rgba(239, 248, 255, 0.36) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > td,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > td {
+  background: rgba(219, 234, 254, 0.68) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: rgba(248, 252, 255, 0.82) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right),
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: rgba(219, 234, 254, 0.82) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(.product-sticky-table, .smooth-sticky-table)
+  .ant-table-sticky-holder {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.72),
+      rgba(226, 242, 255, 0.5)
+    ),
+    rgba(255, 255, 255, 0.54) !important;
+  box-shadow:
+    0 1px 0 rgba(125, 169, 215, 0.24),
+    0 10px 24px rgba(15, 23, 42, 0.1) !important;
+  backdrop-filter: blur(12px) saturate(145%);
+  -webkit-backdrop-filter: blur(12px) saturate(145%);
+}
+
+html:not(.legacy-ui-mode) body #root .product-sticky-table .product-day-alt {
+  background: rgba(99, 102, 241, 0.09) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .product-sticky-table
+  .product-day-current {
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.28) 0%,
+    rgba(59, 130, 246, 0.16) 100%
+  ) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-rose'], [class*='bg-red'])
+  > td {
+  background: rgba(255, 228, 230, 0.72) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-yellow'], [class*='bg-amber'])
+  > td {
+  background: rgba(254, 249, 195, 0.74) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-green'], [class*='bg-emerald'])
+  > td {
+  background: rgba(220, 252, 231, 0.72) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-blue'], [class*='bg-cyan'])
+  > td,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr.feedback-highlight
+  > td {
+  background: rgba(219, 234, 254, 0.72) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where([class*='print'], [class*='stamp'], .bag-print-container)
+  :where(
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td,
+    .ant-table-summary > tr > td
+  ) {
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table, .ant-table-container, .ant-table-content) {
+  border-color: rgba(96, 165, 250, 0.24) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.62),
+      rgba(15, 23, 42, 0.38) 58%,
+      rgba(8, 145, 178, 0.12)
+    ),
+    rgba(15, 23, 42, 0.44) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 16px 34px rgba(2, 6, 23, 0.34) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > th {
+  border-color: rgba(96, 165, 250, 0.24) !important;
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.82), rgba(15, 23, 42, 0.62)),
+    rgba(15, 23, 42, 0.68) !important;
+  color: #e2e8f0 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr
+  > td,
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-summary
+  > tr
+  > td {
+  border-color: rgba(96, 165, 250, 0.16) !important;
+  background: rgba(15, 23, 42, 0.42) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td {
+  background: rgba(30, 41, 59, 0.46) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > td,
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > td {
+  background: rgba(30, 64, 175, 0.44) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: rgba(15, 23, 42, 0.76) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right),
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: rgba(30, 64, 175, 0.54) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(.product-sticky-table, .smooth-sticky-table)
+  .ant-table-sticky-holder {
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.74), rgba(15, 23, 42, 0.58)),
+    rgba(15, 23, 42, 0.64) !important;
+  box-shadow:
+    0 1px 0 rgba(148, 163, 184, 0.2),
+    0 10px 24px rgba(2, 6, 23, 0.36) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  .product-sticky-table
+  .product-day-alt {
+  background: rgba(99, 102, 241, 0.22) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  .product-sticky-table
+  .product-day-current {
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.36) 0%,
+    rgba(59, 130, 246, 0.24) 100%
+  ) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-rose'], [class*='bg-red'])
+  > td {
+  background: rgba(127, 29, 29, 0.34) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-yellow'], [class*='bg-amber'])
+  > td {
+  background: rgba(113, 63, 18, 0.34) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-green'], [class*='bg-emerald'])
+  > td {
+  background: rgba(20, 83, 45, 0.32) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-blue'], [class*='bg-cyan'])
+  > td,
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr.feedback-highlight
+  > td {
+  background: rgba(30, 64, 175, 0.4) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where([class*='print'], [class*='stamp'], .bag-print-container)
+  :where(
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td,
+    .ant-table-summary > tr > td
+  ) {
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+}
+
+/* Liquid data-grid performance guard.
+   Dense Ant tables repaint poorly when every cell has blur/gradient/transition. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .ant-table-tbody,
+    .ant-table-tbody > tr,
+    .ant-table-tbody > tr > td,
+    .ant-table-summary > tr > td,
+    .ant-table-cell-fix-left,
+    .ant-table-cell-fix-right
+  ) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table, .ant-table-container, .ant-table-content) {
+  border-color: rgba(125, 169, 215, 0.22) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.48),
+      rgba(226, 242, 255, 0.28) 56%,
+      rgba(209, 250, 244, 0.18)
+    ),
+    rgba(255, 255, 255, 0.32) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 10px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-body {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateZ(0);
+  contain: none;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr
+  > td,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-summary
+  > tr
+  > td {
+  border-color: rgba(125, 169, 215, 0.15) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > th {
+  border-color: rgba(125, 169, 215, 0.22) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.84),
+      rgba(226, 242, 255, 0.7)
+    ),
+    rgba(255, 255, 255, 0.78) !important;
+  box-shadow: inset 0 -1px 0 rgba(59, 130, 246, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: rgba(248, 252, 255, 0.94) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(.product-sticky-table, .smooth-sticky-table)
+  .ant-table-sticky-holder {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.84),
+      rgba(226, 242, 255, 0.68)
+    ),
+    rgba(255, 255, 255, 0.78) !important;
+  box-shadow:
+    0 1px 0 rgba(125, 169, 215, 0.2),
+    0 6px 14px rgba(15, 23, 42, 0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > td,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > td {
+  background: rgba(219, 234, 254, 0.82) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right),
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: rgba(219, 234, 254, 0.92) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table, .ant-table-container, .ant-table-content) {
+  border-color: rgba(96, 165, 250, 0.22) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.64),
+      rgba(15, 23, 42, 0.48) 56%,
+      rgba(8, 145, 178, 0.12)
+    ),
+    rgba(15, 23, 42, 0.56) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-body {
+  background: rgba(15, 23, 42, 0.34) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr
+  > td,
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td,
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-summary
+  > tr
+  > td {
+  border-color: rgba(96, 165, 250, 0.14) !important;
+  background: rgba(15, 23, 42, 0.66) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > th {
+  border-color: rgba(96, 165, 250, 0.2) !important;
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.72)),
+    rgba(15, 23, 42, 0.78) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: rgba(15, 23, 42, 0.88) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(.product-sticky-table, .smooth-sticky-table)
+  .ant-table-sticky-holder {
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.72)),
+    rgba(15, 23, 42, 0.78) !important;
+  box-shadow:
+    0 1px 0 rgba(96, 165, 250, 0.16),
+    0 6px 14px rgba(2, 6, 23, 0.28) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > td,
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > td {
+  background: rgba(30, 64, 175, 0.5) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right),
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: rgba(30, 64, 175, 0.58) !important;
+}
+
+html:not(.legacy-ui-mode) body #root .product-sticky-table .product-day-alt {
+  background: rgba(99, 102, 241, 0.1) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .product-sticky-table
+  .product-day-current {
+  background: rgba(59, 130, 246, 0.22) !important;
+  font-weight: 600;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-rose'], [class*='bg-red'])
+  > td {
+  background: rgba(255, 228, 230, 0.86) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-yellow'], [class*='bg-amber'])
+  > td {
+  background: rgba(254, 249, 195, 0.9) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-green'], [class*='bg-emerald'])
+  > td {
+  background: rgba(220, 252, 231, 0.86) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-blue'], [class*='bg-cyan'])
+  > td,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr.feedback-highlight
+  > td {
+  background: rgba(219, 234, 254, 0.88) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  .product-sticky-table
+  .product-day-alt {
+  background: rgba(99, 102, 241, 0.22) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  .product-sticky-table
+  .product-day-current {
+  background: rgba(59, 130, 246, 0.34) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-rose'], [class*='bg-red'])
+  > td {
+  background: rgba(127, 29, 29, 0.38) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-yellow'], [class*='bg-amber'])
+  > td {
+  background: rgba(113, 63, 18, 0.38) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-green'], [class*='bg-emerald'])
+  > td {
+  background: rgba(20, 83, 45, 0.36) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-blue'], [class*='bg-cyan'])
+  > td,
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr.feedback-highlight
+  > td {
+  background: rgba(30, 64, 175, 0.46) !important;
+}
+
+/* Fixed columns must be opaque enough to hide horizontally scrolling data below. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(
+    .ant-table-thead > tr > th.ant-table-cell-fix-left,
+    .ant-table-tbody > tr > td.ant-table-cell-fix-left,
+    .ant-table-summary > tr > td.ant-table-cell-fix-left,
+    .ant-table-thead > tr > th.ant-table-cell-fix-right,
+    .ant-table-tbody > tr > td.ant-table-cell-fix-right,
+    .ant-table-summary > tr > td.ant-table-cell-fix-right
+  ) {
+  background: #f8fbff !important;
+  background-color: #f8fbff !important;
+  background-image: none !important;
+  background-clip: padding-box;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > :where(th.ant-table-cell-fix-left, th.ant-table-cell-fix-right) {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right),
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #dbeafe !important;
+  background-color: #dbeafe !important;
+  background-image: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left-last, .ant-table-cell-fix-left) {
+  box-shadow:
+    inset -1px 0 0 rgba(125, 169, 215, 0.24),
+    10px 0 18px -16px rgba(15, 23, 42, 0.36) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-right-first, .ant-table-cell-fix-right) {
+  box-shadow:
+    inset 1px 0 0 rgba(125, 169, 215, 0.24),
+    -10px 0 18px -16px rgba(15, 23, 42, 0.36) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-cell-fix-left-last::after,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-cell-fix-right-first::after {
+  box-shadow: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(
+    .ant-table-thead > tr > th.ant-table-cell-fix-left,
+    .ant-table-tbody > tr > td.ant-table-cell-fix-left,
+    .ant-table-summary > tr > td.ant-table-cell-fix-left,
+    .ant-table-thead > tr > th.ant-table-cell-fix-right,
+    .ant-table-tbody > tr > td.ant-table-cell-fix-right,
+    .ant-table-summary > tr > td.ant-table-cell-fix-right
+  ) {
+  background: #111827 !important;
+  background-color: #111827 !important;
+  background-image: none !important;
+  opacity: 1 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > :where(th.ant-table-cell-fix-left, th.ant-table-cell-fix-right) {
+  background: #172033 !important;
+  background-color: #172033 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right),
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #1e3a8a !important;
+  background-color: #1e3a8a !important;
+  background-image: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left-last, .ant-table-cell-fix-left) {
+  box-shadow:
+    inset -1px 0 0 rgba(96, 165, 250, 0.2),
+    10px 0 18px -16px rgba(2, 6, 23, 0.8) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-right-first, .ant-table-cell-fix-right) {
+  box-shadow:
+    inset 1px 0 0 rgba(96, 165, 250, 0.2),
+    -10px 0 18px -16px rgba(2, 6, 23, 0.8) !important;
+}
+
+/* Hard shield for AntD fixed cells: the scroll layer must never show through. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  position: sticky !important;
+  z-index: 12 !important;
+  background: #f8fbff !important;
+  background-color: #f8fbff !important;
+  background-image: none !important;
+  box-shadow: inset 0 0 0 9999px #f8fbff !important;
+  opacity: 1 !important;
+  isolation: isolate;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(
+    .ant-table-thead th.ant-table-cell-fix-left,
+    .ant-table-thead th.ant-table-cell-fix-right
+  ) {
+  z-index: 16 !important;
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  box-shadow: inset 0 0 0 9999px #eef7ff !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left-last, .ant-table-cell-fix-left) {
+  box-shadow:
+    inset 0 0 0 9999px #f8fbff,
+    inset -1px 0 0 rgba(125, 169, 215, 0.28),
+    12px 0 18px -16px rgba(15, 23, 42, 0.42) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-right-first, .ant-table-cell-fix-right) {
+  box-shadow:
+    inset 0 0 0 9999px #f8fbff,
+    inset 1px 0 0 rgba(125, 169, 215, 0.28),
+    -12px 0 18px -16px rgba(15, 23, 42, 0.42) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right),
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #dbeafe !important;
+  background-color: #dbeafe !important;
+  box-shadow: inset 0 0 0 9999px #dbeafe !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-cell-fix-left-last::after,
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-cell-fix-right-first::after {
+  display: none !important;
+  content: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: #111827 !important;
+  background-color: #111827 !important;
+  background-image: none !important;
+  box-shadow: inset 0 0 0 9999px #111827 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(
+    .ant-table-thead th.ant-table-cell-fix-left,
+    .ant-table-thead th.ant-table-cell-fix-right
+  ) {
+  background: #172033 !important;
+  background-color: #172033 !important;
+  box-shadow: inset 0 0 0 9999px #172033 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left-last, .ant-table-cell-fix-left) {
+  box-shadow:
+    inset 0 0 0 9999px #111827,
+    inset -1px 0 0 rgba(96, 165, 250, 0.22),
+    12px 0 18px -16px rgba(2, 6, 23, 0.86) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-right-first, .ant-table-cell-fix-right) {
+  box-shadow:
+    inset 0 0 0 9999px #111827,
+    inset 1px 0 0 rgba(96, 165, 250, 0.22),
+    -12px 0 18px -16px rgba(2, 6, 23, 0.86) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right),
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #1e3a8a !important;
+  background-color: #1e3a8a !important;
+  box-shadow: inset 0 0 0 9999px #1e3a8a !important;
+}
+
+/* Liquid sidebar readability: mostly white glass, classic stays untouched. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(
+    .app-sidebar-sider.ant-layout-sider,
+    .app-sidebar-mobile,
+    .app-sidebar-drawer .ant-drawer-content
+  ),
+html:not(.legacy-ui-mode) body .app-sidebar-drawer .ant-drawer-content {
+  border-color: rgba(203, 213, 225, 0.62) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.97),
+      rgba(255, 255, 255, 0.93) 58%,
+      rgba(248, 251, 255, 0.86)
+    ),
+    linear-gradient(
+      118deg,
+      rgba(37, 99, 235, 0.018),
+      transparent 56%,
+      rgba(14, 165, 233, 0.014)
+    ),
+    rgba(255, 255, 255, 0.92) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.86),
+    8px 0 24px rgba(15, 23, 42, 0.035) !important;
+  backdrop-filter: blur(18px) saturate(118%);
+  -webkit-backdrop-filter: blur(18px) saturate(118%);
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 34%),
+    linear-gradient(
+      168deg,
+      transparent 0% 58%,
+      rgba(37, 99, 235, 0.018) 76%,
+      transparent 100%
+    ) !important;
+  opacity: 0.72;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(a, button, [role='button']) {
+  color: #111827 !important;
+  text-shadow: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(a, button, [role='button'])
+  :where(span, p, div) {
+  color: inherit !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  nav
+  :where(a, button) {
+  font-weight: 650 !important;
+  letter-spacing: 0 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  nav
+  :where(a, button)
+  :where(svg, i) {
+  color: #1f2937 !important;
+  filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  nav
+  :where(a:hover, button:hover) {
+  background: rgba(248, 250, 252, 0.84) !important;
+  color: #000 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  nav
+  :where(a:hover, button:hover)
+  :where(svg, i) {
+  color: #111827 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(a, button)
+  :where([class*='h-8'][class*='w-8'], [class*='h-9'][class*='w-9'])
+  :where(svg, i) {
+  color: #1f2937 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  button[class*='text-red'] {
+  color: #dc2626 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  button[class*='text-red']
+  :where(span, svg, i) {
+  color: inherit !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  button
+  :where(
+    span[class*='text-blue'],
+    svg[class*='text-blue'],
+    i[class*='text-blue']
+  ) {
+  color: #2563eb !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  .sidebar-active-item {
+  border-color: rgba(59, 130, 246, 0.18) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.94),
+      rgba(246, 250, 255, 0.82)
+    ),
+    rgba(255, 255, 255, 0.84) !important;
+  color: #000 !important;
+  font-weight: 750 !important;
+  text-shadow: none !important;
+  box-shadow:
+    inset 3px 0 0 rgba(59, 130, 246, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 16px rgba(15, 23, 42, 0.04) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  .sidebar-active-item
+  :where(span, p, div, svg, i) {
+  color: inherit !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(.sidebar-active-item svg, .sidebar-active-item i) {
+  color: #111827 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(p[class*='uppercase'], p[class*='tracking-widest']) {
+  color: #111827 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where([class*='border-l']) {
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(
+    .app-sidebar-sider.ant-layout-sider,
+    .app-sidebar-mobile,
+    .app-sidebar-drawer .ant-drawer-content
+  ),
+html:not(.legacy-ui-mode).dark body .app-sidebar-drawer .ant-drawer-content {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.9),
+      rgba(15, 23, 42, 0.78) 52%,
+      rgba(8, 47, 73, 0.5)
+    ),
+    rgba(15, 23, 42, 0.86) !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(a, button, [role='button']) {
+  color: #e2e8f0 !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  nav
+  :where(a, button)
+  :where(svg, i) {
+  color: #93a4ba !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  nav
+  :where(a:hover, button:hover) {
+  color: #f8fafc !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  nav
+  :where(a:hover, button:hover)
+  :where(svg, i) {
+  color: #93c5fd !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(a, button)
+  :where([class*='h-8'][class*='w-8'], [class*='h-9'][class*='w-9'])
+  :where(svg, i) {
+  color: #93a4ba !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  button[class*='text-red'] {
+  color: #f87171 !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  button[class*='text-red']
+  :where(span, svg, i) {
+  color: inherit !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  button
+  :where(
+    span[class*='text-blue'],
+    svg[class*='text-blue'],
+    i[class*='text-blue']
+  ) {
+  color: #93c5fd !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  .sidebar-active-item {
+  border-color: rgba(96, 165, 250, 0.34) !important;
+  background:
+    linear-gradient(145deg, rgba(30, 64, 175, 0.5), rgba(15, 23, 42, 0.62)),
+    rgba(30, 58, 138, 0.46) !important;
+  color: #dbeafe !important;
+  box-shadow:
+    inset 3px 0 0 rgba(96, 165, 250, 0.82),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 10px 24px rgba(37, 99, 235, 0.2) !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(.sidebar-active-item svg, .sidebar-active-item i) {
+  color: #bfdbfe !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  :where(p[class*='uppercase'], p[class*='tracking-widest']) {
+  color: #94a3b8 !important;
+}
+
+/* Final dashboard scroll stability: keep liquid static on large surfaces. */
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  :where(.liquid-glass-card, .liquid-glass-control, .ant-card) {
+  content-visibility: visible !important;
+  contain: none !important;
+  transform: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode) body #root .dashboard-page .liquid-glass-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.86),
+      rgba(244, 250, 255, 0.76) 52%,
+      rgba(232, 250, 247, 0.58)
+    ),
+    rgba(255, 255, 255, 0.78) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 14px 34px rgba(15, 23, 42, 0.08) !important;
+}
+
+html:not(.legacy-ui-mode) body #root .dashboard-page .liquid-glass-control {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.82),
+      rgba(248, 250, 252, 0.68) 56%,
+      rgba(239, 246, 255, 0.5)
+    ),
+    rgba(255, 255, 255, 0.72) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 8px 18px rgba(15, 23, 42, 0.055) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  :where(.liquid-glass-card, .liquid-glass-control)::before {
+  opacity: 0.48 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  :where(.liquid-glass-card, .liquid-glass-control)::after {
+  opacity: 0.72 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  #root
+  .dashboard-page
+  :where(.ant-card-head, .ant-card-body, canvas, svg) {
+  content-visibility: visible !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .dashboard-page .liquid-glass-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.86),
+      rgba(15, 23, 42, 0.76) 52%,
+      rgba(30, 58, 138, 0.42)
+    ),
+    rgba(15, 23, 42, 0.78) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  .dashboard-page
+  .liquid-glass-control {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.78),
+      rgba(15, 23, 42, 0.68) 56%,
+      rgba(30, 58, 138, 0.34)
+    ),
+    rgba(15, 23, 42, 0.72) !important;
+}
+
+/* Work schedule tables: keep day headers visible while the page scrolls. */
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder {
+  position: sticky !important;
+  top: var(--work-schedule-sticky-top, 56px) !important;
+  z-index: 72 !important;
+  overflow: visible !important;
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  background-image: none !important;
+  box-shadow:
+    0 1px 0 rgba(125, 169, 215, 0.26),
+    0 8px 18px rgba(15, 23, 42, 0.1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder
+  .ant-table-thead
+  > tr
+  > th {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  background-image: none !important;
+  opacity: 1 !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder
+  :where(th.ant-table-cell-fix-left, th.ant-table-cell-fix-right) {
+  z-index: 76 !important;
+  background: #e5f2ff !important;
+  background-color: #e5f2ff !important;
+  background-image: none !important;
+  box-shadow: inset 0 0 0 9999px #e5f2ff !important;
+}
+
+html.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder {
+  background: #172033 !important;
+  background-color: #172033 !important;
+  box-shadow:
+    0 1px 0 rgba(96, 165, 250, 0.18),
+    0 8px 18px rgba(2, 6, 23, 0.32) !important;
+}
+
+html.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder
+  .ant-table-thead
+  > tr
+  > th {
+  background: #172033 !important;
+  background-color: #172033 !important;
+  background-image: none !important;
+}
+
+html.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder
+  :where(th.ant-table-cell-fix-left, th.ant-table-cell-fix-right) {
+  background: #111827 !important;
+  background-color: #111827 !important;
+  box-shadow: inset 0 0 0 9999px #111827 !important;
+}
+
+/* Final picker popup guard: keep DatePicker/MonthPicker clickable everywhere. */
+html body .ant-picker-dropdown {
+  z-index: 4200 !important;
+  pointer-events: auto !important;
+  isolation: isolate !important;
+  transform: none;
+  will-change: auto !important;
+}
+
+html body .ant-picker-dropdown.ant-picker-dropdown-hidden {
+  pointer-events: none !important;
+}
+
+html body .ant-picker-dropdown .ant-picker-panel-container {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto !important;
+  transform: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body .ant-picker-dropdown :where(.ant-picker-panel, .ant-picker-panel *) {
+  pointer-events: auto;
+}
+
+html
+  body
+  .ant-picker-dropdown
+  :where(
+    .ant-picker-header button,
+    .ant-picker-cell,
+    .ant-picker-cell-inner,
+    .ant-picker-time-panel-cell,
+    .ant-picker-time-panel-cell-inner,
+    .ant-picker-now-btn,
+    .ant-picker-ok button
+  ) {
+  cursor: pointer;
+}
+
+html body .ant-modal-root .ant-picker-dropdown,
+html body :is(.ant-drawer-root, .ant-drawer) .ant-picker-dropdown {
+  z-index: 4300 !important;
+}
+
+/* Final liquid table pass: static glass tint without expensive blur. */
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table) {
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.7),
+      rgba(239, 246, 255, 0.36)
+    ),
+    rgba(255, 255, 255, 0.58) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  :where(
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .ant-table-sticky-holder
+  ) {
+  border-color: rgba(125, 169, 215, 0.24) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.82),
+      rgba(242, 248, 255, 0.7) 58%,
+      rgba(232, 250, 247, 0.44)
+    ),
+    rgba(255, 255, 255, 0.76) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 10px 24px rgba(15, 23, 42, 0.065) !important;
+  contain: none !important;
+  transform: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  .ant-table-thead
+  > tr
+  > th {
+  border-color: rgba(125, 169, 215, 0.28) !important;
+  background: linear-gradient(180deg, #f8fbff, #eef7ff), #f8fbff !important;
+  background-color: #f8fbff !important;
+  color: #263241 !important;
+  box-shadow: inset 0 -1px 0 rgba(59, 130, 246, 0.08) !important;
+  font-weight: 700;
+  transform: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  :where(.ant-table-tbody > tr > td, .ant-table-summary > tr > td) {
+  border-color: rgba(125, 169, 215, 0.16) !important;
+  background: rgba(255, 255, 255, 0.74) !important;
+  color: #1f2937;
+  transform: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  .ant-table-tbody
+  > tr:hover
+  > td {
+  background: #eef7ff !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > td {
+  background: #e2f0ff !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  :where(
+    .ant-table-cell-fix-left,
+    .ant-table-cell-fix-right,
+    .ant-table-thead th.ant-table-cell-fix-left,
+    .ant-table-thead th.ant-table-cell-fix-right
+  ) {
+  z-index: 8 !important;
+  background: #f8fbff !important;
+  background-color: #f8fbff !important;
+  background-image: none !important;
+  box-shadow: inset 0 0 0 9999px #f8fbff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  .ant-table-tbody
+  > tr:hover
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  box-shadow: inset 0 0 0 9999px #eef7ff !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #e2f0ff !important;
+  background-color: #e2f0ff !important;
+  box-shadow: inset 0 0 0 9999px #e2f0ff !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  :where(.ant-table-cell-fix-left-last, .ant-table-cell-fix-left) {
+  box-shadow:
+    inset 0 0 0 9999px #f8fbff,
+    8px 0 14px -14px rgba(15, 23, 42, 0.2) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  :where(.ant-table-cell-fix-right-first, .ant-table-cell-fix-right) {
+  box-shadow:
+    inset 0 0 0 9999px #f8fbff,
+    -8px 0 14px -14px rgba(15, 23, 42, 0.2) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  :where(
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .ant-table-sticky-holder
+  ) {
+  border-color: rgba(96, 165, 250, 0.18) !important;
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.82), rgba(15, 23, 42, 0.72)),
+    rgba(15, 23, 42, 0.78) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  .ant-table-thead
+  > tr
+  > th {
+  border-color: rgba(96, 165, 250, 0.18) !important;
+  background: #172033 !important;
+  background-color: #172033 !important;
+  color: #e5e7eb !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  :where(.ant-table-tbody > tr > td, .ant-table-summary > tr > td) {
+  border-color: rgba(96, 165, 250, 0.14) !important;
+  background: #1f2937 !important;
+  color: #e5e7eb;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  .ant-table-tbody
+  > tr:hover
+  > td {
+  background: #172033 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+  box-shadow: inset 0 0 0 9999px #1f2937 !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ):not(.work-schedule-sticky-table)
+  .ant-table-tbody
+  > tr:hover
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #172033 !important;
+  background-color: #172033 !important;
+  box-shadow: inset 0 0 0 9999px #172033 !important;
+}
+
+/* Ant Design table hard override: keep liquid visible without cell blur. */
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ),
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ),
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :is(.ant-drawer-root, .ant-drawer)
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ) {
+  border: 1px solid rgba(125, 169, 215, 0.24) !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.86),
+      rgba(239, 246, 255, 0.58)
+    ),
+    #f8fbff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 24px rgba(15, 23, 42, 0.06) !important;
+  overflow: hidden;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-container,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-content,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-body,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-sticky-holder,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-container,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-content,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-body,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-sticky-holder,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :is(.ant-drawer-root, .ant-drawer)
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :is(.ant-drawer-root, .ant-drawer)
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-container,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :is(.ant-drawer-root, .ant-drawer)
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-content,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :is(.ant-drawer-root, .ant-drawer)
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-body,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :is(.ant-drawer-root, .ant-drawer)
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-sticky-holder {
+  border-color: rgba(125, 169, 215, 0.24) !important;
+  background: #fbfdff !important;
+  background-color: #fbfdff !important;
+  background-image: linear-gradient(145deg, #ffffff, #f3f9ff) !important;
+  contain: none !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > th,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > th.ant-table-cell {
+  border-color: rgba(125, 169, 215, 0.28) !important;
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  background-image: linear-gradient(180deg, #fbfdff, #eef7ff) !important;
+  color: #1f2937 !important;
+  font-weight: 700 !important;
+  box-shadow: inset 0 -1px 0 rgba(59, 130, 246, 0.1) !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr
+  > td,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr
+  > td.ant-table-cell,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-summary
+  > tr
+  > td {
+  border-color: rgba(125, 169, 215, 0.16) !important;
+  background: #fbfdff !important;
+  background-color: #fbfdff !important;
+  background-image: none !important;
+  color: #1f2937 !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:nth-child(even)
+  > td {
+  background: #f6fbff !important;
+  background-color: #f6fbff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > td,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > td {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-cell-row-hover {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #fbfdff !important;
+  background-color: #fbfdff !important;
+  background-image: none !important;
+  box-shadow: inset 0 0 0 9999px #fbfdff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(th.ant-table-cell-fix-left, th.ant-table-cell-fix-right) {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  background-image: linear-gradient(180deg, #fbfdff, #eef7ff) !important;
+  box-shadow: inset 0 0 0 9999px #eef7ff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left-last, .ant-table-cell-fix-left) {
+  box-shadow:
+    inset 0 0 0 9999px #fbfdff,
+    10px 0 16px -16px rgba(15, 23, 42, 0.28) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-right-first, .ant-table-cell-fix-right) {
+  box-shadow:
+    inset 0 0 0 9999px #fbfdff,
+    -10px 0 16px -16px rgba(15, 23, 42, 0.28) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right),
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > :where(td.ant-table-cell-fix-left, td.ant-table-cell-fix-right) {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  box-shadow: inset 0 0 0 9999px #eef7ff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(
+    td.ant-table-cell-fix-left.ant-table-cell-row-hover,
+    td.ant-table-cell-fix-right.ant-table-cell-row-hover
+  ) {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  box-shadow: inset 0 0 0 9999px #eef7ff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:is([class*='bg-rose'], [class*='bg-red'])
+  > td {
+  background: #fff1f2 !important;
+  background-color: #fff1f2 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:is([class*='bg-yellow'], [class*='bg-amber'])
+  > td {
+  background: #fffbeb !important;
+  background-color: #fffbeb !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:is([class*='bg-green'], [class*='bg-emerald'])
+  > td {
+  background: #ecfdf5 !important;
+  background-color: #ecfdf5 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  ),
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .ant-table-sticky-holder
+  ) {
+  border-color: rgba(96, 165, 250, 0.18) !important;
+  background: #111827 !important;
+  background-color: #111827 !important;
+  background-image: linear-gradient(145deg, #172033, #111827) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > th,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr
+  > td,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-summary
+  > tr
+  > td {
+  border-color: rgba(96, 165, 250, 0.14) !important;
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-thead
+  > tr
+  > th {
+  background: #172033 !important;
+  background-color: #172033 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr:hover
+  > td,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-tbody
+  > tr.ant-table-row-selected
+  > td {
+  background: #172033 !important;
+  background-color: #172033 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  .ant-table-cell-row-hover {
+  background: #172033 !important;
+  background-color: #172033 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper:not([class*='print']):not([class*='stamp']):not(
+    .bag-print-container
+  )
+  :where(.ant-table-cell-fix-left, .ant-table-cell-fix-right) {
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+  box-shadow: inset 0 0 0 9999px #1f2937 !important;
+}
+
+/* Work schedule needs page-level sticky headers; keep it out of the table clamp. */
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table.ant-table-wrapper {
+  overflow: visible !important;
+  contain: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table
+  :where(
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body
+  ) {
+  contain: none !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder {
+  position: sticky !important;
+  top: var(--work-schedule-sticky-top, 56px) !important;
+  z-index: 120 !important;
+  overflow: visible !important;
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  background-image: none !important;
+  box-shadow:
+    0 1px 0 rgba(125, 169, 215, 0.26),
+    0 8px 18px rgba(15, 23, 42, 0.1) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table.work-schedule-sticky-ended
+  .ant-table-sticky-holder {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder
+  .ant-table-thead
+  > tr
+  > th {
+  background: #eef7ff !important;
+  background-color: #eef7ff !important;
+  background-image: none !important;
+  color: #1f2937 !important;
+  opacity: 1 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder
+  :where(th.ant-table-cell-fix-left, th.ant-table-cell-fix-right) {
+  z-index: 124 !important;
+  background: #e5f2ff !important;
+  background-color: #e5f2ff !important;
+  background-image: none !important;
+  box-shadow: inset 0 0 0 9999px #e5f2ff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  #root
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder {
+  background: #172033 !important;
+  background-color: #172033 !important;
+  box-shadow:
+    0 1px 0 rgba(96, 165, 250, 0.18),
+    0 8px 18px rgba(2, 6, 23, 0.32) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  #root
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder
+  .ant-table-thead
+  > tr
+  > th {
+  background: #172033 !important;
+  background-color: #172033 !important;
+  background-image: none !important;
+  color: #e5e7eb !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  #root
+  .work-schedule-sticky-table
+  .ant-table-sticky-holder
+  :where(th.ant-table-cell-fix-left, th.ant-table-cell-fix-right) {
+  background: #111827 !important;
+  background-color: #111827 !important;
+  box-shadow: inset 0 0 0 9999px #111827 !important;
+}
+
+/* Mobile sidebar drawer: AntD renders this outside the desktop layout. */
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-content,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-body,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(255, 255, 255, 0.94) 58%,
+      rgba(242, 248, 255, 0.88)
+    ),
+    linear-gradient(
+      118deg,
+      rgba(37, 99, 235, 0.025),
+      transparent 58%,
+      rgba(14, 165, 233, 0.018)
+    ),
+    rgba(255, 255, 255, 0.94) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid {
+  background: transparent !important;
+  pointer-events: none;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid.ant-drawer-open {
+  pointer-events: auto;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid:not(.ant-drawer-open),
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid:not(.ant-drawer-open)
+  .ant-drawer-mask,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid:not(.ant-drawer-open)
+  .ant-drawer-content-wrapper {
+  background: transparent !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-content {
+  border-right: 1px solid rgba(203, 213, 225, 0.68) !important;
+  border-radius: 0 24px 24px 0 !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.9),
+    10px 0 28px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(118%);
+  -webkit-backdrop-filter: blur(18px) saturate(118%);
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile {
+  color: #111827 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile::before {
+  opacity: 0.78 !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.58), transparent 34%),
+    linear-gradient(
+      168deg,
+      transparent 0% 58%,
+      rgba(37, 99, 235, 0.025) 76%,
+      transparent 100%
+    ) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid.ant-drawer-open
+  .ant-drawer-mask {
+  background:
+    linear-gradient(118deg, rgba(37, 99, 235, 0.06), rgba(15, 23, 42, 0.08)),
+    rgba(219, 234, 254, 0.12) !important;
+  backdrop-filter: blur(2px) saturate(118%);
+  -webkit-backdrop-filter: blur(2px) saturate(118%);
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(a, button, [role='button'], p, span, div) {
+  color: #111827 !important;
+  text-shadow: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(svg, i) {
+  color: #1f2937 !important;
+  filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(nav a > div, nav button, a > div, button):hover {
+  background: rgba(248, 250, 252, 0.88) !important;
+  color: #000 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  .sidebar-active-item {
+  border-color: rgba(59, 130, 246, 0.18) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.96),
+      rgba(246, 250, 255, 0.86)
+    ),
+    rgba(255, 255, 255, 0.88) !important;
+  color: #000 !important;
+  font-weight: 750 !important;
+  box-shadow:
+    inset 3px 0 0 rgba(59, 130, 246, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 8px 16px rgba(15, 23, 42, 0.045) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  .sidebar-active-item
+  :where(span, p, div, svg, i) {
+  color: inherit !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(.bg-gray-100, .dark\:bg-gray-800) {
+  background: #f3f9ff !important;
+  background-color: #f3f9ff !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where([class*='via-gray-200'], [class*='border-gray']) {
+  border-color: rgba(148, 163, 184, 0.22) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  button[class*='text-red'] {
+  color: #dc2626 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-content,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-body,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile {
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8)),
+    rgba(15, 23, 42, 0.88) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(a, button, [role='button'], p, span, div) {
+  color: #e5e7eb !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(svg, i) {
+  color: #bfdbfe !important;
+}
+
+/* Unified liquid sidebar: desktop Sider and mobile Drawer share one visual skin. */
+html.liquid-ui-mode:not(.legacy-ui-mode) {
+  --sidebar-liquid-bg:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.88),
+      rgba(235, 247, 255, 0.78) 44%,
+      rgba(220, 246, 244, 0.62)
+    ),
+    linear-gradient(
+      118deg,
+      rgba(59, 130, 246, 0.12),
+      transparent 42% 64%,
+      rgba(14, 165, 233, 0.1)
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.72),
+      rgba(219, 234, 254, 0.32)
+    ),
+    rgba(239, 248, 255, 0.8);
+  --sidebar-liquid-border: rgba(147, 197, 253, 0.42);
+  --sidebar-liquid-text: #111827;
+  --sidebar-liquid-icon: #1f2937;
+  --sidebar-liquid-muted: #111827;
+  --sidebar-liquid-hover:
+    linear-gradient(
+      145deg,
+      rgba(239, 248, 255, 0.92),
+      rgba(219, 234, 254, 0.62)
+    ),
+    rgba(219, 234, 254, 0.58);
+  --sidebar-liquid-active:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.92),
+      rgba(226, 242, 255, 0.76)
+    ),
+    rgba(219, 234, 254, 0.5);
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark {
+  --sidebar-liquid-bg:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.9),
+      rgba(15, 23, 42, 0.8) 58%,
+      rgba(15, 23, 42, 0.86)
+    ),
+    rgba(15, 23, 42, 0.88);
+  --sidebar-liquid-border: rgba(96, 165, 250, 0.22);
+  --sidebar-liquid-text: #e5e7eb;
+  --sidebar-liquid-icon: #bfdbfe;
+  --sidebar-liquid-muted: #dbeafe;
+  --sidebar-liquid-hover:
+    linear-gradient(145deg, rgba(30, 64, 175, 0.34), rgba(15, 23, 42, 0.42)),
+    rgba(30, 64, 175, 0.28);
+  --sidebar-liquid-active:
+    linear-gradient(145deg, rgba(30, 64, 175, 0.48), rgba(15, 23, 42, 0.62)),
+    rgba(30, 58, 138, 0.42);
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode) body #root .app-sidebar-sider,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-content,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-body,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile {
+  border-color: var(--sidebar-liquid-border) !important;
+  background: var(--sidebar-liquid-bg) !important;
+  color: var(--sidebar-liquid-text) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.88),
+    inset -1px 0 0 rgba(59, 130, 246, 0.12),
+    10px 0 28px rgba(37, 99, 235, 0.075) !important;
+  backdrop-filter: blur(20px) saturate(128%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(128%) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark body #root .app-sidebar-sider,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-content,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .ant-drawer-body,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile {
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    8px 0 24px rgba(2, 6, 23, 0.22) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode) body #root .app-sidebar-sider::before,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile::before {
+  opacity: 0.9 !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.64), transparent 34%),
+    linear-gradient(
+      168deg,
+      transparent 0% 58%,
+      rgba(37, 99, 235, 0.055) 76%,
+      transparent 100%
+    ),
+    linear-gradient(
+      112deg,
+      transparent 0% 22%,
+      rgba(14, 165, 233, 0.05) 23% 24%,
+      transparent 25% 100%
+    ) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  :where(a, button, [role='button'], p, span, div) {
+  color: var(--sidebar-liquid-text) !important;
+  text-shadow: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  :where(svg, i) {
+  color: var(--sidebar-liquid-icon) !important;
+  filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  nav
+  :where(a > div, button):hover,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(a > div, button):hover {
+  background: var(--sidebar-liquid-hover) !important;
+  color: var(--sidebar-liquid-text) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .app-sidebar-sider
+  :where(
+    a:hover > div,
+    a > div:hover,
+    button:hover,
+    [role='button']:hover,
+    [class*='hover:bg-white']:hover,
+    [class*='hover:bg-gray']:hover
+  ),
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(
+    a:hover > div,
+    a > div:hover,
+    button:hover,
+    [role='button']:hover,
+    [class*='hover:bg-white']:hover,
+    [class*='hover:bg-gray']:hover
+  ) {
+  border-color: rgba(96, 165, 250, 0.2) !important;
+  background: var(--sidebar-liquid-hover) !important;
+  background-color: rgba(219, 234, 254, 0.58) !important;
+  background-image: linear-gradient(
+    145deg,
+    rgba(239, 248, 255, 0.92),
+    rgba(219, 234, 254, 0.62)
+  ) !important;
+  color: var(--sidebar-liquid-text) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 0 0 1px rgba(96, 165, 250, 0.16),
+    0 8px 16px rgba(37, 99, 235, 0.07) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  #root
+  .app-sidebar-sider
+  :where(
+    a:hover > div,
+    a > div:hover,
+    button:hover,
+    [role='button']:hover,
+    [class*='hover:bg-white']:hover,
+    [class*='hover:bg-gray']:hover
+  ),
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .app-sidebar-drawer.app-sidebar-drawer--liquid
+  .app-sidebar-mobile
+  :where(
+    a:hover > div,
+    a > div:hover,
+    button:hover,
+    [role='button']:hover,
+    [class*='hover:bg-white']:hover,
+    [class*='hover:bg-gray']:hover
+  ) {
+  background: var(--sidebar-liquid-hover) !important;
+  background-color: rgba(30, 64, 175, 0.28) !important;
+  background-image: linear-gradient(
+    145deg,
+    rgba(30, 64, 175, 0.34),
+    rgba(15, 23, 42, 0.42)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(96, 165, 250, 0.22) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  :where(a:hover > div, a > div:hover, button:hover, [role='button']:hover)
+  :where(span, p, div, svg, i) {
+  color: inherit !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  .sidebar-active-item {
+  border-color: rgba(59, 130, 246, 0.18) !important;
+  background: var(--sidebar-liquid-active) !important;
+  color: var(--sidebar-liquid-text) !important;
+  font-weight: 750 !important;
+  box-shadow:
+    inset 3px 0 0 rgba(59, 130, 246, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 8px 16px rgba(15, 23, 42, 0.045) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  .sidebar-active-item {
+  border-color: rgba(96, 165, 250, 0.34) !important;
+  box-shadow:
+    inset 3px 0 0 rgba(96, 165, 250, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 24px rgba(37, 99, 235, 0.18) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  .sidebar-active-item
+  :where(span, p, div, svg, i) {
+  color: inherit !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  :where(p[class*='uppercase'], p[class*='tracking-widest']) {
+  color: var(--sidebar-liquid-muted) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  button[class*='text-red'] {
+  color: #dc2626 !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(
+    #root .app-sidebar-sider,
+    .app-sidebar-drawer--liquid .app-sidebar-mobile
+  )
+  button[class*='text-red'] {
+  color: #f87171 !important;
+}
+
+/* Absolute final Classic mode reset. This must stay below every liquid rule. */
+html.legacy-ui-mode body,
+html.legacy-ui-mode #root,
+html.legacy-ui-mode .glass-app-shell,
+html.legacy-ui-mode .glass-main,
+html.legacy-ui-mode :where(.ant-layout, .ant-layout-content) {
+  background: #f9fafb !important;
+  background-color: #f9fafb !important;
+  background-image: none !important;
+}
+
+html.legacy-ui-mode.dark body,
+html.legacy-ui-mode.dark #root,
+html.legacy-ui-mode.dark .glass-app-shell,
+html.legacy-ui-mode.dark .glass-main,
+html.legacy-ui-mode.dark :where(.ant-layout, .ant-layout-content) {
+  background: #111827 !important;
+  background-color: #111827 !important;
+  background-image: none !important;
+}
+
+html.legacy-ui-mode .glass-app-shell::before,
+html.legacy-ui-mode
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-button,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .liquid-glass-button,
+    .app-sidebar-sider,
+    .app-sidebar-mobile
+  )::before,
+html.legacy-ui-mode
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-button,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .liquid-glass-button,
+    .app-sidebar-sider,
+    .app-sidebar-mobile
+  )::after {
+  content: none !important;
+  display: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .app-sidebar-sider.ant-layout-sider,
+    .app-sidebar-mobile,
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner,
+    .ant-dropdown-menu,
+    .ant-select-dropdown,
+    .ant-picker-panel-container,
+    .ant-table-wrapper .ant-table
+  ) {
+  border-color: #e5e7eb !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .glass-icon-tile,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    .liquid-glass-icon,
+    .app-sidebar-sider.ant-layout-sider,
+    .app-sidebar-mobile,
+    .ant-card,
+    .ant-modal-content,
+    .ant-drawer-content,
+    .ant-popover-inner,
+    .ant-dropdown-menu,
+    .ant-select-dropdown,
+    .ant-picker-panel-container,
+    .ant-table-wrapper .ant-table
+  ) {
+  border-color: #374151 !important;
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(div, section, article, aside, li, button)
+  :where([class*='rounded'])
+  :where(
+    [class*='bg-white'],
+    [class*='bg-gray-50'],
+    [class*='bg-gray-100'],
+    [class*='bg-slate-50'],
+    [class*='bg-slate-100']
+  ):not([class*='print']):not([class*='stamp-item']):not(.bag-print-container) {
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode body #root header.liquid-glass-panel,
+html.legacy-ui-mode body #root .app-sidebar-sider.ant-layout-sider,
+html.legacy-ui-mode body .app-sidebar-drawer .app-sidebar-mobile,
+html.legacy-ui-mode body .app-sidebar-drawer .ant-drawer-content {
+  border-radius: 0 !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark body #root header.liquid-glass-panel,
+html.legacy-ui-mode.dark body #root .app-sidebar-sider.ant-layout-sider,
+html.legacy-ui-mode.dark body .app-sidebar-drawer .app-sidebar-mobile,
+html.legacy-ui-mode.dark body .app-sidebar-drawer .ant-drawer-content {
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+}
+
+html.legacy-ui-mode body .app-sidebar-drawer .ant-drawer-mask {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ) {
+  border-color: #e5e7eb !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #4b5563 !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root)
+  :where(.ant-btn, .header-action-btn):not(.ant-modal-close):not(
+    .ant-drawer-close
+  ) {
+  border-color: #374151 !important;
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+  color: #d1d5db !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(
+    .ant-card-head,
+    .ant-card-body,
+    .ant-modal-header,
+    .ant-modal-body,
+    .ant-modal-footer,
+    .ant-drawer-header,
+    .ant-drawer-body,
+    .ant-drawer-footer
+  ) {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-thead
+  > tr
+  > th {
+  background: #f3f4f6 !important;
+  background-image: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper
+  :where(.ant-table-container, .ant-table-content, .ant-table-body),
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr
+  > td,
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-summary
+  > tr
+  > td,
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(.product-sticky-table, .smooth-sticky-table)
+  .ant-table-sticky-holder {
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:hover
+  > td {
+  background: #fafafa !important;
+  background-image: none !important;
+}
+
+html.legacy-ui-mode body #root .product-sticky-table .product-day-alt {
+  background: rgba(79, 70, 229, 0.07) !important;
+}
+
+html.legacy-ui-mode body #root .product-sticky-table .product-day-current {
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.24) 0%,
+    rgba(59, 130, 246, 0.14) 100%
+  ) !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-rose'], [class*='bg-red'])
+  > td {
+  background: #fff1f2 !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-yellow'], [class*='bg-amber'])
+  > td {
+  background: #fef9c3 !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-green'], [class*='bg-emerald'])
+  > td {
+  background: #dcfce7 !important;
+}
+
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-blue'], [class*='bg-cyan'])
+  > td,
+html.legacy-ui-mode
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr.feedback-highlight
+  > td {
+  background: #dbeafe !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-thead
+  > tr
+  > th {
+  background: #111827 !important;
+  background-image: none !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-wrapper
+  :where(.ant-table-container, .ant-table-content, .ant-table-body),
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr
+  > td,
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-summary
+  > tr
+  > td,
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  :where(.product-sticky-table, .smooth-sticky-table)
+  .ant-table-sticky-holder {
+  background: #1f2937 !important;
+  background-color: #1f2937 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:hover
+  > td {
+  background: #111827 !important;
+  background-image: none !important;
+}
+
+html.legacy-ui-mode.dark body #root .product-sticky-table .product-day-alt {
+  background: rgba(79, 70, 229, 0.2) !important;
+}
+
+html.legacy-ui-mode.dark body #root .product-sticky-table .product-day-current {
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.34) 0%,
+    rgba(59, 130, 246, 0.24) 100%
+  ) !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-rose'], [class*='bg-red'])
+  > td {
+  background: rgba(127, 29, 29, 0.34) !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-yellow'], [class*='bg-amber'])
+  > td {
+  background: rgba(113, 63, 18, 0.34) !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-green'], [class*='bg-emerald'])
+  > td {
+  background: rgba(20, 83, 45, 0.32) !important;
+}
+
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr:is([class*='bg-blue'], [class*='bg-cyan'])
+  > td,
+html.legacy-ui-mode.dark
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .ant-table-tbody
+  > tr.feedback-highlight
+  > td {
+  background: rgba(30, 64, 175, 0.36) !important;
+}
+
+html.legacy-ui-mode body #root .sidebar-active-item {
+  border: 1px solid #bfdbfe !important;
+  background: #eff6ff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #1d4ed8 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.legacy-ui-mode.dark body #root .sidebar-active-item {
+  border-color: rgba(59, 130, 246, 0.36) !important;
+  background: rgba(30, 58, 138, 0.24) !important;
+  color: #93c5fd !important;
+}
+
+html body #root .product-total-table .product-total-header-title {
+  display: flex;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  line-height: 1.25;
+}
+
+html body #root .product-total-table .product-total-header-title.is-left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+html body #root .product-total-table .product-total-header-title__line {
+  display: block;
 }

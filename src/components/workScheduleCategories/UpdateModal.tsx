@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Form, FormProps, Input, message, Modal } from 'antd';
+import { Form, FormProps, Input, message, Modal } from 'antd';
 import { useState } from 'react';
 
 import { updateWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
 
+import AppButton from '@components/common/AppButton';
 import { FaPen } from 'react-icons/fa6';
 
 import { SizeType } from 'antd/es/config-provider/SizeContext';
@@ -68,15 +69,14 @@ export const UpdateWorkScheduleCategory: React.FC<
 
   return (
     <>
-      <Button
+      <AppButton
+        tone="primary"
         size={size}
-        color="primary"
-        variant="solid"
         icon={<FaPen />}
         onClick={showModal}
       >
         Sửa
-      </Button>
+      </AppButton>
       <Modal
         title="Cập nhật mục lịch làm việc"
         open={open}
@@ -104,14 +104,9 @@ export const UpdateWorkScheduleCategory: React.FC<
             <Input placeholder="Tên danh mục lịch làm việc" />
           </Form.Item>
           <div className="text-right">
-            <Button
-              color="primary"
-              variant="solid"
-              htmlType="submit"
-              loading={isPending}
-            >
+            <AppButton tone="primary" htmlType="submit" loading={isPending}>
               Cập nhật
-            </Button>
+            </AppButton>
           </div>
         </Form>
       </Modal>

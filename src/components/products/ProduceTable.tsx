@@ -16,6 +16,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ProductType } from '@/types/productType';
 import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { calculateProduceProduct } from '@utils/calculateProduceProduct';
 import { RowTableActions } from './RowTableActions';
@@ -209,6 +210,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
             {/* Pagination */}
             <div className="flex justify-center pt-2">
               <Pagination
+                {...customPaginationProps}
                 size="small"
                 current={params.page}
                 pageSize={params.limit}
@@ -331,6 +333,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
     ...dateColumns,
     {
       title: <div>Thao tác</div>,
+      width: 100,
       align: 'center',
       render: (_, record) => {
         return <RowTableActions productId={record.id} />;
@@ -340,7 +343,8 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
 
   const tableProps: TableProps<ProduceTableType> = {
     ...(customTableProps as unknown as TableProps<ProduceTableType>),
-    className: 'product-sticky-table',
+    tableLayout: 'fixed',
+    className: 'product-sticky-table admin-page-sticky-table',
     rowKey: (record) => ['produce', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,

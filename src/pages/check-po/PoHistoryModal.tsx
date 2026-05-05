@@ -3,6 +3,7 @@ import {
   PurchaseOrdersHistoryResponse,
   UpdatePoRequest
 } from '@/types/purchaseOrdersType';
+import AppButton from '@components/common/AppButton';
 import { customFormProps } from '@components/custom/FormProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { productService } from '@services/ProductService';
@@ -20,7 +21,6 @@ import {
   useQueryClient
 } from '@tanstack/react-query';
 import {
-  Button,
   DatePicker,
   Drawer,
   Empty,
@@ -30,17 +30,16 @@ import {
   InputNumber,
   message,
   Popconfirm,
+  Select,
   Spin,
   Table,
   TableColumnsType,
   TableProps,
-  Tabs,
   Tag
 } from 'antd';
-import type { TabsProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 import { FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa6';
 import { IconHistory } from '@components/icons';
@@ -78,6 +77,17 @@ interface FileTypeGroup {
   productCount: number;
   totalQuantity: number;
   batches: BatchGroup[];
+  exportPurposeGroups: ExportPurposeGroup[];
+}
+
+interface ExportPurposeGroup {
+  key: string;
+  label: string;
+  color: string;
+  batchCount: number;
+  productCount: number;
+  totalQuantity: number;
+  batches: BatchGroup[];
 }
 
 interface ImportDateGroup {
@@ -89,6 +99,71 @@ interface ImportDateGroup {
   batches: BatchGroup[];
   fileTypeGroups: FileTypeGroup[];
 }
+
+// ── Constants ────────────────────────────────────────────────
+const FILE_TYPE_CONFIG: Record<string, { color: string; tagColor: string }> = {
+  FAPV: { color: 'blue', tagColor: 'blue' },
+  FASV: { color: 'green', tagColor: 'green' },
+  FAVV: { color: 'purple', tagColor: 'purple' },
+  Khác: { color: 'default', tagColor: 'default' }
+};
+
+const FILE_TYPE_SECTION_STYLE: Record<
+  string,
+  { section: string; header: string }
+> = {
+  FAPV: {
+    section:
+      'border-blue-200 shadow-[inset_4px_0_0_#3b82f6] dark:border-blue-900/70',
+    header:
+      'border-blue-100 bg-blue-50/80 dark:border-blue-900/60 dark:bg-blue-950/30'
+  },
+  FASV: {
+    section:
+      'border-green-200 shadow-[inset_4px_0_0_#22c55e] dark:border-green-900/70',
+    header:
+      'border-green-100 bg-green-50/80 dark:border-green-900/60 dark:bg-green-950/30'
+  },
+  FAVV: {
+    section:
+      'border-purple-200 shadow-[inset_4px_0_0_#a855f7] dark:border-purple-900/70',
+    header:
+      'border-purple-100 bg-purple-50/80 dark:border-purple-900/60 dark:bg-purple-950/30'
+  },
+  Khác: {
+    section:
+      'border-gray-200 shadow-[inset_4px_0_0_#94a3b8] dark:border-gray-700',
+    header:
+      'border-gray-100 bg-gray-50/80 dark:border-gray-700 dark:bg-gray-800/60'
+  }
+};
+
+const FILE_TYPES = ['FAPV', 'FASV', 'FAVV'];
+const getFileType = (fileName: string): string => {
+  const upper = (fileName || '').toUpperCase();
+  if (upper.includes('V002V')) return 'FAVV';
+  return FILE_TYPES.find((t) => upper.startsWith(t)) || 'Khác';
+};
+
+const EXPORT_PURPOSE_CONFIG: Record<string, { label: string; color: string }> =
+  {
+    sale: { label: 'Xuất bán', color: 'orange' },
+    export: { label: 'Xuất khẩu', color: 'geekblue' }
+  };
+
+const EXPORT_PURPOSE_ORDER = ['export', 'sale'];
+const getExportPurpose = (fileName: string): string => {
+  const upper = (fileName || '').toUpperCase();
+  return /(^|[^A-Z0-9])XB([^A-Z0-9]|$)/.test(upper) || upper.includes('V002V')
+    ? 'sale'
+    : 'export';
+};
+
+const getImportDateKey = (date?: string | null) =>
+  date && dayjs(date).isValid() ? dayjs(date).format('YYYY-MM-DD') : 'unknown';
+
+const formatImportDate = (date?: string | null) =>
+  date && dayjs(date).isValid() ? dayjs(date).format('DD/MM/YYYY') : '—';
 
 // ── Component ────────────────────────────────────────────────
 export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
@@ -103,6 +178,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
   const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null);
+  const [selectedImportDateKey, setSelectedImportDateKey] = useState<string>();
 
   const queryClient = useQueryClient();
   const invalidatePoQueries = () => {
@@ -292,12 +368,6 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       map.get(key)!.push(item);
     }
 
-    const FILE_TYPES = ['FAPV', 'FASV', 'FAVV'];
-    const getFileType = (fileName: string): string => {
-      const upper = (fileName || '').toUpperCase();
-      return FILE_TYPES.find((t) => upper.startsWith(t)) || 'Khác';
-    };
-
     return (
       [...map.entries()]
         .map(([batchId, records]) => {
@@ -343,22 +413,16 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     );
   }, [filteredHistoryData]);
 
-  const FILE_TYPE_CONFIG: Record<string, { color: string; tagColor: string }> =
-    {
-      FAPV: { color: 'blue', tagColor: 'blue' },
-      FASV: { color: 'green', tagColor: 'green' },
-      FAVV: { color: 'purple', tagColor: 'purple' },
-      Khác: { color: 'default', tagColor: 'default' }
-    };
+  const totalExportQuantity = useMemo(
+    () => batchGroups.reduce((sum, batch) => sum + batch.totalQuantity, 0),
+    [batchGroups]
+  );
 
   const importDateGroups: ImportDateGroup[] = useMemo(() => {
     const map = new Map<string, BatchGroup[]>();
 
     for (const batch of batchGroups) {
-      const key =
-        batch.createdAt && dayjs(batch.createdAt).isValid()
-          ? dayjs(batch.createdAt).format('YYYY-MM-DD')
-          : 'unknown';
+      const key = getImportDateKey(batch.date);
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(batch);
     }
@@ -374,14 +438,48 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
         }
         const FILE_TYPE_ORDER = ['FAPV', 'FASV', 'FAVV', 'Khác'];
         const fileTypeGroups: FileTypeGroup[] = [...ftMap.entries()]
-          .map(([ft, batches]) => ({
-            fileType: ft,
-            color: FILE_TYPE_CONFIG[ft]?.color || 'default',
-            batchCount: batches.length,
-            productCount: batches.reduce((s, b) => s + b.productCount, 0),
-            totalQuantity: batches.reduce((s, b) => s + b.totalQuantity, 0),
-            batches
-          }))
+          .map(([ft, batches]) => {
+            const purposeMap = new Map<string, BatchGroup[]>();
+            for (const batch of batches) {
+              const purpose = getExportPurpose(batch.fileName);
+              if (!purposeMap.has(purpose)) purposeMap.set(purpose, []);
+              purposeMap.get(purpose)!.push(batch);
+            }
+
+            const exportPurposeGroups: ExportPurposeGroup[] = [
+              ...purposeMap.entries()
+            ]
+              .map(([purpose, purposeBatches]) => ({
+                key: purpose,
+                label: EXPORT_PURPOSE_CONFIG[purpose]?.label || purpose,
+                color: EXPORT_PURPOSE_CONFIG[purpose]?.color || 'default',
+                batchCount: purposeBatches.length,
+                productCount: purposeBatches.reduce(
+                  (s, b) => s + b.productCount,
+                  0
+                ),
+                totalQuantity: purposeBatches.reduce(
+                  (s, b) => s + b.totalQuantity,
+                  0
+                ),
+                batches: purposeBatches
+              }))
+              .sort(
+                (a, b) =>
+                  EXPORT_PURPOSE_ORDER.indexOf(a.key) -
+                  EXPORT_PURPOSE_ORDER.indexOf(b.key)
+              );
+
+            return {
+              fileType: ft,
+              color: FILE_TYPE_CONFIG[ft]?.color || 'default',
+              batchCount: batches.length,
+              productCount: batches.reduce((s, b) => s + b.productCount, 0),
+              totalQuantity: batches.reduce((s, b) => s + b.totalQuantity, 0),
+              batches,
+              exportPurposeGroups
+            };
+          })
           .sort(
             (a, b) =>
               FILE_TYPE_ORDER.indexOf(a.fileType) -
@@ -392,7 +490,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
           key,
           label:
             key === 'unknown'
-              ? 'Không rõ ngày nhập'
+              ? 'Không rõ ngày xuất hàng'
               : dayjs(key).format('DD/MM/YYYY'),
           batchCount: groupedBatches.length,
           productCount: groupedBatches.reduce(
@@ -414,6 +512,27 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       });
   }, [batchGroups]);
 
+  useEffect(() => {
+    if (importDateGroups.length === 0) {
+      setSelectedImportDateKey(undefined);
+      return;
+    }
+
+    const hasSelectedDate = importDateGroups.some(
+      (group) => group.key === selectedImportDateKey
+    );
+    if (!hasSelectedDate) {
+      setSelectedImportDateKey(importDateGroups[0].key);
+    }
+  }, [importDateGroups, selectedImportDateKey]);
+
+  const selectedImportDateGroup = useMemo(
+    () =>
+      importDateGroups.find((group) => group.key === selectedImportDateKey) ||
+      importDateGroups[0],
+    [importDateGroups, selectedImportDateKey]
+  );
+
   const renderMobileBatchGroup = (batches: BatchGroup[]) => (
     <div className="flex flex-col gap-3">
       {batches.map((batch, index) => {
@@ -431,7 +550,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                   {index + 1}
                 </span>
                 <div className="text-sm font-semibold text-gray-800 dark:text-white">
-                  {batch.date}
+                  {formatImportDate(batch.date)}
                 </div>
               </div>
               <div className="text-right">
@@ -486,7 +605,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
             </div>
 
             <div className="mt-2 flex items-center justify-between">
-              <Button
+              <AppButton
                 type="text"
                 size="small"
                 className="text-xs !text-blue-500"
@@ -496,7 +615,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                 }
               >
                 {isExpanded ? 'Thu gọn' : 'Xem chi tiết SP'}
-              </Button>
+              </AppButton>
               {hasBatchId ? (
                 <Popconfirm
                   title="Xóa toàn bộ file?"
@@ -511,7 +630,12 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                     loading: isDeletingBatch
                   }}
                 >
-                  <Button size="small" type="text" danger icon={<FaTrash />} />
+                  <AppButton
+                    size="small"
+                    type="text"
+                    danger
+                    icon={<FaTrash />}
+                  />
                 </Popconfirm>
               ) : (
                 batch.records.length === 1 && (
@@ -525,7 +649,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                     cancelText="Hủy"
                     okButtonProps={{ danger: true }}
                   >
-                    <Button
+                    <AppButton
                       size="small"
                       type="text"
                       danger
@@ -558,14 +682,14 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                             onChange={(v) => setEditValue(v ?? 0)}
                             className="!w-[70px] text-xs"
                           />
-                          <Button
+                          <AppButton
                             size="small"
                             type="text"
                             className="!p-1 !text-green-500"
                             icon={<FaCheck className="text-[10px]" />}
                             onClick={() => handleInlineSave(r)}
                           />
-                          <Button
+                          <AppButton
                             size="small"
                             type="text"
                             className="!p-1 !text-gray-400"
@@ -609,20 +733,20 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     {
       title: 'STT',
       align: 'center',
-      width: 55,
+      width: '5%',
       render: (_, __, index) => (
         <span className="font-mono text-xs text-gray-400">{index + 1}</span>
       )
     },
     {
-      title: 'Ngày nhập',
+      title: 'Ngày xuất hàng',
       key: 'date',
       dataIndex: 'date',
       align: 'center',
-      width: 120,
+      width: '11%',
       render: (value) => (
         <Tag color="blue" bordered={false}>
-          {value}
+          {formatImportDate(value)}
         </Tag>
       )
     },
@@ -631,28 +755,10 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       key: 'fileName',
       dataIndex: 'fileName',
       ellipsis: true,
-      width: 160,
+      width: '16%',
       render: (value: string) =>
         value ? (
-          <span className="text-xs text-gray-600 dark:text-gray-300">
-            {value}
-          </span>
-        ) : (
-          <span className="text-xs text-gray-300">—</span>
-        )
-    },
-    {
-      title: 'Ghi chú',
-      key: 'note',
-      dataIndex: 'note',
-      ellipsis: true,
-      width: 190,
-      render: (value: string) =>
-        value ? (
-          <span
-            title={value}
-            className="block truncate text-xs text-amber-700 dark:text-amber-300"
-          >
+          <span className="block truncate text-xs text-gray-600 dark:text-gray-300">
             {value}
           </span>
         ) : (
@@ -664,7 +770,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       key: 'productCount',
       dataIndex: 'productCount',
       align: 'center',
-      width: 85,
+      width: '8%',
       render: (value) => (
         <Tag color="green" bordered={false}>
           {value} SP
@@ -676,7 +782,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       key: 'totalQuantity',
       dataIndex: 'totalQuantity',
       align: 'center',
-      width: 110,
+      width: '10%',
       render: (value) => (
         <span className="font-semibold text-blue-600">
           {Number(value).toLocaleString('vi-VN')}
@@ -688,7 +794,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       key: 'createdAt',
       dataIndex: 'createdAt',
       align: 'center',
-      width: 130,
+      width: '12%',
       render: (text) =>
         text ? (
           <div className="text-center leading-tight">
@@ -706,9 +812,10 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       key: 'employee',
       dataIndex: 'employeeName',
       align: 'center',
-      width: 150,
+      ellipsis: true,
+      width: '14%',
       render: (value) => (
-        <span className="text-sm text-gray-600 dark:text-gray-300">
+        <span className="block truncate text-sm text-gray-600 dark:text-gray-300">
           {value}
         </span>
       )
@@ -717,7 +824,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       title: '',
       key: 'action',
       align: 'center',
-      width: 90,
+      width: '6%',
       render: (_, record) => {
         const hasBatchId =
           record.batchId && !record.batchId.startsWith('no-batch-');
@@ -734,7 +841,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
               cancelText="Hủy"
               okButtonProps={{ danger: true }}
             >
-              <Button
+              <AppButton
                 size="small"
                 type="text"
                 danger
@@ -764,7 +871,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
             cancelText="Hủy"
             okButtonProps={{ danger: true, loading: isDeletingBatch }}
           >
-            <Button
+            <AppButton
               size="small"
               type="text"
               danger
@@ -774,6 +881,24 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
           </Popconfirm>
         );
       }
+    },
+    {
+      title: 'Ghi chú',
+      key: 'note',
+      dataIndex: 'note',
+      ellipsis: true,
+      width: '18%',
+      render: (value: string) =>
+        value ? (
+          <span
+            title={value}
+            className="block truncate text-xs text-amber-700 dark:text-amber-300"
+          >
+            {value}
+          </span>
+        ) : (
+          <span className="text-xs text-gray-300">—</span>
+        )
     }
   ];
 
@@ -784,6 +909,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     rowKey: 'batchId',
     dataSource: batchGroups,
     loading: isLoadingHistory,
+    tableLayout: 'fixed',
     pagination: false,
     onRow: () => ({ style: { cursor: 'pointer' } }),
     expandable: {
@@ -799,34 +925,33 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
               </span>
             </div>
           )}
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/80 text-xs tracking-wider text-gray-500 uppercase dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-400">
-                <th className="px-4 py-2 text-left" style={{ width: 50 }}>
-                  #
-                </th>
-                <th className="px-4 py-2 text-left">Sản phẩm</th>
-                <th className="px-4 py-2 text-right" style={{ width: 140 }}>
-                  Số lượng
-                </th>
-                <th
-                  className="px-4 py-2 text-center"
-                  style={{ width: 50 }}
-                ></th>
-              </tr>
-            </thead>
-            <tbody>
+          <div className="p-3">
+            <div className="mb-2 flex items-center justify-between text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">
+              <span>Sản phẩm</span>
+              <span>Số lượng</span>
+            </div>
+            <div
+              className="grid auto-cols-fr grid-flow-col gap-2 overflow-x-auto"
+              style={{
+                gridTemplateRows: `repeat(${Math.max(
+                  1,
+                  Math.ceil(record.records.length / 4)
+                )}, minmax(0, auto))`
+              }}
+            >
               {record.records.map((r, i) => (
-                <tr
+                <div
                   key={r.id}
-                  className="border-b border-gray-50 transition-colors last:border-0 hover:bg-blue-50/30 dark:border-gray-700/50 dark:hover:bg-blue-900/10"
+                  className="flex min-h-12 items-center gap-3 rounded-lg border border-gray-100 bg-white px-3 py-2 transition-colors hover:border-blue-100 hover:bg-blue-50/30 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-900/50 dark:hover:bg-blue-950/20"
                 >
-                  <td className="px-4 py-2 text-xs text-gray-400">{i + 1}</td>
-                  <td className="px-4 py-2 font-medium text-gray-700 dark:text-gray-200">
+                  <span className="w-6 shrink-0 font-mono text-xs text-gray-400">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1 truncate font-medium text-gray-700 dark:text-gray-200">
                     {r.product?.name || '—'}
-                  </td>
-                  <td
-                    className="px-4 py-2 text-right"
+                  </div>
+                  <div
+                    className="shrink-0 text-right"
                     onDoubleClick={(e) => {
                       e.stopPropagation();
                       setEditingId(r.id);
@@ -851,7 +976,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                           className="!w-[90px]"
                           onClick={(e) => e.stopPropagation()}
                         />
-                        <Button
+                        <AppButton
                           size="small"
                           type="text"
                           className="!text-green-500"
@@ -861,7 +986,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                             handleInlineSave(r);
                           }}
                         />
-                        <Button
+                        <AppButton
                           size="small"
                           type="text"
                           className="!text-gray-400"
@@ -880,134 +1005,127 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                         {Number(r.quantity).toLocaleString('vi-VN')}
                       </span>
                     )}
-                  </td>
-                  <td className="px-4 py-2 text-center">
-                    <Popconfirm
-                      title={`Xóa "${r.product?.name}"?`}
-                      onConfirm={(e) => {
-                        e?.stopPropagation();
-                        deleteRecord(r.id);
-                      }}
-                      onCancel={(e) => e?.stopPropagation()}
-                      okText="Xóa"
-                      cancelText="Hủy"
-                      okButtonProps={{ danger: true }}
-                    >
-                      <Button
-                        size="small"
-                        type="text"
-                        danger
-                        icon={<FaTrash className="text-[11px]" />}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </Popconfirm>
-                  </td>
-                </tr>
+                  </div>
+                  <Popconfirm
+                    title={`Xóa "${r.product?.name}"?`}
+                    onConfirm={(e) => {
+                      e?.stopPropagation();
+                      deleteRecord(r.id);
+                    }}
+                    onCancel={(e) => e?.stopPropagation()}
+                    okText="Xóa"
+                    cancelText="Hủy"
+                    okButtonProps={{ danger: true }}
+                  >
+                    <AppButton
+                      size="small"
+                      type="text"
+                      danger
+                      icon={<FaTrash className="text-[11px]" />}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Popconfirm>
+                </div>
               ))}
-              <tr className="bg-gray-50/50 dark:bg-gray-800/50">
-                <td className="px-4 py-2" />
-                <td className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                  Tổng cộng
-                </td>
-                <td className="px-4 py-2 text-right font-bold text-blue-700 tabular-nums">
-                  {Number(record.totalQuantity).toLocaleString('vi-VN')}
-                </td>
-                <td />
-              </tr>
-            </tbody>
-          </table>
+            </div>
+            <div className="mt-2 flex items-center justify-end gap-3 rounded-lg bg-gray-50/70 px-3 py-2 text-sm whitespace-nowrap dark:bg-gray-800/50">
+              <span className="text-xs font-semibold text-gray-500 uppercase">
+                Tổng cộng
+              </span>
+              <span className="min-w-[96px] text-right font-bold text-blue-700 tabular-nums">
+                {Number(record.totalQuantity).toLocaleString('vi-VN')}
+              </span>
+            </div>
+          </div>
         </div>
       ),
       rowExpandable: (record) => record.records.length > 0
     }
   };
 
-  // ── File-type tabs (FAPV / FASV / FAVV / Khác) ──────────────
-  const renderFileTypeTab = (ftGroup: FileTypeGroup) => (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2 dark:border-gray-700 dark:bg-gray-800/40">
-        <Tag
-          color={FILE_TYPE_CONFIG[ftGroup.fileType]?.tagColor || 'default'}
-          className="!m-0 font-semibold"
-        >
-          {ftGroup.fileType}
-        </Tag>
-        <Tag color="cyan" className="!m-0">
-          {ftGroup.batchCount} file
-        </Tag>
-        <Tag color="green" className="!m-0">
-          {ftGroup.productCount} SP
-        </Tag>
-        <Tag color="blue" className="!m-0">
-          Tổng {ftGroup.totalQuantity.toLocaleString('vi-VN')}
-        </Tag>
-      </div>
-      {isMobile ? (
-        renderMobileBatchGroup(ftGroup.batches)
+  const renderExportPurposeContent = (
+    purposeGroup: ExportPurposeGroup,
+    showHeader = true
+  ) => (
+    <div className="space-y-2">
+      {showHeader && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Tag color={purposeGroup.color} className="!m-0 font-semibold">
+            {purposeGroup.label}
+          </Tag>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {purposeGroup.batchCount} file · {purposeGroup.productCount} SP
+          </span>
+        </div>
+      )}
+      {purposeGroup.batches.length === 0 ? (
+        <Empty description="Không có lịch sử" />
+      ) : isMobile ? (
+        renderMobileBatchGroup(purposeGroup.batches)
       ) : (
-        <Table<BatchGroup> {...batchTableProps} dataSource={ftGroup.batches} />
+        <Table<BatchGroup>
+          {...batchTableProps}
+          dataSource={purposeGroup.batches}
+        />
       )}
     </div>
   );
 
-  const importDateTabItems: TabsProps['items'] = importDateGroups.map(
-    (group) => ({
-      key: group.key,
-      label: (
-        <span className="flex items-center gap-2">
-          <span>{group.label}</span>
-          <Tag color="cyan" className="!m-0">
-            {group.batchCount}
+  const renderFileTypeSection = (ftGroup: FileTypeGroup) => {
+    const style =
+      FILE_TYPE_SECTION_STYLE[ftGroup.fileType] || FILE_TYPE_SECTION_STYLE.Khác;
+
+    return (
+      <section
+        className={`overflow-hidden rounded-lg border bg-white dark:bg-gray-900 ${style.section}`}
+      >
+        <div
+          className={`flex flex-wrap items-center gap-2 border-b px-3 py-2 ${style.header}`}
+        >
+          <Tag
+            color={FILE_TYPE_CONFIG[ftGroup.fileType]?.tagColor || 'default'}
+            className="!m-0 font-semibold"
+          >
+            {ftGroup.fileType}
           </Tag>
-        </span>
-      ),
-      children: (
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2 dark:border-blue-900 dark:bg-blue-950/30">
-            <Tag color="cyan" className="!m-0">
-              {group.batchCount} file
-            </Tag>
-            <Tag color="green" className="!m-0">
-              {group.productCount} SP
-            </Tag>
-            <Tag color="blue" className="!m-0">
-              Tổng {group.totalQuantity.toLocaleString('vi-VN')}
-            </Tag>
-          </div>
-          {group.fileTypeGroups.length <= 1 ? (
-            // Chỉ có 1 loại file → không cần Tabs con
-            group.fileTypeGroups.map((ftGroup) => (
-              <div key={ftGroup.fileType}>{renderFileTypeTab(ftGroup)}</div>
-            ))
-          ) : (
-            // Nhiều loại file → hiển thị Tabs con FAPV / FASV / FAVV
-            <Tabs
-              type="line"
-              size="small"
-              className="po-history-filetype-tabs"
-              items={group.fileTypeGroups.map((ftGroup) => ({
-                key: ftGroup.fileType,
-                label: (
-                  <span className="flex items-center gap-1.5">
-                    <span className="font-semibold">{ftGroup.fileType}</span>
-                    <Tag
-                      color={
-                        FILE_TYPE_CONFIG[ftGroup.fileType]?.tagColor ||
-                        'default'
-                      }
-                      className="!m-0 !text-[11px]"
-                    >
-                      {ftGroup.batchCount}
-                    </Tag>
-                  </span>
-                ),
-                children: renderFileTypeTab(ftGroup)
-              }))}
-            />
-          )}
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {ftGroup.batchCount} file · {ftGroup.productCount} SP · Tổng{' '}
+            {ftGroup.totalQuantity.toLocaleString('vi-VN')}
+          </span>
         </div>
-      )
-    })
+        <div className="space-y-4 p-3">
+          {ftGroup.exportPurposeGroups.map((purposeGroup) => (
+            <div key={purposeGroup.key}>
+              {renderExportPurposeContent(purposeGroup)}
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  };
+
+  const renderImportDateSection = (group: ImportDateGroup) => (
+    <section className="overflow-hidden rounded-lg border border-blue-100 bg-white shadow-sm dark:border-blue-900/60 dark:bg-gray-900">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-blue-100 bg-blue-50/90 px-3 py-2 backdrop-blur dark:border-blue-900/60 dark:bg-blue-950/60">
+        <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+          Ngày xuất hàng {group.label}
+        </span>
+        <Tag color="cyan" className="!m-0">
+          {group.batchCount} file
+        </Tag>
+        <Tag color="green" className="!m-0">
+          {group.productCount} SP
+        </Tag>
+        <Tag color="blue" className="!m-0">
+          Tổng {group.totalQuantity.toLocaleString('vi-VN')}
+        </Tag>
+      </div>
+      <div className="space-y-4 p-3">
+        {group.fileTypeGroups.map((ftGroup) => (
+          <div key={ftGroup.fileType}>{renderFileTypeSection(ftGroup)}</div>
+        ))}
+      </div>
+    </section>
   );
 
   // ── Form props ─────────────────────────────────────────────
@@ -1033,6 +1151,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     form.resetFields();
     setDate(undefined);
     setSearchText('');
+    setSelectedImportDateKey(undefined);
     onClose();
   };
 
@@ -1068,31 +1187,50 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     >
       <div className="flex h-full flex-col overflow-hidden">
         {/* ── Sticky Filter Bar ──────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 bg-white p-4 sm:px-6 sm:py-3 dark:border-gray-700 dark:bg-gray-900">
-          <DatePicker
-            picker="month"
-            value={month}
-            size={isMobile ? 'small' : 'middle'}
-            className="!w-full !rounded-lg sm:!w-auto"
-            placeholder="Chọn tháng"
-            onChange={(d) =>
-              d ? (setMonth(d), setDate(undefined)) : setMonth(dayjs())
-            }
-          />
-          <Input
-            placeholder="Tìm sản phẩm..."
-            allowClear
-            suffix={<SearchOutlined />}
-            size={isMobile ? 'small' : 'middle'}
-            className="!w-full !rounded-lg sm:!w-[300px]"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 bg-white p-4 sm:px-6 sm:py-3 dark:border-gray-700 dark:bg-gray-900">
+          <div className="flex w-full flex-wrap items-center gap-3 lg:w-auto">
+            <DatePicker
+              picker="month"
+              value={month}
+              size={isMobile ? 'small' : 'middle'}
+              className="!h-10 !w-full !rounded-lg sm:!w-[140px]"
+              placeholder="Chọn tháng"
+              onChange={(d) => {
+                setMonth(d || dayjs());
+                setDate(undefined);
+                setSelectedImportDateKey(undefined);
+              }}
+            />
+            <Select
+              value={selectedImportDateKey}
+              disabled={importDateGroups.length === 0}
+              placeholder="Chọn ngày xuất hàng"
+              size={isMobile ? 'small' : 'middle'}
+              className="!h-10 !w-full sm:!w-[230px]"
+              onChange={setSelectedImportDateKey}
+              options={importDateGroups.map((group) => ({
+                value: group.key,
+                label: `${group.label} · ${group.batchCount} file`
+              }))}
+            />
+            <Input
+              placeholder="Tìm sản phẩm..."
+              allowClear
+              suffix={<SearchOutlined />}
+              size={isMobile ? 'small' : 'middle'}
+              className="!h-10 !w-full !rounded-lg sm:!w-[300px]"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </div>
           {batchGroups.length > 0 && (
-            <div className="ml-auto flex items-center gap-3">
-              <span className="text-xs text-gray-400">
-                {importDateGroups.length} ngày nhập · {batchGroups.length} file
-                · {filteredHistoryData.length} sản phẩm
+            <div className="flex w-full flex-wrap items-center justify-start gap-3 lg:w-auto lg:justify-end">
+              <span className="text-xs font-medium text-gray-400">
+                {importDateGroups.length} ngày xuất hàng · {batchGroups.length}{' '}
+                file · {filteredHistoryData.length} sản phẩm ·{' '}
+                <span className="font-bold text-blue-600 dark:text-blue-400">
+                  Tổng SL {totalExportQuantity.toLocaleString('vi-VN')}
+                </span>
               </span>
               <Popconfirm
                 title="Xóa tất cả PO?"
@@ -1102,14 +1240,15 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                 cancelText="Hủy"
                 okButtonProps={{ danger: true, loading: isDeletingAll }}
               >
-                <Button
+                <AppButton
+                  tone="danger"
                   size={isMobile ? 'small' : 'middle'}
-                  danger
                   icon={<FaTrash />}
                   loading={isDeletingAll}
+                  className="!h-10"
                 >
                   Xóa tất cả
-                </Button>
+                </AppButton>
               </Popconfirm>
             </div>
           )}
@@ -1123,13 +1262,11 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                 {importDateGroups.length === 0 && !isLoadingHistory ? (
                   <Empty description="Không có lịch sử" />
                 ) : (
-                  <Tabs
-                    items={importDateTabItems}
-                    type={isMobile ? 'line' : 'card'}
-                    size={isMobile ? 'small' : 'middle'}
-                    destroyOnHidden
-                    className="po-history-import-date-tabs"
-                  />
+                  selectedImportDateGroup && (
+                    <div>
+                      {renderImportDateSection(selectedImportDateGroup)}
+                    </div>
+                  )
                 )}
               </Spin>
               {/*
@@ -1226,7 +1363,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                               </div>
 
                               <div className="mt-2 flex items-center justify-between">
-                                <Button
+                                <AppButton
                                   type="text"
                                   size="small"
                                   className="text-xs !text-blue-500"
@@ -1244,7 +1381,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                                   }
                                 >
                                   {isExpanded ? 'Thu gọn' : 'Xem chi tiết SP'}
-                                </Button>
+                                </AppButton>
                                 {hasBatchId ? (
                                   <Popconfirm
                                     title="Xóa toàn bộ file?"
@@ -1259,7 +1396,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                                       loading: isDeletingBatch
                                     }}
                                   >
-                                    <Button
+                                    <AppButton
                                       size="small"
                                       type="text"
                                       danger
@@ -1279,7 +1416,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                                       cancelText="Hủy"
                                       okButtonProps={{ danger: true }}
                                     >
-                                      <Button
+                                      <AppButton
                                         size="small"
                                         type="text"
                                         danger
@@ -1315,7 +1452,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                                               }
                                               className="!w-[70px] text-xs"
                                             />
-                                            <Button
+                                            <AppButton
                                               size="small"
                                               type="text"
                                               className="!p-1 !text-green-500"
@@ -1326,7 +1463,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                                                 handleInlineSave(r)
                                               }
                                             />
-                                            <Button
+                                            <AppButton
                                               size="small"
                                               type="text"
                                               className="!p-1 !text-gray-400"
@@ -1437,14 +1574,13 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                 </div>
                 {filteredProductList.length > 0 && (
                   <Form.Item>
-                    <Button
-                      variant="solid"
-                      color="blue"
+                    <AppButton
+                      tone="primary"
                       loading={isPending}
                       htmlType="submit"
                     >
                       Cập nhật
-                    </Button>
+                    </AppButton>
                   </Form.Item>
                 )}
               </Form>

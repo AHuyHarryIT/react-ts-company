@@ -192,7 +192,8 @@ export const WeekTable: React.FC<WeekTableProps> = ({
 
   const tableProps: TableProps<WeekTableType> = {
     ...(customTableProps as unknown as TableProps<WeekTableType>),
-    className: 'product-sticky-table',
+    tableLayout: 'fixed',
+    className: 'product-sticky-table admin-page-sticky-table',
     rowKey: (record) => ['error', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,

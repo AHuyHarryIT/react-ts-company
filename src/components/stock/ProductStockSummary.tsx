@@ -13,6 +13,10 @@ import { InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import RefreshButton from '@/components/common/RefreshButton';
+import {
+  customPaginationProps,
+  DEFAULT_PAGE_SIZE_OPTIONS
+} from '@components/custom/PaginationProps.custom';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
 import { productService } from '@/services/ProductService';
@@ -959,11 +963,10 @@ const ProductStockSummary: React.FC = () => {
           rowKey="key"
           loading={loading}
           pagination={{
+            ...customPaginationProps,
             current: tablePagination.current,
             pageSize: tablePagination.pageSize,
-            showSizeChanger: true,
-            pageSizeOptions: ['20', '50', '100'],
-            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total}`,
+            pageSizeOptions: DEFAULT_PAGE_SIZE_OPTIONS,
             size: 'small',
             onChange: (page, pageSize) =>
               setTablePagination({ current: page, pageSize })

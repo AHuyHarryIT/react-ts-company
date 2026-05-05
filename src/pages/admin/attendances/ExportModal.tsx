@@ -1,9 +1,10 @@
 import { QueryParams } from '@/types/queryParams';
+import AppButton from '@components/common/AppButton';
 import { IconExport } from '@components/icons';
 import { fetchAttendancesCalculated } from '@services/AttendanceService';
 import { useMutation } from '@tanstack/react-query';
 import { AttendanceResult } from '@utils/attendanceUtil';
-import { Button, DatePicker, message, Modal } from 'antd';
+import { DatePicker, message, Modal } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
@@ -407,13 +408,9 @@ export const ExportModal = () => {
 
   return (
     <>
-      <Button
-        color="gold"
-        variant="solid"
-        icon={<IconExport />}
-        children="Xuất excel"
-        onClick={handleOpen}
-      />
+      <AppButton tone="success" icon={<IconExport />} onClick={handleOpen}>
+        Xuất excel
+      </AppButton>
       <Modal
         title="Xuất Data"
         open={open}

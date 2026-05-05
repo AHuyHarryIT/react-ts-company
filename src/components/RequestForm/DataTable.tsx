@@ -11,6 +11,7 @@ import {
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { EmployeeNameDisplay } from './Utilities';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import {
   RequestForm,
   RequestFormStatus,
@@ -871,8 +872,9 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 'auto',
+      width: 136,
       align: 'center',
+      className: 'request-form-actions-cell',
       render: (_, record) => {
         // Đếm số lượng buttons hiển thị
         const buttonCount =
@@ -884,7 +886,7 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
           (canReject(record) ? 1 : 0); // Từ chối
 
         return (
-          <Space size="small">
+          <Space size={8} className="request-form-actions">
             {buttonCount === 1 ? (
               // Chỉ có 1 button - hiển thị center
               <Tooltip
@@ -895,9 +897,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
               >
                 <Button
                   type="text"
-                  size="small"
+                  className="request-form-action-btn"
                   icon={<EyeOutlined />}
-                  onClick={() => onView?.(record)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onView?.(record);
+                  }}
                 />
               </Tooltip>
             ) : (
@@ -911,9 +916,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                 >
                   <Button
                     type="text"
-                    size="small"
+                    className="request-form-action-btn"
                     icon={<EyeOutlined />}
-                    onClick={() => onView?.(record)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onView?.(record);
+                    }}
                   />
                 </Tooltip>
 
@@ -926,9 +934,12 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                   >
                     <Button
                       type="text"
-                      size="small"
+                      className="request-form-action-btn"
                       icon={<EditOutlined />}
-                      onClick={() => onEdit?.(record)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit?.(record);
+                      }}
                     />
                   </Tooltip>
                 )}
@@ -942,10 +953,13 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                   >
                     <Button
                       type="text"
-                      size="small"
+                      className="request-form-action-btn"
                       danger
                       icon={<DeleteOutlined />}
-                      onClick={() => onDelete?.(record)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete?.(record);
+                      }}
                     />
                   </Tooltip>
                 )}
@@ -959,10 +973,13 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                   >
                     <Button
                       type="text"
-                      size="small"
+                      className="request-form-action-btn request-form-action-btn--info"
                       style={{ color: '#1890ff' }}
                       icon={<FileTextOutlined />}
-                      onClick={() => onSignDelegation?.(record)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSignDelegation?.(record);
+                      }}
                     />
                   </Tooltip>
                 )}
@@ -976,10 +993,13 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                   >
                     <Button
                       type="text"
-                      size="small"
+                      className="request-form-action-btn request-form-action-btn--approve"
                       style={{ color: '#52c41a' }}
                       icon={<CheckOutlined />}
-                      onClick={() => onApprove?.(record)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onApprove?.(record);
+                      }}
                     />
                   </Tooltip>
                 )}
@@ -993,10 +1013,13 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
                   >
                     <Button
                       type="text"
-                      size="small"
+                      className="request-form-action-btn"
                       danger
                       icon={<CloseOutlined />}
-                      onClick={() => onReject?.(record)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onReject?.(record);
+                      }}
                     />
                   </Tooltip>
                 )}
@@ -1011,11 +1034,9 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
   const tablePagination = pagination
     ? {
         ...pagination,
+        ...customPaginationProps,
         size: 'default' as const,
-        showSizeChanger: true,
-        pageSizeOptions: ['10', '15', '20', '50', '100'],
-        showTotal: (total: number, range: [number, number]) =>
-          `Hiển thị ${range[0]}-${range[1]} (Tổng ${total})`,
+        showQuickJumper: true,
         position: ['topRight', 'bottomRight'] as ('topRight' | 'bottomRight')[]
       }
     : (false as const);
@@ -1224,12 +1245,13 @@ export const DataTable: React.FC<RequestFormTableProps> = ({
 
   const mobilePagination = pagination
     ? {
+        ...customPaginationProps,
         current: pagination.current,
         total: pagination.total,
         pageSize: pagination.pageSize,
         onChange: pagination.onChange,
         size: 'small' as const,
-        showTotal: (total: number) => `${total} đơn`
+        showSizeChanger: false
       }
     : null;
 

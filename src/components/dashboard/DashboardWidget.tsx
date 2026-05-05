@@ -32,13 +32,13 @@ const DashboardWidget: React.FC<WidgetProps> = ({
       whileTap={{ scale: 0.96 }}
       className="group relative h-full"
     >
-      <div className="glass-card relative flex h-full min-h-[132px] flex-col items-center justify-center gap-3 rounded-[26px] p-5 text-center transition-all duration-300 lg:hover:border-blue-200 lg:hover:shadow-[0_22px_46px_rgba(37,99,235,0.16)] dark:lg:hover:border-blue-400/30">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(96,165,250,0.22),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.18),transparent_62%)] opacity-70 transition-opacity duration-300 lg:group-hover:opacity-100 dark:bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.18),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.07),transparent_62%)]" />
+      <div className="liquid-glass-card relative flex h-full min-h-[132px] flex-col items-center justify-center gap-3 rounded-[26px] p-5 text-center transition-all duration-300 lg:hover:border-blue-200 lg:hover:shadow-[0_22px_46px_rgba(37,99,235,0.16)] dark:lg:hover:border-blue-400/30">
+        <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.26),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.18),transparent_62%)] opacity-70 transition-opacity duration-300 lg:group-hover:opacity-100 dark:bg-[linear-gradient(145deg,rgba(255,255,255,0.08),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.07),transparent_62%)]" />
         <div className="absolute inset-x-8 top-0 h-px bg-white/80 dark:bg-white/20" />
 
         {/* Icon */}
         <motion.div
-          className="glass-icon-tile relative flex h-12 w-12 items-center justify-center rounded-[18px] transition-colors duration-300 lg:group-hover:bg-blue-100/55 dark:lg:group-hover:bg-blue-500/15"
+          className="liquid-glass-icon relative flex h-12 w-12 items-center justify-center rounded-[18px] transition-colors duration-300 lg:group-hover:bg-blue-100/55 dark:lg:group-hover:bg-blue-500/15"
           whileHover={{ rotate: [0, -10, 10, -10, 0] }}
           transition={{ duration: 0.4 }}
         >

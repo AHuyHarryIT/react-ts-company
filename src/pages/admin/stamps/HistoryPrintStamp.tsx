@@ -6,6 +6,7 @@ import {
 } from '@components/common/ActionButtons';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import {
   checkDuplicateStamps,
@@ -79,6 +80,11 @@ export default function HistoryPrintStamp() {
   const { data: response } = queryResult;
 
   const dataSource = response?.data;
+  const hasRowActions = (dataSource || []).some(
+    (record) =>
+      record.status === 'pending' ||
+      (record.status === 'rejected' && canDeleteStampHistory)
+  );
   const pagination = {
     current: response?.current_page,
     total: response?.total,
@@ -458,21 +464,22 @@ export default function HistoryPrintStamp() {
         }
 
         if (record.status === 'rejected') {
+          if (!canDeleteStampHistory) {
+            return <span className="text-gray-300">—</span>;
+          }
+
           return (
             <ActionGroup>
-              <PrintButton disabled />
-              {canDeleteStampHistory && (
-                <Popconfirm
-                  title="Xóa lịch sử in tem?"
-                  description="Dữ liệu đã xóa không thể khôi phục."
-                  okText="Xóa"
-                  cancelText="Hủy"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={() => handleDeleteClick(record)}
-                >
-                  <DeleteButton loading={deletingStampId === record.id} />
-                </Popconfirm>
-              )}
+              <Popconfirm
+                title="Xóa lịch sử in tem?"
+                description="Dữ liệu đã xóa không thể khôi phục."
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+                onConfirm={() => handleDeleteClick(record)}
+              >
+                <DeleteButton loading={deletingStampId === record.id} />
+              </Popconfirm>
             </ActionGroup>
           );
         }
@@ -497,6 +504,9 @@ export default function HistoryPrintStamp() {
       }
     }
   ];
+  const visibleColumns = hasRowActions
+    ? columns
+    : columns.filter((column) => column.key !== 'action');
 
   const tableProps: TableProps<HistoryPrintStampType> = {
     ...(customTableProps as unknown as TableProps<HistoryPrintStampType>),
@@ -504,7 +514,7 @@ export default function HistoryPrintStamp() {
       ['stamp', 'history', record.id, record.employee_id, record.date].join(
         '-'
       ),
-    columns: columns,
+    columns: visibleColumns,
     dataSource: dataSource,
     loading: queryResult.isLoading,
     rowClassName: (record) => {
@@ -901,10 +911,9 @@ export default function HistoryPrintStamp() {
                           )}
                         </ActionGroup>
                       )}
-                      {record.status === 'rejected' && (
-                        <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
-                          <PrintButton size="small" disabled />
-                          {canDeleteStampHistory && (
+                      {record.status === 'rejected' &&
+                        canDeleteStampHistory && (
+                          <ActionGroup className="mt-3 !justify-end border-t border-gray-100 pt-3 dark:border-gray-700">
                             <Popconfirm
                               title="Xóa lịch sử in tem?"
                               description="Dữ liệu đã xóa không thể khôi phục."
@@ -918,15 +927,15 @@ export default function HistoryPrintStamp() {
                                 loading={deletingStampId === record.id}
                               />
                             </Popconfirm>
-                          )}
-                        </ActionGroup>
-                      )}
+                          </ActionGroup>
+                        )}
                     </div>
                   );
                 })}
               </div>
               <div className="mt-4 flex justify-end">
                 <Pagination
+                  {...customPaginationProps}
                   size="small"
                   current={params.page}
                   pageSize={params.limit}

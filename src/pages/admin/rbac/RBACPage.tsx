@@ -3,7 +3,6 @@ import { useIsMobile } from '@hooks/useIsMobile';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Badge,
-  Button,
   Checkbox,
   Col,
   Drawer,
@@ -62,6 +61,7 @@ import {
 import { authCheck } from '@services/AuthService';
 import { Permission } from '@/types/permissionType';
 import { SidebarItem } from '@/types/menuItem';
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { customTableProps } from '@components/custom/TableProps.custom';
 
@@ -377,15 +377,15 @@ function RolePermissionManager() {
                     Chưa lưu
                   </Tag>
                 )}
-                <Button
-                  type="primary"
+                <AppButton
+                  tone="primary"
                   icon={<FiSave />}
                   onClick={() => saveMutation.mutate()}
                   loading={saveMutation.isPending}
                   disabled={!isDirty}
                 >
                   {isDirty ? 'Lưu thay đổi' : 'Đã lưu'}
-                </Button>
+                </AppButton>
               </Space>
             </div>
 
@@ -1295,7 +1295,7 @@ function PermissionsManager() {
       render: (_: unknown, record: Permission) => (
         <Space size={2}>
           <Tooltip title="Sửa">
-            <Button
+            <AppButton
               type="text"
               size="small"
               icon={<FiEdit3 />}
@@ -1310,7 +1310,7 @@ function PermissionsManager() {
             cancelText="Hủy"
             okButtonProps={{ danger: true }}
           >
-            <Button type="text" size="small" icon={<FaTrash />} danger />
+            <AppButton type="text" size="small" icon={<FaTrash />} danger />
           </Popconfirm>
         </Space>
       )
@@ -1321,9 +1321,9 @@ function PermissionsManager() {
     <div className="space-y-5">
       {/* Action Bar */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
-        <Button type="primary" icon={<FiPlus />} onClick={openCreate}>
+        <AppButton tone="primary" icon={<FiPlus />} onClick={openCreate}>
           Thêm quyền
-        </Button>
+        </AppButton>
         <Select
           placeholder="Loại"
           allowClear
@@ -1448,14 +1448,14 @@ function PermissionsManager() {
                   )}
 
                   <div className="mt-2 flex items-center justify-end gap-2 border-t border-gray-100 pt-2 dark:border-gray-700">
-                    <Button
+                    <AppButton
                       type="text"
                       size="small"
                       icon={<FiEdit3 />}
                       onClick={() => openEdit(perm)}
                     >
                       Sửa
-                    </Button>
+                    </AppButton>
                     <Popconfirm
                       title="Xóa quyền?"
                       description="Sidebar items cũng bị xóa."
@@ -1464,14 +1464,14 @@ function PermissionsManager() {
                       cancelText="Hủy"
                       okButtonProps={{ danger: true }}
                     >
-                      <Button
+                      <AppButton
                         type="text"
                         size="small"
                         icon={<FaTrash />}
                         danger
                       >
                         Xóa
-                      </Button>
+                      </AppButton>
                     </Popconfirm>
                   </div>
                 </div>
@@ -1497,14 +1497,16 @@ function PermissionsManager() {
         width={isMobile ? '100%' : 520}
         footer={
           <div className="flex justify-end gap-2">
-            <Button onClick={closeDrawer}>Đóng</Button>
-            <Button
-              type="primary"
+            <AppButton tone="neutral" onClick={closeDrawer}>
+              Đóng
+            </AppButton>
+            <AppButton
+              tone="primary"
               onClick={handleSubmit}
               loading={createMut.isPending || updateMut.isPending}
             >
               {editingPerm ? 'Cập nhật quyền' : 'Tạo quyền'}
-            </Button>
+            </AppButton>
           </div>
         }
       >
@@ -1690,14 +1692,14 @@ function PermissionsManager() {
                 <Text strong className="text-sm">
                   Sidebar Items ({liveEditingPerm.sidebar_items?.length ?? 0})
                 </Text>
-                <Button
+                <AppButton
                   size="small"
                   type="dashed"
                   icon={<FiPlus />}
                   onClick={() => openSICreate(liveEditingPerm.id)}
                 >
                   Thêm
-                </Button>
+                </AppButton>
               </div>
 
               {(liveEditingPerm.sidebar_items?.length ?? 0) > 0 ? (
@@ -1733,7 +1735,7 @@ function PermissionsManager() {
                       </div>
                       <Space size={0}>
                         <Tooltip title="Sửa item">
-                          <Button
+                          <AppButton
                             type="text"
                             size="small"
                             icon={<FiEdit3 className="text-blue-500" />}
@@ -1747,7 +1749,7 @@ function PermissionsManager() {
                           cancelText="Hủy"
                           okButtonProps={{ danger: true }}
                         >
-                          <Button
+                          <AppButton
                             type="text"
                             size="small"
                             icon={<FaTrash className="text-red-400" />}
@@ -1764,14 +1766,14 @@ function PermissionsManager() {
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                     className="!my-0"
                   >
-                    <Button
+                    <AppButton
                       size="small"
                       type="dashed"
                       icon={<FiPlus />}
                       onClick={() => openSICreate(liveEditingPerm.id)}
                     >
                       Thêm item đầu tiên
-                    </Button>
+                    </AppButton>
                   </Empty>
                 </div>
               )}
@@ -1787,14 +1789,16 @@ function PermissionsManager() {
         width={400}
         footer={
           <div className="flex justify-end gap-2">
-            <Button onClick={closeSIDrawer}>Hủy</Button>
-            <Button
-              type="primary"
+            <AppButton tone="neutral" onClick={closeSIDrawer}>
+              Hủy
+            </AppButton>
+            <AppButton
+              tone="primary"
               onClick={handleSISubmit}
               loading={siCreateMut.isPending || siUpdateMut.isPending}
             >
               {editingSI ? 'Cập nhật' : 'Tạo'}
-            </Button>
+            </AppButton>
           </div>
         }
       >
@@ -2043,21 +2047,27 @@ function UserPermissionDrawer({
             )}
             {hasOverrides && (
               <Tooltip title="Xóa tất cả quyền riêng, quay về đúng quyền của Role">
-                <Button size="small" onClick={handleResetToRole}>
+                <AppButton
+                  tone="warning"
+                  size="small"
+                  onClick={handleResetToRole}
+                >
                   Reset về Role
-                </Button>
+                </AppButton>
               </Tooltip>
             )}
-            <Button onClick={onClose}>Đóng</Button>
-            <Button
-              type="primary"
+            <AppButton tone="neutral" onClick={onClose}>
+              Đóng
+            </AppButton>
+            <AppButton
+              tone="primary"
               icon={<FiSave />}
               onClick={handleSave}
               loading={saveMutation.isPending}
               disabled={!isDirty}
             >
               {isDirty ? 'Lưu thay đổi' : 'Đã lưu'}
-            </Button>
+            </AppButton>
           </Space>
         </div>
       }
@@ -2402,7 +2412,7 @@ function AdminManager() {
         return (
           <Space size={2}>
             <Tooltip title="Phân quyền trực tiếp">
-              <Button
+              <AppButton
                 type="text"
                 size="small"
                 icon={<FaUserShield className="text-violet-500" />}
@@ -2419,7 +2429,7 @@ function AdminManager() {
               disabled={isSelf}
             >
               <Tooltip title={isSelf ? 'Không thể xoá chính mình' : 'Xoá'}>
-                <Button
+                <AppButton
                   type="text"
                   size="small"
                   icon={<FaTrash />}
@@ -2438,13 +2448,13 @@ function AdminManager() {
     <div className="space-y-5">
       {/* Action Bar */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
-        <Button
-          type="primary"
+        <AppButton
+          tone="purple"
           icon={<FiPlus />}
           onClick={() => setShowCreateForm(!showCreateForm)}
         >
           {showCreateForm ? 'Ẩn form' : 'Tạo Admin'}
-        </Button>
+        </AppButton>
         <div className="ml-auto flex items-center gap-3">
           <Select
             placeholder="Tất cả"
@@ -2506,14 +2516,14 @@ function AdminManager() {
                 className="!w-28"
               />
             </Form.Item>
-            <Button
+            <AppButton
               type="primary"
               htmlType="submit"
               icon={<FiSave />}
               loading={createMut.isPending}
             >
               Tạo
-            </Button>
+            </AppButton>
           </Form>
         </div>
       )}
@@ -2580,14 +2590,14 @@ function AdminManager() {
                     </div>
 
                     <div className="mt-2 flex items-center justify-end gap-2 border-t border-gray-100 pt-2 dark:border-gray-700">
-                      <Button
+                      <AppButton
                         type="text"
                         size="small"
                         icon={<FaUserShield className="text-violet-500" />}
                         onClick={() => setPermDrawerUser(record)}
                       >
                         Quyền
-                      </Button>
+                      </AppButton>
                       <Popconfirm
                         title="Xoá tài khoản này?"
                         description={`${record.name} (${record.phone})`}
@@ -2597,7 +2607,7 @@ function AdminManager() {
                         okButtonProps={{ danger: true }}
                         disabled={isSelf}
                       >
-                        <Button
+                        <AppButton
                           type="text"
                           size="small"
                           icon={<FaTrash />}
@@ -2605,7 +2615,7 @@ function AdminManager() {
                           disabled={isSelf}
                         >
                           Xoá
-                        </Button>
+                        </AppButton>
                       </Popconfirm>
                     </div>
                   </div>

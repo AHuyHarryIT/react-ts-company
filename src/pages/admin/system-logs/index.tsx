@@ -18,6 +18,7 @@ import {
 import { systemLogService } from '@/services/SystemLogService';
 import RefreshButton from '@components/common/RefreshButton';
 import ComponentCard from '@components/common/ComponentCard';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import dayjs from 'dayjs';
 import { useIsMobile } from '@hooks/useIsMobile';
 
@@ -315,9 +316,8 @@ export default function SystemLogsPage() {
     columns: dbColumns,
     loading: isLoadingDb,
     pagination: {
-      pageSize: 20,
-      showSizeChanger: true,
-      showTotal: (total) => `Tổng ${total} logs`
+      ...customPaginationProps,
+      pageSize: 20
     },
     scroll: { x: 800 }
   };

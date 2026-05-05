@@ -1,6 +1,7 @@
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 import { Bar } from '@ant-design/plots';
 import { Card, Badge } from 'antd';
+import { useEffect } from 'react';
 import { FaArrowUp, FaArrowDown, FaChartBar, FaEquals } from 'react-icons/fa';
 
 type ProductDataType = {
@@ -9,19 +10,35 @@ type ProductDataType = {
   index: number;
 };
 
+const toNumber = (value: number | string | undefined | null) =>
+  Number(value || 0);
+
 export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
   const chartData: ProductDataType[] = (data || [])
     .map((item) => ({
       product: item.product?.name || 'N/A',
-      quantity: item.totalQuan || 0,
+      quantity: toNumber(item.totalQuan),
       index: 0
     }))
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 10)
     .map((item, index) => ({ ...item, index }));
+  const chartRenderSignature = chartData
+    .map((item) => `${item.product}:${item.quantity}`)
+    .join('|');
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [chartRenderSignature]);
 
   // Utility function to format numbers
   const formatNumber = (value: number) => {
+    if (!Number.isFinite(value)) return '0';
+
     if (value >= 1000000000) {
       return `${(value / 1000000000).toFixed(value >= 10000000000 ? 0 : 1)}B`;
     }
@@ -147,17 +164,17 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
   return (
     <div className="h-full w-full">
       <Card
-        className="dashboard-glass-chart !rounded-[26px]"
+        className="liquid-glass-card dashboard-liquid-chart !rounded-[26px]"
         title={
           <div className="flex items-center gap-3">
             <div>
               <h3 className="mb-1 text-lg font-bold text-gray-800 uppercase dark:text-white">
-                Top Sản Phẩm Sản Xuất
+                Top Sản Phẩm Xuất Hàng
               </h3>
               <p className="flex items-center gap-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                 <Badge count={chartData.length} showZero color="#6b7280" />
                 <span>
-                  {chartData.length} sản phẩm hàng đầu theo số lượng sản xuất
+                  {chartData.length} sản phẩm hàng đầu theo số lượng xuất hàng
                   theo tháng {data[0]?.month || 'N/A'}
                 </span>
               </p>
@@ -166,7 +183,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
         }
         extra={
           <div className="hidden items-center gap-4 lg:flex">
-            <span className="glass-control rounded-xl px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-300">
+            <span className="liquid-glass-control rounded-xl px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-300">
               📊 Top sản phẩm
             </span>
           </div>
@@ -175,7 +192,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
         {/* Stats Cards */}
         <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {statCards.map((stat, i) => (
-            <div key={i} className="glass-control rounded-2xl p-4">
+            <div key={i} className="liquid-glass-control rounded-2xl p-4">
               <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
                 {stat.icon} {stat.label}
               </div>
@@ -188,9 +205,9 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
 
         {/* Chart */}
         <div className="relative">
-          <div className="glass-control w-full rounded-2xl p-4">
+          <div className="liquid-glass-control dashboard-chart-surface w-full rounded-2xl p-4">
             <div
-              className="w-full"
+              className="dashboard-chart-canvas w-full"
               style={{ height: 'clamp(300px, 50vh, 400px)' }}
             >
               <Bar {...config} height={undefined} autoFit={true} />
@@ -198,7 +215,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
           </div>
 
           {chartData.length === 0 && (
-            <div className="glass-card absolute inset-0 flex items-center justify-center rounded-2xl">
+            <div className="liquid-glass-card absolute inset-0 flex items-center justify-center rounded-2xl">
               <div className="p-6 text-center">
                 <p className="mb-1 text-base font-medium text-gray-600 dark:text-gray-300">
                   Chưa có dữ liệu sản phẩm
@@ -213,12 +230,12 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
 
         {/* Production Analysis */}
         {chartData.length > 0 && (
-          <div className="glass-control mt-6 rounded-2xl p-4">
+          <div className="liquid-glass-control mt-6 rounded-2xl p-4">
             <h4 className="mb-3 text-sm font-bold text-gray-800 dark:text-white">
               📋 Báo cáo sản lượng
             </h4>
             <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
-              <div className="glass-control flex items-center justify-between rounded-xl p-3">
+              <div className="liquid-glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Sản phẩm chính:
                 </span>
@@ -226,7 +243,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
                   {chartData[0]?.product || 'N/A'}
                 </span>
               </div>
-              <div className="glass-control flex items-center justify-between rounded-xl p-3">
+              <div className="liquid-glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Sản lượng cao nhất:
                 </span>
@@ -234,7 +251,7 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
                   {formatNumber(maxQuantity)}
                 </span>
               </div>
-              <div className="glass-control flex items-center justify-between rounded-xl p-3">
+              <div className="liquid-glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Chênh lệch:
                 </span>

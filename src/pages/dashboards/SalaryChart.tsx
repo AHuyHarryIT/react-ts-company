@@ -3,6 +3,7 @@ import { Column } from '@ant-design/plots';
 import { uiStore } from '@stores/uiStore';
 import { useStore } from '@tanstack/react-store';
 import { Badge, Card } from 'antd';
+import { useEffect } from 'react';
 import { FaArrowUp, FaArrowDown, FaChartLine, FaEquals } from 'react-icons/fa';
 
 type salaryDataType = {
@@ -22,6 +23,17 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
     }))
     .reverse()
     .map((item, index) => ({ ...item, index }));
+  const chartRenderSignature = chartData
+    .map((item) => `${item.month}:${item.total}`)
+    .join('|');
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [chartRenderSignature]);
 
   // Utility function to format currency
   const formatCurrency = (value: number) => {
@@ -163,7 +175,7 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
   return (
     <div className="h-full w-full">
       <Card
-        className="dashboard-glass-chart !rounded-[26px]"
+        className="liquid-glass-card dashboard-liquid-chart !rounded-[26px]"
         title={
           <div className="flex items-center gap-3">
             <div>
@@ -196,7 +208,7 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
         }
         extra={
           <div className="hidden items-center gap-4 lg:flex">
-            <span className="glass-control rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-300">
+            <span className="liquid-glass-control rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-300">
               💰 Theo dõi lương
             </span>
           </div>
@@ -205,7 +217,7 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
         {/* Stats Cards */}
         <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {statCards.map((stat, i) => (
-            <div key={i} className="glass-control rounded-2xl p-4">
+            <div key={i} className="liquid-glass-control rounded-2xl p-4">
               <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
                 {stat.icon} {stat.label}
               </div>
@@ -218,9 +230,9 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
 
         {/* Chart */}
         <div className="relative">
-          <div className="glass-control w-full rounded-2xl p-4">
+          <div className="liquid-glass-control dashboard-chart-surface w-full rounded-2xl p-4">
             <div
-              className="w-full"
+              className="dashboard-chart-canvas w-full"
               style={{ height: 'clamp(300px, 50vh, 400px)' }}
             >
               <Column {...config} height={undefined} autoFit={true} />
@@ -228,7 +240,7 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
           </div>
 
           {chartData.length === 0 && (
-            <div className="glass-card absolute inset-0 flex items-center justify-center rounded-2xl">
+            <div className="liquid-glass-card absolute inset-0 flex items-center justify-center rounded-2xl">
               <div className="p-6 text-center">
                 <p className="mb-1 text-base font-medium text-gray-600 dark:text-gray-300">
                   Chưa có dữ liệu lương
@@ -243,12 +255,12 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
 
         {/* Salary Analysis */}
         {chartData.length > 0 && (
-          <div className="glass-control mt-6 rounded-2xl p-4">
+          <div className="liquid-glass-control mt-6 rounded-2xl p-4">
             <h4 className="mb-3 text-sm font-bold text-gray-800 dark:text-white">
               📋 Phân tích lương
             </h4>
             <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
-              <div className="glass-control flex items-center justify-between rounded-xl p-3">
+              <div className="liquid-glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Chênh lệch:
                 </span>
@@ -256,7 +268,7 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
                   {formatCurrency(maxSalary - minSalary)}
                 </span>
               </div>
-              <div className="glass-control flex items-center justify-between rounded-xl p-3">
+              <div className="liquid-glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Trên trung bình:
                 </span>
@@ -265,7 +277,7 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
                   tháng
                 </span>
               </div>
-              <div className="glass-control flex items-center justify-between rounded-xl p-3">
+              <div className="liquid-glass-control flex items-center justify-between rounded-xl p-3">
                 <span className="text-gray-500 dark:text-gray-400">
                   Xu hướng:
                 </span>
@@ -286,7 +298,7 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
 
             {/* Latest month highlight */}
             {latestMonth && (
-              <div className="glass-control mt-3 flex items-center justify-between rounded-xl p-3">
+              <div className="liquid-glass-control mt-3 flex items-center justify-between rounded-xl p-3">
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-white">
                     Tháng gần nhất:{' '}

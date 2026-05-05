@@ -176,6 +176,10 @@ export default function NotificationDropdown() {
   }, [stampItems]);
 
   const count = stampItems.length + allFeedbackUnread + employeeUnread;
+  const totalVisibleNotifications =
+    groupedNotifications.length +
+    allFeedbackNotifs.length +
+    employeeNotifs.length;
 
   // Time ago for feedback
   function fbTimeAgo(dateStr: string): string {
@@ -195,7 +199,7 @@ export default function NotificationDropdown() {
       <Badge count={count} size="small" offset={[-2, 2]}>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-all duration-300 hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+          className="notification-trigger-btn relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-all duration-300 hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
           <FaRegBell className="text-lg" />
         </button>
@@ -203,20 +207,20 @@ export default function NotificationDropdown() {
 
       {/* ── Dropdown Panel ── */}
       {open && (
-        <div className="glass-dropdown app-dropdown-enter absolute top-full right-0 mt-1.5 w-72 overflow-hidden rounded-xl sm:w-80">
+        <div className="app-notification-dropdown glass-dropdown app-dropdown-enter absolute top-full right-0 mt-1.5 w-72 overflow-hidden rounded-xl sm:w-80">
           {/* ── Header ── */}
-          <div className="flex items-center justify-between px-3.5 py-2.5">
+          <div className="app-dropdown-header flex items-center justify-between px-3.5 py-2.5">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-gray-800 dark:text-white">
+              <span className="app-dropdown-title text-[13px] font-semibold text-gray-800 dark:text-white">
                 Thông báo
               </span>
               {count > 0 && (
-                <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                <span className="app-dropdown-count rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
                   {count}
                 </span>
               )}
             </div>
-            {groupedNotifications.length > 0 && (
+            {totalVisibleNotifications > 0 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -225,7 +229,7 @@ export default function NotificationDropdown() {
                   clearAllAdminFeedback();
                   clearAllEmployee();
                 }}
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-red-500 transition-colors duration-200 active:bg-red-50 dark:text-red-400"
+                className="app-dropdown-clear-btn flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-red-500 transition-colors duration-200 active:bg-red-50 dark:text-red-400"
               >
                 <FaTrash className="text-[9px]" />
                 <span>Xóa tất cả</span>
@@ -233,15 +237,15 @@ export default function NotificationDropdown() {
             )}
           </div>
 
-          <div className="mx-3 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-gray-700" />
+          <div className="app-dropdown-divider mx-3 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-gray-700" />
 
           {/* ── Notification List ── */}
           <div className="scrollbar-thin max-h-72 overflow-y-auto">
             {groupedNotifications.length === 0 &&
             allFeedbackNotifs.length === 0 &&
             employeeNotifs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800">
+              <div className="app-notification-empty flex flex-col items-center justify-center py-8 text-center">
+                <div className="app-notification-empty-icon flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800">
                   <FaRegBell className="text-base text-gray-300 dark:text-gray-600" />
                 </div>
                 <p className="mt-2 text-[12px] text-gray-400 dark:text-gray-500">
@@ -260,12 +264,12 @@ export default function NotificationDropdown() {
                       removeFeedbackNotification(fb.id);
                       setOpen(false);
                     }}
-                    className={`block cursor-pointer px-3.5 py-2 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5 ${
+                    className={`app-notification-item block cursor-pointer px-3.5 py-2 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5 ${
                       !fb.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <p className="text-[12px] font-semibold text-gray-800 dark:text-gray-200">
+                      <p className="app-notification-title text-[12px] font-semibold text-gray-800 dark:text-gray-200">
                         {isAdmin
                           ? 'Góp ý mới từ nhân viên'
                           : `Góp ý ${fb.status === 'resolved' ? 'đã xử lý' : 'bị từ chối'}`}
@@ -275,14 +279,14 @@ export default function NotificationDropdown() {
                       )}
                     </div>
                     {isEmployee && (
-                      <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                      <p className="app-notification-body mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
                         <span className="font-medium text-gray-700 dark:text-gray-300">
                           "{fb.subject}"
                         </span>
                         {fb.admin_reply && ` — ${fb.admin_reply}`}
                       </p>
                     )}
-                    <p className="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                    <p className="app-notification-time mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
                       {fbTimeAgo(fb.replied_at)}
                     </p>
                   </Link>
@@ -304,7 +308,7 @@ export default function NotificationDropdown() {
                         removeEmployeeNotification(n.id);
                         setOpen(false);
                       }}
-                      className={`block cursor-pointer px-3.5 py-2.5 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5 ${
+                      className={`app-notification-item block cursor-pointer px-3.5 py-2.5 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5 ${
                         !n.read ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''
                       }`}
                     >
@@ -320,17 +324,17 @@ export default function NotificationDropdown() {
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <p className="text-[12px] font-semibold text-gray-800 dark:text-gray-200">
+                            <p className="app-notification-title text-[12px] font-semibold text-gray-800 dark:text-gray-200">
                               {n.title}
                             </p>
                             {!n.read && (
                               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
                             )}
                           </div>
-                          <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                          <p className="app-notification-body mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
                             {n.message}
                           </p>
-                          <p className="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                          <p className="app-notification-time mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
                             {fbTimeAgo(n.created_at)}
                           </p>
                         </div>
@@ -346,12 +350,12 @@ export default function NotificationDropdown() {
                     to="/stamps/history"
                     search={{ highlightId: n.recordIds[0] }}
                     onClick={() => setOpen(false)}
-                    className="block px-3.5 py-2 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5"
+                    className="app-notification-item block px-3.5 py-2 transition-colors duration-200 active:bg-blue-50/60 dark:active:bg-white/5"
                   >
-                    <p className="text-[12px] font-semibold text-gray-800 dark:text-gray-200">
+                    <p className="app-notification-title text-[12px] font-semibold text-gray-800 dark:text-gray-200">
                       Yêu cầu in tem
                     </p>
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                    <p className="app-notification-body mt-0.5 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
                       <span className="font-medium text-gray-700 dark:text-gray-300">
                         {n.employee_name}
                       </span>
@@ -366,7 +370,7 @@ export default function NotificationDropdown() {
                         {n.stampRanges}
                       </span>
                     </p>
-                    <p className="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                    <p className="app-notification-time mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
                       {timeAgo(n.latestTime)}
                     </p>
                   </Link>

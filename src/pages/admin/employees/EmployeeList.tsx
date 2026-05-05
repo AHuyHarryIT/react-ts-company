@@ -25,10 +25,12 @@ import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { ActionGroup, EditButton } from '@components/common/ActionButtons';
+import AppButton from '@components/common/AppButton';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { employeeService } from '@services/EmployeeService';
 
 import { STORAGE_URL } from '@/configs/environment.config';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 
 export default function EmployeeList() {
@@ -270,24 +272,21 @@ export default function EmployeeList() {
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
           <RefreshButton refresh={refetch} isLoading={isFetching} />
           <Link to="/admin/employees/add">
-            <button className="header-action-btn header-action-btn--success">
+            <AppButton tone="success">
               <LuUserRoundPlus className="text-sm" />
               Thêm nhân viên
-            </button>
+            </AppButton>
           </Link>
           <Link to="/admin/employees/trash">
-            <button className="header-action-btn header-action-btn--warning">
+            <AppButton tone="warning">
               <BiTrash className="text-sm" />
               Thùng rác
-            </button>
+            </AppButton>
           </Link>
-          <button
-            onClick={handleAttendanceClick}
-            className="header-action-btn header-action-btn--neutral"
-          >
+          <AppButton tone="neutral" onClick={handleAttendanceClick}>
             <FaFingerprint className="text-sm" />
             Thêm chấm công
-          </button>
+          </AppButton>
           {/* Employee count badge */}
           <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
             <span className="text-xs text-gray-500">
@@ -435,6 +434,7 @@ export default function EmployeeList() {
                 {(pagination.total || 0) > (params.limit ?? 10) && (
                   <div className="mt-4 flex justify-center">
                     <Pagination
+                      {...customPaginationProps}
                       current={params.page}
                       pageSize={params.limit}
                       total={pagination.total}
@@ -442,8 +442,6 @@ export default function EmployeeList() {
                         setParams((prev) => ({ ...prev, page, limit: size }));
                       }}
                       size="small"
-                      showSizeChanger
-                      showTotal={(t, range) => `${range[0]}-${range[1]} / ${t}`}
                     />
                   </div>
                 )}

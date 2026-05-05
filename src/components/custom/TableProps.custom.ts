@@ -1,4 +1,8 @@
 import { TableProps } from 'antd';
+import {
+  DEFAULT_PAGE_SIZE_OPTIONS,
+  defaultPaginationShowTotal
+} from './PaginationProps.custom';
 
 export const customTableProps: TableProps = {
   bordered: true,
@@ -11,10 +15,8 @@ export const customTableProps: TableProps = {
   pagination: {
     size: 'default',
     showSizeChanger: true,
-    pageSizeOptions: ['10', '20', '50', '100', '200', '500'],
-    showTotal: (total, range) => {
-      return `Hiển thị ${range[0]}-${range[1]} (Tổng ${total})`;
-    },
+    pageSizeOptions: DEFAULT_PAGE_SIZE_OPTIONS,
+    showTotal: defaultPaginationShowTotal,
     position: ['topRight', 'bottomRight']
   }
 };

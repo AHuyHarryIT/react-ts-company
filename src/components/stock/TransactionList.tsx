@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Table, Card, Input, Select, Typography, message } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import RefreshButton from '@/components/common/RefreshButton';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
 import {
@@ -320,10 +321,8 @@ const TransactionList: React.FC = () => {
           rowKey="id"
           loading={loading}
           pagination={{
-            showSizeChanger: true,
+            ...customPaginationProps,
             showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} nhóm`,
             size: 'small',
             pageSize: 20
           }}

@@ -77,7 +77,7 @@ function SidebarItem({
       whileTap={{ scale: 0.98 }}
       className={`group mx-2.5 my-0.5 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-out ${
         isActive
-          ? 'glass-control sidebar-active-item font-semibold text-black dark:text-white'
+          ? 'liquid-glass-control sidebar-active-item font-semibold text-black dark:text-white'
           : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white'
       }`}
     >
@@ -171,7 +171,7 @@ function SidebarSubmenu({
         onClick={onToggle}
         className={`group mx-2.5 my-0.5 flex w-[calc(100%-20px)] items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-out ${
           hasActiveChild
-            ? 'glass-control sidebar-active-item font-semibold text-black dark:text-white'
+            ? 'liquid-glass-control sidebar-active-item font-semibold text-black dark:text-white'
             : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white'
         }`}
       >
@@ -235,7 +235,7 @@ function SidebarSubmenu({
                       whileTap={{ scale: 0.98 }}
                       className={`mx-2 my-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 transition-all duration-200 ease-out ${
                         isChildActive
-                          ? 'glass-control sidebar-active-item font-semibold text-black dark:text-white'
+                          ? 'liquid-glass-control sidebar-active-item font-semibold text-black dark:text-white'
                           : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
                       }`}
                     >

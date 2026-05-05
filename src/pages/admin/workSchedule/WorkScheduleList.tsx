@@ -80,7 +80,10 @@ export default function WorkScheduleList() {
   }, [isFetching, shouldSelectLatestAfterCreate, workSchedules]);
 
   return (
-    <ComponentCard title="Danh sách lịch làm việc">
+    <ComponentCard
+      className="!overflow-visible"
+      title="Danh sách lịch làm việc"
+    >
       <div className="space-y-5">
         {/* ── Action Bar ────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">

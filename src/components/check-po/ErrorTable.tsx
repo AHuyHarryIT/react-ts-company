@@ -139,7 +139,8 @@ export const ErrorTable: React.FC<ErrorTableProps> = ({ month, search }) => {
 
   const tableProps: TableProps<ErrorTableType> = {
     ...(customTableProps as unknown as TableProps<ErrorTableType>),
-    className: 'product-sticky-table',
+    tableLayout: 'fixed',
+    className: 'product-sticky-table admin-page-sticky-table',
     rowKey: (record) => ['error', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,

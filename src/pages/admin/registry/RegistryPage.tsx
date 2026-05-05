@@ -7,6 +7,7 @@ import { FiCheck, FiX, FiAlertTriangle, FiFilter } from 'react-icons/fi';
 
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
+import { DEFAULT_PAGE_SIZE_OPTIONS } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { fetchRegistry, type RegistryRoute } from '@services/RegistryService';
 
@@ -387,7 +388,7 @@ export default function RegistryPage() {
       ...customTableProps.pagination,
       pageSize: 50,
       showSizeChanger: true,
-      pageSizeOptions: ['20', '50', '100']
+      pageSizeOptions: DEFAULT_PAGE_SIZE_OPTIONS
     }
   };
 

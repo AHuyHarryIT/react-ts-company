@@ -1,5 +1,6 @@
 import { AddPoRequest } from '@/types/purchaseOrdersType';
 import { Shift } from '@/types/shift';
+import AppButton from '@components/common/AppButton';
 import { customFormProps } from '@components/custom/FormProps.custom';
 import {
   productStatus,
@@ -15,7 +16,6 @@ import {
   useQueryClient
 } from '@tanstack/react-query';
 import {
-  Button,
   DatePicker,
   Form,
   FormProps,
@@ -226,17 +226,12 @@ export const AddQuantityModal: React.FC<AddQuantityModalProps> = ({
             {/* ── Actions ─────────────────────────────────────── */}
             {productList.length > 0 && (
               <div className="flex justify-end gap-2 border-t border-gray-100 pt-4 dark:border-gray-700">
-                <Button onClick={handleCancel} className="!rounded-lg">
+                <AppButton tone="neutral" onClick={handleCancel}>
                   Hủy
-                </Button>
-                <Button
-                  variant="solid"
-                  color="blue"
-                  htmlType="submit"
-                  className="!rounded-lg"
-                >
+                </AppButton>
+                <AppButton tone="success" htmlType="submit">
                   Cập nhật
-                </Button>
+                </AppButton>
               </div>
             )}
           </div>

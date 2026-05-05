@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, message, Modal } from 'antd';
+import { message, Modal } from 'antd';
 import { ReactNode, useState } from 'react';
 
 import { deleteWorkSchedule } from '@services/workScheduleService';
 
+import AppButton from '@components/common/AppButton';
 import { BiTrash } from 'react-icons/bi';
 
 interface DeleteModalProps {
@@ -78,21 +79,14 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
-      <Button
-        danger={!transparent}
-        type={transparent ? 'default' : 'primary'}
-        color={transparent ? undefined : 'danger'}
-        variant={transparent ? 'outlined' : 'solid'}
-        className={
-          transparent
-            ? '!border-gray-800 !text-gray-800 hover:!border-red-500 hover:!text-red-500 dark:!border-gray-400 dark:!text-gray-400'
-            : ''
-        }
+      <AppButton
+        tone="danger"
+        className={transparent ? '!shadow-none' : undefined}
         icon={<BiTrash />}
         onClick={showModal}
       >
         {!isIconOnly && 'Xóa'}
-      </Button>
+      </AppButton>
       <Modal
         title="Xóa lịch làm việc"
         open={open}

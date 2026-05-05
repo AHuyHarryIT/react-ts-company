@@ -1,3 +1,4 @@
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
 import { GenderEnumOptions } from '@schemas/genderEnum.schema';
@@ -236,16 +237,18 @@ export const ChangeInfo = () => {
             </Form.Item>
             <Form.Item>
               <div className="flex gap-2">
-                <button
-                  type="submit"
+                <AppButton
+                  tone="primary"
+                  htmlType="submit"
                   disabled={isLoading || isPending}
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-[0.97] disabled:opacity-50"
+                  className="px-6"
                 >
                   {isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97] dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                </AppButton>
+                <AppButton
+                  tone="neutral"
+                  htmlType="button"
+                  className="px-6"
                   onClick={() => {
                     if (profileData) {
                       form.setFieldsValue(
@@ -255,7 +258,7 @@ export const ChangeInfo = () => {
                   }}
                 >
                   Đặt lại
-                </button>
+                </AppButton>
               </div>
             </Form.Item>
           </Form>

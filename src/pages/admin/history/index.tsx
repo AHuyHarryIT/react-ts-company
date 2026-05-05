@@ -19,6 +19,7 @@ import { LoginHistoryItemType, HistoryFiltersType } from '@/types/historyType';
 import { historyService } from '@/services/HistoryService';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { STORAGE_URL } from '@/configs/environment.config';
 import { useIsMobile } from '@hooks/useIsMobile';
@@ -272,8 +273,6 @@ export default function HistoryPage() {
       pageSize: params.limit,
       total: pagination.total,
       showSizeChanger: true,
-      showTotal: (total, range) =>
-        `Hiển thị ${range[0]}-${range[1]} của ${total} hoạt động`,
       onShowSizeChange: (_current, size) => {
         setParams((prev) => ({
           ...prev,
@@ -445,11 +444,11 @@ export default function HistoryPage() {
             </div>
             <div className="mt-4 flex justify-end">
               <Pagination
+                {...customPaginationProps}
                 size="small"
                 current={params.page}
                 pageSize={params.limit}
                 total={pagination.total}
-                showSizeChanger
                 onChange={(page, size) => {
                   setParams((prev) => ({ ...prev, page, limit: size }));
                 }}

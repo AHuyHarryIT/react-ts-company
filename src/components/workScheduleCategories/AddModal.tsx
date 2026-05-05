@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Form, FormProps, Input, Modal, message } from 'antd';
+import { Form, FormProps, Input, Modal, message } from 'antd';
 import { useState } from 'react';
 
 import { addWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
 
+import AppButton from '@components/common/AppButton';
 import { FaPlus } from 'react-icons/fa';
 
 type FormField = {
@@ -43,14 +44,9 @@ export const AddModal = () => {
 
   return (
     <>
-      <Button
-        color="green"
-        variant="solid"
-        icon={<FaPlus />}
-        onClick={showModal}
-      >
+      <AppButton tone="success" icon={<FaPlus />} onClick={showModal}>
         Thêm
-      </Button>
+      </AppButton>
       <Modal
         title="Thêm danh mục lịch làm việc"
         open={open}
@@ -81,14 +77,9 @@ export const AddModal = () => {
             <Input placeholder="Tên danh mục lịch làm việc" />
           </Form.Item>
           <div className="text-right">
-            <Button
-              color="green"
-              variant="solid"
-              htmlType="submit"
-              loading={isPending}
-            >
+            <AppButton tone="success" htmlType="submit" loading={isPending}>
               Thêm
-            </Button>
+            </AppButton>
           </div>
         </Form>
       </Modal>

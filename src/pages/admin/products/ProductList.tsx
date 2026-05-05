@@ -19,6 +19,7 @@ import {
 } from 'react-icons/fa6';
 
 import axiosPrivate from '@/api/axiosInstance';
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
 import { Check200Table } from '@components/products/Check200Table';
@@ -77,7 +78,24 @@ export default function ProductList() {
     initialFilters: params
   });
 
-  const months = useMemo(() => monthList?.months || [], [monthList]);
+  const fallbackMonths = useMemo(() => {
+    const selectedMonth = month ?? dayjs();
+    return Array.from({ length: selectedMonth.month() + 1 }, (_, index) =>
+      selectedMonth.subtract(index, 'month').format('MM-YYYY')
+    );
+  }, [month]);
+
+  const months = useMemo(() => {
+    const sourceMonths = monthList?.months?.length
+      ? monthList.months
+      : fallbackMonths;
+
+    return [...sourceMonths].sort((a, b) => {
+      const [monthA, yearA] = a.split('-').map(Number);
+      const [monthB, yearB] = b.split('-').map(Number);
+      return yearB * 12 + monthB - (yearA * 12 + monthA);
+    });
+  }, [fallbackMonths, monthList]);
 
   const years: string[] = useMemo(() => {
     return Array.from(
@@ -212,7 +230,10 @@ export default function ProductList() {
 
   return (
     <ProductDrawerProvider>
-      <ComponentCard title="Quản lý sản phẩm" className="!overflow-clip">
+      <ComponentCard
+        title="Quản lý sản phẩm"
+        className="admin-sticky-table-card !overflow-visible"
+      >
         <div className="space-y-5">
           {/* ── Action Bar ───────────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 dark:border-gray-700 dark:bg-gray-800/50">
@@ -221,37 +242,41 @@ export default function ProductList() {
               refresh={queryResult.refetch}
             />
 
-            <button
+            <AppButton
+              tone="success"
               onClick={() => setActiveModal('add')}
-              className="header-action-btn header-action-btn--success !gap-1.5 !px-3 !py-1.5 !text-xs"
+              className="!gap-1.5 !px-3 !py-1.5 !text-xs"
             >
               <FaPlus className="text-[10px] text-gray-500" />
               Thêm SP
-            </button>
+            </AppButton>
 
-            <button
+            <AppButton
+              tone="primary"
               onClick={() => setActiveModal('quantityAdd')}
-              className="header-action-btn header-action-btn--primary !gap-1.5 !px-3 !py-1.5 !text-xs"
+              className="!gap-1.5 !px-3 !py-1.5 !text-xs"
             >
               <FaIndustry className="text-[10px] text-gray-500" />
               Thêm SL
-            </button>
+            </AppButton>
 
-            <button
+            <AppButton
+              tone="info"
               onClick={() => setActiveModal('quantityUpdate')}
-              className="header-action-btn header-action-btn--info !gap-1.5 !px-3 !py-1.5 !text-xs"
+              className="!gap-1.5 !px-3 !py-1.5 !text-xs"
             >
               <FaBox6 className="text-[10px] text-gray-500" />
               Cập nhật SL
-            </button>
+            </AppButton>
 
-            <button
+            <AppButton
+              tone="warning"
               onClick={() => setActiveModal('trash')}
-              className="header-action-btn header-action-btn--warning !gap-1.5 !px-3 !py-1.5 !text-xs"
+              className="!gap-1.5 !px-3 !py-1.5 !text-xs"
             >
               <FaTrashCan className="text-[10px] text-gray-500" />
               Thùng rác
-            </button>
+            </AppButton>
 
             <div className="ml-auto">
               <ExportModal />

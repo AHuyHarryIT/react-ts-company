@@ -25,6 +25,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 
 import ComponentCard from '@components/common/ComponentCard';
+import AppButton from '@components/common/AppButton';
 import FeedbackModal from '@components/feedback/FeedbackModal';
 import {
   fetchMyFeedbacks,
@@ -98,14 +99,13 @@ export default function EmployeeFeedbackPage() {
       <div className="space-y-5">
         {/* ── Header ────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-violet-50 to-purple-50 p-4 dark:border-gray-700 dark:from-violet-900/10 dark:to-purple-900/10">
-          <Button
-            type="primary"
+          <AppButton
+            tone="purple"
             icon={<FaPaperPlane className="text-xs" />}
             onClick={() => setCreateOpen(true)}
-            className="!rounded-lg !border-none !bg-gradient-to-r !from-violet-500 !to-purple-600 hover:!from-violet-600 hover:!to-purple-700"
           >
             Gửi góp ý mới
-          </Button>
+          </AppButton>
 
           <div className="ml-auto flex items-center gap-3">
             <div className="flex items-center gap-1.5 rounded-lg bg-white/80 px-3 py-1.5 text-xs dark:bg-gray-800/50">
@@ -144,15 +144,14 @@ export default function EmployeeFeedbackPage() {
             description={
               <div className="space-y-2">
                 <div className="text-gray-400">Bạn chưa gửi góp ý nào</div>
-                <Button
-                  type="primary"
+                <AppButton
+                  tone="purple"
                   size="small"
                   icon={<FaPaperPlane className="text-xs" />}
                   onClick={() => setCreateOpen(true)}
-                  className="!rounded-lg !border-none !bg-violet-500"
                 >
                   Gửi góp ý đầu tiên
-                </Button>
+                </AppButton>
               </div>
             }
           />

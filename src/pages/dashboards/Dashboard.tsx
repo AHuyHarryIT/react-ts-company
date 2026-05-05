@@ -7,6 +7,7 @@ import { fetchDashboardData } from '@services/DashboardService';
 import { SlideCarousel } from '@components/SlideCarousel';
 import { useAuth } from '@hooks/useAuth';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
+import { productService } from '@services/ProductService';
 import { authLogout } from '@services/AuthService';
 import { fetchImages } from '@services/UploadService';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -138,14 +139,34 @@ export default function Dashboard() {
   const monthParam = `${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
 
   const { data: productData } = useQuery({
-    queryKey: ['productChartData', monthParam],
-    queryFn: () =>
-      getMonthlyQuantities({
-        month: monthParam,
-        status: 1,
-        limit: 0,
-        include: ['product']
-      }),
+    queryKey: ['productChartData', monthParam, 8, 'client-product-map'],
+    queryFn: async () => {
+      const [monthlyQuantities, productsResponse] = await Promise.all([
+        getMonthlyQuantities({
+          status: 8,
+          limit: 0
+        }),
+        productService.list({ limit: 0 })
+      ]);
+
+      const productMap = new Map(
+        productsResponse.data.map((product) => [product.id, product])
+      );
+
+      return monthlyQuantities
+        .filter((item) => item.month === monthParam)
+        .map((item) => {
+          const product = productMap.get(item.product_id);
+
+          return {
+            ...item,
+            product: item.product ?? {
+              id: item.product_id,
+              name: product?.name ?? 'N/A'
+            }
+          };
+        });
+    },
     enabled: admin,
     placeholderData: keepPreviousData
   });
@@ -564,7 +585,7 @@ export default function Dashboard() {
   }, [weather, currentTime]);
 
   return (
-    <div className="space-y-6">
+    <div className="dashboard-page space-y-6">
       {/* ── Holiday Banner (30/4 – 1/5) ────────────────────────── */}
       {isHoliday && (
         <HolidayBanner daysUntil={daysUntilHoliday} phase={holidayPhase} />
@@ -572,23 +593,13 @@ export default function Dashboard() {
 
       {/* ── Slide Carousel ─────────────────────────────────────── */}
       {imageList?.data && imageList.data.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="glass-card rounded-[26px] transition-shadow duration-300"
-        >
+        <div className="liquid-glass-card rounded-[26px] transition-shadow duration-300">
           <SlideCarousel images={imageList.data} />
-        </motion.div>
+        </div>
       )}
 
       {/* ── Welcome Header ─────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.05, ease: 'easeOut' }}
-        className="glass-card rounded-[26px] p-5 transition-shadow duration-300"
-      >
+      <div className="liquid-glass-card rounded-[26px] p-5 transition-shadow duration-300">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(96,165,250,0.22),transparent_32%),radial-gradient(circle_at_8%_100%,rgba(45,212,191,0.16),transparent_30%)] dark:bg-[radial-gradient(circle_at_88%_0%,rgba(59,130,246,0.16),transparent_32%),radial-gradient(circle_at_8%_100%,rgba(20,184,166,0.1),transparent_30%)]" />
         <div className="relative z-10">
           {/* Mobile logo */}
@@ -629,7 +640,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── Widget Grid ────────────────────────────────────────── */}
       {finalWidgetList.length > 0 && (
@@ -676,11 +687,7 @@ export default function Dashboard() {
 
       {/* ── Charts ─────────────────────────────────────────────── */}
       {visibleChartCount > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1, ease: 'easeOut' }}
-        >
+        <div className="dashboard-charts-section">
           {/* Section label */}
           <div className="mb-4 flex items-center gap-2">
             <div className="h-4 w-1 rounded-full bg-blue-400/70 shadow-[0_0_14px_rgba(96,165,250,0.45)] dark:bg-blue-300/60" />
@@ -705,7 +712,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* ── Empty State ────────────────────────────────────────── */}
@@ -714,9 +721,9 @@ export default function Dashboard() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="glass-card rounded-[26px] p-16 text-center"
+          className="liquid-glass-card rounded-[26px] p-16 text-center"
         >
-          <div className="glass-icon-tile mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[22px]">
+          <div className="liquid-glass-icon mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[22px]">
             <svg
               className="h-8 w-8 text-gray-300 dark:text-gray-500"
               fill="none"

@@ -1,4 +1,4 @@
-import { Button, Modal } from 'antd';
+import { Modal } from 'antd';
 import { AxiosRequestConfig } from 'axios';
 import { useState } from 'react';
 import { ZodObject, ZodRawShape } from 'zod';
@@ -7,6 +7,7 @@ import { FieldConfig } from '@/types/form';
 import { CrudServiceType } from '@utils/crudService';
 import { CreateForm } from './CreateForm';
 
+import AppButton from '@components/common/AppButton';
 import { FaPlus } from 'react-icons/fa6';
 
 interface CreateRoleProps<
@@ -44,14 +45,9 @@ export function CreateModal<
 
   return (
     <>
-      <Button
-        color="green"
-        variant="solid"
-        icon={<FaPlus />}
-        onClick={showModal}
-      >
+      <AppButton tone="success" icon={<FaPlus />} onClick={showModal}>
         {title}
-      </Button>
+      </AppButton>
       <Modal
         title={title}
         open={open}

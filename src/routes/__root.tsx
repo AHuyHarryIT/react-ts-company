@@ -10,6 +10,9 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { queryClient } from '@/lib/queryClient';
 
+const showDevtools =
+  import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEVTOOLS === 'true';
+
 type RouterContext = {
   user: User | null;
   authenticated: AuthContext;
@@ -20,8 +23,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     <>
       <QueryClientProvider client={queryClient}>
         <Outlet />
-        <TanStackRouterDevtools />
-        <ReactQueryDevtools initialIsOpen={false} />
+        {showDevtools && (
+          <>
+            <TanStackRouterDevtools />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </>
+        )}
       </QueryClientProvider>
     </>
   ),

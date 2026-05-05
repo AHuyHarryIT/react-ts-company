@@ -1,5 +1,6 @@
 import axiosPrivate from '@/api/axiosInstance';
 import { QueryParams } from '@/types/queryParams';
+import AppButton from '@components/common/AppButton';
 import { IconExport } from '@components/icons';
 import { productModelEnum } from '@schemas/product/productModelEnum.enum';
 import { productService } from '@services/ProductService';
@@ -10,7 +11,7 @@ import { calculateError200Product } from '@utils/calculateError200Product';
 import { calculateExportProduct } from '@utils/calculateExportProduct';
 import { calculateProduceProduct } from '@utils/calculateProduceProduct';
 import { calculateTotalProduct } from '@utils/calculateTotalProduct';
-import { Button, DatePicker, Modal } from 'antd';
+import { DatePicker, Modal } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
@@ -698,13 +699,9 @@ export const ExportModal = () => {
 
   return (
     <>
-      <Button
-        color="green"
-        variant="solid"
-        icon={<IconExport />}
-        children="Xuất excel"
-        onClick={handleOpen}
-      />
+      <AppButton tone="success" icon={<IconExport />} onClick={handleOpen}>
+        Xuất excel
+      </AppButton>
       <Modal
         title="Xuất Data"
         open={open}

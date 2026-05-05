@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, message, Modal } from 'antd';
+import { message, Modal } from 'antd';
 import { ReactNode, useState } from 'react';
 
 import { deleteWorkScheduleCategory } from '@services/WorkScheduleCategoryService';
 
+import AppButton from '@components/common/AppButton';
 import { BiTrash } from 'react-icons/bi';
 
 import { SizeType } from 'antd/es/config-provider/SizeContext';
@@ -71,15 +72,14 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
 
   return (
     <>
-      <Button
+      <AppButton
+        tone="danger"
         size={size}
-        color="danger"
-        variant="solid"
         icon={<BiTrash />}
         onClick={showModal}
       >
         Xóa
-      </Button>
+      </AppButton>
       <Modal
         title="Xác nhận xóa"
         open={open}

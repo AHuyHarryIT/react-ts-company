@@ -80,6 +80,8 @@ const OUTSOURCING_LEADER_CATEGORY_NAMES = [
   'Nhóm QC Ca Ngày',
   'Nhóm Làm Việc Hành Chính'
 ] as const;
+const EMPLOYEE_COLUMN_WIDTH = 170;
+const DAY_COLUMN_WIDTH = 42;
 
 export function ScheduleDetailDrawer({
   open,
@@ -121,6 +123,7 @@ export default function Detail({
   const [maxDay, setMaxDay] = useState<number>(0);
   const [totalSaturdays, setTotalSaturdays] = useState<number>(0);
   const [currentDate, setCurrentDate] = useState<dayjs.Dayjs | null>(null);
+  const mainContentRef = useRef<HTMLDivElement | null>(null);
 
   const { data: schedule, isLoading: isLoadingSchedule } = useQuery({
     queryKey: ['schedule', id],
@@ -325,7 +328,7 @@ export default function Detail({
       title: 'Nhân viên',
       key: 'employee',
       fixed: 'left',
-      width: 160,
+      width: EMPLOYEE_COLUMN_WIDTH,
       render: (
         _: unknown,
         record: { employee_id: string; employee_name: string }
@@ -353,20 +356,27 @@ export default function Detail({
     borderLeft: '2px solid #60a5fa',
     borderRight: '2px solid #60a5fa'
   };
-  const getTodayColumnProps = (isToday: boolean) =>
-    isToday
-      ? {
-          className: todayColumnClass,
-          onHeaderCell: () => ({
-            className: todayColumnClass,
-            style: todayColumnStyle
-          }),
-          onCell: () => ({
-            className: todayColumnClass,
-            style: todayColumnStyle
-          })
-        }
-      : {};
+  const getDayColumnProps = (isToday: boolean) => {
+    const dayColumnStyle: CSSProperties = {
+      minWidth: DAY_COLUMN_WIDTH,
+      width: DAY_COLUMN_WIDTH,
+      paddingInline: 4,
+      ...(isToday ? todayColumnStyle : {})
+    };
+
+    return {
+      width: DAY_COLUMN_WIDTH,
+      className: isToday ? todayColumnClass : undefined,
+      onHeaderCell: () => ({
+        className: isToday ? todayColumnClass : undefined,
+        style: dayColumnStyle
+      }),
+      onCell: () => ({
+        className: isToday ? todayColumnClass : undefined,
+        style: dayColumnStyle
+      })
+    };
+  };
 
   const columnsHNHC: TableColumnsType<HnhcTableType> = [
     ...(columnsDefault as TableColumnsType<HnhcTableType>),
@@ -392,7 +402,7 @@ export default function Detail({
         dataIndex: 'day' + (index + 1),
         key: 'day' + (index + 1),
         align: 'center' as const,
-        ...getTodayColumnProps(isToday),
+        ...getDayColumnProps(isToday),
         render: (value: string) => {
           if (!value) return null;
           return (
@@ -426,8 +436,9 @@ export default function Detail({
           </div>
         ),
         dataIndex: 'day' + (index + 1),
+        key: 'day' + (index + 1),
         align: 'center' as const,
-        ...getTodayColumnProps(isToday),
+        ...getDayColumnProps(isToday),
         render: (value: boolean) => {
           if (!value) return null;
           return (
@@ -461,8 +472,9 @@ export default function Detail({
           </div>
         ),
         dataIndex: 'day' + day.date(),
+        key: 'day' + day.date(),
         align: 'center' as const,
-        ...getTodayColumnProps(isToday),
+        ...getDayColumnProps(isToday),
         render: (value: boolean) => {
           if (!value) return null;
           return (
@@ -478,6 +490,11 @@ export default function Detail({
   const tableSticky: TableProps<unknown>['sticky'] = {
     offsetHeader: isDrawer ? 64 : 56
   };
+  const scheduleTableClassName =
+    'smooth-sticky-table work-schedule-sticky-table';
+  const scheduleTableStyle = {
+    '--work-schedule-sticky-top': `${isDrawer ? 64 : 56}px`
+  } as CSSProperties;
 
   const { eatRoomData, wcMenData, wcWomenData, wcTrashData } = useMemo(() => {
     const sourceEmployees =
@@ -569,6 +586,63 @@ export default function Detail({
     };
   }, [employees, allEmployees, maxDay, user?.role.id]);
 
+  useEffect(() => {
+    const root = mainContentRef.current;
+    if (!root) return;
+
+    let frameId = 0;
+
+    const updateStickyVisibility = () => {
+      frameId = 0;
+      const stickyTop = isDrawer ? 64 : 56;
+
+      root
+        .querySelectorAll<HTMLElement>('.work-schedule-sticky-table')
+        .forEach((table) => {
+          const stickyHolder = table.querySelector<HTMLElement>(
+            '.ant-table-sticky-holder'
+          );
+          if (!stickyHolder) return;
+
+          const tableRect = table.getBoundingClientRect();
+          const stickyHeight = stickyHolder.offsetHeight || 0;
+          const shouldHideSticky =
+            tableRect.top <= stickyTop &&
+            tableRect.bottom <= stickyTop + stickyHeight + 1;
+
+          table.classList.toggle(
+            'work-schedule-sticky-ended',
+            shouldHideSticky
+          );
+        });
+    };
+
+    const scheduleStickyUpdate = () => {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(updateStickyVisibility);
+    };
+
+    scheduleStickyUpdate();
+    window.addEventListener('scroll', scheduleStickyUpdate, true);
+    window.addEventListener('resize', scheduleStickyUpdate);
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      window.removeEventListener('scroll', scheduleStickyUpdate, true);
+      window.removeEventListener('resize', scheduleStickyUpdate);
+    };
+  }, [
+    isDrawer,
+    hnhcData,
+    eatRoomData,
+    wcMenData,
+    wcWomenData,
+    wcTrashData,
+    queryResult.isLoading
+  ]);
+
   const items: TabsProps['items'] = [
     {
       key: '1',
@@ -599,7 +673,8 @@ export default function Detail({
                   ].join('-')
                 }
                 bordered
-                className="smooth-sticky-table"
+                className={scheduleTableClassName}
+                style={scheduleTableStyle}
                 scroll={tableScroll}
                 sticky={tableSticky}
                 pagination={false}
@@ -630,7 +705,8 @@ export default function Detail({
             ].join('-')
           }
           bordered
-          className="smooth-sticky-table"
+          className={scheduleTableClassName}
+          style={scheduleTableStyle}
           scroll={tableScroll}
           sticky={tableSticky}
           pagination={false}
@@ -658,7 +734,8 @@ export default function Detail({
             ].join('-')
           }
           bordered
-          className="smooth-sticky-table"
+          className={scheduleTableClassName}
+          style={scheduleTableStyle}
           scroll={tableScroll}
           sticky={tableSticky}
           pagination={false}
@@ -686,7 +763,8 @@ export default function Detail({
             ].join('-')
           }
           bordered
-          className="smooth-sticky-table"
+          className={scheduleTableClassName}
+          style={scheduleTableStyle}
           scroll={tableScroll}
           sticky={tableSticky}
           pagination={false}
@@ -714,7 +792,8 @@ export default function Detail({
             ].join('-')
           }
           bordered
-          className="smooth-sticky-table"
+          className={scheduleTableClassName}
+          style={scheduleTableStyle}
           scroll={tableScroll}
           sticky={tableSticky}
           pagination={false}
@@ -739,7 +818,10 @@ export default function Detail({
   );
 
   const mainContent = (
-    <div className={isDrawer ? 'flex flex-col gap-6' : 'space-y-5'}>
+    <div
+      ref={mainContentRef}
+      className={isDrawer ? 'flex flex-col gap-6' : 'space-y-5'}
+    >
       {/* ── Legends ──────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
         {visibleWorkLegends.map(([key, legend]) => (
@@ -813,7 +895,7 @@ export default function Detail({
             <span className="text-red-500">Không tìm thấy lịch làm việc</span>
           </div>
         ) : (
-          <Tabs items={items} size="large" type="card" animated />
+          <Tabs items={items} size="large" type="card" animated={false} />
         )}
       </Spin>
     </div>

@@ -1,18 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Button,
-  DatePicker,
-  Form,
-  FormProps,
-  Input,
-  message,
-  Modal
-} from 'antd';
+import { DatePicker, Form, FormProps, Input, message, Modal } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { useState } from 'react';
 
 import { addWorkSchedule } from '@services/workScheduleService';
 
+import AppButton from '@components/common/AppButton';
 import { FaPlus } from 'react-icons/fa';
 import dayjs from 'dayjs';
 
@@ -96,14 +89,9 @@ export const AddWorkSchedule: React.FC<AddWorkScheduleProps> = ({
 
   return (
     <>
-      <Button
-        color="green"
-        variant="solid"
-        icon={<FaPlus />}
-        onClick={handleOpen}
-      >
+      <AppButton tone="success" icon={<FaPlus />} onClick={handleOpen}>
         Thêm lịch làm việc
-      </Button>
+      </AppButton>
       <Modal
         title="Thêm lịch làm việc"
         open={open}
@@ -149,14 +137,9 @@ export const AddWorkSchedule: React.FC<AddWorkScheduleProps> = ({
             />
           </Form.Item>
           <div className="text-end">
-            <Button
-              color="green"
-              variant="solid"
-              htmlType="submit"
-              loading={isPending}
-            >
+            <AppButton tone="success" htmlType="submit" loading={isPending}>
               Import
-            </Button>
+            </AppButton>
           </div>
         </Form>
       </Modal>

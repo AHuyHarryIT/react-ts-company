@@ -1,4 +1,5 @@
 import { Shift } from '@/types/shift';
+import AppButton from '@components/common/AppButton';
 import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
@@ -347,10 +348,10 @@ export const RequestStamp = () => {
           {/* ── Action Bar ─────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <Link to="/employee/stamps/history">
-              <button className="header-action-btn header-action-btn--warning">
+              <AppButton tone="warning">
                 <IconHistory />
                 KIỂM TRA YÊU CẦU IN TEM
-              </button>
+              </AppButton>
             </Link>
           </div>
 
@@ -534,13 +535,14 @@ export const RequestStamp = () => {
               )}
             </Form.List>
             <Form.Item style={{ marginTop: '16px', marginBottom: '0' }}>
-              <button
-                type="submit"
+              <AppButton
+                tone="success"
+                htmlType="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-600 hover:shadow-md active:scale-[0.97] disabled:opacity-50"
+                className="px-6"
               >
                 {isSubmitting ? 'Đang gửi...' : 'Gửi yêu cầu'}
-              </button>
+              </AppButton>
             </Form.Item>
           </Form>
         </div>

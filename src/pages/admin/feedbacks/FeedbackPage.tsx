@@ -9,7 +9,6 @@ import {
 } from '@tanstack/react-query';
 import {
   Table,
-  Button,
   Input,
   Select,
   Space,
@@ -33,8 +32,10 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import {
   fetchAllFeedbacks,
@@ -307,7 +308,7 @@ export default function FeedbackPage() {
       align: 'center',
       render: (_: unknown, record: Feedback) => (
         <Space size={4}>
-          <Button
+          <AppButton
             type="text"
             size="small"
             icon={<FaEye className="text-xs text-gray-400" />}
@@ -319,7 +320,7 @@ export default function FeedbackPage() {
             okText="Xóa"
             cancelText="Hủy"
           >
-            <Button
+            <AppButton
               type="text"
               size="small"
               danger
@@ -342,7 +343,7 @@ export default function FeedbackPage() {
       current: page,
       pageSize: 20,
       total,
-      showTotal: (t, range) => `${range[0]}-${range[1]} / ${t}`,
+      showSizeChanger: false,
       onChange: (p) => setPage(p)
     },
     rowClassName: (record: Feedback) =>
@@ -469,26 +470,26 @@ export default function FeedbackPage() {
 
                       {/* Actions */}
                       <div className="mt-3 flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
-                        <Button
+                        <AppButton
                           size="small"
                           icon={<FaEye className="text-xs" />}
                           onClick={() => openDetail(record)}
                         >
                           Chi tiết
-                        </Button>
+                        </AppButton>
                         <Popconfirm
                           title="Xóa góp ý này?"
                           onConfirm={() => deleteMutation.mutate(record.id)}
                           okText="Xóa"
                           cancelText="Hủy"
                         >
-                          <Button
+                          <AppButton
                             size="small"
                             danger
                             icon={<FaTrashAlt className="text-xs" />}
                           >
                             Xóa
-                          </Button>
+                          </AppButton>
                         </Popconfirm>
                       </div>
                     </div>
@@ -498,12 +499,13 @@ export default function FeedbackPage() {
               {total > 20 && (
                 <div className="mt-4 flex justify-center">
                   <Pagination
+                    {...customPaginationProps}
                     current={page}
                     pageSize={20}
                     total={total}
                     onChange={(p) => setPage(p)}
                     size="small"
-                    showTotal={(t, range) => `${range[0]}-${range[1]} / ${t}`}
+                    showSizeChanger={false}
                   />
                 </div>
               )}
@@ -668,16 +670,16 @@ export default function FeedbackPage() {
                     />
                   </div>
 
-                  <Button
-                    type="primary"
+                  <AppButton
+                    tone="primary"
                     icon={<FaReply className="text-xs" />}
                     block
                     onClick={handleReply}
                     loading={replyMutation.isPending}
-                    className="!h-9 !rounded-lg !border-none !bg-slate-700 hover:!bg-slate-800"
+                    className="!h-9"
                   >
                     Gửi phản hồi
-                  </Button>
+                  </AppButton>
                 </div>
               )}
             </div>

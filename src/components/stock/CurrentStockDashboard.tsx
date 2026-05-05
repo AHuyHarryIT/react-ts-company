@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  Table,
-  Button,
-  Typography,
-  message,
-  Spin,
-  Input,
-  Select,
-  Drawer
-} from 'antd';
+import { Table, Typography, message, Spin, Input, Select, Drawer } from 'antd';
 import { InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import AppButton from '@/components/common/AppButton';
 import RefreshButton from '@/components/common/RefreshButton';
+import {
+  customPaginationProps,
+  DEFAULT_PAGE_SIZE_OPTIONS
+} from '@components/custom/PaginationProps.custom';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
 import {
@@ -626,11 +622,10 @@ const CurrentStockDashboard: React.FC = () => {
           rowKey="key"
           loading={loading}
           pagination={{
+            ...customPaginationProps,
             current: tablePagination.current,
             pageSize: tablePagination.pageSize,
-            showSizeChanger: true,
-            pageSizeOptions: ['20', '50', '100'],
-            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total}`,
+            pageSizeOptions: DEFAULT_PAGE_SIZE_OPTIONS,
             size: 'small',
             onChange: (page, pageSize) =>
               setTablePagination({ current: page, pageSize })
@@ -797,7 +792,7 @@ const CurrentStockDashboard: React.FC = () => {
                   / {productStockGroups.length}
                 </span>
                 <div className="flex items-center gap-1">
-                  <Button
+                  <AppButton
                     size="small"
                     disabled={tablePagination.current <= 1}
                     onClick={() =>
@@ -808,14 +803,14 @@ const CurrentStockDashboard: React.FC = () => {
                     }
                   >
                     ‹
-                  </Button>
+                  </AppButton>
                   <span className="px-1.5 text-xs font-medium text-gray-600">
                     {tablePagination.current} /{' '}
                     {Math.ceil(
                       productStockGroups.length / tablePagination.pageSize
                     )}
                   </span>
-                  <Button
+                  <AppButton
                     size="small"
                     disabled={
                       tablePagination.current * tablePagination.pageSize >=
@@ -829,7 +824,7 @@ const CurrentStockDashboard: React.FC = () => {
                     }
                   >
                     ›
-                  </Button>
+                  </AppButton>
                 </div>
               </div>
             )}

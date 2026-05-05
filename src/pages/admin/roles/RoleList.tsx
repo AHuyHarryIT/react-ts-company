@@ -20,6 +20,7 @@ import RefreshButton from '@components/common/RefreshButton';
 import { CreateModal } from '@components/ui/CRUD/CreateModal';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { UpdateModal } from '@components/ui/CRUD/UpdateModal';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { ActionGroup } from '@components/common/ActionButtons';
 import { motion } from 'framer-motion';
@@ -272,6 +273,7 @@ export default function RoleList() {
                 {total > limit && (
                   <div className="mt-4 flex justify-center">
                     <Pagination
+                      {...customPaginationProps}
                       current={page}
                       pageSize={limit}
                       total={total}
@@ -280,8 +282,6 @@ export default function RoleList() {
                         setLimit(size);
                       }}
                       size="small"
-                      showSizeChanger
-                      showTotal={(t, range) => `${range[0]}-${range[1]} / ${t}`}
                     />
                   </div>
                 )}

@@ -1,3 +1,4 @@
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
 import { IconHistory } from '@components/icons';
@@ -75,16 +76,16 @@ export const UpdateQuantityError = () => {
           {/* ── Action Bar ─────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
             <Link to="/employee/todo/add-product">
-              <button className="header-action-btn header-action-btn--primary">
+              <AppButton tone="primary">
                 <FaBoxOpen className="text-xs" />
                 NHẬP SẢN PHẨM
-              </button>
+              </AppButton>
             </Link>
             <Link to="/employee/todo/history">
-              <button className="header-action-btn header-action-btn--warning">
+              <AppButton tone="warning">
                 <IconHistory />
                 LỊCH SỬ
-              </button>
+              </AppButton>
             </Link>
           </div>
 

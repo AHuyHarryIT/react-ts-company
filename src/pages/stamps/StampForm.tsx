@@ -23,6 +23,7 @@ import { FaPrint, FaRotateRight, FaClockRotateLeft } from 'react-icons/fa6';
 
 import { ProductType } from '@/types/productType';
 import { Shift } from '@/types/shift';
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { customFormProps } from '@components/custom/FormProps.custom';
 import { PrintBagStamp } from '@components/print/PrintBagStamp';
@@ -174,14 +175,14 @@ export default function StampForm() {
         <div className="space-y-5">
           {/* ── Action Bar ─────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
-            <button
+            <AppButton
+              tone="warning"
               tabIndex={-1}
               onClick={() => navigate({ to: '/stamps/history' })}
-              className="header-action-btn header-action-btn--warning"
             >
               <FaClockRotateLeft />
               Xem Lịch Sử In Tem
-            </button>
+            </AppButton>
 
             <div className="ml-auto flex min-w-[min(100%,24rem)] items-center gap-2">
               {/* ── Stamp Type Selector ── */}

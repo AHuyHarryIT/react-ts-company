@@ -16,6 +16,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ProductType } from '@/types/productType';
 import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { RowTableActions } from './RowTableActions';
 import { calculateExportProduct } from '@utils/calculateExportProduct';
@@ -201,6 +202,7 @@ export const ExportTable: React.FC<ExportTableProps> = ({
 
             <div className="flex justify-center pt-2">
               <Pagination
+                {...customPaginationProps}
                 size="small"
                 current={params.page}
                 pageSize={params.limit}
@@ -301,6 +303,7 @@ export const ExportTable: React.FC<ExportTableProps> = ({
     ...dateColumns,
     {
       title: <div>Thao tác</div>,
+      width: 100,
       align: 'center',
       render: (_, record) => {
         return <RowTableActions productId={record.id} />;
@@ -310,7 +313,8 @@ export const ExportTable: React.FC<ExportTableProps> = ({
 
   const tableProps: TableProps<ExportTableType> = {
     ...(customTableProps as unknown as TableProps<ExportTableType>),
-    className: 'product-sticky-table',
+    tableLayout: 'fixed',
+    className: 'product-sticky-table admin-page-sticky-table',
     rowKey: (record) => ['error', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,

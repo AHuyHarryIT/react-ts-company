@@ -267,6 +267,7 @@ export default function RequestFormList() {
       }
     },
     approve: (record: RequestForm) => {
+      setDetailModalVisible(false);
       if (record.type === 'giay_uy_quyen') {
         message.loading('Đang duyệt đơn ủy quyền...', 0);
         approveDirectly(record.id);
@@ -277,6 +278,7 @@ export default function RequestFormList() {
       }
     },
     reject: (record: RequestForm) => {
+      setDetailModalVisible(false);
       setSelectedRecord(record);
       setApprovalMode('reject');
       setApprovalModalVisible(true);

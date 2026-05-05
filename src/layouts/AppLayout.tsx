@@ -1,5 +1,11 @@
 import { Outlet } from '@tanstack/react-router';
-import { ConfigProvider, Layout, theme as antTheme, message } from 'antd';
+import {
+  ConfigProvider,
+  Layout,
+  theme as antTheme,
+  message,
+  Modal
+} from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 
 import BirthdayModal from '@components/BirthdayModal';
@@ -16,14 +22,24 @@ import AppFooter from '@partials/Footer';
 import Header from '@partials/Header';
 import Sidebar from '@partials/Sidebar';
 import { fetchNotifications } from '@services/NotificationService';
-import { updateScreenSize } from '@stores/uiStore';
+import {
+  hasAppearancePreference,
+  setAppearance,
+  uiStore,
+  updateScreenSize
+} from '@stores/uiStore';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Route } from '@routes/__root';
 import { motion } from 'framer-motion';
+import { useStore } from '@tanstack/react-store';
+import { FaMagic, FaRegWindowMaximize, FaTint } from 'react-icons/fa';
 
 const { Content } = Layout;
 
 function AppLayout() {
+  const { appearance } = useStore(uiStore);
+  const isLiquidAppearance = appearance === 'liquid';
+
   useEffect(() => {
     window.addEventListener('resize', updateScreenSize);
     return () => {
@@ -38,6 +54,17 @@ function AppLayout() {
   // ── Holiday mode (30/4 – 1/5) ──
   const { isHoliday } = useHolidayMode();
   const [showHolidayModal, setShowHolidayModal] = useState(false);
+  const [showAppearancePrompt, setShowAppearancePrompt] = useState(false);
+
+  useEffect(() => {
+    if (hasAppearancePreference()) return;
+
+    const timer = window.setTimeout(() => {
+      setShowAppearancePrompt(true);
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!isHoliday) return;
@@ -101,6 +128,16 @@ function AppLayout() {
     }
   };
 
+  const handleUseLiquidAppearance = () => {
+    setAppearance('liquid');
+    setShowAppearancePrompt(false);
+  };
+
+  const handleKeepDefaultAppearance = () => {
+    setAppearance('classic');
+    setShowAppearancePrompt(false);
+  };
+
   const messages =
     notifications?.data.map((notification) => notification.message) || [];
   return (
@@ -114,6 +151,21 @@ function AppLayout() {
             colorBgContainer: 'rgba(255, 255, 255, 0.72)',
             colorBorderSecondary: 'rgba(148, 163, 184, 0.22)',
             boxShadowSecondary: '0 14px 34px rgba(15, 23, 42, 0.08)'
+          },
+          components: {
+            Table: isLiquidAppearance
+              ? {
+                  headerBg: '#eef7ff',
+                  headerColor: '#1f2937',
+                  borderColor: 'rgba(125, 169, 215, 0.26)',
+                  bodySortBg: '#f6fbff',
+                  footerBg: '#f6fbff',
+                  rowHoverBg: '#eef7ff',
+                  rowSelectedBg: '#e2f0ff',
+                  rowSelectedHoverBg: '#d9ebff',
+                  rowExpandedBg: '#f6fbff'
+                }
+              : {}
           }
         }}
       >
@@ -177,6 +229,68 @@ function AppLayout() {
           loading={notificationLoading}
         />
       )}
+
+      <Modal
+        open={showAppearancePrompt}
+        title={
+          <div className="appearance-choice-modal__title">
+            <span className="appearance-choice-modal__title-icon">
+              <FaMagic />
+            </span>
+            <span>Chọn giao diện bạn muốn dùng</span>
+          </div>
+        }
+        className="appearance-choice-modal"
+        width={520}
+        footer={null}
+        centered
+        onCancel={handleKeepDefaultAppearance}
+      >
+        <p className="appearance-choice-modal__description">
+          Bạn có thể giữ giao diện cũ quen thuộc hoặc thử giao diện mới mềm và
+          trong hơn.
+        </p>
+
+        <div className="appearance-choice-modal__options">
+          <button
+            type="button"
+            aria-label="Giữ giao diện cũ"
+            className="appearance-choice-option appearance-choice-option--classic"
+            onClick={handleKeepDefaultAppearance}
+          >
+            <span className="appearance-choice-option__icon">
+              <FaRegWindowMaximize />
+            </span>
+            <span className="appearance-choice-option__content">
+              <span className="appearance-choice-option__label">
+                Giao diện cũ
+              </span>
+              <span className="appearance-choice-option__text">
+                Gọn, quen thuộc và nhẹ.
+              </span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            aria-label="Dùng giao diện mới"
+            className="appearance-choice-option appearance-choice-option--liquid"
+            onClick={handleUseLiquidAppearance}
+          >
+            <span className="appearance-choice-option__icon">
+              <FaTint />
+            </span>
+            <span className="appearance-choice-option__content">
+              <span className="appearance-choice-option__label">
+                Giao diện mới
+              </span>
+              <span className="appearance-choice-option__text">
+                Hiệu ứng giọt nước trong và mềm hơn.
+              </span>
+            </span>
+          </button>
+        </div>
+      </Modal>
 
       {/* ── Holiday Decorations (30/4 – 1/5) ── */}
       {isHoliday && <FallingStars count={30} />}

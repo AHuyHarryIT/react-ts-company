@@ -6,6 +6,7 @@ import { DetailView, AdminActionModal } from '@components/RequestForm';
 import { adminRequestFormService } from '@services/RequestFormService';
 import { useAuth } from '@hooks/useAuth';
 import { useState } from 'react';
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 
 export default function RequestFormDetail() {
@@ -87,20 +88,14 @@ export default function RequestFormDetail() {
       <div className="space-y-5">
         {/* ── Action Bar ──────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
-          <button
-            onClick={handleBack}
-            className="header-action-btn header-action-btn--neutral"
-          >
+          <AppButton tone="neutral" onClick={handleBack}>
             <ArrowLeftOutlined />
             Quay lại danh sách
-          </button>
+          </AppButton>
           {canApprove && (
-            <button
-              onClick={handleApproval}
-              className="header-action-btn header-action-btn--primary"
-            >
+            <AppButton tone="primary" onClick={handleApproval}>
               Duyệt đơn
-            </button>
+            </AppButton>
           )}
           <div className="ml-auto flex items-center gap-2">
             <Tag

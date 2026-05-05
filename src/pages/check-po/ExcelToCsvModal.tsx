@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
+import AppButton from '@components/common/AppButton';
 import {
-  Button,
   Modal,
   Upload,
   Select,
@@ -235,14 +235,9 @@ export const ExcelToCsvModal = () => {
 
   return (
     <>
-      <Button
-        variant="solid"
-        color="cyan"
-        icon={<FaFileCsv />}
-        onClick={handleOpen}
-      >
+      <AppButton tone="info" icon={<FaFileCsv />} onClick={handleOpen}>
         Excel → CSV
-      </Button>
+      </AppButton>
 
       <Modal
         title={
@@ -309,7 +304,7 @@ export const ExcelToCsvModal = () => {
                   {totalRows.toLocaleString('vi-VN')} dòng
                 </Tag>
                 <Tag color="purple">{totalSelected} sheet được chọn</Tag>
-                <Button
+                <AppButton
                   size="small"
                   type="text"
                   danger
@@ -320,7 +315,7 @@ export const ExcelToCsvModal = () => {
                   className="ml-auto"
                 >
                   Xóa tất cả
-                </Button>
+                </AppButton>
               </div>
 
               {/* File entries */}
@@ -352,7 +347,7 @@ export const ExcelToCsvModal = () => {
                     </div>
                   ),
                   extra: (
-                    <Button
+                    <AppButton
                       size="small"
                       type="text"
                       danger
@@ -420,7 +415,7 @@ export const ExcelToCsvModal = () => {
                                 </div>
                               </div>
                               <Tooltip title="Xem trước">
-                                <Button
+                                <AppButton
                                   size="small"
                                   type="text"
                                   icon={<FaEye className="text-cyan-500" />}
@@ -447,13 +442,13 @@ export const ExcelToCsvModal = () => {
                         (10 dòng đầu)
                       </span>
                     </h4>
-                    <Button
+                    <AppButton
                       size="small"
                       type="text"
                       onClick={() => setPreview(null)}
                     >
                       Đóng
-                    </Button>
+                    </AppButton>
                   </div>
                   <div className="overflow-auto rounded-lg border border-gray-100 dark:border-gray-700">
                     <Table
@@ -470,9 +465,8 @@ export const ExcelToCsvModal = () => {
 
               {/* Action buttons */}
               <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
-                <Button
-                  variant="solid"
-                  color="cyan"
+                <AppButton
+                  tone="info"
                   size="large"
                   icon={<FaDownload />}
                   loading={converting}
@@ -480,7 +474,7 @@ export const ExcelToCsvModal = () => {
                   disabled={totalSelected === 0}
                 >
                   Tải {totalSelected} file CSV riêng
-                </Button>
+                </AppButton>
                 <span className="text-xs text-gray-400">
                   💡 File CSV sẽ hỗ trợ tiếng Việt (UTF-8 with BOM)
                 </span>

@@ -14,6 +14,7 @@ import React, { useState } from 'react';
 import { ProductType } from '@/types/productType';
 import { QueryParams } from '@/types/queryParams';
 import { PaginatedResponse } from '@/types/responseTypes';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { getMonthlyQuantities } from '@services/TotalQuantityService';
 import { calculateTotalProduct } from '@utils/calculateTotalProduct';
@@ -66,6 +67,23 @@ const StatItem: React.FC<{
       {label}
     </div>
     <div className={`text-sm font-bold ${color}`}>{value}</div>
+  </div>
+);
+
+const TotalHeaderTitle: React.FC<{
+  lines: React.ReactNode[];
+  align?: 'left' | 'center';
+}> = ({ lines, align = 'center' }) => (
+  <div
+    className={`product-total-header-title ${
+      align === 'left' ? 'is-left' : ''
+    }`}
+  >
+    {lines.map((line, index) => (
+      <span className="product-total-header-title__line" key={index}>
+        {line}
+      </span>
+    ))}
   </div>
 );
 
@@ -306,6 +324,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
 
             <div className="flex justify-center pt-2">
               <Pagination
+                {...customPaginationProps}
                 size="small"
                 current={params.page}
                 pageSize={params.limit}
@@ -328,13 +347,9 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       return {
         key: `${month}_quantity`,
         title: (
-          <div>
-            Số lượng
-            <br />
-            Đã xuất tháng {month}
-          </div>
+          <TotalHeaderTitle lines={['Số lượng', 'Đã xuất', `tháng ${month}`]} />
         ),
-        minWidth: 100,
+        width: 100,
         align: 'center',
         className: 'bg-indigo-300',
         dataIndex: ['times', month, 'quantity'],
@@ -357,7 +372,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
 
   const columns: TableColumnsType<TotalTableType> = [
     {
-      title: <div className="capitalize">STT</div>,
+      title: <TotalHeaderTitle lines={['STT']} />,
       rowScope: 'row',
       width: 50,
       align: 'center',
@@ -366,7 +381,7 @@ export const TotalTable: React.FC<TotalTableProps> = ({
         index + 1 + (params.limit ?? 50) * ((params.page ?? 1) - 1)
     },
     {
-      title: <div>Tên sản phẩm</div>,
+      title: <TotalHeaderTitle align="left" lines={['Tên sản phẩm']} />,
       width: 100,
       fixed: 'left',
       dataIndex: 'name',
@@ -385,20 +400,14 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: <div>Mã SP</div>,
+      title: <TotalHeaderTitle lines={['Mã SP']} />,
       width: 90,
       dataIndex: 'code',
       responsive: ['lg']
     },
     {
-      title: (
-        <div>
-          Sản Lượng
-          <br />
-          (MOQ)
-        </div>
-      ),
-      minWidth: 100,
+      title: <TotalHeaderTitle lines={['Sản Lượng', '(MOQ)']} />,
+      width: 100,
       className: 'bg-indigo-300',
       align: 'center',
       dataIndex: 'stockMOQ',
@@ -408,14 +417,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: (
-        <div>
-          Thùng CATON/tháng
-          <br />
-          (MOQ)
-        </div>
-      ),
-      minWidth: 120,
+      title: <TotalHeaderTitle lines={['Thùng', 'CATON/tháng', '(MOQ)']} />,
+      width: 120,
       className: 'bg-indigo-300',
       align: 'center',
       dataIndex: 'catonQuantity',
@@ -426,15 +429,17 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div>
-          Dự định
-          <br />
-          Thời gian hoạt động thiết bị
-          <br />
-          (ngày/tháng)
-        </div>
+        <TotalHeaderTitle
+          lines={[
+            'Dự định',
+            'Thời gian',
+            'hoạt động',
+            'thiết bị',
+            '(ngày/tháng)'
+          ]}
+        />
       ),
-      minWidth: 200,
+      width: 200,
       align: 'center',
       dataIndex: 'planTime',
       render: (value) => {
@@ -446,15 +451,17 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div>
-          Thực tế
-          <br />
-          Thời gian hoạt động thiết bị
-          <br />
-          (ngày/tháng)
-        </div>
+        <TotalHeaderTitle
+          lines={[
+            'Thực tế',
+            'Thời gian',
+            'hoạt động',
+            'thiết bị',
+            '(ngày/tháng)'
+          ]}
+        />
       ),
-      minWidth: 200,
+      width: 200,
       align: 'center',
       dataIndex: 'realTime',
       render: (value) => {
@@ -465,9 +472,9 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: <div>FAPV出荷</div>,
+      title: <TotalHeaderTitle lines={['FAPV出荷']} />,
       className: 'bg-indigo-300',
-      minWidth: 50,
+      width: 50,
       align: 'center',
       dataIndex: 'FAPV',
       render: (value) => {
@@ -476,9 +483,9 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: <div>FASV出荷</div>,
+      title: <TotalHeaderTitle lines={['FASV出荷']} />,
       className: 'bg-indigo-300',
-      minWidth: 50,
+      width: 50,
       align: 'center',
       dataIndex: 'FASV',
       render: (value) => {
@@ -487,9 +494,9 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: <div>FAVV出荷</div>,
+      title: <TotalHeaderTitle lines={['FAVV出荷']} />,
       className: 'bg-indigo-300',
-      minWidth: 50,
+      width: 50,
       align: 'center',
       dataIndex: 'FAVV',
       render: (value) => {
@@ -498,14 +505,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: (
-        <div>
-          Số lượng
-          <br />
-          tồn đầu kỳ
-        </div>
-      ),
-      minWidth: 100,
+      title: <TotalHeaderTitle lines={['Số lượng', 'tồn đầu kỳ']} />,
+      width: 100,
       align: 'center',
       dataIndex: 'stockStartQuantity',
       render: (value) => {
@@ -515,15 +516,9 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     {
       title: (
-        <div>
-          Thực tế
-          <br />
-          sản xuất
-          <br />
-          (cái/tháng)
-        </div>
+        <TotalHeaderTitle lines={['Thực tế', 'sản xuất', '(cái/tháng)']} />
       ),
-      minWidth: 100,
+      width: 100,
       align: 'center',
       dataIndex: 'realityQuantity',
       render: (value) => {
@@ -532,14 +527,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: (
-        <div>
-          Số Lượng
-          <br />
-          đã xuất
-        </div>
-      ),
-      minWidth: 100,
+      title: <TotalHeaderTitle lines={['Số Lượng', 'đã xuất']} />,
+      width: 100,
       align: 'center',
       dataIndex: 'exportQuantity',
       render: (value) => {
@@ -548,14 +537,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: (
-        <div>
-          Số lượng
-          <br />
-          đã kiểm 200%
-        </div>
-      ),
-      minWidth: 100,
+      title: <TotalHeaderTitle lines={['Số lượng', 'đã kiểm', '200%']} />,
+      width: 100,
       align: 'center',
       dataIndex: 'checked200',
       render: (value) => {
@@ -564,14 +547,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: (
-        <div>
-          Số lượng
-          <br />
-          chưa kiểm 200%
-        </div>
-      ),
-      minWidth: 100,
+      title: <TotalHeaderTitle lines={['Số lượng', 'chưa kiểm', '200%']} />,
+      width: 100,
       align: 'center',
       dataIndex: 'notCheck200',
       render: (value) => {
@@ -580,14 +557,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: (
-        <div>
-          Số lượng
-          <br />
-          tồn cuối kỳ
-        </div>
-      ),
-      minWidth: 100,
+      title: <TotalHeaderTitle lines={['Số lượng', 'tồn cuối kỳ']} />,
+      width: 100,
       align: 'center',
       dataIndex: 'stockEndQuantity',
       render: (value) => {
@@ -596,14 +567,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
       }
     },
     {
-      title: (
-        <div>
-          Số ngày
-          <br />
-          tồn kho
-        </div>
-      ),
-      minWidth: 100,
+      title: <TotalHeaderTitle lines={['Số ngày', 'tồn kho']} />,
+      width: 100,
       align: 'center',
       dataIndex: 'storageTime',
       render: (value) => {
@@ -615,8 +580,8 @@ export const TotalTable: React.FC<TotalTableProps> = ({
     },
     ...exportCols,
     {
-      title: <div>Thao tác</div>,
-      minWidth: 100,
+      title: <TotalHeaderTitle lines={['Thao tác']} />,
+      width: 100,
       align: 'center',
       render: (_, record) => {
         return <RowTableActions productId={record.id} />;
@@ -626,7 +591,9 @@ export const TotalTable: React.FC<TotalTableProps> = ({
 
   const tableProps: TableProps<TotalTableType> = {
     ...(customTableProps as unknown as TableProps<TotalTableType>),
-    className: 'product-sticky-table',
+    tableLayout: 'fixed',
+    className:
+      'product-sticky-table product-total-table admin-page-sticky-table',
     rowKey: (record) => ['product', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,

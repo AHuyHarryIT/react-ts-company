@@ -18,7 +18,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className={`glass-card mb-4 overflow-hidden rounded-[24px] transition-shadow duration-300 md:hover:shadow-md ${className}`}
+      className={`liquid-glass-card mb-4 overflow-hidden rounded-[24px] transition-shadow duration-300 md:hover:shadow-md ${className}`}
     >
       {/* Card Header */}
       <div className="border-b border-white/45 px-4 py-3 sm:px-6 sm:py-4 dark:border-white/10">

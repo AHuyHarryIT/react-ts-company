@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, Popconfirm, message, Spin, Image, Drawer } from 'antd';
+import { Empty, Popconfirm, message, Spin, Image, Drawer } from 'antd';
 import {
   FaPaperPlane,
   FaReply,
@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 
+import AppButton from '@components/common/AppButton';
 import FeedbackModal from '@components/feedback/FeedbackModal';
 import {
   fetchMyFeedbacks,
@@ -87,14 +88,15 @@ export default function FeedbackDrawer({ open, onClose }: FeedbackDrawerProps) {
                 </div>
               </div>
             </div>
-            <Button
+            <AppButton
+              tone="primary"
               size="small"
               icon={<FaPaperPlane className="text-[10px]" />}
               onClick={() => setCreateOpen(true)}
-              className="!rounded-lg !border-slate-200 !text-xs !text-slate-600 hover:!border-slate-300 hover:!text-slate-800"
+              className="!text-xs"
             >
               Gửi mới
-            </Button>
+            </AppButton>
           </div>
         }
         open={open}
@@ -131,14 +133,15 @@ export default function FeedbackDrawer({ open, onClose }: FeedbackDrawerProps) {
             description={
               <div className="space-y-2 text-center">
                 <div className="text-sm text-gray-400">Chưa có góp ý nào</div>
-                <Button
+                <AppButton
+                  tone="primary"
                   size="small"
                   icon={<FaPaperPlane className="text-[10px]" />}
                   onClick={() => setCreateOpen(true)}
-                  className="!rounded-lg !text-xs"
+                  className="!text-xs"
                 >
                   Gửi góp ý đầu tiên
-                </Button>
+                </AppButton>
               </div>
             }
           />
@@ -200,7 +203,7 @@ export default function FeedbackDrawer({ open, onClose }: FeedbackDrawerProps) {
                           okText="Xóa"
                           cancelText="Hủy"
                         >
-                          <Button
+                          <AppButton
                             type="text"
                             size="small"
                             danger

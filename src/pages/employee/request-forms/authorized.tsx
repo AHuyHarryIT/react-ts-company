@@ -443,8 +443,7 @@ function AuthorizedRequestFormsPage() {
     pagination: {
       ...customTableProps.pagination,
       pageSize: 10,
-      total: totalCount,
-      showTotal: (total) => `Tổng ${total} đơn`
+      total: totalCount
     }
   };
 

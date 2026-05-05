@@ -1,4 +1,4 @@
-import { Button, DatePicker, Input, Tabs, TabsProps } from 'antd';
+import { DatePicker, Input, Tabs, TabsProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -12,6 +12,7 @@ import {
 import { DailyTable } from '@components/check-po/DailyTable';
 import { ErrorTable } from '@components/check-po/ErrorTable';
 import { WeekTable } from '@components/check-po/WeekTable';
+import AppButton from '@components/common/AppButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { getWeeksInMonth } from '@utils/weeksInMonth';
 import { useIsMobile } from '@hooks/useIsMobile';
@@ -119,46 +120,45 @@ export const PoList = () => {
   ];
 
   return (
-    <ComponentCard title="Quản lý PO" className="!overflow-visible">
+    <ComponentCard
+      title="Quản lý PO"
+      className="admin-sticky-table-card !overflow-visible"
+    >
       <div className="space-y-5">
         {/* ── Action Bar ────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
-          <Button
-            variant="solid"
-            color="green"
+        <div className="check-po-action-bar flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
+          <AppButton
+            tone="success"
             icon={<IconAdd />}
             onClick={() => setAddQuantityOpen(true)}
             size={isMobile ? 'small' : 'middle'}
           >
             Thêm sản lượng
-          </Button>
-          <Button
-            variant="solid"
-            color="blue"
+          </AppButton>
+          <AppButton
+            tone="primary"
             icon={<FaTruck />}
             onClick={() => setAddExportOpen(true)}
             size={isMobile ? 'small' : 'middle'}
           >
             Thêm PO xuất hàng
-          </Button>
-          <Button
-            variant="solid"
-            color="blue"
+          </AppButton>
+          <AppButton
+            tone="info"
             icon={<FaWarehouse />}
             onClick={() => setAddInventoryOpen(true)}
             size={isMobile ? 'small' : 'middle'}
           >
             Thêm tồn đầu kỳ
-          </Button>
-          <Button
-            variant="solid"
-            color="blue"
+          </AppButton>
+          <AppButton
+            tone="purple"
             icon={<IconHistory />}
             onClick={() => setHistoryOpen(true)}
             size={isMobile ? 'small' : 'middle'}
           >
             Lịch sử nhập PO
-          </Button>
+          </AppButton>
           <ExportPoModal />
 
           <div className="ml-auto flex w-full flex-wrap items-center gap-3 md:w-auto">

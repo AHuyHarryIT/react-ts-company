@@ -160,7 +160,8 @@ export const DailyTable: React.FC<DailyTableProps> = ({ month, search }) => {
 
   const tableProps: TableProps<ProduceTableType> = {
     ...(customTableProps as unknown as TableProps<ProduceTableType>),
-    className: 'product-sticky-table',
+    tableLayout: 'fixed',
+    className: 'product-sticky-table admin-page-sticky-table',
     rowKey: (record) => ['produce', record.id].join('-'),
     columns: columns,
     dataSource: dataSource,

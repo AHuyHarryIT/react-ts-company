@@ -1,6 +1,6 @@
 import { Link, LinkProps } from '@tanstack/react-router';
-import { Button } from 'antd';
 import { motion } from 'framer-motion';
+import AppButton from '@components/common/AppButton';
 
 import { FaArrowLeft } from 'react-icons/fa6';
 
@@ -13,7 +13,9 @@ const BackButton: React.FC<LinkProps> = ({ ...props }) => {
           whileTap={{ scale: 0.95 }}
           className="inline-block"
         >
-          <Button icon={<FaArrowLeft />}>Quay lại</Button>
+          <AppButton tone="neutral" icon={<FaArrowLeft />}>
+            Quay lại
+          </AppButton>
         </motion.div>
       </Link>
     </>

@@ -12,6 +12,7 @@ import { UpdateWorkScheduleCategory } from '@components/workScheduleCategories/U
 
 import { WorkScheduleCategoryType } from '@/types/workScheduleCategoryType';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { ActionGroup } from '@components/common/ActionButtons';
 
@@ -227,6 +228,7 @@ export default function WorkScheduleCategoryList() {
             ))}
             <div className="flex justify-end pt-2">
               <Pagination
+                {...customPaginationProps}
                 size="small"
                 current={page}
                 pageSize={limit}

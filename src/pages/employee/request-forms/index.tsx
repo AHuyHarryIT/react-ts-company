@@ -5,6 +5,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { useAuth } from '@/hooks/useAuth';
 import { usePrefetchAuthorizableEmployees } from '@/hooks/useAuthorizedEmployee';
+import AppButton from '@components/common/AppButton';
 import RefreshButton from '@components/common/RefreshButton';
 import ComponentCard from '@components/common/ComponentCard';
 import {
@@ -472,10 +473,6 @@ export default function RequestFormList() {
         current: data.current_page,
         total: data.total,
         pageSize: data.per_page,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total: number, range: [number, number]) =>
-          `${range[0]}-${range[1]} của ${total} đơn`,
         onChange: handleTableChange
       }
     : undefined;
@@ -490,10 +487,6 @@ export default function RequestFormList() {
         current: adminData.current_page,
         total: adminData.total,
         pageSize: adminData.per_page,
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total: number, range: [number, number]) =>
-          `${range[0]}-${range[1]} của ${total} đơn`,
         onChange: handleTableChange
       }
     : undefined;
@@ -531,13 +524,13 @@ export default function RequestFormList() {
 
           {/* ── Action Bar ──────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4 dark:border-gray-700 dark:from-gray-800/50 dark:to-gray-900/50">
-            <button
+            <AppButton
+              tone="success"
               onClick={() => setCreateModalVisible(true)}
-              className="header-action-btn header-action-btn--success"
             >
               <PlusOutlined />
               Tạo đơn mới
-            </button>
+            </AppButton>
             <RefreshButton isLoading={isFetching} refresh={refetch} />
             <div className="ml-auto flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-gray-600 dark:bg-gray-800">
               <Tag color="blue" className="!m-0 !text-xs">

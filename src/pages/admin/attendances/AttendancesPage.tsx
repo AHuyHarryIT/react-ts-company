@@ -34,6 +34,7 @@ import { AttendanceType } from '@/types/attendanceType';
 import { QueryParams } from '@/types/queryParams';
 import ComponentCard from '@components/common/ComponentCard';
 import RefreshButton from '@components/common/RefreshButton';
+import { customPaginationProps } from '@components/custom/PaginationProps.custom';
 import { customTableProps } from '@components/custom/TableProps.custom';
 import { ConfirmButton } from '@components/ui/CRUD/ConfirmButton';
 import { CreateModal } from '@components/ui/CRUD/CreateModal';
@@ -553,6 +554,7 @@ function HistoryTab() {
           </div>
           <div className="mt-4 flex justify-end">
             <Pagination
+              {...customPaginationProps}
               size="small"
               current={params.page}
               pageSize={params.limit}
@@ -1148,6 +1150,7 @@ function RecordsTab() {
           </div>
           <div className="mt-4 flex justify-end">
             <Pagination
+              {...customPaginationProps}
               size="small"
               current={pagination.current}
               pageSize={
