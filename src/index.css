@@ -9193,3 +9193,268 @@ html
   :where(section, div):where([class*='rounded']):where([class*='bg-gray-50']) {
   background-color: #1f2937 !important;
 }
+
+/* Liquid overlays: readable panels without the mirror-like repaint flash. */
+html.liquid-ui-mode:not(.legacy-ui-mode) {
+  --liquid-overlay-bg:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(247, 251, 255, 0.94)
+    ),
+    #ffffff;
+  --liquid-overlay-header-bg: rgba(248, 250, 252, 0.86);
+  --liquid-overlay-border: rgba(148, 163, 184, 0.24);
+  --liquid-overlay-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+  --liquid-overlay-mask: rgba(15, 23, 42, 0.28);
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark {
+  --liquid-overlay-bg:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.95)),
+    #0f172a;
+  --liquid-overlay-header-bg: rgba(15, 23, 42, 0.82);
+  --liquid-overlay-border: rgba(148, 163, 184, 0.2);
+  --liquid-overlay-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+  --liquid-overlay-mask: rgba(2, 6, 23, 0.56);
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-modal-root, .ant-drawer-root, .ant-drawer)
+  :where(.ant-modal-mask, .ant-drawer-mask) {
+  background: var(--liquid-overlay-mask) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-modal-content,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  .ant-drawer-content {
+  border-color: var(--liquid-overlay-border) !important;
+  background: var(--liquid-overlay-bg) !important;
+  background-color: #ffffff !important;
+  box-shadow: var(--liquid-overlay-shadow) !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition:
+    box-shadow var(--motion-duration-fast) var(--motion-ease-standard),
+    border-color var(--motion-duration-fast) var(--motion-ease-standard),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard) !important;
+  will-change: transform, opacity;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .ant-modal-root
+  .ant-modal-content,
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  .ant-drawer-content {
+  background-color: #0f172a !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  :where(.ant-modal-header, .ant-modal-footer),
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  :where(.ant-drawer-header, .ant-drawer-footer) {
+  background: var(--liquid-overlay-header-bg) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode) body .ant-modal-root .ant-modal-body,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  .ant-drawer-body {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-modal-content::before,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-modal-content::after,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  .ant-drawer-content::before,
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  .ant-drawer-content::after {
+  content: none !important;
+  display: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  :where(
+    .ant-modal-wrap,
+    .ant-modal,
+    .ant-modal-content,
+    .ant-modal-header,
+    .ant-modal-body,
+    .ant-modal-footer,
+    .ant-card,
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    [class*='backdrop-blur']
+  ),
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  :where(
+    .ant-drawer-content-wrapper,
+    .ant-drawer-content,
+    .ant-drawer-header,
+    .ant-drawer-body,
+    .ant-drawer-footer,
+    .ant-card,
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .glass-panel,
+    .glass-card,
+    .glass-control,
+    .liquid-glass-panel,
+    .liquid-glass-card,
+    .liquid-glass-control,
+    [class*='backdrop-blur']
+  ) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  :where(
+    .ant-card,
+    .glass-panel,
+    .glass-card,
+    .liquid-glass-panel,
+    .liquid-glass-card
+  ),
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  :where(
+    .ant-card,
+    .glass-panel,
+    .glass-card,
+    .liquid-glass-panel,
+    .liquid-glass-card
+  ) {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.94),
+      rgba(248, 250, 252, 0.9)
+    ),
+    rgba(255, 255, 255, 0.92) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  .ant-modal-root
+  :where(
+    .ant-card,
+    .glass-panel,
+    .glass-card,
+    .liquid-glass-panel,
+    .liquid-glass-card
+  ),
+html.liquid-ui-mode:not(.legacy-ui-mode).dark
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  :where(
+    .ant-card,
+    .glass-panel,
+    .glass-card,
+    .liquid-glass-panel,
+    .liquid-glass-card
+  ) {
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.94), rgba(15, 23, 42, 0.88)),
+    rgba(15, 23, 42, 0.9) !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-modal-root, .ant-drawer-root, .ant-drawer)
+  :where(
+    .ant-fade-enter,
+    .ant-fade-appear,
+    .ant-fade-enter-active,
+    .ant-fade-appear-active,
+    .ant-zoom-enter,
+    .ant-zoom-appear,
+    .ant-zoom-enter-active,
+    .ant-zoom-appear-active,
+    .ant-slide-left-enter,
+    .ant-slide-left-appear,
+    .ant-slide-left-enter-active,
+    .ant-slide-left-appear-active,
+    .ant-slide-right-enter,
+    .ant-slide-right-appear,
+    .ant-slide-right-enter-active,
+    .ant-slide-right-appear-active
+  ) {
+  opacity: 1 !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  .ant-modal-root
+  .ant-modal:is(
+    .ant-zoom-enter,
+    .ant-zoom-appear,
+    .ant-zoom-enter-active,
+    .ant-zoom-appear-active
+  ) {
+  transform: none !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  :where(.ant-drawer-root, .ant-drawer):not(.app-sidebar-drawer)
+  .ant-drawer-content-wrapper:is(
+    .ant-slide-left-enter,
+    .ant-slide-left-appear,
+    .ant-slide-left-enter-active,
+    .ant-slide-left-appear-active,
+    .ant-slide-right-enter,
+    .ant-slide-right-appear,
+    .ant-slide-right-enter-active,
+    .ant-slide-right-appear-active
+  ) {
+  transform: none !important;
+}
