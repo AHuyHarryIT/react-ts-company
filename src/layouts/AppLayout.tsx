@@ -37,7 +37,7 @@ import { FaMagic, FaRegWindowMaximize, FaTint } from 'react-icons/fa';
 const { Content } = Layout;
 
 function AppLayout() {
-  const { appearance } = useStore(uiStore);
+  const { appearance, isMobile, isSidebarClose } = useStore(uiStore);
   const isLiquidAppearance = appearance === 'liquid';
 
   useEffect(() => {
@@ -46,6 +46,18 @@ function AppLayout() {
       window.removeEventListener('resize', updateScreenSize);
     };
   }, []);
+
+  useEffect(() => {
+    const sidebarWidth = isMobile ? '0px' : isSidebarClose ? '80px' : '256px';
+    document.documentElement.style.setProperty(
+      '--app-sidebar-width',
+      sidebarWidth
+    );
+
+    return () => {
+      document.documentElement.style.removeProperty('--app-sidebar-width');
+    };
+  }, [isMobile, isSidebarClose]);
 
   const {
     token: { borderRadiusLG }
@@ -140,6 +152,10 @@ function AppLayout() {
 
   const messages =
     notifications?.data.map((notification) => notification.message) || [];
+  const isCurrentUserBirthday = todayBirthdays.some(
+    (employee) => String(employee.id) === String(user?.id)
+  );
+
   return (
     <>
       <ConfigProvider
@@ -214,6 +230,8 @@ function AppLayout() {
         <BirthdayModal
           open={showBirthdayModal}
           employees={todayBirthdays.map((employee) => employee.name)}
+          isCurrentUserBirthday={isCurrentUserBirthday}
+          currentUserName={user?.name}
           companyName="Công Ty Vinh Vinh Phát"
           onClose={markBirthdayAsShown}
           autoCloseMs={10000} // 10 seconds auto close

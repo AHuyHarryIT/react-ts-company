@@ -1,16 +1,52 @@
 import { useState } from 'react';
-import { Card, Space, Typography, Button, Alert, Row, Col } from 'antd';
-import { BellOutlined, ExperimentOutlined } from '@ant-design/icons';
+import { Card, Space, Typography, Button, Alert, Row, Col, Tag } from 'antd';
+import {
+  BellOutlined,
+  CalendarOutlined,
+  ExperimentOutlined,
+  GiftOutlined,
+  NotificationOutlined
+} from '@ant-design/icons';
 import ComponentCard from '@components/common/ComponentCard';
+import BirthdayModal from '@components/BirthdayModal';
+import CleaningDutyModal from '@components/CleaningDuty/CleaningDutyModal';
+import HolidayGreetingModal from '@components/holiday/HolidayGreetingModal';
 import { NotificationRequestModal } from '@components/common/NotificationRequestModal';
 import { NotificationStatusIndicator } from '@components/common/NotificationStatusIndicator';
 import { useNotificationPermission } from '@hooks/useNotificationPermission';
 import { sendNotification } from '@utils/notificationUtil';
+import dayjs from 'dayjs';
 
 const { Title, Paragraph, Text } = Typography;
 
+type DemoModal =
+  | 'birthday'
+  | 'birthday-self'
+  | 'cleaning-duty'
+  | 'holiday'
+  | 'notification';
+
+const demoBirthdayEmployees = ['Nguyễn Văn A'];
+const demoCleaningDuties = [
+  {
+    id: 'demo-eat-room',
+    type: 'eat-room' as const,
+    date: dayjs()
+  },
+  {
+    id: 'demo-trash',
+    type: 'trash' as const,
+    date: dayjs().add(1, 'day')
+  },
+  {
+    id: 'demo-female-wc',
+    type: 'female-wc' as const,
+    date: dayjs().add(2, 'day')
+  }
+];
+
 export default function NotificationDemo() {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<DemoModal | null>(null);
   const { permission, requestPermission, isLoading } =
     useNotificationPermission();
 
@@ -28,6 +64,8 @@ export default function NotificationDemo() {
     console.log('Permission result:', result);
   };
 
+  const closeModal = () => setActiveModal(null);
+
   return (
     <div style={{ padding: '24px' }}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -35,11 +73,11 @@ export default function NotificationDemo() {
         <div>
           <Title level={2}>
             <BellOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-            Demo Hệ Thống Thông Báo Admin
+            Test Modal Hệ Thống
           </Title>
           <Paragraph>
-            Trang này demo hệ thống yêu cầu quyền thông báo tự động cho admin
-            khi đăng nhập.
+            Trang này giúp Super Admin mở thử các modal tự động mà không cần chờ
+            đúng dữ liệu sinh nhật, trực vệ sinh hoặc ngày lễ.
           </Paragraph>
         </div>
 
@@ -85,33 +123,132 @@ export default function NotificationDemo() {
         </ComponentCard>
 
         {/* Manual Test */}
-        <ComponentCard title="Test Thủ Công">
+        <ComponentCard title="Test Modal Thủ Công">
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Alert
               message="Lưu ý"
-              description="Modal yêu cầu quyền thường hiển thị tự động khi admin đăng nhập lần đầu. Bạn có thể test thủ công bằng nút bên dưới."
+              description="Các nút bên dưới chỉ mở modal với dữ liệu demo trên trình duyệt, không ghi dữ liệu lên BE."
               type="info"
               showIcon
             />
 
-            <Space wrap>
-              <Button
-                type="primary"
-                icon={<BellOutlined />}
-                onClick={() => setModalOpen(true)}
-              >
-                Mở Modal Yêu Cầu Quyền
-              </Button>
+            <Row gutter={[16, 16]}>
+              <Col xs={24} md={12} xl={6}>
+                <Card size="small" className="h-full">
+                  <Space direction="vertical" size="small">
+                    <Tag color="magenta">Sinh nhật</Tag>
+                    <Text strong>BirthdayModal</Text>
+                    <Text type="secondary">
+                      Test giao diện chúc mừng sinh nhật với 1 nhân sự.
+                    </Text>
+                    <Button
+                      type="primary"
+                      icon={<GiftOutlined />}
+                      onClick={() => setActiveModal('birthday')}
+                    >
+                      Mở modal
+                    </Button>
+                  </Space>
+                </Card>
+              </Col>
 
-              <Button
-                icon={<BellOutlined />}
-                loading={isLoading}
-                onClick={handleRequestPermission}
-                disabled={permission === 'granted'}
-              >
-                Yêu Cầu Quyền Trực Tiếp
-              </Button>
-            </Space>
+              <Col xs={24} md={12} xl={6}>
+                <Card size="small" className="h-full">
+                  <Space direction="vertical" size="small">
+                    <Tag color="purple">Sinh nhật của tôi</Tag>
+                    <Text strong>BirthdayModal cá nhân</Text>
+                    <Text type="secondary">
+                      Test nội dung khi user hiện tại là người sinh nhật.
+                    </Text>
+                    <Button
+                      type="primary"
+                      icon={<GiftOutlined />}
+                      onClick={() => setActiveModal('birthday-self')}
+                    >
+                      Mở modal
+                    </Button>
+                  </Space>
+                </Card>
+              </Col>
+
+              <Col xs={24} md={12} xl={6}>
+                <Card size="small" className="h-full">
+                  <Space direction="vertical" size="small">
+                    <Tag color="blue">Trực vệ sinh</Tag>
+                    <Text strong>CleaningDutyModal</Text>
+                    <Text type="secondary">
+                      Test danh sách nhiệm vụ trực hôm nay và sắp tới.
+                    </Text>
+                    <Button
+                      type="primary"
+                      icon={<CalendarOutlined />}
+                      onClick={() => setActiveModal('cleaning-duty')}
+                    >
+                      Mở modal
+                    </Button>
+                  </Space>
+                </Card>
+              </Col>
+
+              <Col xs={24} md={12} xl={6}>
+                <Card size="small" className="h-full">
+                  <Space direction="vertical" size="small">
+                    <Tag color="red">Ngày lễ</Tag>
+                    <Text strong>HolidayGreetingModal</Text>
+                    <Text type="secondary">
+                      Test popup lời chào ngày lễ đang dùng trong layout.
+                    </Text>
+                    <Button
+                      type="primary"
+                      icon={<NotificationOutlined />}
+                      onClick={() => setActiveModal('holiday')}
+                    >
+                      Mở modal
+                    </Button>
+                  </Space>
+                </Card>
+              </Col>
+
+              <Col xs={24} md={12} xl={6}>
+                <Card size="small" className="h-full">
+                  <Space direction="vertical" size="small">
+                    <Tag color="cyan">Thông báo</Tag>
+                    <Text strong>NotificationRequestModal</Text>
+                    <Text type="secondary">
+                      Test popup xin quyền thông báo trình duyệt.
+                    </Text>
+                    <Button
+                      type="primary"
+                      icon={<BellOutlined />}
+                      onClick={() => setActiveModal('notification')}
+                    >
+                      Mở modal
+                    </Button>
+                  </Space>
+                </Card>
+              </Col>
+            </Row>
+          </Space>
+        </ComponentCard>
+
+        <ComponentCard title="Test Quyền Thông Báo">
+          <Space wrap>
+            <Button
+              icon={<ExperimentOutlined />}
+              disabled={permission !== 'granted'}
+              onClick={handleTestNotification}
+            >
+              Gửi thông báo thử
+            </Button>
+
+            <Button
+              icon={<BellOutlined />}
+              loading={isLoading}
+              onClick={handleRequestPermission}
+              disabled={permission === 'granted'}
+            >
+              Yêu cầu quyền trực tiếp
+            </Button>
           </Space>
         </ComponentCard>
 
@@ -167,14 +304,37 @@ export default function NotificationDemo() {
         </ComponentCard>
 
         {/* Test Modal */}
+        <BirthdayModal
+          open={activeModal === 'birthday' || activeModal === 'birthday-self'}
+          employees={demoBirthdayEmployees}
+          isCurrentUserBirthday={activeModal === 'birthday-self'}
+          currentUserName={demoBirthdayEmployees[0]}
+          companyName="Công Ty Vinh Vinh Phát"
+          onClose={closeModal}
+          autoCloseMs={0}
+        />
+
+        <CleaningDutyModal
+          open={activeModal === 'cleaning-duty'}
+          duties={demoCleaningDuties}
+          onClose={closeModal}
+          onDontShowAgain={closeModal}
+        />
+
+        <HolidayGreetingModal
+          open={activeModal === 'holiday'}
+          onClose={closeModal}
+          autoCloseMs={0}
+        />
+
         <NotificationRequestModal
-          open={modalOpen}
+          open={activeModal === 'notification'}
           onAllow={async () => {
             const result = await requestPermission();
             console.log('Modal permission result:', result);
-            setModalOpen(false);
+            closeModal();
           }}
-          onDeny={() => setModalOpen(false)}
+          onDeny={closeModal}
           loading={isLoading}
         />
       </Space>

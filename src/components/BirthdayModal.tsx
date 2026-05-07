@@ -1,13 +1,10 @@
-import { HeartOutlined, HeartFilled } from '@ant-design/icons';
-import { Button, Image, Modal, Typography } from 'antd';
-import React, { useEffect, useMemo } from 'react';
-
-import cake1 from '@assets/images/birthdayCakes/birthdayCake1.jpg';
-import cake2 from '@assets/images/birthdayCakes/birthdayCake2.png';
 import {
-  default as cake3,
-  default as cake5
-} from '@assets/images/birthdayCakes/birthdayCake3.jpg';
+  CheckCircleOutlined,
+  GiftOutlined,
+  HeartOutlined
+} from '@ant-design/icons';
+import { Button, Image, Modal, Typography } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
 
 const { Title, Text } = Typography;
 
@@ -19,39 +16,99 @@ export interface BirthdayModalProps {
   autoCloseMs?: number;
   title?: string;
   brandColor?: string;
+  isCurrentUserBirthday?: boolean;
+  currentUserName?: string;
 }
 
-const IMAGES = [cake1, cake2, cake3, cake5];
-
-const BASE_WISHES = [
-  'Chúc {name} một tuổi mới thật rực rỡ và nhiều niềm vui! 🎉',
-  'Hy vọng tuổi mới mang đến cho {name} thật nhiều sức khỏe và may mắn!',
-  '{name} luôn hạnh phúc, thành công và tràn đầy năng lượng tích cực!',
-  'Mong {name} đạt được mọi mục tiêu và ước mơ trong năm tới!',
-  '{name} sẽ có thật nhiều kỷ niệm đẹp cùng đồng nghiệp và người thân!',
-  'Tuổi mới thật "bùng nổ" với nhiều dự án thành công nha {name}!',
-  'Chúc {name} cười thật nhiều mỗi ngày và luôn được yêu thương!',
-  'Mong mọi điều tốt lành luôn đồng hành cùng {name}!'
+const EXTERNAL_BIRTHDAY_IMAGES = [
+  'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=640&h=420&q=85',
+  'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=640&h=420&q=85',
+  'https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?auto=format&fit=crop&w=640&h=420&q=85',
+  'https://images.unsplash.com/photo-1486427944299-d1955d23e34d?auto=format&fit=crop&w=640&h=420&q=85',
+  'https://images.unsplash.com/photo-1535141192574-5d4897c12636?auto=format&fit=crop&w=640&h=420&q=85'
 ];
 
-const CONFETTI_COLORS = [
-  '#FF6B6B',
-  '#4ECDC4',
-  '#45B7D1',
-  '#FFD93D',
-  '#FF9FF3',
-  '#54A0FF',
-  '#5F27CD',
-  '#F368E0',
-  '#FF6348',
-  '#2ED573'
+const CONFETTI_COLORS = ['#2563eb', '#14b8a6', '#f97316', '#e11d48'];
+const RAINBOW_COLORS = [
+  '#ef4444',
+  '#f97316',
+  '#facc15',
+  '#22c55e',
+  '#06b6d4',
+  '#3b82f6',
+  '#a855f7'
+];
+
+const CONFETTI_DOTS = Array.from({ length: 18 }, (_, index) => ({
+  color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+  delay: (index % 6) * 0.32,
+  duration: 4.2 + (index % 4) * 0.42,
+  left: 6 + ((index * 17) % 88),
+  size: 5 + (index % 4),
+  top: 4 + ((index * 23) % 76)
+}));
+
+const FIREWORKS = [
+  { delay: 0.1, left: 17, top: 18 },
+  { delay: 0.55, left: 79, top: 16 },
+  { delay: 1.05, left: 68, top: 42 },
+  { delay: 1.55, left: 27, top: 58 },
+  { delay: 2.05, left: 47, top: 24 },
+  { delay: 2.55, left: 86, top: 58 },
+  { delay: 3.05, left: 14, top: 42 },
+  { delay: 3.55, left: 54, top: 70 }
+];
+
+const BIRTHDAY_BURSTS = [
+  { delay: 0, left: 38, top: 48 },
+  { delay: 2, left: 56, top: 48 }
+];
+
+const FIREWORK_PARTICLES = Array.from({ length: 28 }, (_, index) => ({
+  angle: index * (360 / 28),
+  color: RAINBOW_COLORS[index % RAINBOW_COLORS.length],
+  distance: 42 + (index % 4) * 11,
+  size: 4 + (index % 4)
+}));
+
+const HAPPY_BIRTHDAY_LETTERS = Array.from('Happy Birthday').map(
+  (letter, index) => ({
+    delay: index * 0.035,
+    letter,
+    size: 28 + ((index * 7) % 15)
+  })
+);
+
+const BASE_WISHES = [
+  'Chúc {name} tuổi mới thật khỏe, làm việc thuận lợi và luôn giữ được năng lượng tốt.',
+  'Chúc {name} sinh nhật vui vẻ, tuổi mới thêm tự tin và có nhiều điều tích cực.',
+  'Chúc {name} bước sang tuổi mới với tinh thần thoải mái và nhiều cột mốc đáng nhớ.',
+  'Chúc {name} một ngày sinh nhật thật gọn vui, tuổi mới nhiều thuận lợi.',
+  'Chúc {name} tuổi mới vững nhịp làm việc, nhiều cơ hội hay và nhiều niềm vui mới.',
+  'Chúc {name} luôn giữ phong độ tốt và đón tuổi mới với thật nhiều cảm hứng.'
+];
+
+const PERSONAL_BIRTHDAY_WISHES = [
+  'Chúc bạn tuổi mới thật khỏe, giữ nhịp làm việc tốt và có thêm nhiều điều đáng tự hào.',
+  'Chúc bạn sinh nhật vui vẻ, tuổi mới nhiều năng lượng và nhiều cơ hội hay.',
+  'Chúc bạn bước sang tuổi mới với tinh thần thoải mái, tự tin và nhiều cảm hứng.',
+  'Chúc bạn có một ngày sinh nhật thật gọn vui, tuổi mới thuận lợi và rõ mục tiêu hơn.',
+  'Chúc bạn tuổi mới giữ phong độ tốt, làm điều mình muốn và đón nhiều tin vui.'
 ];
 
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
-function makeWish(name: string): string {
-  return pickRandom(BASE_WISHES).replace('{name}', name);
+
+function makeWish(name: string, isPersonal = false): string {
+  const wishes = isPersonal ? PERSONAL_BIRTHDAY_WISHES : BASE_WISHES;
+  return pickRandom(wishes).replace('{name}', name);
+}
+
+function getDisplayName(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= 2) return words.join(' ');
+  return words.slice(-2).join(' ');
 }
 
 const BirthdayModal: React.FC<BirthdayModalProps> = ({
@@ -60,459 +117,695 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
   open = false,
   onClose,
   autoCloseMs = 10000,
-  title = 'Chúc Mừng Sinh Nhật!',
-  brandColor = '#ff6b9d'
+  title = 'Chúc mừng sinh nhật',
+  brandColor = '#2563eb',
+  isCurrentUserBirthday = false,
+  currentUserName
 }) => {
-  const randomImage = useMemo(() => pickRandom(IMAGES), []);
-  const wishes = useMemo(() => employees.map((e) => makeWish(e)), [employees]);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isCompactViewport, setIsCompactViewport] = useState(false);
+  const [wishVersion, setWishVersion] = useState(0);
+  const displayEmployees = useMemo(
+    () => employees.map((employee) => getDisplayName(employee)),
+    [employees]
+  );
+  const currentDisplayName = getDisplayName(
+    currentUserName || employees[0] || ''
+  );
+  const wishes = useMemo(
+    () =>
+      isCurrentUserBirthday
+        ? [makeWish(currentDisplayName, true)]
+        : displayEmployees.map((e) => makeWish(e)),
+    [currentDisplayName, displayEmployees, isCurrentUserBirthday, wishVersion]
+  );
 
-  const isMany = employees.length > 3;
-  const maxWishes = isMany ? Math.min(employees.length, 5) : employees.length;
+  const maxWishes = isCompactViewport
+    ? 2
+    : employees.length > 3
+      ? 3
+      : employees.length;
   const displayWishes = wishes.slice(0, maxWishes);
-  const hasMore = wishes.length > maxWishes;
+  const birthdaySummary = isCurrentUserBirthday
+    ? `${companyName} chúc mừng sinh nhật ${currentDisplayName || 'bạn'}. Chúc bạn một tuổi mới thật tốt.`
+    : employees.length === 1
+      ? `${companyName} gửi lời chúc sinh nhật đến ${displayEmployees[0]}.`
+      : `Hôm nay có ${employees.length} nhân sự sinh nhật. ${companyName} gửi lời chúc đến mọi người.`;
+  const activeImage =
+    EXTERNAL_BIRTHDAY_IMAGES[
+      activeImageIndex % EXTERNAL_BIRTHDAY_IMAGES.length
+    ];
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 620px), (max-height: 720px)');
+    const syncViewport = () => setIsCompactViewport(query.matches);
+    syncViewport();
+    query.addEventListener('change', syncViewport);
+    return () => query.removeEventListener('change', syncViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    setWishVersion((current) => current + 1);
+    setActiveImageIndex(
+      Math.floor(Math.random() * EXTERNAL_BIRTHDAY_IMAGES.length)
+    );
+
+    const t = window.setInterval(() => {
+      setActiveImageIndex((current) => current + 1);
+    }, 2800);
+
+    return () => window.clearInterval(t);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     if (!autoCloseMs || autoCloseMs <= 0) return;
-    const t = setTimeout(() => setTimeout(() => onClose?.(), 300), autoCloseMs);
-    return () => clearTimeout(t);
+    const t = window.setTimeout(() => onClose?.(), autoCloseMs);
+    return () => window.clearTimeout(t);
   }, [open, autoCloseMs, onClose]);
-
-  const handleClose = () => setTimeout(() => onClose?.(), 300);
 
   return (
     <>
       <style>
         {`
-        /* ═══════════════════════════════════════════════════════════════ */
-        /*  BIRTHDAY MODAL — Bright & Festive Premium Design            */
-        /* ═══════════════════════════════════════════════════════════════ */
+        @import url('https://fonts.cdnfonts.com/css/halimun');
 
-        .bd-modal { 
-          width: min(88vw, 400px) !important;
-          max-height: 92vh !important;
+        .bd-modal {
+          width: min(94vw, 620px) !important;
           margin: 0 auto !important;
-        }
-        @media (min-width: 480px) { .bd-modal { width: min(78vw, 440px) !important; } }
-        @media (min-width: 768px) { .bd-modal { width: min(55vw, 480px) !important; } }
-        @media (min-width: 1024px) { .bd-modal { width: min(40vw, 500px) !important; } }
-
-        @media (prefers-reduced-motion: reduce) {
-          .bd-modal *, .bd-modal *::before, .bd-modal *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-          }
+          max-width: calc(100vw - 24px);
         }
 
-        /* —— Modal container — Bright warm gradient —— */
         .bd-modal .ant-modal-content {
-          position: relative;
-          background: linear-gradient(160deg, #fff9f0 0%, #ffffff 30%, #fff5f8 60%, #fef0f5 100%);
-          border-radius: 24px;
+          max-height: calc(100dvh - 32px);
+          animation: bd-modal-in 0.42s cubic-bezier(0.16, 1, 0.3, 1);
           overflow: hidden;
-          border: 1px solid rgba(255, 107, 157, 0.15);
-          box-shadow: 
-            0 24px 60px -12px rgba(255, 107, 157, 0.18),
-            0 12px 24px -8px rgba(0, 0, 0, 0.08),
-            0 0 0 1px rgba(255, 255, 255, 0.8);
+          border-radius: 24px;
+          border: 1px solid rgba(148, 163, 184, 0.24);
+          background:
+            linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, #ffffff 46%, rgba(240, 253, 250, 0.86) 100%);
+          box-shadow:
+            0 28px 72px rgba(15, 23, 42, 0.18),
+            0 8px 22px rgba(15, 23, 42, 0.08);
           padding: 0;
         }
 
-        /* —— Top ribbon — vibrant gradient bar —— */
-        .bd-ribbon {
-          position: relative;
-          background: linear-gradient(135deg, ${brandColor}, #ff8fab, #ffa07a);
-          padding: 14px 20px;
-          text-align: center;
-          overflow: hidden;
-        }
-        .bd-ribbon::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            90deg, 
-            transparent 0%, 
-            rgba(255,255,255,0.2) 50%, 
-            transparent 100%
-          );
-          transform: translateX(-100%);
-          animation: bd-ribbon-shine 4s ease-in-out infinite;
-        }
-        @keyframes bd-ribbon-shine {
-          0% { transform: translateX(-100%); }
-          60%, 100% { transform: translateX(100%); }
-        }
-
-        .bd-ribbon-emoji {
-          font-size: 28px;
-          display: block;
-          margin-bottom: 4px;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-          animation: bd-bounce 2s ease-in-out infinite;
-        }
-        @keyframes bd-bounce {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-4px) scale(1.05); }
-        }
-
-        .bd-ribbon-title {
-          margin: 0 !important;
-          font-size: 20px !important;
-          font-weight: 700 !important;
-          color: #fff !important;
-          text-shadow: 0 2px 8px rgba(0,0,0,0.15);
-          letter-spacing: -0.3px;
-        }
-
-        .bd-ribbon-company {
-          margin-top: 2px;
-          font-size: 11px;
-          color: rgba(255, 255, 255, 0.85);
-          font-weight: 500;
-          letter-spacing: 0.8px;
-        }
-
-        /* —— Body wrapper —— */
-        .bd-body {
-          position: relative;
-          z-index: 2;
-          padding: 16px 18px 20px;
-          max-height: calc(92vh - 90px);
-          overflow-y: auto;
-          scrollbar-width: thin;
-          scrollbar-color: ${brandColor}25 transparent;
-        }
-        .bd-body::-webkit-scrollbar { width: 3px; }
-        .bd-body::-webkit-scrollbar-thumb { 
-          background: ${brandColor}30; 
-          border-radius: 3px; 
-        }
-
-        /* —— Cake image —— */
-        .bd-cake-wrap {
-          position: relative;
-          border-radius: 16px;
-          overflow: hidden;
-          margin-bottom: 16px;
-          max-height: 210px;
-          box-shadow: 
-            0 8px 28px rgba(255, 107, 157, 0.15),
-            0 4px 12px rgba(0, 0, 0, 0.06);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          border: 2px solid rgba(255, 107, 157, 0.1);
-        }
-        .bd-cake-wrap:hover { 
-          transform: scale(1.02) translateY(-2px);
-          box-shadow: 
-            0 12px 36px rgba(255, 107, 157, 0.2),
-            0 6px 16px rgba(0, 0, 0, 0.08);
-        }
-
-        .bd-cake-wrap img {
-          display: block;
-          width: 100%;
-          height: 210px;
-          object-fit: cover;
-          object-position: center;
-        }
-
-        @media (max-width: 479px) {
-          .bd-cake-wrap { max-height: 160px; }
-          .bd-cake-wrap img { height: 160px; }
-        }
-
-        /* —— Name badges —— */
-        .bd-names {
+        .bd-shell {
           display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          justify-content: center;
-          margin-bottom: 12px;
-        }
-
-        .bd-name-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 14px;
-          border-radius: 100px;
-          background: linear-gradient(135deg, ${brandColor}10, ${brandColor}05);
-          border: 1px solid ${brandColor}20;
-          transition: all 0.25s ease;
-          cursor: default;
-        }
-        .bd-name-badge:hover {
-          background: linear-gradient(135deg, ${brandColor}18, ${brandColor}10);
-          border-color: ${brandColor}40;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px ${brandColor}15;
-        }
-
-        .bd-name-dot {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, ${brandColor}, #ff8fab);
-          box-shadow: 0 0 6px ${brandColor}50;
-          animation: bd-dot-pulse 2s ease-in-out infinite;
-        }
-        @keyframes bd-dot-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.7; transform: scale(0.85); }
-        }
-
-        .bd-name-text {
-          font-size: 13px;
-          font-weight: 600;
-          color: #374151;
-        }
-
-        .bd-name-more {
-          padding: 5px 12px;
-          background: ${brandColor}08;
-          border-color: ${brandColor}18;
-        }
-        .bd-name-more .bd-name-text {
-          color: ${brandColor};
-          font-size: 12px;
-        }
-
-        /* —— Divider —— */
-        .bd-divider {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin: 12px 0;
-        }
-        .bd-divider-line {
-          flex: 1;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, ${brandColor}20, transparent);
-        }
-        .bd-divider-star {
-          color: #ffd93d;
-          font-size: 14px;
-          filter: drop-shadow(0 0 4px rgba(255, 217, 61, 0.4));
-          animation: bd-star-spin 4s linear infinite;
-        }
-        @keyframes bd-star-spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        .bd-divider-count {
-          font-size: 11px;
-          color: #9ca3af;
-          white-space: nowrap;
-        }
-
-        /* —— Wish cards —— */
-        .bd-wishes {
-          display: flex;
+          position: relative;
+          max-height: calc(100dvh - 32px);
           flex-direction: column;
-          gap: 8px;
-          max-height: 220px;
-          overflow-y: auto;
-          scrollbar-width: thin;
-          scrollbar-color: ${brandColor}20 transparent;
-          padding-right: 2px;
-        }
-        .bd-wishes::-webkit-scrollbar { width: 3px; }
-        .bd-wishes::-webkit-scrollbar-thumb { 
-          background: ${brandColor}25; 
-          border-radius: 3px; 
-        }
-
-        .bd-wish-card {
-          position: relative;
-          padding: 10px 14px;
-          border-radius: 14px;
-          background: #fff;
-          border: 1px solid #f3f0ef;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-          transition: all 0.25s ease;
           overflow: hidden;
-        }
-        .bd-wish-card::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 3px;
-          background: linear-gradient(180deg, ${brandColor}, #ffa07a);
-          border-radius: 3px 0 0 3px;
-          opacity: 0;
-          transition: opacity 0.25s ease;
-        }
-        .bd-wish-card:hover {
-          background: #fffaf8;
-          border-color: ${brandColor}25;
-          transform: translateX(3px);
-          box-shadow: 0 4px 16px rgba(255, 107, 157, 0.08);
-        }
-        .bd-wish-card:hover::before { opacity: 1; }
-
-        .bd-wish-content {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
+          color: #0f172a;
         }
 
-        .bd-wish-heart {
-          flex-shrink: 0;
-          width: 28px;
-          height: 28px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          background: linear-gradient(135deg, ${brandColor}15, #ffa07a12);
-          color: ${brandColor};
-          font-size: 12px;
-          margin-top: 1px;
-        }
-
-        .bd-wish-text {
-          font-size: 13px !important;
-          line-height: 1.55 !important;
-          color: #4b5563 !important;
-          margin: 0 !important;
-        }
-
-        .bd-wish-more {
-          background: linear-gradient(135deg, ${brandColor}06, #ffa07a06);
-          border-color: ${brandColor}15;
-          border-style: dashed;
-        }
-        .bd-wish-more .bd-wish-text {
-          color: ${brandColor} !important;
-          font-style: italic;
-          font-size: 12px !important;
-        }
-
-        /* —— Compact mode for many people —— */
-        .bd-wishes.many .bd-wish-card { padding: 8px 12px; }
-        .bd-wishes.many .bd-wish-text { font-size: 12px !important; }
-        .bd-wishes.many .bd-wish-heart { width: 24px; height: 24px; font-size: 10px; }
-
-        /* —— CTA Button —— */
-        .bd-cta-wrap {
-          display: flex;
-          justify-content: center;
-          margin-top: 18px;
-        }
-
-        .bd-cta {
-          position: relative;
-          height: 42px !important;
-          padding: 0 32px !important;
-          border-radius: 100px !important;
-          border: none !important;
-          font-weight: 600 !important;
-          font-size: 14px !important;
-          color: #fff !important;
-          background: linear-gradient(135deg, ${brandColor}, #ff8fab, #ffa07a) !important;
-          background-size: 200% 200% !important;
-          animation: bd-gradient-shift 4s ease infinite;
-          box-shadow: 
-            0 6px 20px ${brandColor}30,
-            0 2px 6px rgba(0, 0, 0, 0.08) !important;
-          transition: all 0.3s ease !important;
-          overflow: hidden;
-        }
-        .bd-cta:hover {
-          transform: translateY(-2px) scale(1.02) !important;
-          box-shadow: 
-            0 10px 30px ${brandColor}40,
-            0 4px 8px rgba(0, 0, 0, 0.1) !important;
-        }
-        .bd-cta::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-          transform: translateX(-100%);
-          animation: bd-cta-shine 3s ease-in-out infinite;
-        }
-
-        @keyframes bd-gradient-shift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes bd-cta-shine {
-          0% { transform: translateX(-100%); }
-          60%, 100% { transform: translateX(100%); }
-        }
-
-        /* ═══════ Decorations ═══════ */
-        .bd-decors {
+        .bd-ornaments {
           position: absolute;
           inset: 0;
           overflow: hidden;
           pointer-events: none;
-          z-index: 1;
+          z-index: 0;
         }
 
-        @keyframes bd-confetti {
-          0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 0.5; }
-          100% { transform: translateY(var(--bd-fall, 400px)) rotate(720deg); opacity: 0; }
-        }
-        .bd-confetti {
+        .bd-ornament-dot {
           position: absolute;
+          top: var(--bd-top);
+          left: var(--bd-left);
+          width: var(--bd-size);
+          height: var(--bd-size);
+          border-radius: 999px;
+          background: var(--bd-color);
+          opacity: 0.18;
+          animation: bd-float var(--bd-duration) ease-in-out infinite;
+          animation-delay: var(--bd-delay);
+        }
+
+        .bd-ornament-dot:nth-child(3n) {
           border-radius: 2px;
-          animation: bd-confetti var(--bd-dur, 4s) ease-in infinite;
-          animation-delay: var(--bd-delay, 0s);
-          will-change: transform, opacity;
+          transform: rotate(18deg);
         }
 
-        @keyframes bd-emoji-rise {
-          0% { transform: translateY(0) scale(0.6); opacity: 0; }
-          15% { opacity: 0.7; }
-          80% { opacity: 0.4; }
-          100% { transform: translateY(-120px) scale(1.1); opacity: 0; }
+        .bd-ornament-dot:nth-child(4n) {
+          opacity: 0.12;
         }
-        .bd-emoji {
+
+        .bd-fireworks,
+        .bd-birthday-bursts {
           position: absolute;
-          animation: bd-emoji-rise var(--bd-dur, 5s) ease-out infinite;
-          animation-delay: var(--bd-delay, 0s);
-          will-change: transform, opacity;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 2;
         }
 
-        @keyframes bd-sparkle {
-          0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-          50% { opacity: 1; transform: scale(1) rotate(180deg); }
-        }
-        .bd-sparkle {
+        .bd-firework {
           position: absolute;
-          color: #ffd93d;
-          font-size: 10px;
-          animation: bd-sparkle var(--bd-dur, 2.5s) ease-in-out infinite;
-          animation-delay: var(--bd-delay, 0s);
-          will-change: transform, opacity;
+          top: var(--bd-firework-top);
+          left: var(--bd-firework-left);
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          background: #ffffff;
+          opacity: 0;
+          box-shadow: 0 0 18px rgba(255, 255, 255, 0.8);
+          animation: bd-firework-core 4.2s ease-out infinite;
+          animation-delay: var(--bd-firework-delay);
         }
 
-        /* —— Empty state —— */
+        .bd-firework-particle {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: var(--bd-particle-size);
+          height: var(--bd-particle-size);
+          border-radius: 999px;
+          background: var(--bd-particle-color);
+          opacity: 0;
+          filter: drop-shadow(0 0 8px var(--bd-particle-color));
+          transform: translate(-50%, -50%) rotate(var(--bd-particle-angle)) translateX(0);
+          animation: bd-firework-particle 4.2s ease-out infinite;
+          animation-delay: var(--bd-firework-delay);
+        }
+
+        .bd-birthday-burst {
+          position: absolute;
+          top: var(--bd-birthday-top);
+          left: var(--bd-birthday-left);
+          display: inline-flex;
+          align-items: baseline;
+          gap: 1px;
+          transform: translateX(-50%);
+          font-family: 'Halimun', 'Brush Script MT', cursive;
+          font-weight: 900;
+          letter-spacing: 0;
+          text-shadow:
+            0 12px 26px rgba(15, 23, 42, 0.22),
+            0 0 18px rgba(255, 255, 255, 0.9),
+            0 0 24px rgba(6, 182, 212, 0.34);
+          opacity: 0;
+          white-space: nowrap;
+          animation: bd-birthday-popup 4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+          animation-delay: var(--bd-birthday-delay);
+        }
+
+        .bd-birthday-letter {
+          display: inline-block;
+          min-width: 0.28em;
+          color: #06b6d4;
+          font-size: var(--bd-letter-size);
+          line-height: 1;
+          opacity: 0;
+          animation: bd-letter-bounce 2s cubic-bezier(0.2, 1.35, 0.34, 1) infinite both;
+          animation-delay: calc(var(--bd-birthday-delay) + var(--bd-letter-delay));
+          transform-origin: 50% 100%;
+        }
+
+        .bd-hero {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 184px;
+          gap: 20px;
+          align-items: stretch;
+          padding: 24px 24px 20px;
+        }
+
+        .bd-copy {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .bd-kicker {
+          animation: bd-slide-up 0.46s 0.08s both;
+          display: inline-flex;
+          width: fit-content;
+          align-items: center;
+          gap: 7px;
+          margin-bottom: 12px;
+          padding: 6px 10px;
+          border-radius: 999px;
+          border: 1px solid rgba(37, 99, 235, 0.14);
+          background: rgba(37, 99, 235, 0.08);
+          color: ${brandColor};
+          font-size: 12px;
+          font-weight: 750;
+        }
+
+        .bd-title {
+          animation: bd-slide-up 0.5s 0.14s both;
+          margin: 0 !important;
+          color: #0f172a !important;
+          font-size: 27px !important;
+          font-weight: 800 !important;
+          line-height: 1.15 !important;
+        }
+
+        .bd-company {
+          animation: bd-slide-up 0.52s 0.2s both;
+          margin-top: 8px;
+          max-width: 390px;
+          color: #64748b;
+          font-size: 13px;
+          line-height: 1.55;
+        }
+
+        .bd-cover {
+          position: relative;
+          min-height: 178px;
+          overflow: hidden;
+          border-radius: 20px;
+          border: 1px solid rgba(226, 232, 240, 0.9);
+          background: #f8fafc;
+          box-shadow:
+            0 16px 34px rgba(15, 23, 42, 0.12),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+          animation: bd-cover-float 4.8s ease-in-out infinite;
+        }
+
+        .bd-cover::after {
+          position: absolute;
+          inset: 0;
+          content: '';
+          background:
+            linear-gradient(115deg, transparent 0 34%, rgba(255,255,255,0.28) 44%, transparent 54% 100%);
+          transform: translateX(-120%);
+          animation: bd-cover-shine 3.6s ease-in-out infinite;
+        }
+
+        .bd-cover .ant-image {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+
+        .bd-cover .ant-image-img {
+          animation: bd-image-in 0.72s ease both;
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .bd-body {
+          position: relative;
+          z-index: 1;
+          flex: 1;
+          padding: 0 24px 24px;
+          overflow: hidden;
+        }
+
+        .bd-panel {
+          position: relative;
+          animation: bd-panel-in 0.48s 0.22s both;
+          border: 1px solid rgba(226, 232, 240, 0.95);
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.84);
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .bd-panel + .bd-panel {
+          animation-delay: 0.3s;
+          margin-top: 12px;
+        }
+
+        .bd-section-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 14px 16px 0;
+        }
+
+        .bd-section-title {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          color: #0f172a;
+          font-size: 14px;
+          font-weight: 760;
+        }
+
+        .bd-wishes {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+          padding: 8px;
+        }
+
+        .bd-wish {
+          animation: bd-card-in 0.42s both;
+          display: grid;
+          grid-template-columns: 38px 1fr;
+          gap: 12px;
+          padding: 12px;
+          border-radius: 14px;
+          background: transparent;
+          transition: background 0.2s ease;
+        }
+
+        .bd-wish + .bd-wish {
+          border-top: 1px solid #eef2f7;
+          border-radius: 0 0 14px 14px;
+        }
+
+        .bd-wish:hover {
+          background: #f8fafc;
+        }
+
+        .bd-wish-icon {
+          display: inline-flex;
+          width: 38px;
+          height: 38px;
+          align-items: center;
+          justify-content: center;
+          border-radius: 13px;
+          background: #fff7ed;
+          color: #c2410c;
+          font-size: 16px;
+        }
+
+        .bd-wish-text {
+          margin: 0 !important;
+          color: #475569 !important;
+          font-size: 13px !important;
+          line-height: 1.65 !important;
+        }
+
         .bd-empty {
-          padding: 16px 0;
+          padding: 26px 16px;
+          border: 1px dashed #cbd5e1;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.78);
           text-align: center;
         }
 
-        /* —— Mobile tweaks —— */
-        @media (max-width: 479px) {
-          .bd-modal { width: 92vw !important; }
-          .bd-ribbon { padding: 12px 16px; }
-          .bd-ribbon-emoji { font-size: 24px; }
-          .bd-ribbon-title { font-size: 17px !important; }
-          .bd-body { padding: 12px 14px 16px; }
-          .bd-name-badge { padding: 4px 10px; }
-          .bd-name-text { font-size: 12px; }
-          .bd-wish-text { font-size: 12px !important; }
-          .bd-wishes { max-height: 160px; }
-          .bd-cta { height: 38px !important; padding: 0 24px !important; font-size: 13px !important; }
+        .bd-footer {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 16px;
+        }
+
+        .bd-close {
+          height: 42px !important;
+          border-radius: 12px !important;
+          padding: 0 20px !important;
+          font-weight: 700 !important;
+          background: #0f172a !important;
+          border-color: #0f172a !important;
+          box-shadow: 0 12px 22px rgba(15, 23, 42, 0.18) !important;
+        }
+
+        @keyframes bd-modal-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes bd-slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes bd-float {
+          0%, 100% {
+            transform: translate3d(0, 0, 0) rotate(0deg);
+          }
+          50% {
+            transform: translate3d(10px, -16px, 0) rotate(22deg);
+          }
+        }
+
+        @keyframes bd-firework-core {
+          0%, 46%, 100% {
+            opacity: 0;
+            transform: scale(0.2);
+          }
+          54% {
+            opacity: 1;
+            transform: scale(0.8);
+          }
+          72% {
+            opacity: 0;
+            transform: scale(1.6);
+          }
+        }
+
+        @keyframes bd-firework-particle {
+          0%, 46% {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(var(--bd-particle-angle)) translateX(0) scale(0.45);
+          }
+          54% {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(var(--bd-particle-angle)) translateX(calc(var(--bd-particle-distance) * 0.35)) scale(1);
+          }
+          78% {
+            opacity: 0.72;
+            transform: translate(-50%, -50%) rotate(var(--bd-particle-angle)) translateX(calc(var(--bd-particle-distance) * 0.82)) scale(0.72);
+          }
+          94%, 100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(var(--bd-particle-angle)) translateX(var(--bd-particle-distance)) scale(0.15);
+          }
+        }
+
+        @keyframes bd-birthday-popup {
+          0%, 50%, 100% {
+            opacity: 0;
+            transform: translate(-50%, 16px) scale(0.78);
+          }
+          12% {
+            opacity: 1;
+            transform: translate(-50%, -4px) scale(1.02);
+          }
+          28% {
+            opacity: 0.95;
+            transform: translate(-50%, -30px) scale(1.08);
+          }
+          46% {
+            opacity: 0;
+            transform: translate(-50%, -48px) scale(1.14);
+          }
+        }
+
+        @keyframes bd-letter-bounce {
+          0%, 8%, 100% {
+            opacity: 0;
+            transform: translateY(10px) rotate(0deg) scale(0.82);
+          }
+          16% {
+            opacity: 1;
+            transform: translateY(0) rotate(0deg) scale(1);
+          }
+          36% {
+            opacity: 1;
+            transform: translateY(-14px) rotate(-5deg) scale(1.18);
+          }
+          66% {
+            opacity: 1;
+            transform: translateY(4px) rotate(4deg) scale(0.94);
+          }
+          82% {
+            opacity: 0;
+            transform: translateY(-12px) rotate(3deg) scale(1.04);
+          }
+        }
+
+        @keyframes bd-cover-float {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
+
+        @keyframes bd-cover-shine {
+          0%, 42% {
+            transform: translateX(-120%);
+          }
+          70%, 100% {
+            transform: translateX(120%);
+          }
+        }
+
+        @keyframes bd-image-in {
+          from {
+            opacity: 0;
+            transform: scale(1.06);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        @keyframes bd-panel-in {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes bd-card-in {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .bd-modal .ant-modal-content,
+          .bd-kicker,
+          .bd-title,
+          .bd-company,
+          .bd-cover,
+          .bd-cover::after,
+          .bd-cover .ant-image-img,
+          .bd-panel,
+          .bd-wish,
+          .bd-ornament-dot,
+          .bd-firework,
+          .bd-firework-particle,
+          .bd-birthday-burst,
+          .bd-birthday-letter {
+            animation: none !important;
+          }
+        }
+
+        @media (max-width: 620px) {
+          .bd-modal {
+            width: calc(100vw - 24px) !important;
+            max-width: 420px;
+          }
+
+          .bd-modal .ant-modal-content {
+            max-height: calc(100dvh - 24px);
+            border-radius: 22px;
+          }
+
+          .bd-shell {
+            max-height: calc(100dvh - 24px);
+          }
+
+          .bd-hero {
+            grid-template-columns: minmax(0, 1fr) 118px;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 14px 10px;
+          }
+
+          .bd-kicker {
+            gap: 5px;
+            margin-bottom: 8px;
+            padding: 5px 9px;
+            font-size: 11px;
+          }
+
+          .bd-title {
+            font-size: 22px !important;
+            line-height: 1.12 !important;
+          }
+
+          .bd-company {
+            display: -webkit-box;
+            margin-top: 6px;
+            overflow: hidden;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.42;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+          }
+
+          .bd-cover {
+            height: 112px;
+            min-height: 112px;
+            border-radius: 18px;
+          }
+
+          .bd-body {
+            padding: 0 14px 14px;
+            overflow: hidden;
+          }
+
+          .bd-panel {
+            border-radius: 16px;
+          }
+
+          .bd-panel + .bd-panel {
+            margin-top: 10px;
+          }
+
+          .bd-section-head {
+            align-items: center;
+            flex-direction: row;
+            gap: 8px;
+            padding: 11px 12px 0;
+          }
+
+          .bd-section-title {
+            gap: 7px;
+            font-size: 13px;
+          }
+
+          .bd-wishes {
+            padding: 6px;
+          }
+
+          .bd-wish {
+            grid-template-columns: 32px 1fr;
+            gap: 10px;
+            padding: 10px;
+          }
+
+          .bd-wish-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 11px;
+            font-size: 14px;
+          }
+
+          .bd-wish-text {
+            font-size: 12px !important;
+            line-height: 1.5 !important;
+          }
+
+          .bd-birthday-letter {
+            font-size: calc(var(--bd-letter-size) - 11px);
+          }
+
+          .bd-footer {
+            justify-content: stretch;
+            margin-top: 10px;
+          }
+
+          .bd-close {
+            width: 100%;
+            height: 38px !important;
+          }
         }
         `}
       </style>
@@ -520,170 +813,164 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
       <Modal
         className="bd-modal"
         open={open}
-        onCancel={handleClose}
+        onCancel={onClose}
         footer={null}
         centered
         closeIcon={false}
-        styles={{ body: { padding: 0 } }}
+        styles={{ body: { maxHeight: 'none', overflow: 'hidden', padding: 0 } }}
       >
-        {/* ═══ Decorations ═══ */}
-        <div className="bd-decors">
-          {/* Confetti */}
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={`cf-${i}`}
-              className="bd-confetti"
-              style={
-                {
-                  left: `${2 + ((i * 5) % 96)}%`,
-                  top: '-3%',
-                  width: `${5 + Math.random() * 5}px`,
-                  height: `${5 + Math.random() * 5}px`,
-                  backgroundColor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-                  borderRadius: i % 3 === 0 ? '50%' : '2px',
-                  '--bd-dur': `${3 + Math.random() * 3}s`,
-                  '--bd-delay': `${Math.random() * 4}s`,
-                  '--bd-fall': `${300 + Math.random() * 300}px`
-                } as React.CSSProperties
-              }
-            />
-          ))}
-
-          {/* Sparkles */}
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={`sp-${i}`}
-              className="bd-sparkle"
-              style={
-                {
-                  left: `${5 + Math.random() * 90}%`,
-                  top: `${5 + Math.random() * 90}%`,
-                  '--bd-dur': `${2 + Math.random() * 2}s`,
-                  '--bd-delay': `${Math.random() * 3}s`
-                } as React.CSSProperties
-              }
-            >
-              ✦
-            </div>
-          ))}
-
-          {/* Floating emojis */}
-          {['🎂', '🎁', '🎈', '🎊', '💖', '🌟', '🎵', '🧁'].map((emoji, i) => (
-            <div
-              key={`em-${i}`}
-              className="bd-emoji"
-              style={
-                {
-                  left: `${5 + i * 12}%`,
-                  bottom: '-5%',
-                  fontSize: `${14 + Math.random() * 6}px`,
-                  '--bd-dur': `${5 + Math.random() * 3}s`,
-                  '--bd-delay': `${i * 0.7 + Math.random()}s`
-                } as React.CSSProperties
-              }
-            >
-              {emoji}
-            </div>
-          ))}
-        </div>
-
-        {/* ═══ Ribbon Header ═══ */}
-        <div className="bd-ribbon">
-          <span className="bd-ribbon-emoji">🎂</span>
-          <Title level={3} className="bd-ribbon-title">
-            {title}
-          </Title>
-          <div className="bd-ribbon-company">{companyName}</div>
-        </div>
-
-        {/* ═══ Body ═══ */}
-        <div className="bd-body">
-          {/* Cake image */}
-          <div className="bd-cake-wrap">
-            <Image
-              src={randomImage}
-              alt="Birthday Cake"
-              preview={false}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              placeholder
-            />
+        <div className="bd-shell">
+          <div className="bd-ornaments">
+            {CONFETTI_DOTS.map((dot, index) => (
+              <span
+                aria-hidden="true"
+                className="bd-ornament-dot"
+                key={index}
+                style={
+                  {
+                    '--bd-color': dot.color,
+                    '--bd-delay': `${dot.delay}s`,
+                    '--bd-duration': `${dot.duration}s`,
+                    '--bd-left': `${dot.left}%`,
+                    '--bd-size': `${dot.size}px`,
+                    '--bd-top': `${dot.top}%`
+                  } as React.CSSProperties
+                }
+              />
+            ))}
           </div>
 
-          {/* Name badges */}
-          {employees.length > 0 && (
-            <div className="bd-names">
-              {employees.slice(0, 8).map((name, idx) => (
-                <div key={idx} className="bd-name-badge">
-                  <span className="bd-name-dot" />
-                  <span className="bd-name-text">{name}</span>
-                </div>
-              ))}
-              {employees.length > 8 && (
-                <div className="bd-name-badge bd-name-more">
-                  <span className="bd-name-text">
-                    +{employees.length - 8} người nữa
+          <div className="bd-fireworks">
+            {FIREWORKS.map((firework, index) => (
+              <span
+                aria-hidden="true"
+                className="bd-firework"
+                key={index}
+                style={
+                  {
+                    '--bd-firework-delay': `${firework.delay}s`,
+                    '--bd-firework-left': `${firework.left}%`,
+                    '--bd-firework-top': `${firework.top}%`
+                  } as React.CSSProperties
+                }
+              >
+                {FIREWORK_PARTICLES.map((particle, particleIndex) => (
+                  <i
+                    className="bd-firework-particle"
+                    key={particleIndex}
+                    style={
+                      {
+                        '--bd-particle-angle': `${particle.angle}deg`,
+                        '--bd-particle-color': particle.color,
+                        '--bd-particle-distance': `${particle.distance}px`,
+                        '--bd-particle-size': `${particle.size}px`
+                      } as React.CSSProperties
+                    }
+                  />
+                ))}
+              </span>
+            ))}
+          </div>
+
+          <div className="bd-birthday-bursts">
+            {BIRTHDAY_BURSTS.map((burst, index) => (
+              <span
+                aria-hidden="true"
+                className="bd-birthday-burst"
+                key={index}
+                style={
+                  {
+                    '--bd-birthday-delay': `${burst.delay}s`,
+                    '--bd-birthday-left': `${burst.left}%`,
+                    '--bd-birthday-top': `${burst.top}%`
+                  } as React.CSSProperties
+                }
+              >
+                {HAPPY_BIRTHDAY_LETTERS.map((item, letterIndex) => (
+                  <span
+                    className="bd-birthday-letter"
+                    key={`${item.letter}-${letterIndex}`}
+                    style={
+                      {
+                        '--bd-letter-delay': `${item.delay}s`,
+                        '--bd-letter-size': `${item.size}px`
+                      } as React.CSSProperties
+                    }
+                  >
+                    {item.letter === ' ' ? '\u00A0' : item.letter}
                   </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="bd-divider">
-            <div className="bd-divider-line" />
-            <span className="bd-divider-star">⭐</span>
-            {employees.length > 1 && (
-              <span className="bd-divider-count">{employees.length} người</span>
-            )}
-            <div className="bd-divider-line" />
+                ))}
+              </span>
+            ))}
           </div>
 
-          {/* Wishes */}
-          {employees.length > 0 ? (
-            <div className={`bd-wishes ${isMany ? 'many' : ''}`}>
-              {displayWishes.map((wish, i) => (
-                <div key={i} className="bd-wish-card">
-                  <div className="bd-wish-content">
-                    <div className="bd-wish-heart">
-                      <HeartFilled />
-                    </div>
-                    <Text className="bd-wish-text">{wish}</Text>
-                  </div>
-                </div>
-              ))}
-              {hasMore && (
-                <div className="bd-wish-card bd-wish-more">
-                  <div className="bd-wish-content">
-                    <div className="bd-wish-heart">
-                      <HeartOutlined />
-                    </div>
-                    <Text className="bd-wish-text">
-                      ...và {wishes.length - maxWishes} lời chúc nữa cho tất cả
-                      mọi người! 🎉
-                    </Text>
-                  </div>
-                </div>
-              )}
+          <div className="bd-hero">
+            <div className="bd-copy">
+              <div className="bd-kicker">
+                <GiftOutlined />
+                Sinh nhật hôm nay
+              </div>
+              <Title level={3} className="bd-title">
+                {title}
+              </Title>
+              <div className="bd-company">{birthdaySummary}</div>
             </div>
-          ) : (
-            <div className="bd-empty">
-              <Text style={{ fontSize: '13px', color: '#9ca3af' }}>
-                Hôm nay chưa có sinh nhật nào 🎂
-              </Text>
-            </div>
-          )}
 
-          {/* CTA Button */}
-          <div className="bd-cta-wrap">
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleClose}
-              className="bd-cta"
-              icon={<HeartOutlined style={{ fontSize: '13px' }} />}
-            >
-              Gửi lời chúc 💝
-            </Button>
+            <div className="bd-cover">
+              <Image
+                key={activeImage}
+                src={activeImage}
+                alt="Bánh sinh nhật"
+                preview={false}
+                placeholder
+              />
+            </div>
+          </div>
+
+          <div className="bd-body">
+            {employees.length > 0 ? (
+              <div className="bd-panel">
+                <div className="bd-section-head">
+                  <div className="bd-section-title">
+                    <HeartOutlined />
+                    Lời chúc
+                  </div>
+                </div>
+
+                <div className="bd-wishes">
+                  {displayWishes.map((wish, index) => (
+                    <div
+                      className="bd-wish"
+                      key={index}
+                      style={{ animationDelay: `${0.34 + index * 0.05}s` }}
+                    >
+                      <span className="bd-wish-icon">
+                        <HeartOutlined />
+                      </span>
+                      <Text className="bd-wish-text">{wish}</Text>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bd-empty">
+                <Text type="secondary">
+                  Hôm nay chưa có nhân sự nào trong danh sách sinh nhật.
+                </Text>
+              </div>
+            )}
+
+            <div className="bd-footer">
+              <Button
+                type="primary"
+                size="large"
+                onClick={onClose}
+                className="bd-close"
+                icon={<CheckCircleOutlined />}
+              >
+                Đã xem
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>

@@ -14,7 +14,7 @@ import type { IconType } from 'react-icons';
 import * as FaIcons from 'react-icons/fa';
 import { SidebarMenu } from './SidebarMenu';
 import { HiOutlineHome } from 'react-icons/hi';
-import { FaCommentDots, FaServer, FaTerminal } from 'react-icons/fa';
+import { FaCommentDots, FaFlask, FaServer, FaTerminal } from 'react-icons/fa';
 import FeedbackDrawer from '@components/feedback/FeedbackDrawer';
 
 const { Sider } = Layout;
@@ -199,12 +199,13 @@ function Sidebar() {
   }, [permissions, user]);
 
   const sidebarStyle: React.CSSProperties = {
-    overflow: 'auto',
-    height: '100vh',
-    position: 'sticky',
+    overflow: 'hidden',
+    height: '100dvh',
+    position: 'fixed',
     insetInlineStart: 0,
     top: 0,
     bottom: 0,
+    zIndex: 900,
     scrollbarWidth: 'none',
     background: 'transparent',
     borderRight: '1px solid var(--glass-border)',
@@ -257,6 +258,14 @@ function Sidebar() {
                   <FaTerminal />
                 </span>
                 {!isSidebarClose && <span>Nhật ký hệ thống</span>}
+              </div>
+            </Link>
+            <Link to="/admin/notification-demo" className="block no-underline">
+              <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] text-black/80 transition-all duration-200 hover:bg-gray-50 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/5 dark:hover:text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[15px] text-gray-500 dark:text-gray-400">
+                  <FaFlask />
+                </span>
+                {!isSidebarClose && <span>Test modal</span>}
               </div>
             </Link>
           </div>
@@ -440,6 +449,18 @@ function Sidebar() {
                           <FaTerminal />
                         </span>
                         <span>Nhật ký hệ thống</span>
+                      </div>
+                    </Link>
+                    <Link
+                      to="/admin/notification-demo"
+                      onClick={toggleSidebar}
+                      className="block no-underline"
+                    >
+                      <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700 active:scale-[0.98] dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[15px] text-gray-400">
+                          <FaFlask />
+                        </span>
+                        <span>Test modal</span>
                       </div>
                     </Link>
                   </div>

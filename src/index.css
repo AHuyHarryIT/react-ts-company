@@ -72,6 +72,18 @@ body,
   overflow-x: clip;
 }
 
+@media (min-width: 768px) {
+  body :where(.ant-modal-root) :where(.ant-modal-wrap) {
+    inset-inline-start: var(--app-sidebar-width, 0px);
+    width: auto;
+  }
+
+  body :where(.ant-modal-root) :where(.ant-modal-mask) {
+    inset: 0;
+    width: auto;
+  }
+}
+
 #root {
   min-height: 100vh;
 }
@@ -120,6 +132,13 @@ body {
 
 .glass-app-shell .ant-layout {
   background: transparent !important;
+}
+
+@media (min-width: 768px) {
+  .glass-app-shell > .ant-layout {
+    width: calc(100% - var(--app-sidebar-width, 0px));
+    margin-inline-start: var(--app-sidebar-width, 0px);
+  }
 }
 
 .glass-main {
@@ -9457,4 +9476,36 @@ html.liquid-ui-mode:not(.legacy-ui-mode)
     .ant-slide-right-appear-active
   ) {
   transform: none !important;
+}
+
+/* Modal overlay must always cover the fixed/sticky sidebar.
+   AntD locks body scroll when a modal opens; if the page was scrolled to the
+   bottom, leaving the sidebar above the mask exposes its internal scroll state. */
+html body .ant-modal-root .ant-modal-mask {
+  position: fixed !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 3000 !important;
+}
+
+html body .ant-modal-root .ant-modal-wrap {
+  position: fixed !important;
+  inset-block-start: 0 !important;
+  inset-block-end: 0 !important;
+  inset-inline-end: 0 !important;
+  width: auto !important;
+  z-index: 3001 !important;
+}
+
+@media (min-width: 768px) {
+  html body .ant-modal-root .ant-modal-wrap {
+    inset-inline-start: var(--app-sidebar-width, 0px) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  html body .ant-modal-root .ant-modal-wrap {
+    inset-inline-start: 0 !important;
+  }
 }

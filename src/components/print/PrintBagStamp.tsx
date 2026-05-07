@@ -222,7 +222,7 @@ export const PrintBagStamp = ({
           .bag-print-container table {
             border-collapse: collapse !important;
             table-layout: fixed !important;
-            ${printMode === 'single' ? 'width: 96mm !important; height: 76mm !important;' : ''}
+            ${printMode === 'single' ? 'width: 98mm !important; height: 78mm !important;' : ''}
           }
 
           @media print {
@@ -243,7 +243,7 @@ export const PrintBagStamp = ({
             ${
               printMode === 'single'
                 ? `
-            .stamp-item {
+            .bag-print-container .stamp-item {
               width: 100mm !important;
               height: 80mm !important;
               display: flex !important;
@@ -256,13 +256,15 @@ export const PrintBagStamp = ({
               position: relative !important;
               overflow: hidden !important;
             }
-            .stamp-item:last-child {
+            .bag-print-container .stamp-item:last-child {
               page-break-after: auto !important;
               break-after: auto !important;
             }
-            .stamp-item table {
-              width: 96mm !important;
-              height: 76mm !important;
+            .bag-print-container .stamp-item table {
+              width: 98mm !important;
+              height: 78mm !important;
+              transform: scale(0.96) !important;
+              transform-origin: center center !important;
               margin: 0 auto !important;
             }
             `

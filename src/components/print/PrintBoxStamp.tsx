@@ -449,6 +449,11 @@ export const PrintBoxStamp = ({
           .print-name-xxxs .product-name-cell p { font-size: 9px !important; line-height: 1.2 !important; }
 
           @media print {
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              overflow: visible !important;
+            }
             .box-print-container {
               margin: 0 !important;
               padding: 0 !important;
@@ -462,23 +467,24 @@ export const PrintBoxStamp = ({
             ${
               printMode === 'single'
                 ? `
-            .stamp-item {
-              width: 100vw !important;
-              height: 100vh !important;
+            .box-print-container .stamp-item {
+              width: 100mm !important;
+              height: 80mm !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
               page-break-after: always !important;
+              break-after: page !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
               position: relative !important;
+              overflow: hidden !important;
             }
-            .stamp-item table {
-              width: 97mm !important;
-              height: 77mm !important;
-              transform: scale(0.98) !important;
-              transform-origin: center center !important;
-              margin: 0 auto !important;
+            .box-print-container .stamp-item:last-child {
+              page-break-after: auto !important;
+              break-after: auto !important;
             }
-            .stamp-item table.has-barcode {
+            .box-print-container .stamp-item table.has-barcode {
               width: 98mm !important;
               height: 78mm !important;
               transform: scale(0.96) !important;
@@ -487,7 +493,7 @@ export const PrintBoxStamp = ({
             }
             `
                 : `
-            .grid-page {
+            .box-print-container .grid-page {
               width: 100vw !important;
               height: 100vh !important;
               display: grid !important;
@@ -497,12 +503,12 @@ export const PrintBoxStamp = ({
               padding: 2px !important;
               page-break-after: always !important;
             }
-            .grid-stamp-item {
+            .box-print-container .grid-stamp-item {
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
             }
-            .grid-stamp-item table {
+            .box-print-container .grid-stamp-item table {
               width: 100% !important;
               height: 100% !important;
               max-width: 98% !important;
