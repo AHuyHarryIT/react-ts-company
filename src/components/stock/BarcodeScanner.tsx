@@ -375,7 +375,7 @@ const BarcodeScanner: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Scanner Controls */}
-      <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+      <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-3 sm:p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           {/* Operation Toggle */}
           <Radio.Group
@@ -383,11 +383,18 @@ const BarcodeScanner: React.FC = () => {
             onChange={(e) => setOperation(e.target.value)}
             buttonStyle="solid"
             size="middle"
+            className="grid w-full grid-cols-2 sm:block sm:w-auto"
           >
-            <Radio.Button value="in" className="!font-semibold">
+            <Radio.Button
+              value="in"
+              className="!w-full !text-center !font-semibold sm:!w-auto"
+            >
               Nhập kho
             </Radio.Button>
-            <Radio.Button value="out" className="!font-semibold">
+            <Radio.Button
+              value="out"
+              className="!w-full !text-center !font-semibold sm:!w-auto"
+            >
               Xuất kho
             </Radio.Button>
           </Radio.Group>
@@ -414,7 +421,7 @@ const BarcodeScanner: React.FC = () => {
           </div>
 
           {/* Scan Counter Badge */}
-          <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-600">
+          <div className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-600 sm:w-auto">
             <ScanOutlined />
             <span>{scanCount}</span>
           </div>
@@ -467,7 +474,7 @@ const BarcodeScanner: React.FC = () => {
             {scanLogs.map((log) => (
               <div
                 key={log.id}
-                className="flex items-center gap-3 px-3 py-2 transition-colors"
+                className="flex items-start gap-3 px-3 py-2 transition-colors"
                 style={{ backgroundColor: log.success ? '#fafff5' : '#fff8f7' }}
               >
                 <div
@@ -479,7 +486,7 @@ const BarcodeScanner: React.FC = () => {
                   {log.operation === 'in' ? '↓' : '↑'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className="text-xs font-bold"
                       style={{ color: log.success ? '#389e0d' : '#cf1322' }}
@@ -494,7 +501,7 @@ const BarcodeScanner: React.FC = () => {
                     {log.message}
                   </div>
                 </div>
-                <div className="shrink-0 text-right">
+                <div className="shrink-0 text-right leading-tight">
                   <div
                     className="text-xs font-bold"
                     style={{

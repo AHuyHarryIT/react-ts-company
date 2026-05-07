@@ -33,6 +33,7 @@ import BackButton from '@components/common/BackButton';
 import ComponentCard from '@components/common/ComponentCard';
 import { useAuth } from '@hooks/useAuth';
 import { useCrudList } from '@hooks/useCrudList';
+import { useIsMobile } from '@hooks/useIsMobile';
 import { scheduleDetailService } from '@services/ScheduleDetailService';
 import { fetchWorkScheduleCategories } from '@services/WorkScheduleCategoryService';
 import { scheduleService } from '@services/workScheduleService';
@@ -114,6 +115,7 @@ export default function Detail({
   isDrawer?: boolean;
 }) {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const isLimitedTotalWorkScheduleViewer = canViewTotalWorkSchedules(user);
   const routeParams = useParams({ strict: false });
   const id = (scheduleId ||
@@ -360,6 +362,8 @@ export default function Detail({
     const dayColumnStyle: CSSProperties = {
       minWidth: DAY_COLUMN_WIDTH,
       width: DAY_COLUMN_WIDTH,
+      maxWidth: DAY_COLUMN_WIDTH,
+      boxSizing: 'border-box',
       paddingInline: 4,
       ...(isToday ? todayColumnStyle : {})
     };
@@ -486,12 +490,19 @@ export default function Detail({
       };
     })
   ];
-  const tableScroll: TableProps<unknown>['scroll'] = { x: 'max-content' };
-  const tableSticky: TableProps<unknown>['sticky'] = {
-    offsetHeader: isDrawer ? 64 : 56
-  };
+  const getTableScroll = (dayCount: number): TableProps<unknown>['scroll'] => ({
+    x: EMPLOYEE_COLUMN_WIDTH + dayCount * DAY_COLUMN_WIDTH,
+    scrollToFirstRowOnChange: false
+  });
+  const monthTableScroll = getTableScroll(maxDay);
+  const saturdayTableScroll = getTableScroll(totalSaturdays);
+  const tableSticky: TableProps<unknown>['sticky'] = isMobile
+    ? undefined
+    : {
+        offsetHeader: isDrawer ? 64 : 56
+      };
   const scheduleTableClassName =
-    'smooth-sticky-table work-schedule-sticky-table';
+    'smooth-sticky-table work-schedule-sticky-table [&_.ant-table-cell-fix-left]:!max-w-none [&_.ant-table-cell-fix-left]:!whitespace-normal';
   const scheduleTableStyle = {
     '--work-schedule-sticky-top': `${isDrawer ? 64 : 56}px`
   } as CSSProperties;
@@ -594,6 +605,7 @@ export default function Detail({
 
     const updateStickyVisibility = () => {
       frameId = 0;
+      if (isMobile) return;
       const stickyTop = isDrawer ? 64 : 56;
 
       root
@@ -635,6 +647,7 @@ export default function Detail({
     };
   }, [
     isDrawer,
+    isMobile,
     hnhcData,
     eatRoomData,
     wcMenData,
@@ -675,8 +688,9 @@ export default function Detail({
                 bordered
                 className={scheduleTableClassName}
                 style={scheduleTableStyle}
-                scroll={tableScroll}
+                scroll={monthTableScroll}
                 sticky={tableSticky}
+                tableLayout="fixed"
                 pagination={false}
                 size="small"
               />
@@ -707,8 +721,9 @@ export default function Detail({
           bordered
           className={scheduleTableClassName}
           style={scheduleTableStyle}
-          scroll={tableScroll}
+          scroll={monthTableScroll}
           sticky={tableSticky}
+          tableLayout="fixed"
           pagination={false}
           size="small"
         />
@@ -736,8 +751,9 @@ export default function Detail({
           bordered
           className={scheduleTableClassName}
           style={scheduleTableStyle}
-          scroll={tableScroll}
+          scroll={saturdayTableScroll}
           sticky={tableSticky}
+          tableLayout="fixed"
           pagination={false}
           size="small"
         />
@@ -765,8 +781,9 @@ export default function Detail({
           bordered
           className={scheduleTableClassName}
           style={scheduleTableStyle}
-          scroll={tableScroll}
+          scroll={monthTableScroll}
           sticky={tableSticky}
+          tableLayout="fixed"
           pagination={false}
           size="small"
         />
@@ -794,8 +811,9 @@ export default function Detail({
           bordered
           className={scheduleTableClassName}
           style={scheduleTableStyle}
-          scroll={tableScroll}
+          scroll={monthTableScroll}
           sticky={tableSticky}
+          tableLayout="fixed"
           pagination={false}
           size="small"
         />

@@ -6866,12 +6866,47 @@ html:not(.legacy-ui-mode)
 html
   body
   :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table.ant-table-wrapper {
+  max-width: 100% !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  :where(.ant-table-container, .ant-table-content) {
+  max-width: 100% !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  .ant-table-container {
+  overflow: hidden !important;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
+  .work-schedule-sticky-table
+  .ant-table-content {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+html
+  body
+  :where(#root, .ant-modal-root, :is(.ant-drawer-root, .ant-drawer))
   .work-schedule-sticky-table
   .ant-table-sticky-holder {
   position: sticky !important;
   top: var(--work-schedule-sticky-top, 56px) !important;
   z-index: 72 !important;
-  overflow: visible !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
   background: #eef7ff !important;
   background-color: #eef7ff !important;
   background-image: none !important;
@@ -7775,6 +7810,7 @@ html.liquid-ui-mode:not(.legacy-ui-mode)
   body
   #root
   .work-schedule-sticky-table.ant-table-wrapper {
+  max-width: 100% !important;
   overflow: visible !important;
   contain: none !important;
 }
@@ -7798,11 +7834,39 @@ html.liquid-ui-mode:not(.legacy-ui-mode)
   body
   #root
   .work-schedule-sticky-table
+  :where(.ant-table-container, .ant-table-content) {
+  max-width: 100% !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table
+  .ant-table-container {
+  overflow: hidden !important;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table
+  .ant-table-content {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+html.liquid-ui-mode:not(.legacy-ui-mode)
+  body
+  #root
+  .work-schedule-sticky-table
   .ant-table-sticky-holder {
   position: sticky !important;
   top: var(--work-schedule-sticky-top, 56px) !important;
   z-index: 120 !important;
-  overflow: visible !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
   background: #eef7ff !important;
   background-color: #eef7ff !important;
   background-image: none !important;
@@ -8884,4 +8948,248 @@ html body #root .product-total-table .product-total-header-title.is-left {
 
 html body #root .product-total-table .product-total-header-title__line {
   display: block;
+}
+
+html body .po-history-readable-drawer .ant-drawer-content,
+html body .po-history-readable-drawer .ant-drawer-header,
+html body .po-history-readable-drawer .ant-drawer-body,
+html body .po-history-readable-drawer .ant-drawer-footer {
+  background-image: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body .po-history-readable-drawer .ant-drawer-content {
+  background: #f8fafc !important;
+  color: #111827 !important;
+}
+
+html body .po-history-readable-drawer .ant-drawer-header {
+  border-bottom: 1px solid #e5e7eb !important;
+  background: #ffffff !important;
+}
+
+html body .po-history-readable-drawer .ant-drawer-body {
+  background: #f8fafc !important;
+}
+
+html body .po-history-readable-drawer .ant-drawer-title,
+html body .po-history-readable-drawer .ant-drawer-title *,
+html body .po-history-readable-drawer .ant-drawer-body,
+html body .po-history-readable-drawer .ant-tabs,
+html body .po-history-readable-drawer .ant-table-wrapper,
+html body .po-history-readable-drawer .ant-table,
+html body .po-history-readable-drawer .ant-table-cell,
+html body .po-history-readable-drawer .ant-form,
+html body .po-history-readable-drawer .ant-form-item-label > label {
+  color: #111827 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+html body .po-history-readable-drawer :where(.text-gray-300, .text-gray-400) {
+  color: #6b7280 !important;
+}
+
+html body .po-history-readable-drawer :where(.text-gray-500, .text-gray-600) {
+  color: #4b5563 !important;
+}
+
+html body .po-history-readable-drawer :where(.text-gray-700, .text-gray-800) {
+  color: #1f2937 !important;
+}
+
+html body .po-history-readable-drawer .ant-tabs-tab {
+  color: #4b5563 !important;
+}
+
+html body .po-history-readable-drawer .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #1d4ed8 !important;
+}
+
+html
+  body
+  .po-history-readable-drawer
+  :where(.ant-input, .ant-input-number, .ant-select-selector) {
+  border-color: #d1d5db !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body .po-history-readable-drawer .ant-table {
+  background: #ffffff !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body .po-history-readable-drawer .ant-table-thead > tr > th {
+  border-bottom-color: #e5e7eb !important;
+  background: #f3f4f6 !important;
+  background-image: none !important;
+  color: #374151 !important;
+}
+
+html body .po-history-readable-drawer .ant-table-tbody > tr > td {
+  border-bottom-color: #f3f4f6 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+html body .po-history-readable-drawer .ant-table-tbody > tr:hover > td {
+  background: #f9fafb !important;
+}
+
+html
+  body
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where(
+    [class*='border'],
+    [class*='shadow'],
+    [class*='backdrop-blur'],
+    [class*='bg-']
+  ) {
+  background-image: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html
+  body
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where([class*='bg-white']) {
+  background-color: #ffffff !important;
+}
+
+html
+  body
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where([class*='bg-gray-50']) {
+  background-color: #f9fafb !important;
+}
+
+html
+  body
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where([class*='bg-blue-50']) {
+  background-color: #eff6ff !important;
+}
+
+html
+  body
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where([class*='bg-green-50']) {
+  background-color: #f0fdf4 !important;
+}
+
+html
+  body
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where([class*='bg-amber-50']) {
+  background-color: #fffbeb !important;
+}
+
+html
+  body
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where(
+    [class*='bg-purple-50']
+  ) {
+  background-color: #faf5ff !important;
+}
+
+html body.dark .po-history-readable-drawer .ant-drawer-content,
+html body.dark .po-history-readable-drawer .ant-drawer-body {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html body.dark .po-history-readable-drawer .ant-drawer-header {
+  border-bottom-color: #334155 !important;
+  background: #111827 !important;
+}
+
+html body.dark .po-history-readable-drawer .ant-drawer-title,
+html body.dark .po-history-readable-drawer .ant-drawer-title *,
+html body.dark .po-history-readable-drawer .ant-drawer-body,
+html body.dark .po-history-readable-drawer .ant-tabs,
+html body.dark .po-history-readable-drawer .ant-table-wrapper,
+html body.dark .po-history-readable-drawer .ant-table,
+html body.dark .po-history-readable-drawer .ant-table-cell,
+html body.dark .po-history-readable-drawer .ant-form,
+html body.dark .po-history-readable-drawer .ant-form-item-label > label {
+  color: #f8fafc !important;
+}
+
+html
+  body.dark
+  .po-history-readable-drawer
+  :where(.text-gray-300, .text-gray-400, .text-gray-500, .text-gray-600) {
+  color: #cbd5e1 !important;
+}
+
+html
+  body.dark
+  .po-history-readable-drawer
+  :where(.text-gray-700, .text-gray-800) {
+  color: #f1f5f9 !important;
+}
+
+html body.dark .po-history-readable-drawer .ant-tabs-tab {
+  color: #cbd5e1 !important;
+}
+
+html
+  body.dark
+  .po-history-readable-drawer
+  .ant-tabs-tab-active
+  .ant-tabs-tab-btn {
+  color: #93c5fd !important;
+}
+
+html
+  body.dark
+  .po-history-readable-drawer
+  :where(.ant-input, .ant-input-number, .ant-select-selector) {
+  border-color: #475569 !important;
+  background: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+html body.dark .po-history-readable-drawer .ant-table {
+  background: #111827 !important;
+}
+
+html body.dark .po-history-readable-drawer .ant-table-thead > tr > th {
+  border-bottom-color: #334155 !important;
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+}
+
+html body.dark .po-history-readable-drawer .ant-table-tbody > tr > td {
+  border-bottom-color: #1e293b !important;
+  background: #111827 !important;
+}
+
+html body.dark .po-history-readable-drawer .ant-table-tbody > tr:hover > td {
+  background: #1e293b !important;
+}
+
+html
+  body.dark
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where([class*='bg-white']) {
+  background-color: #111827 !important;
+}
+
+html
+  body.dark
+  .po-history-readable-drawer
+  :where(section, div):where([class*='rounded']):where([class*='bg-gray-50']) {
+  background-color: #1f2937 !important;
 }

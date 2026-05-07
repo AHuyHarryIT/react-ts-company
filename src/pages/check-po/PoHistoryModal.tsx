@@ -35,6 +35,8 @@ import {
   Table,
   TableColumnsType,
   TableProps,
+  Tabs,
+  TabsProps,
   Tag
 } from 'antd';
 import type { Dayjs } from 'dayjs';
@@ -178,6 +180,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
   const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null);
+  const [historyViewTab, setHistoryViewTab] = useState('by-export-date');
   const [selectedImportDateKey, setSelectedImportDateKey] = useState<string>();
 
   const queryClient = useQueryClient();
@@ -349,12 +352,18 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
   const productList = products?.data || [];
   const allHistoryData = purchaseOrdersHistory?.dailyQuantitiesPo || [];
 
-  const filteredHistoryData = allHistoryData.filter((item) =>
-    item.product?.name?.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const normalizedSearchText = searchText.trim().toLowerCase();
+
+  const filteredHistoryData = allHistoryData.filter((item) => {
+    if (!normalizedSearchText) return true;
+
+    return [item.product?.name, item.file_name].some((value) =>
+      value?.toLowerCase().includes(normalizedSearchText)
+    );
+  });
 
   const filteredProductList = productList.filter((product) =>
-    product.name?.toLowerCase().includes(searchText.toLowerCase())
+    product.name?.toLowerCase().includes(normalizedSearchText)
   );
 
   // ── Group records by batch_id ──────────────────────────────
@@ -1128,6 +1137,56 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     </section>
   );
 
+  const renderAllFilesSection = () => (
+    <section className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+      <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/80 px-3 py-2 dark:border-gray-700 dark:bg-gray-800/60">
+        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+          Tất cả file PO đã nhập
+        </span>
+        <Tag color="cyan" className="!m-0">
+          {batchGroups.length} file
+        </Tag>
+        <Tag color="green" className="!m-0">
+          {filteredHistoryData.length} SP
+        </Tag>
+        <Tag color="blue" className="!m-0">
+          Tổng {totalExportQuantity.toLocaleString('vi-VN')}
+        </Tag>
+      </div>
+      <div className="p-3">
+        {isMobile ? (
+          renderMobileBatchGroup(batchGroups)
+        ) : (
+          <Table<BatchGroup> {...batchTableProps} dataSource={batchGroups} />
+        )}
+      </div>
+    </section>
+  );
+
+  const historyTabItems: TabsProps['items'] = [
+    {
+      key: 'by-export-date',
+      label: 'Theo ngày xuất',
+      children:
+        importDateGroups.length === 0 && !isLoadingHistory ? (
+          <Empty description="Không có lịch sử" />
+        ) : (
+          selectedImportDateGroup &&
+          renderImportDateSection(selectedImportDateGroup)
+        )
+    },
+    {
+      key: 'all-files',
+      label: 'Tất cả file PO',
+      children:
+        batchGroups.length === 0 && !isLoadingHistory ? (
+          <Empty description="Không có file PO" />
+        ) : (
+          renderAllFilesSection()
+        )
+    }
+  ];
+
   // ── Form props ─────────────────────────────────────────────
   const formProps: FormProps<FormFields> = {
     ...customFormProps,
@@ -1152,6 +1211,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
     setDate(undefined);
     setSearchText('');
     setSelectedImportDateKey(undefined);
+    setHistoryViewTab('by-export-date');
     onClose();
   };
 
@@ -1175,6 +1235,7 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
       open={open}
       onClose={handleCancel}
       width="100%"
+      rootClassName="po-history-readable-drawer"
       destroyOnClose
       styles={{
         body: {
@@ -1201,20 +1262,22 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
                 setSelectedImportDateKey(undefined);
               }}
             />
-            <Select
-              value={selectedImportDateKey}
-              disabled={importDateGroups.length === 0}
-              placeholder="Chọn ngày xuất hàng"
-              size={isMobile ? 'small' : 'middle'}
-              className="!h-10 !w-full sm:!w-[230px]"
-              onChange={setSelectedImportDateKey}
-              options={importDateGroups.map((group) => ({
-                value: group.key,
-                label: `${group.label} · ${group.batchCount} file`
-              }))}
-            />
+            {historyViewTab === 'by-export-date' && (
+              <Select
+                value={selectedImportDateKey}
+                disabled={importDateGroups.length === 0}
+                placeholder="Chọn ngày xuất hàng"
+                size={isMobile ? 'small' : 'middle'}
+                className="!h-10 !w-full sm:!w-[230px]"
+                onChange={setSelectedImportDateKey}
+                options={importDateGroups.map((group) => ({
+                  value: group.key,
+                  label: `${group.label} · ${group.batchCount} file`
+                }))}
+              />
+            )}
             <Input
-              placeholder="Tìm sản phẩm..."
+              placeholder="Tìm sản phẩm hoặc tên file..."
               allowClear
               suffix={<SearchOutlined />}
               size={isMobile ? 'small' : 'middle'}
@@ -1259,15 +1322,12 @@ export const PoHistoryModal: React.FC<PoHistoryModalProps> = ({
           {!date ? (
             <>
               <Spin spinning={isLoadingHistory}>
-                {importDateGroups.length === 0 && !isLoadingHistory ? (
-                  <Empty description="Không có lịch sử" />
-                ) : (
-                  selectedImportDateGroup && (
-                    <div>
-                      {renderImportDateSection(selectedImportDateGroup)}
-                    </div>
-                  )
-                )}
+                <Tabs
+                  activeKey={historyViewTab}
+                  items={historyTabItems}
+                  onChange={setHistoryViewTab}
+                  size={isMobile ? 'small' : 'middle'}
+                />
               </Spin>
               {/*
                 isMobile ? (

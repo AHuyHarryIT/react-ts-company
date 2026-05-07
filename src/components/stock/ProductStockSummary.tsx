@@ -12,7 +12,9 @@ import {
 import { InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
+import AppButton from '@/components/common/AppButton';
 import RefreshButton from '@/components/common/RefreshButton';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   customPaginationProps,
   DEFAULT_PAGE_SIZE_OPTIONS
@@ -130,6 +132,7 @@ const getCompactCellFontSize = (text: string) => {
 };
 
 const ProductStockSummary: React.FC = () => {
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [stockData, setStockData] = useState<CurrentStockApiResponse | null>(
     null
@@ -507,6 +510,22 @@ const ProductStockSummary: React.FC = () => {
       }
     );
   }, [summaryData]);
+
+  const mobileSummaryData = useMemo(() => {
+    const startIndex = (tablePagination.current - 1) * tablePagination.pageSize;
+    return summaryData.slice(startIndex, startIndex + tablePagination.pageSize);
+  }, [summaryData, tablePagination]);
+
+  useEffect(() => {
+    const maxPage = Math.max(
+      1,
+      Math.ceil(summaryData.length / tablePagination.pageSize)
+    );
+
+    if (tablePagination.current > maxPage) {
+      setTablePagination((prev) => ({ ...prev, current: maxPage }));
+    }
+  }, [summaryData.length, tablePagination]);
 
   const columns = [
     {
@@ -985,7 +1004,7 @@ const ProductStockSummary: React.FC = () => {
         ) : (
           <>
             <div className="space-y-2">
-              {summaryData.map((item, index) => (
+              {mobileSummaryData.map((item, index) => (
                 <div
                   key={item.key}
                   className="rounded-lg border border-gray-100 bg-white px-3 py-2.5"
@@ -995,7 +1014,11 @@ const ProductStockSummary: React.FC = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="shrink-0 text-[10px] font-medium text-gray-400">
-                          #{index + 1}
+                          #
+                          {(tablePagination.current - 1) *
+                            tablePagination.pageSize +
+                            index +
+                            1}
                         </span>
                         <Text strong className="text-sm">
                           {item.product_name}
@@ -1106,6 +1129,53 @@ const ProductStockSummary: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            {summaryData.length > tablePagination.pageSize && (
+              <div className="flex items-center justify-between pt-3 text-xs text-gray-500">
+                <span>
+                  {(tablePagination.current - 1) * tablePagination.pageSize + 1}
+                  -
+                  {Math.min(
+                    tablePagination.current * tablePagination.pageSize,
+                    summaryData.length
+                  )}{' '}
+                  / {summaryData.length}
+                </span>
+                <div className="flex items-center gap-1">
+                  <AppButton
+                    size="small"
+                    disabled={tablePagination.current <= 1}
+                    onClick={() =>
+                      setTablePagination((prev) => ({
+                        ...prev,
+                        current: prev.current - 1
+                      }))
+                    }
+                  >
+                    ‹
+                  </AppButton>
+                  <span className="px-1.5 text-xs font-medium text-gray-600">
+                    {tablePagination.current} /{' '}
+                    {Math.ceil(summaryData.length / tablePagination.pageSize)}
+                  </span>
+                  <AppButton
+                    size="small"
+                    disabled={
+                      tablePagination.current * tablePagination.pageSize >=
+                      summaryData.length
+                    }
+                    onClick={() =>
+                      setTablePagination((prev) => ({
+                        ...prev,
+                        current: prev.current + 1
+                      }))
+                    }
+                  >
+                    ›
+                  </AppButton>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -1124,9 +1194,12 @@ const ProductStockSummary: React.FC = () => {
         placement="right"
         onClose={() => setDetailRecord(null)}
         open={!!detailRecord}
-        width={450}
+        width={isMobile ? '100vw' : 450}
         styles={{
-          body: { backgroundColor: '#f8fafc', padding: '16px' },
+          body: {
+            backgroundColor: '#f8fafc',
+            padding: isMobile ? '10px' : '16px'
+          },
           header: { borderBottom: '2px solid #e2e8f0' }
         }}
       >
@@ -1279,9 +1352,12 @@ const ProductStockSummary: React.FC = () => {
         placement="right"
         onClose={() => setExportDetailRecord(null)}
         open={!!exportDetailRecord}
-        width={420}
+        width={isMobile ? '100vw' : 420}
         styles={{
-          body: { backgroundColor: '#fff7ed', padding: '16px' },
+          body: {
+            backgroundColor: '#fff7ed',
+            padding: isMobile ? '10px' : '16px'
+          },
           header: { borderBottom: '2px solid #fed7aa' }
         }}
       >

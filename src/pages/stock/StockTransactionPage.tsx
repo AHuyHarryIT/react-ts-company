@@ -4,12 +4,14 @@ import {
   ScanOutlined,
   HistoryOutlined,
   DatabaseOutlined,
-  PieChartOutlined
+  PieChartOutlined,
+  DiffOutlined
 } from '@ant-design/icons';
 
 import ComponentCard from '@components/common/ComponentCard';
 import BarcodeScanner from '@/components/stock/BarcodeScanner';
 import { useAuth } from '@hooks/useAuth';
+import { useIsMobile } from '@hooks/useIsMobile';
 import { isAdmin } from '@utils/authUtil';
 
 // Lazy load heavy components to prevent background API calls
@@ -23,9 +25,13 @@ const CurrentStockDashboard = lazy(
 const ProductStockSummary = lazy(
   () => import('@/components/stock/ProductStockSummary')
 );
+const ExportComparisonTable = lazy(
+  () => import('@/components/stock/ExportComparisonTable')
+);
 
 const StockTransactionPage: React.FC = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const isAdminUser = isAdmin(user?.role?.name || '');
 
   const tabItems = [
@@ -106,6 +112,27 @@ const StockTransactionPage: React.FC = () => {
           <ProductStockSummary />
         </Suspense>
       )
+    },
+    {
+      key: 'export-comparison',
+      label: (
+        <span className="flex items-center gap-1.5">
+          <DiffOutlined />
+          <span className="hidden sm:inline">Đối chiếu xuất PO</span>
+          <span className="inline sm:hidden">Đối chiếu</span>
+        </span>
+      ),
+      children: (
+        <Suspense
+          fallback={
+            <div className="py-10 text-center">
+              <Spin size="large" />
+            </div>
+          }
+        >
+          <ExportComparisonTable />
+        </Suspense>
+      )
     }
   ];
 
@@ -114,9 +141,11 @@ const StockTransactionPage: React.FC = () => {
       <Tabs
         defaultActiveKey={isAdminUser ? 'history' : 'scanner'}
         items={tabItems}
-        type="card"
+        type={isMobile ? 'line' : 'card'}
         destroyOnHidden
         size="small"
+        tabBarGutter={isMobile ? 8 : 12}
+        tabBarStyle={isMobile ? { marginBottom: 12 } : undefined}
       />
     </ComponentCard>
   );

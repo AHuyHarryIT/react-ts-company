@@ -3,6 +3,7 @@ import { Table, Typography, message, Spin, Input, Select, Drawer } from 'antd';
 import { InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import AppButton from '@/components/common/AppButton';
 import RefreshButton from '@/components/common/RefreshButton';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   customPaginationProps,
   DEFAULT_PAGE_SIZE_OPTIONS
@@ -92,6 +93,7 @@ const parseLotInfo = (lot: string) => {
 };
 
 const CurrentStockDashboard: React.FC = () => {
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [tablePagination, setTablePagination] = useState({
     current: 1,
@@ -345,6 +347,17 @@ const CurrentStockDashboard: React.FC = () => {
       }))
       .sort((a, b) => a.product_id - b.product_id);
   }, [groupedStockItems]);
+
+  useEffect(() => {
+    const maxPage = Math.max(
+      1,
+      Math.ceil(productStockGroups.length / tablePagination.pageSize)
+    );
+
+    if (tablePagination.current > maxPage) {
+      setTablePagination((prev) => ({ ...prev, current: maxPage }));
+    }
+  }, [productStockGroups.length, tablePagination]);
 
   const handleRefresh = () => {
     loadCurrentStock();
@@ -841,10 +854,13 @@ const CurrentStockDashboard: React.FC = () => {
         placement="right"
         onClose={() => setDetailRecord(null)}
         open={!!detailRecord}
-        width={480}
+        width={isMobile ? '100vw' : 480}
         styles={{
-          body: { padding: '12px' },
-          header: { borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }
+          body: { padding: isMobile ? '10px' : '12px' },
+          header: {
+            borderBottom: '1px solid #e2e8f0',
+            padding: isMobile ? '10px 12px' : '12px 16px'
+          }
         }}
       >
         {detailRecord && (
@@ -935,10 +951,13 @@ const CurrentStockDashboard: React.FC = () => {
         placement="right"
         onClose={() => setExportedDetailRecord(null)}
         open={!!exportedDetailRecord}
-        width={480}
+        width={isMobile ? '100vw' : 480}
         styles={{
-          body: { padding: '12px' },
-          header: { borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }
+          body: { padding: isMobile ? '10px' : '12px' },
+          header: {
+            borderBottom: '1px solid #e2e8f0',
+            padding: isMobile ? '10px 12px' : '12px 16px'
+          }
         }}
       >
         {exportedDetailRecord && (
