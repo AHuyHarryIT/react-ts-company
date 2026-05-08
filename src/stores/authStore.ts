@@ -5,13 +5,17 @@ type AuthState = {
   user: User | null;
   isAuthenticated: boolean;
   token: string | null;
+  sessionId: string | null;
+  authChannelName: string | null;
 };
 
 // Load state from localStorage or set default values
 const initialState: AuthState = {
   user: JSON.parse(localStorage.getItem('user') || 'null'),
   isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
-  token: localStorage.getItem('token') || null
+  token: localStorage.getItem('token') || null,
+  sessionId: localStorage.getItem('auth_session_id') || null,
+  authChannelName: localStorage.getItem('auth_channel_name') || null
 };
 
 // Create the store instance
@@ -26,6 +30,11 @@ authStore.subscribe((state) => {
     state.currentVal.isAuthenticated ? 'true' : 'false'
   );
   localStorage.setItem('token', state.currentVal.token || '');
+  localStorage.setItem('auth_session_id', state.currentVal.sessionId || '');
+  localStorage.setItem(
+    'auth_channel_name',
+    state.currentVal.authChannelName || ''
+  );
 });
 
 // Utility functions to update the store state
@@ -60,14 +69,35 @@ export const setToken = (token: string) => {
   });
 };
 
+export const setSessionId = (sessionId: string | null) => {
+  authStore.setState((prevState) => {
+    return { ...prevState, sessionId };
+  });
+};
+
+export const setAuthChannelName = (authChannelName: string | null) => {
+  authStore.setState((prevState) => {
+    return { ...prevState, authChannelName };
+  });
+};
+
 export const clearAuth = () => {
   // Clear localStorage first để đảm bảo beforeLoad không thấy dữ liệu cũ
   localStorage.removeItem('user');
   localStorage.removeItem('isAuthenticated');
   localStorage.removeItem('token');
+  localStorage.removeItem('auth_session_id');
+  localStorage.removeItem('auth_channel_name');
 
   // Clear store state
   authStore.setState((prevState) => {
-    return { ...prevState, isAuthenticated: false, user: null, token: null };
+    return {
+      ...prevState,
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      sessionId: null,
+      authChannelName: null
+    };
   });
 };

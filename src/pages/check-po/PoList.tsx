@@ -8,7 +8,9 @@ import {
   FaCalendarWeek,
   FaSearch
 } from 'react-icons/fa';
+import { FaCheckDouble, FaTruck, FaWarehouse } from 'react-icons/fa6';
 
+import { PoSummaryTable } from '@components/check-po/PoSummaryTable';
 import { DailyTable } from '@components/check-po/DailyTable';
 import { ErrorTable } from '@components/check-po/ErrorTable';
 import { WeekTable } from '@components/check-po/WeekTable';
@@ -18,7 +20,6 @@ import { getWeeksInMonth } from '@utils/weeksInMonth';
 import { useIsMobile } from '@hooks/useIsMobile';
 
 import { IconAdd, IconHistory } from '@components/icons';
-import { FaTruck, FaWarehouse } from 'react-icons/fa6';
 import { ExportPoModal } from './ExportPoModal';
 import { AddQuantityModal } from './AddQuantityModal';
 import { AddExportQuantityModal } from './AddExportQuantityModal';
@@ -78,6 +79,25 @@ export const PoList = () => {
   );
 
   const poTabs: TabsProps['items'] = [
+    {
+      key: 'check-200',
+      label: (
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <FaCheckDouble className="text-cyan-500" />
+          Tổng hợp
+        </span>
+      ),
+      children: (
+        <div className="space-y-2">
+          <div className="text-center text-lg font-semibold uppercase">
+            Bảng tổng hợp
+            <br />
+            Tháng {month.format('MM-YYYY')}
+          </div>
+          <PoSummaryTable month={month} search={search} />
+        </div>
+      )
+    },
     ...weekTabs,
     {
       key: 'daily',

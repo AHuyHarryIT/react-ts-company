@@ -18,6 +18,9 @@ export interface BirthdayModalProps {
   brandColor?: string;
   isCurrentUserBirthday?: boolean;
   currentUserName?: string;
+  forceRender?: boolean;
+  mask?: boolean;
+  rootClassName?: string;
 }
 
 const EXTERNAL_BIRTHDAY_IMAGES = [
@@ -60,8 +63,22 @@ const FIREWORKS = [
 ];
 
 const BIRTHDAY_BURSTS = [
-  { delay: 0, left: 38, top: 48 },
-  { delay: 2, left: 56, top: 48 }
+  {
+    delay: 0,
+    left: 42,
+    mobileLeft: 'clamp(126px, 42%, 50%)',
+    mobileTranslate: '-42%',
+    side: 'left',
+    top: 48
+  },
+  {
+    delay: 2,
+    left: 58,
+    mobileLeft: 'clamp(50%, 58%, calc(100% - 126px))',
+    mobileTranslate: '-58%',
+    side: 'right',
+    top: 48
+  }
 ];
 
 const FIREWORK_PARTICLES = Array.from({ length: 28 }, (_, index) => ({
@@ -96,13 +113,18 @@ const PERSONAL_BIRTHDAY_WISHES = [
   'Chúc bạn tuổi mới giữ phong độ tốt, làm điều mình muốn và đón nhiều tin vui.'
 ];
 
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function makeWish(name: string, isPersonal = false): string {
+function makeWish(
+  name: string,
+  isPersonal = false,
+  version = 0,
+  index = 0
+): string {
   const wishes = isPersonal ? PERSONAL_BIRTHDAY_WISHES : BASE_WISHES;
-  return pickRandom(wishes).replace('{name}', name);
+  const offset = Math.floor(Math.random() * wishes.length);
+  return wishes[(offset + version + index) % wishes.length].replace(
+    '{name}',
+    name
+  );
 }
 
 function getDisplayName(name: string): string {
@@ -120,7 +142,10 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
   title = 'Chúc mừng sinh nhật',
   brandColor = '#2563eb',
   isCurrentUserBirthday = false,
-  currentUserName
+  currentUserName,
+  forceRender,
+  mask,
+  rootClassName
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isCompactViewport, setIsCompactViewport] = useState(false);
@@ -135,8 +160,10 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
   const wishes = useMemo(
     () =>
       isCurrentUserBirthday
-        ? [makeWish(currentDisplayName, true)]
-        : displayEmployees.map((e) => makeWish(e)),
+        ? [makeWish(currentDisplayName, true, wishVersion)]
+        : displayEmployees.map((e, index) =>
+            makeWish(e, false, wishVersion, index)
+          ),
     [currentDisplayName, displayEmployees, isCurrentUserBirthday, wishVersion]
   );
 
@@ -295,7 +322,8 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
           display: inline-flex;
           align-items: baseline;
           gap: 1px;
-          transform: translateX(-50%);
+          --bd-birthday-translate: -50%;
+          transform: translateX(var(--bd-birthday-translate));
           font-family: 'Halimun', 'Brush Script MT', cursive;
           font-weight: 900;
           letter-spacing: 0;
@@ -586,19 +614,19 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
         @keyframes bd-birthday-popup {
           0%, 50%, 100% {
             opacity: 0;
-            transform: translate(-50%, 16px) scale(0.78);
+            transform: translate(var(--bd-birthday-translate), 16px) scale(0.78);
           }
           12% {
             opacity: 1;
-            transform: translate(-50%, -4px) scale(1.02);
+            transform: translate(var(--bd-birthday-translate), -4px) scale(1.02);
           }
           28% {
             opacity: 0.95;
-            transform: translate(-50%, -30px) scale(1.08);
+            transform: translate(var(--bd-birthday-translate), -30px) scale(1.08);
           }
           46% {
             opacity: 0;
-            transform: translate(-50%, -48px) scale(1.14);
+            transform: translate(var(--bd-birthday-translate), -48px) scale(1.14);
           }
         }
 
@@ -794,7 +822,12 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
           }
 
           .bd-birthday-letter {
-            font-size: calc(var(--bd-letter-size) - 11px);
+            font-size: clamp(16px, calc(var(--bd-letter-size) * 0.62), 26px);
+          }
+
+          .bd-birthday-burst {
+            left: var(--bd-birthday-mobile-left);
+            --bd-birthday-translate: var(--bd-birthday-mobile-translate);
           }
 
           .bd-footer {
@@ -807,12 +840,31 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
             height: 38px !important;
           }
         }
+
+        @media (max-width: 380px) {
+          .bd-birthday-letter {
+            font-size: clamp(15px, calc(var(--bd-letter-size) * 0.56), 23px);
+          }
+
+          .bd-birthday-burst[data-side='left'] {
+            left: clamp(112px, 44%, 50%);
+            --bd-birthday-translate: -42%;
+          }
+
+          .bd-birthday-burst[data-side='right'] {
+            left: clamp(50%, 56%, calc(100% - 112px));
+            --bd-birthday-translate: -58%;
+          }
+        }
         `}
       </style>
 
       <Modal
         className="bd-modal"
+        rootClassName={rootClassName}
         open={open}
+        forceRender={forceRender}
+        mask={mask}
         onCancel={onClose}
         footer={null}
         centered
@@ -877,11 +929,14 @@ const BirthdayModal: React.FC<BirthdayModalProps> = ({
               <span
                 aria-hidden="true"
                 className="bd-birthday-burst"
+                data-side={burst.side}
                 key={index}
                 style={
                   {
                     '--bd-birthday-delay': `${burst.delay}s`,
                     '--bd-birthday-left': `${burst.left}%`,
+                    '--bd-birthday-mobile-left': burst.mobileLeft,
+                    '--bd-birthday-mobile-translate': burst.mobileTranslate,
                     '--bd-birthday-top': `${burst.top}%`
                   } as React.CSSProperties
                 }

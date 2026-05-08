@@ -6,6 +6,9 @@ import { mapErrorCodesToMessages } from '@utils/validationMapper';
 import { message } from 'antd';
 
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
+const LOGIN_CONFLICT_CODE = 'LOGGED_IN_ELSEWHERE';
+const LOGIN_CONFLICT_MESSAGE =
+  'Tài khoản của bạn đã được đăng nhập ở nơi khác.';
 
 export const axiosPublic = axios.create({
   baseURL: BASE_API_URL,
@@ -53,8 +56,23 @@ axiosPrivate.interceptors.response.use(
       case 401: {
         // Kiểm tra xem có phải request login không
         const isLoginRequest = error.config?.url?.includes('/api/login');
+        const responseData = data as ApiErrorResponse & {
+          code?: string | number;
+          message?: string;
+        };
+        const errorCode = responseData?.code ?? responseData?.error?.code;
+        const errorMessage =
+          responseData?.message ?? responseData?.error?.message;
+        const isLoginConflict = String(errorCode) === LOGIN_CONFLICT_CODE;
 
         if (!isLoginRequest) {
+          if (isLoginConflict) {
+            sessionStorage.setItem(
+              'auth_logout_message',
+              errorMessage || LOGIN_CONFLICT_MESSAGE
+            );
+          }
+
           // Chỉ clear auth và redirect nếu KHÔNG phải login request
           clearAuth();
 

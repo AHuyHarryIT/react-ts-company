@@ -22,6 +22,7 @@ import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 
 import { StockTransactionService } from '@/services/StockTransactionService';
+import { productService } from '@/services/ProductService';
 import {
   TransactionListParams,
   TransactionListResponse,
@@ -53,6 +54,30 @@ interface ApiFilters {
   from_date?: string;
   to_date?: string;
 }
+
+const getOpening200Quantity = (source: unknown): number => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const item = source as any;
+  const directValue =
+    item?.opening_quantity_200 ??
+    item?.openingQuantity200 ??
+    item?.opening_stock_200 ??
+    item?.stock_start_quantity_200 ??
+    item?.stockStartQuantity200 ??
+    item?.stock_quantity_200 ??
+    item?.stockQuantity200 ??
+    item?.stock_quantity200 ??
+    item?.stockQuan200;
+
+  if (Number.isFinite(Number(directValue))) return Number(directValue);
+
+  const stockStart200 = item?.totalmonthquantities?.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (quantity: any) => Number(quantity?.status) === 5
+  );
+
+  return Number(stockStart200?.totalQuan || 0);
+};
 
 const RawTransactionHistory: React.FC = () => {
   const isMobile = useIsMobile();
@@ -148,6 +173,10 @@ const RawTransactionHistory: React.FC = () => {
   );
 
   const [globalStats, setGlobalStats] = useState({ totalIn: 0, totalOut: 0 });
+  const [opening200Stats, setOpening200Stats] = useState<{
+    total: number;
+    byProduct: Map<number, number>;
+  }>({ total: 0, byProduct: new Map() });
 
   const loadStatistics = useCallback(async () => {
     try {
@@ -170,10 +199,39 @@ const RawTransactionHistory: React.FC = () => {
     }
   }, [apiFilters.from_date, apiFilters.to_date]);
 
+  const loadOpening200Stats = useCallback(async () => {
+    try {
+      const productsResult = await productService.list({
+        limit: 0,
+        month: dayjs(apiFilters.from_date).format('YYYY-MM'),
+        include: ['totalmonthquantities']
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawProducts = (productsResult as any)?.data || productsResult || [];
+      const byProduct = new Map<number, number>();
+      const total = (Array.isArray(rawProducts) ? rawProducts : []).reduce(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (sum: number, product: any) => {
+          const productId = Number(product?.id);
+          const openingQuantity = getOpening200Quantity(product);
+          if (productId) byProduct.set(productId, openingQuantity);
+          return sum + openingQuantity;
+        },
+        0
+      );
+
+      setOpening200Stats({ total, byProduct });
+    } catch (e) {
+      console.error('Error loading opening 200% stock', e);
+      setOpening200Stats({ total: 0, byProduct: new Map() });
+    }
+  }, [apiFilters.from_date]);
+
   useEffect(() => {
     loadTransactions(1);
     loadStatistics();
-  }, [loadTransactions, loadStatistics]);
+    loadOpening200Stats();
+  }, [loadTransactions, loadStatistics, loadOpening200Stats]);
 
   const handleDelete = useCallback(
     async (id: number) => {
@@ -209,12 +267,36 @@ const RawTransactionHistory: React.FC = () => {
       else currentOut += qty;
     });
 
+    const productIds = new Set(filtered.map((tx) => tx.product_id));
+    const filteredOpening = filterProductId
+      ? opening200Stats.byProduct.get(filterProductId) || 0
+      : Array.from(productIds).reduce(
+          (sum, productId) =>
+            sum + (opening200Stats.byProduct.get(productId) || 0),
+          0
+        );
+
     if (filterProductId || searchText || apiFilters.type) {
-      return { totalIn: currentIn, totalOut: currentOut };
+      return {
+        totalIn: currentIn,
+        totalOut: currentOut,
+        opening200: filteredOpening
+      };
     }
 
-    return { totalIn: globalStats.totalIn, totalOut: globalStats.totalOut };
-  }, [filtered, filterProductId, searchText, apiFilters.type, globalStats]);
+    return {
+      totalIn: globalStats.totalIn,
+      totalOut: globalStats.totalOut,
+      opening200: opening200Stats.total
+    };
+  }, [
+    filtered,
+    filterProductId,
+    searchText,
+    apiFilters.type,
+    globalStats,
+    opening200Stats
+  ]);
 
   const handleTypeChange = (value: 'in' | 'out' | undefined) => {
     setApiFilters((prev) => ({ ...prev, type: value }));
@@ -491,6 +573,8 @@ const RawTransactionHistory: React.FC = () => {
     </div>
   );
 
+  const movement = summary.opening200 + summary.totalIn - summary.totalOut;
+
   return (
     <div className="space-y-3">
       {/* Summary + Filters */}
@@ -501,6 +585,12 @@ const RawTransactionHistory: React.FC = () => {
             {dateRange[0].format('DD/MM')} – {dateRange[1].format('DD/MM/YYYY')}
           </span>
           <div className="hidden h-4 w-px bg-gray-200 sm:block" />
+          <div>
+            <span className="text-xs text-gray-400">Tồn đầu kỳ 200%</span>
+            <span className="ml-1 text-sm font-bold text-blue-500">
+              {formatQty(summary.opening200)}
+            </span>
+          </div>
           <div>
             <span className="text-xs text-gray-400">Nhập</span>
             <span className="ml-1 text-sm font-bold text-green-600">
@@ -513,12 +603,12 @@ const RawTransactionHistory: React.FC = () => {
               -{formatQty(summary.totalOut)}
             </span>
           </div>
-          <Tooltip title="Chênh lệch (Nhập - Xuất) trong khoảng thời gian lọc. Tồn thực tế sẽ cộng thêm số dư đầu kỳ.">
+          <Tooltip title="Tồn đầu kỳ 200% + Nhập - Xuất trong khoảng thời gian lọc.">
             <div>
               <span className="text-xs text-gray-400">Biến động</span>
               <span className="ml-1 text-sm font-bold text-blue-600">
-                {summary.totalIn - summary.totalOut >= 0 ? '+' : ''}
-                {formatQty(summary.totalIn - summary.totalOut)}
+                {movement >= 0 ? '+' : ''}
+                {formatQty(movement)}
               </span>
             </div>
           </Tooltip>

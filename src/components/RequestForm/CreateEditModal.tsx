@@ -694,6 +694,8 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
             placeholder="-- Chọn loại đơn --"
             size="large"
             onChange={handleTypeChange}
+            placement="bottomLeft"
+            popupClassName="request-form-select-dropdown"
             disabled={!!editData} // Không cho phép thay đổi type khi edit
           >
             {Object.entries(REQUEST_FORM_TYPES).map(([key, value]) => (
@@ -809,6 +811,8 @@ TP.Hồ Chí Minh, ngày ${dayjs().date()} tháng ${dayjs().month() + 1} năm ${
                   placeholder="Chọn tổ trưởng..."
                   value={supervisorId}
                   onChange={setSupervisorId}
+                  placement="bottomLeft"
+                  popupClassName="request-form-select-dropdown"
                   style={{ width: '100%' }}
                   size="large"
                   showSearch

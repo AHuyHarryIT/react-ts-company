@@ -10,10 +10,6 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      // Clear local state immediately for smooth UX
-      clearAuth();
-
-      // Call logout API in background (non-blocking)
       await authLogout();
     } catch (error) {
       // Even if logout API fails, user is logged out locally

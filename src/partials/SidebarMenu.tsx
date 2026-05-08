@@ -77,7 +77,7 @@ function SidebarItem({
       whileTap={{ scale: 0.98 }}
       className={`group mx-2.5 my-0.5 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-out ${
         isActive
-          ? 'liquid-glass-control sidebar-active-item font-semibold text-black dark:text-white'
+          ? 'liquid-glass-control sidebar-active-item font-semibold !text-cyan-700 dark:!text-cyan-300'
           : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white'
       }`}
     >
@@ -87,7 +87,7 @@ function SidebarItem({
           transition={{ duration: 0.4 }}
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl transition-colors duration-200 ${
             isActive
-              ? 'text-blue-600 dark:text-blue-400'
+              ? '!text-cyan-700 dark:!text-cyan-300'
               : 'text-gray-600 group-hover:text-gray-800 dark:text-gray-400 dark:group-hover:text-gray-200'
           } ${isCollapsed ? '!mx-auto !h-9 !w-9' : ''}`}
         >
@@ -171,7 +171,7 @@ function SidebarSubmenu({
         onClick={onToggle}
         className={`group mx-2.5 my-0.5 flex w-[calc(100%-20px)] items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-out ${
           hasActiveChild
-            ? 'liquid-glass-control sidebar-active-item font-semibold text-black dark:text-white'
+            ? 'liquid-glass-control sidebar-active-item font-semibold !text-cyan-700 dark:!text-cyan-300'
             : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white'
         }`}
       >
@@ -179,7 +179,7 @@ function SidebarSubmenu({
           <span
             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl transition-colors duration-200 ${
               hasActiveChild
-                ? 'text-blue-600 dark:text-blue-400'
+                ? '!text-cyan-700 dark:!text-cyan-300'
                 : 'text-gray-600 group-hover:text-gray-800 dark:text-gray-400 dark:group-hover:text-gray-200'
             } ${isCollapsed ? '!mx-auto !h-9 !w-9' : ''}`}
           >
@@ -235,12 +235,20 @@ function SidebarSubmenu({
                       whileTap={{ scale: 0.98 }}
                       className={`mx-2 my-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 transition-all duration-200 ease-out ${
                         isChildActive
-                          ? 'liquid-glass-control sidebar-active-item font-semibold text-black dark:text-white'
+                          ? 'liquid-glass-control sidebar-active-item font-semibold !text-cyan-700 dark:!text-cyan-300'
                           : 'font-medium text-black hover:bg-white/45 hover:text-black active:scale-[0.98] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
                       }`}
                     >
                       {childIcon && (
-                        <span className="text-[13px]">{childIcon}</span>
+                        <span
+                          className={`text-[13px] ${
+                            isChildActive
+                              ? '!text-cyan-700 dark:!text-cyan-300'
+                              : ''
+                          }`}
+                        >
+                          {childIcon}
+                        </span>
                       )}
                       <span className="truncate text-[12.5px] capitalize">
                         {childLabel}

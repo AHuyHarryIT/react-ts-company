@@ -26,13 +26,19 @@ interface CleaningDutyModalProps {
   onClose: () => void;
   duties: CleaningDuty[];
   onDontShowAgain?: (checked: boolean) => void;
+  forceRender?: boolean;
+  mask?: boolean;
+  rootClassName?: string;
 }
 
 const CleaningDutyModal: React.FC<CleaningDutyModalProps> = ({
   open,
   onClose,
   duties,
-  onDontShowAgain
+  onDontShowAgain,
+  forceRender,
+  mask,
+  rootClassName
 }) => {
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const getTypeMeta = (
@@ -119,6 +125,9 @@ const CleaningDutyModal: React.FC<CleaningDutyModalProps> = ({
         </div>
       }
       open={open}
+      rootClassName={rootClassName}
+      forceRender={forceRender}
+      mask={mask}
       onCancel={onClose}
       footer={
         <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">

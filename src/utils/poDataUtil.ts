@@ -121,15 +121,6 @@ export const weeklyDataSource = (
       )
       .reduce((acc, item) => acc + item.totalQuan, 0);
 
-    const checked200Quantity = totalDailyQuantities
-      .filter(
-        (item) =>
-          item.status === 2 &&
-          dayjs(item.date).isAfter(dayjs(startDate).subtract(1, 'day')) &&
-          dayjs(item.date).isBefore(dayjs(endDate).add(1, 'day'))
-      )
-      .reduce((acc, item) => acc + item.totalQuan, 0);
-
     const exportQuantity = totalDailyQuantitiesPO
       .filter(
         (item) =>
@@ -147,8 +138,6 @@ export const weeklyDataSource = (
 
     beginOfWeek =
       totalMonthQuantities.find((item) => item.status === 4)?.totalQuan || 0;
-    const beginOfWeek200 =
-      totalMonthQuantities.find((item) => item.status === 5)?.totalQuan || 0;
 
     const reamingOfWeek = prevQuantity100 - prevExportQuantity + beginOfWeek;
 
@@ -160,8 +149,6 @@ export const weeklyDataSource = (
 
     const totalQuantity = quantity100 + beginOfWeek;
     const totalReamingOfWeek = reamingOfWeek - errorQuantity;
-    const checked200RemainingOfWeek =
-      beginOfWeek200 + checked200Quantity - exportQuantity;
 
     totalDailyQuantitiesPO
       .filter(
@@ -185,7 +172,6 @@ export const weeklyDataSource = (
       totalQuantity: totalQuantity || 0,
       totalReamingOfWeek: totalReamingOfWeek || 0,
       exportQuantity: exportQuantity || 0,
-      checked200RemainingOfWeek: checked200RemainingOfWeek || 0,
       beginOfWeek: beginOfWeek || 0,
       times: timeMap
     };

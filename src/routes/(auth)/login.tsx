@@ -16,13 +16,17 @@ declare global {
     | undefined;
 }
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useSearch } from '@tanstack/react-router';
 import type { FormProps } from 'antd';
-import { Button, Form, Input, message } from 'antd';
+import { Button, Form, Input, message, Modal } from 'antd';
 
-import { authLogin } from '@services/AuthService';
+import {
+  authCancelLogin,
+  authConfirmLogin,
+  authLogin
+} from '@services/AuthService';
 import logo from '@assets/images/logo/logoAsset.svg';
 
 import { FaRegUser } from 'react-icons/fa';
@@ -130,28 +134,60 @@ function RouteComponent() {
   const [form] = Form.useForm();
   const search = useSearch({ from: '/(auth)/login' });
 
+  useEffect(() => {
+    const logoutMessage = sessionStorage.getItem('auth_logout_message');
+    if (!logoutMessage) return;
+
+    sessionStorage.removeItem('auth_logout_message');
+    message.warning(logoutMessage);
+  }, []);
+
   const { mutate: loginMutation, isPending } = useMutation({
     mutationKey: ['authLogin'],
     mutationFn: ({ username, password }: FieldType) =>
       authLogin(username, password),
-    onSuccess: () => {
+    onSuccess: (response) => {
       message.success('Đăng nhập thành công!');
 
       const redirectTo =
         search.redirect && search.redirect !== '/login' ? search.redirect : '/';
 
-      const values = lastValuesRef.current;
-      if (values) {
-        // Trigger browser's native "Save password?" prompt, then redirect
-        triggerBrowserSavePassword(
-          values.username,
-          values.password,
-          redirectTo
-        );
-      } else {
-        setTimeout(() => {
+      const continueAfterLogin = () => {
+        const values = lastValuesRef.current;
+        if (values) {
+          triggerBrowserSavePassword(
+            values.username,
+            values.password,
+            redirectTo
+          );
+        } else {
           window.location.href = redirectTo;
-        }, 1000);
+        }
+      };
+
+      if (response.logged_in_elsewhere) {
+        Modal.confirm({
+          className: 'login-conflict-modal',
+          centered: true,
+          maskClosable: false,
+          width: 500,
+          title: 'Tài khoản đang đăng nhập ở nơi khác',
+          content:
+            response.login_conflict_message ||
+            'Tài khoản này đang được đăng nhập ở một nơi khác.',
+          okText: 'Tiếp tục đăng nhập',
+          cancelText: 'Huỷ đăng nhập',
+          onOk: async () => {
+            await authConfirmLogin();
+            continueAfterLogin();
+          },
+          onCancel: async () => {
+            await authCancelLogin();
+            form.resetFields(['password']);
+          }
+        });
+      } else {
+        setTimeout(continueAfterLogin, 1000);
       }
     },
     onError: (error: unknown) => {

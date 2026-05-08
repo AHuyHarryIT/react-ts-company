@@ -8,14 +8,28 @@ interface AdminNotificationRequestModalProps {
   onAllow: () => void;
   onDeny: () => void;
   loading?: boolean;
+  forceRender?: boolean;
+  mask?: boolean;
+  rootClassName?: string;
 }
 
 export const NotificationRequestModal: React.FC<
   AdminNotificationRequestModalProps
-> = ({ open, onAllow, onDeny, loading = false }) => {
+> = ({
+  open,
+  onAllow,
+  onDeny,
+  loading = false,
+  forceRender,
+  mask,
+  rootClassName
+}) => {
   return (
     <Modal
       open={open}
+      rootClassName={rootClassName}
+      forceRender={forceRender}
+      mask={mask}
       onCancel={onDeny}
       closable={false}
       maskClosable={false}

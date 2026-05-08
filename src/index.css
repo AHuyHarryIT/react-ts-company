@@ -2071,22 +2071,21 @@ html:not(.legacy-ui-mode)
   body
   #root
   :where(.app-notification-dropdown, .app-profile-dropdown) {
-  border-color: rgba(203, 213, 225, 0.72) !important;
+  border-color: rgba(203, 213, 225, 0.48) !important;
   background:
     linear-gradient(
       145deg,
-      rgba(255, 255, 255, 0.97),
-      rgba(255, 255, 255, 0.86) 54%,
-      rgba(246, 250, 255, 0.78)
+      rgba(255, 255, 255, 0.98),
+      rgba(255, 255, 255, 0.92) 58%,
+      rgba(248, 251, 255, 0.84)
     ),
-    linear-gradient(118deg, rgba(37, 99, 235, 0.03), transparent 58%),
-    rgba(255, 255, 255, 0.86) !important;
+    rgba(255, 255, 255, 0.9) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 18px 42px rgba(15, 23, 42, 0.13) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 14px 32px rgba(15, 23, 42, 0.1) !important;
   color: #111827 !important;
-  backdrop-filter: blur(22px) saturate(132%);
-  -webkit-backdrop-filter: blur(22px) saturate(132%);
+  backdrop-filter: blur(18px) saturate(126%);
+  -webkit-backdrop-filter: blur(18px) saturate(126%);
 }
 
 html:not(.legacy-ui-mode)
@@ -2099,14 +2098,11 @@ html:not(.legacy-ui-mode)
   pointer-events: none;
   content: '';
   border-radius: inherit;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.54), transparent 35%),
-    linear-gradient(
-      166deg,
-      transparent 0% 62%,
-      rgba(37, 99, 235, 0.026) 78%,
-      transparent 100%
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.44),
+    transparent 38%
+  );
 }
 
 html:not(.legacy-ui-mode)
@@ -2119,7 +2115,7 @@ html:not(.legacy-ui-mode)
 }
 
 html:not(.legacy-ui-mode) body #root .app-dropdown-header {
-  background: rgba(255, 255, 255, 0.34);
+  background: transparent;
 }
 
 html:not(.legacy-ui-mode) body #root .app-dropdown-title,
@@ -2140,13 +2136,19 @@ html:not(.legacy-ui-mode) body #root .app-dropdown-count {
 }
 
 html:not(.legacy-ui-mode) body #root .app-dropdown-clear-btn {
-  border: 1px solid rgba(220, 38, 38, 0.12);
-  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid transparent;
+  background: transparent;
   color: #dc2626 !important;
 }
 
+html:not(.legacy-ui-mode) body #root .app-dropdown-clear-btn svg {
+  height: 0.9rem;
+  width: 0.9rem;
+}
+
 html:not(.legacy-ui-mode) body #root .app-dropdown-clear-btn:hover {
-  background: rgba(254, 242, 242, 0.92);
+  border-color: rgba(220, 38, 38, 0.14);
+  background: rgba(254, 242, 242, 0.8);
   color: #b91c1c !important;
 }
 
@@ -2162,10 +2164,16 @@ html:not(.legacy-ui-mode) body #root .app-dropdown-divider {
 html:not(.legacy-ui-mode) body #root .app-notification-item,
 html:not(.legacy-ui-mode) body #root .app-profile-menu-item,
 html:not(.legacy-ui-mode) body #root .app-profile-logout {
-  margin: 0.125rem 0.375rem;
+  margin: 0.0625rem 0.25rem;
   border: 1px solid transparent;
-  border-radius: 0.85rem;
+  border-radius: 0.75rem;
+  background: transparent !important;
+  box-shadow: none !important;
   color: #111827 !important;
+}
+
+html:not(.legacy-ui-mode) body #root .app-notification-item[class*='bg-blue'] {
+  background: rgba(239, 246, 255, 0.36) !important;
 }
 
 html:not(.legacy-ui-mode) body #root .app-notification-title {
@@ -2174,18 +2182,10 @@ html:not(.legacy-ui-mode) body #root .app-notification-title {
 
 html:not(.legacy-ui-mode) body #root .app-notification-item:hover,
 html:not(.legacy-ui-mode) body #root .app-profile-menu-item:hover {
-  border-color: rgba(59, 130, 246, 0.14);
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.86),
-      rgba(239, 246, 255, 0.68)
-    ),
-    rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(59, 130, 246, 0.1);
+  background: rgba(239, 246, 255, 0.5) !important;
   color: #000 !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.84),
-    0 8px 16px rgba(15, 23, 42, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
 }
 
 html:not(.legacy-ui-mode) body #root .app-profile-menu-item svg {
@@ -2193,32 +2193,24 @@ html:not(.legacy-ui-mode) body #root .app-profile-menu-item svg {
 }
 
 html:not(.legacy-ui-mode) body #root .app-profile-summary {
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.58),
-    rgba(239, 246, 255, 0.34)
-  );
+  background: transparent;
 }
 
 html:not(.legacy-ui-mode) body #root .app-profile-avatar {
   border: 1px solid rgba(59, 130, 246, 0.14);
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.9),
-    rgba(239, 246, 255, 0.72)
-  ) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.86),
-    0 8px 16px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: 0 5px 12px rgba(15, 23, 42, 0.08);
 }
 
 html:not(.legacy-ui-mode) body #root .app-profile-logout {
+  border-color: transparent !important;
+  background: transparent !important;
   color: #dc2626 !important;
 }
 
 html:not(.legacy-ui-mode) body #root .app-profile-logout:hover {
-  border-color: rgba(220, 38, 38, 0.16);
-  background: rgba(254, 242, 242, 0.88) !important;
+  border-color: rgba(220, 38, 38, 0.12) !important;
+  background: rgba(254, 242, 242, 0.76) !important;
   color: #b91c1c !important;
 }
 
@@ -2257,13 +2249,13 @@ html:not(.legacy-ui-mode)
   body.dark
   #root
   :where(.app-notification-dropdown, .app-profile-dropdown) {
-  border-color: rgba(148, 163, 184, 0.2) !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
   background:
     linear-gradient(
       145deg,
       rgba(30, 41, 59, 0.94),
-      rgba(15, 23, 42, 0.84) 54%,
-      rgba(30, 58, 138, 0.34)
+      rgba(15, 23, 42, 0.86) 58%,
+      rgba(17, 24, 39, 0.82)
     ),
     rgba(15, 23, 42, 0.82) !important;
   color: #f8fafc !important;
@@ -2283,20 +2275,30 @@ html:not(.legacy-ui-mode) body.dark #root .app-notification-time {
 
 html:not(.legacy-ui-mode) body.dark #root .app-dropdown-header,
 html:not(.legacy-ui-mode) body.dark #root .app-profile-summary {
-  background: rgba(15, 23, 42, 0.24);
+  background: transparent;
 }
 
 html:not(.legacy-ui-mode) body.dark #root .app-dropdown-clear-btn {
-  background: rgba(127, 29, 29, 0.16);
+  background: transparent;
   color: #f87171 !important;
+}
+
+html:not(.legacy-ui-mode) body.dark #root .app-dropdown-clear-btn:hover,
+html:not(.legacy-ui-mode) body.dark #root .app-profile-logout:hover {
+  background: rgba(127, 29, 29, 0.22) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body.dark
+  #root
+  .app-notification-item[class*='bg-blue'] {
+  background: rgba(30, 64, 175, 0.18) !important;
 }
 
 html:not(.legacy-ui-mode) body.dark #root .app-notification-item:hover,
 html:not(.legacy-ui-mode) body.dark #root .app-profile-menu-item:hover {
-  border-color: rgba(147, 197, 253, 0.18);
-  background:
-    linear-gradient(145deg, rgba(30, 41, 59, 0.82), rgba(30, 64, 175, 0.22)),
-    rgba(15, 23, 42, 0.62) !important;
+  border-color: rgba(147, 197, 253, 0.14);
+  background: rgba(30, 64, 175, 0.2) !important;
   color: #fff !important;
 }
 
@@ -2927,6 +2929,10 @@ html body .ant-select-dropdown {
     0 18px 44px rgba(15, 23, 42, 0.16) !important;
   backdrop-filter: blur(8px) saturate(120%);
   -webkit-backdrop-filter: blur(8px) saturate(120%);
+}
+
+html body .request-form-select-dropdown.ant-select-dropdown {
+  z-index: 3102 !important;
 }
 
 html body .dark .ant-select-dropdown,
@@ -6630,7 +6636,7 @@ html:not(.legacy-ui-mode)
   :where(.app-sidebar-sider, .app-sidebar-mobile)
   .sidebar-active-item
   :where(span, p, div, svg, i) {
-  color: inherit !important;
+  color: #0e7490 !important;
 }
 
 html:not(.legacy-ui-mode)
@@ -8516,6 +8522,162 @@ html.liquid-ui-mode:not(.legacy-ui-mode).dark
   color: #f87171 !important;
 }
 
+@media (max-width: 767px) {
+  html.liquid-ui-mode:not(.legacy-ui-mode)
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid {
+    --mobile-sidebar-row-hover: rgba(255, 255, 255, 0.5);
+    --mobile-sidebar-row-border: rgba(147, 197, 253, 0.22);
+  }
+
+  html.liquid-ui-mode:not(.legacy-ui-mode)
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid
+    :where(.ant-drawer-content-wrapper) {
+    width: min(88vw, 292px) !important;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+
+  html.liquid-ui-mode:not(.legacy-ui-mode)
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid
+    :where(.ant-drawer-content) {
+    border-radius: 0 20px 20px 0 !important;
+    box-shadow:
+      inset 1px 0 0 rgba(255, 255, 255, 0.82),
+      8px 0 24px rgba(15, 23, 42, 0.09) !important;
+  }
+
+  html.liquid-ui-mode:not(.legacy-ui-mode)
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid
+    :where(.ant-drawer-mask) {
+    backdrop-filter: blur(1.5px) saturate(112%);
+    -webkit-backdrop-filter: blur(1.5px) saturate(112%);
+  }
+
+  html.liquid-ui-mode:not(.legacy-ui-mode)
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid
+    :where(.app-sidebar-mobile) {
+    background:
+      linear-gradient(
+        150deg,
+        rgba(255, 255, 255, 0.96),
+        rgba(241, 248, 255, 0.9) 58%,
+        rgba(232, 247, 250, 0.78)
+      ),
+      rgba(255, 255, 255, 0.92) !important;
+    box-shadow: none !important;
+  }
+
+  html.liquid-ui-mode:not(.legacy-ui-mode)
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid
+    .app-sidebar-mobile
+    :where(nav a > div, nav button) {
+    border: 1px solid transparent !important;
+    border-radius: 14px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease !important;
+  }
+
+  html.liquid-ui-mode:not(.legacy-ui-mode)
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid
+    .app-sidebar-mobile
+    :where(nav a > div, nav button):hover {
+    border-color: var(--mobile-sidebar-row-border) !important;
+    background: var(--mobile-sidebar-row-hover) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+  }
+
+  html.liquid-ui-mode:not(.legacy-ui-mode)
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid
+    .app-sidebar-mobile
+    .sidebar-active-item {
+    border-color: rgba(59, 130, 246, 0.2) !important;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.9),
+        rgba(235, 247, 255, 0.7)
+      ),
+      rgba(255, 255, 255, 0.72) !important;
+    box-shadow:
+      inset 2px 0 0 rgba(37, 99, 235, 0.38),
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 6px 14px rgba(15, 23, 42, 0.035) !important;
+  }
+
+  html.liquid-ui-mode:not(.legacy-ui-mode).dark
+    body
+    .app-sidebar-drawer.app-sidebar-drawer--liquid {
+    --mobile-sidebar-row-hover: rgba(30, 64, 175, 0.22);
+    --mobile-sidebar-row-border: rgba(96, 165, 250, 0.2);
+  }
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  .sidebar-active-item {
+  border-color: rgba(6, 182, 212, 0.36) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(236, 254, 255, 0.96),
+      rgba(207, 250, 254, 0.62)
+    ),
+    rgba(236, 254, 255, 0.7) !important;
+  color: #0e7490 !important;
+  box-shadow:
+    inset 3px 0 0 rgba(6, 182, 212, 0.82),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 8px 18px rgba(6, 182, 212, 0.12) !important;
+}
+
+html:not(.legacy-ui-mode)
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  .sidebar-active-item
+  :where(span, p, div, svg, i) {
+  color: #0e7490 !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  .sidebar-active-item {
+  border-color: rgba(34, 211, 238, 0.42) !important;
+  background:
+    linear-gradient(145deg, rgba(8, 145, 178, 0.34), rgba(15, 23, 42, 0.62)),
+    rgba(8, 47, 73, 0.46) !important;
+  color: #67e8f9 !important;
+  box-shadow:
+    inset 3px 0 0 rgba(34, 211, 238, 0.82),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 24px rgba(6, 182, 212, 0.18) !important;
+}
+
+html:not(.legacy-ui-mode).dark
+  body
+  :where(#root, .app-sidebar-drawer)
+  :where(.app-sidebar-sider, .app-sidebar-mobile)
+  .sidebar-active-item
+  :where(span, p, div, svg, i) {
+  color: #67e8f9 !important;
+}
+
 /* Absolute final Classic mode reset. This must stay below every liquid rule. */
 html.legacy-ui-mode body,
 html.legacy-ui-mode #root,
@@ -9498,6 +9660,39 @@ html body .ant-modal-root .ant-modal-wrap {
   z-index: 3001 !important;
 }
 
+.login-modal-sequence-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  background: rgba(15, 23, 42, 0.45);
+  transition:
+    opacity var(--motion-duration-normal) var(--motion-ease-standard),
+    visibility 0s linear var(--motion-duration-normal);
+}
+
+.login-modal-sequence-backdrop--open {
+  visibility: visible;
+  opacity: 1;
+  transition:
+    opacity var(--motion-duration-normal) var(--motion-ease-standard),
+    visibility 0s linear 0s;
+}
+
+html body .login-modal-sequence-root .ant-modal-mask {
+  display: none !important;
+}
+
+html body .login-modal-sequence-root .ant-modal-wrap {
+  z-index: 3001 !important;
+}
+
+html body .login-modal-sequence-root .bd-modal .ant-modal-content {
+  animation: none !important;
+}
+
 @media (min-width: 768px) {
   html body .ant-modal-root .ant-modal-wrap {
     inset-inline-start: var(--app-sidebar-width, 0px) !important;
@@ -9507,5 +9702,177 @@ html body .ant-modal-root .ant-modal-wrap {
 @media (max-width: 767px) {
   html body .ant-modal-root .ant-modal-wrap {
     inset-inline-start: 0 !important;
+  }
+}
+
+/* Login conflict confirm: keep this critical choice calm and solid, even in Liquid UI mode. */
+html body .ant-modal-root .login-conflict-modal {
+  max-width: calc(100vw - 32px);
+}
+
+html body .ant-modal-root .login-conflict-modal .ant-modal-content {
+  overflow: hidden !important;
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.22) !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body .ant-modal-root .login-conflict-modal .ant-modal-content::before,
+html body .ant-modal-root .login-conflict-modal .ant-modal-content::after {
+  content: none !important;
+  display: none !important;
+}
+
+html body .ant-modal-root .login-conflict-modal .ant-modal-confirm-body {
+  align-items: flex-start;
+}
+
+html body .ant-modal-root .login-conflict-modal .ant-modal-confirm-title {
+  color: #111827 !important;
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+}
+
+html body .ant-modal-root .login-conflict-modal .ant-modal-confirm-content {
+  margin-top: 0.5rem !important;
+  color: #4b5563 !important;
+  font-size: 0.9375rem !important;
+  line-height: 1.65 !important;
+}
+
+html body .ant-modal-root .login-conflict-modal .ant-modal-confirm-btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  margin-top: 1.5rem !important;
+}
+
+html
+  body
+  .ant-modal-root
+  .login-conflict-modal
+  .ant-modal-confirm-btns
+  .ant-btn {
+  height: 2.375rem !important;
+  min-width: 7.75rem;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+html
+  body
+  .ant-modal-root
+  .login-conflict-modal
+  .ant-modal-confirm-btns
+  .ant-btn-default {
+  border-color: #d1d5db !important;
+  background: #ffffff !important;
+  color: #374151 !important;
+}
+
+html
+  body
+  .ant-modal-root
+  .login-conflict-modal
+  .ant-modal-confirm-btns
+  .ant-btn-primary {
+  border-color: #2563eb !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+html.dark body .ant-modal-root .login-conflict-modal .ant-modal-content {
+  border-color: rgba(148, 163, 184, 0.26) !important;
+  background: #111827 !important;
+  background-color: #111827 !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.42) !important;
+}
+
+html.dark body .ant-modal-root .login-conflict-modal .ant-modal-confirm-title {
+  color: #f9fafb !important;
+}
+
+html.dark
+  body
+  .ant-modal-root
+  .login-conflict-modal
+  .ant-modal-confirm-content {
+  color: #d1d5db !important;
+}
+
+html.dark
+  body
+  .ant-modal-root
+  .login-conflict-modal
+  .ant-modal-confirm-btns
+  .ant-btn-default {
+  border-color: #4b5563 !important;
+  background: #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+@media (max-width: 480px) {
+  html body .ant-modal-root .login-conflict-modal {
+    width: calc(100vw - 28px) !important;
+    max-width: 360px;
+  }
+
+  html body .ant-modal-root .login-conflict-modal .ant-modal-content {
+    border-radius: 10px !important;
+    padding: 0.875rem !important;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18) !important;
+  }
+
+  html body .ant-modal-root .login-conflict-modal .ant-modal-confirm-body {
+    display: block;
+  }
+
+  html
+    body
+    .ant-modal-root
+    .login-conflict-modal
+    .ant-modal-confirm-body
+    > .anticon {
+    display: none !important;
+  }
+
+  html body .ant-modal-root .login-conflict-modal .ant-modal-confirm-title {
+    font-size: 0.96875rem !important;
+    line-height: 1.3 !important;
+  }
+
+  html body .ant-modal-root .login-conflict-modal .ant-modal-confirm-content {
+    margin-top: 0.25rem !important;
+    font-size: 0.84375rem !important;
+    line-height: 1.45 !important;
+  }
+
+  html body .ant-modal-root .login-conflict-modal .ant-modal-confirm-btns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.4375rem;
+    margin-top: 0.875rem !important;
+  }
+
+  html
+    body
+    .ant-modal-root
+    .login-conflict-modal
+    .ant-modal-confirm-btns
+    .ant-btn {
+    width: 100%;
+    height: 2.375rem !important;
+    min-width: 0;
+    border-radius: 7px !important;
+    margin-inline-start: 0 !important;
   }
 }

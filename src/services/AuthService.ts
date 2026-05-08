@@ -2,7 +2,14 @@ import axiosPrivate from '@/api/axiosInstance';
 import { STORAGE_URL } from '@/configs/environment.config';
 import { User } from '@/types/authType';
 import { Gender } from '@schemas/genderEnum.schema';
-import { authStore, clearAuth, setToken, setUser } from '@stores/authStore';
+import {
+  authStore,
+  clearAuth,
+  setAuthChannelName,
+  setSessionId,
+  setToken,
+  setUser
+} from '@stores/authStore';
 
 const expiresInMins = parseInt(import.meta.env.VITE_EXPIRES_TIME) || 120;
 
@@ -14,6 +21,10 @@ type AuthResponse = {
   role_name: string;
   image: string;
   token: string;
+  session_id?: string | null;
+  auth_channel_name?: string | null;
+  logged_in_elsewhere?: boolean;
+  login_conflict_message?: string | null;
   is_birthday: boolean;
   birthday_employees: Array<{
     id: string;
@@ -60,6 +71,8 @@ export const authLogin = async (
   // Set auth state
   setUser(userData);
   setToken(response.token);
+  setSessionId(response.session_id ?? null);
+  setAuthChannelName(response.auth_channel_name ?? null);
 
   // Store login-provided notification data in sessionStorage
   if (response.is_birthday !== undefined) {
@@ -86,26 +99,29 @@ export const authLogin = async (
 
 export const authLogout = async () => {
   try {
-    // Clear auth state immediately for smooth UX
-    clearAuth();
-
-    // Call logout API in background (non-blocking)
-    // Use setTimeout to ensure UI updates first
-    setTimeout(async () => {
-      try {
-        await axiosPrivate.post('/api/logout');
-      } catch (error) {
-        // Silent fail - user is already logged out locally
-        console.warn('Logout API call failed:', error);
-      }
-    }, 0);
+    await axiosPrivate.post('/api/logout');
 
     return { message: 'Logged out successfully' };
   } catch (error) {
-    // Even if logout fails, clear local state
+    console.warn('Logout API call failed:', error);
+    return { message: 'Logged out locally' };
+  } finally {
     clearAuth();
-    throw error;
   }
+};
+
+export const authCancelLogin = async () => {
+  try {
+    await axiosPrivate.post('/api/logout');
+  } catch (error) {
+    console.warn('Logout API call failed:', error);
+  } finally {
+    clearAuth();
+  }
+};
+
+export const authConfirmLogin = async () => {
+  await axiosPrivate.post('/api/auth/confirm-login');
 };
 
 export const authCheck = async () => {
@@ -131,6 +147,12 @@ export const authCheck = async () => {
     }
 
     setUser(userData);
+    if ('session_id' in response) {
+      setSessionId(response.session_id ?? null);
+    }
+    if ('auth_channel_name' in response) {
+      setAuthChannelName(response.auth_channel_name ?? null);
+    }
 
     return response;
   } catch (error) {

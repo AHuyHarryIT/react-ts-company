@@ -6,7 +6,7 @@ import {
   message,
   Modal
 } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import BirthdayModal from '@components/BirthdayModal';
 import CleaningDutyModal from '@components/CleaningDuty/CleaningDutyModal';
@@ -16,6 +16,7 @@ import FallingStars from '@components/holiday/FallingStars';
 import HolidayGreetingModal from '@components/holiday/HolidayGreetingModal';
 import { useBirthdayNotification } from '@hooks/useBirthdayNotification';
 import { useCleaningDutyNotification } from '@hooks/useCleaningDutyNotification';
+import { useForcedLogoutNotification } from '@hooks/useForcedLogoutNotification';
 import { useHolidayMode } from '@hooks/useHolidayMode';
 import { useNotificationRequest } from '@hooks/useAdminNotificationRequest';
 import AppFooter from '@partials/Footer';
@@ -35,6 +36,16 @@ import { useStore } from '@tanstack/react-store';
 import { FaMagic, FaRegWindowMaximize, FaTint } from 'react-icons/fa';
 
 const { Content } = Layout;
+
+type LoginModalKey =
+  | 'cleaningDuty'
+  | 'birthday'
+  | 'notificationRequest'
+  | 'appearance'
+  | 'holiday';
+
+const MODAL_CLOSE_ANIMATION_MS = 220;
+const LOGIN_MODAL_ROOT_CLASS = 'login-modal-sequence-root';
 
 function AppLayout() {
   const { appearance, isMobile, isSidebarClose } = useStore(uiStore);
@@ -97,6 +108,7 @@ function AppLayout() {
   // Get authenticated user context
   const { authenticated } = Route.useRouteContext();
   const { user } = authenticated;
+  useForcedLogoutNotification();
 
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
@@ -138,6 +150,10 @@ function AppLayout() {
     } else if (result === 'denied') {
       message.warning('Quyền thông báo đã bị từ chối');
     }
+
+    if (result !== 'granted') {
+      hideNotificationModal();
+    }
   };
 
   const handleUseLiquidAppearance = () => {
@@ -155,6 +171,98 @@ function AppLayout() {
   const isCurrentUserBirthday = todayBirthdays.some(
     (employee) => String(employee.id) === String(user?.id)
   );
+  const shouldShowCleaningDutyModal =
+    modalOpen && (currentDuty ?? []).length > 0;
+  const shouldShowBirthdayNotificationModal =
+    showBirthdayModal && todayBirthdays.length > 0;
+  const shouldShowNotificationRequestModal = showNotificationModal;
+  const shouldShowHolidayGreetingModal = isHoliday && showHolidayModal;
+  const [activeLoginModal, setActiveLoginModal] =
+    useState<LoginModalKey | null>(null);
+  const [closingLoginModal, setClosingLoginModal] =
+    useState<LoginModalKey | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const visibleLoginModalsRef = useRef<LoginModalKey[]>([]);
+  const visibleLoginModals = useMemo(() => {
+    const modalQueue: LoginModalKey[] = [];
+
+    if (shouldShowCleaningDutyModal) modalQueue.push('cleaningDuty');
+    if (shouldShowBirthdayNotificationModal) modalQueue.push('birthday');
+    if (shouldShowNotificationRequestModal) {
+      modalQueue.push('notificationRequest');
+    }
+    if (showAppearancePrompt) modalQueue.push('appearance');
+    if (shouldShowHolidayGreetingModal) modalQueue.push('holiday');
+
+    return modalQueue;
+  }, [
+    shouldShowBirthdayNotificationModal,
+    shouldShowCleaningDutyModal,
+    shouldShowHolidayGreetingModal,
+    shouldShowNotificationRequestModal,
+    showAppearancePrompt
+  ]);
+
+  useEffect(() => {
+    visibleLoginModalsRef.current = visibleLoginModals;
+  }, [visibleLoginModals]);
+
+  useEffect(
+    () => () => {
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (activeLoginModal && visibleLoginModals.includes(activeLoginModal)) {
+      return;
+    }
+
+    if (closingLoginModal) {
+      return;
+    }
+
+    if (activeLoginModal) {
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+
+      setClosingLoginModal(activeLoginModal);
+      setActiveLoginModal(null);
+
+      closeTimerRef.current = window.setTimeout(() => {
+        setClosingLoginModal(null);
+        setActiveLoginModal(visibleLoginModalsRef.current[0] ?? null);
+        closeTimerRef.current = null;
+      }, MODAL_CLOSE_ANIMATION_MS);
+
+      return;
+    }
+
+    if (visibleLoginModals.length > 0) {
+      setActiveLoginModal(visibleLoginModals[0] ?? null);
+    }
+  }, [activeLoginModal, closingLoginModal, visibleLoginModals]);
+
+  const isCleaningDutyModalRendered =
+    shouldShowCleaningDutyModal || closingLoginModal === 'cleaningDuty';
+  const isBirthdayModalRendered =
+    shouldShowBirthdayNotificationModal || closingLoginModal === 'birthday';
+  const isNotificationRequestModalRendered =
+    shouldShowNotificationRequestModal ||
+    closingLoginModal === 'notificationRequest';
+  const isHolidayGreetingModalRendered =
+    shouldShowHolidayGreetingModal || closingLoginModal === 'holiday';
+  const isLoginModalSequenceVisible =
+    activeLoginModal !== null || closingLoginModal !== null;
+  const loginModalMotionProps = {
+    forceRender: true,
+    mask: false,
+    rootClassName: LOGIN_MODAL_ROOT_CLASS
+  };
 
   return (
     <>
@@ -215,10 +323,20 @@ function AppLayout() {
         </Layout>
       </ConfigProvider>
 
+      <div
+        aria-hidden="true"
+        className={`login-modal-sequence-backdrop ${
+          isLoginModalSequenceVisible
+            ? 'login-modal-sequence-backdrop--open'
+            : ''
+        }`}
+      />
+
       {/* Cleaning Duty Modal */}
-      {(currentDuty ?? []).length > 0 && (
+      {isCleaningDutyModalRendered && (
         <CleaningDutyModal
-          open={modalOpen}
+          {...loginModalMotionProps}
+          open={activeLoginModal === 'cleaningDuty'}
           onClose={handleClose}
           duties={currentDuty ?? []}
           onDontShowAgain={handleDontShowAgain}
@@ -226,9 +344,10 @@ function AppLayout() {
       )}
 
       {/* Birthday Modal - Show when there are birthdays today and hasn't been shown yet */}
-      {showBirthdayModal && todayBirthdays.length > 0 && (
+      {isBirthdayModalRendered && (
         <BirthdayModal
-          open={showBirthdayModal}
+          {...loginModalMotionProps}
+          open={activeLoginModal === 'birthday'}
           employees={todayBirthdays.map((employee) => employee.name)}
           isCurrentUserBirthday={isCurrentUserBirthday}
           currentUserName={user?.name}
@@ -239,9 +358,10 @@ function AppLayout() {
       )}
 
       {/* Admin Notification Request Modal */}
-      {showNotificationModal && (
+      {isNotificationRequestModalRendered && (
         <NotificationRequestModal
-          open={showNotificationModal}
+          {...loginModalMotionProps}
+          open={activeLoginModal === 'notificationRequest'}
           onAllow={handleAllowNotifications}
           onDeny={hideNotificationModal}
           loading={notificationLoading}
@@ -249,7 +369,8 @@ function AppLayout() {
       )}
 
       <Modal
-        open={showAppearancePrompt}
+        {...loginModalMotionProps}
+        open={activeLoginModal === 'appearance'}
         title={
           <div className="appearance-choice-modal__title">
             <span className="appearance-choice-modal__title-icon">
@@ -312,9 +433,10 @@ function AppLayout() {
 
       {/* ── Holiday Decorations (30/4 – 1/5) ── */}
       {isHoliday && <FallingStars count={30} />}
-      {isHoliday && (
+      {isHolidayGreetingModalRendered && (
         <HolidayGreetingModal
-          open={showHolidayModal}
+          {...loginModalMotionProps}
+          open={activeLoginModal === 'holiday'}
           onClose={handleHolidayModalClose}
           autoCloseMs={12000}
         />

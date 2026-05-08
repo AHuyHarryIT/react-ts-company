@@ -15,6 +15,9 @@ interface HolidayGreetingModalProps {
   onClose: () => void;
   autoCloseMs?: number;
   companyName?: string;
+  forceRender?: boolean;
+  mask?: boolean;
+  rootClassName?: string;
 }
 
 const QUOTES = [
@@ -28,7 +31,10 @@ const HolidayGreetingModal: React.FC<HolidayGreetingModalProps> = ({
   open,
   onClose,
   autoCloseMs = 12000,
-  companyName = 'Công Ty TNHH MTV Vinh Vinh Phát'
+  companyName = 'Công Ty TNHH MTV Vinh Vinh Phát',
+  forceRender,
+  mask,
+  rootClassName
 }) => {
   const [closing, setClosing] = useState(false);
   const quote = useMemo(
@@ -315,7 +321,10 @@ const HolidayGreetingModal: React.FC<HolidayGreetingModalProps> = ({
 
       <Modal
         className="holiday-modal"
+        rootClassName={rootClassName}
         open={open && !closing}
+        forceRender={forceRender}
+        mask={mask}
         onCancel={handleClose}
         footer={null}
         centered
