@@ -18,7 +18,11 @@ declare global {
 
 import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { createFileRoute, useSearch } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  useNavigate,
+  useSearch
+} from '@tanstack/react-router';
 import type { FormProps } from 'antd';
 import { Button, Form, Input, message, Modal } from 'antd';
 
@@ -27,6 +31,7 @@ import {
   authConfirmLogin,
   authLogin
 } from '@services/AuthService';
+import { getSafeAuthRedirect } from '@utils/authRedirect';
 import logo from '@assets/images/logo/logoAsset.svg';
 
 import { FaRegUser } from 'react-icons/fa';
@@ -41,77 +46,20 @@ type LoginSearch = {
   redirect?: string;
 };
 
-/**
- * Trigger the browser's native "Save password?" prompt.
- *
- * Strategy per browser engine:
- *
- * 1. Chrome/Edge (Credential Management API)
- *    → navigator.credentials.store() then redirect.
- *
- * 2. Safari desktop & iOS (no Credential Management API)
- *    → Safari detects password-save more reliably when the submission
- *      happens on a real, user-visible login form (not a detached/hidden form).
- *    → Re-submit the existing login form with username/password + proper
- *      autocomplete attributes to force a main-window navigation.
- *
- * 3. Firefox
- *    → same real-form submit fallback also works.
- */
-const triggerBrowserSavePassword = (
-  username: string,
-  password: string,
-  redirectTo: string
-) => {
-  // --- Modern API (Chrome 51+, Edge 79+, Android Chrome) ---
-  if (window.PasswordCredential) {
+const storeBrowserPassword = async (username: string, password: string) => {
+  if (!window.PasswordCredential) return;
+
+  try {
     const PC = window.PasswordCredential;
     const cred = new PC({
       id: username,
-      password: password
+      password
     });
-    navigator.credentials
-      .store(cred)
-      .then(() => {
-        window.location.href = redirectTo;
-      })
-      .catch(() => {
-        window.location.href = redirectTo;
-      });
-    return;
+
+    await navigator.credentials.store(cred);
+  } catch {
+    // Ignore password-store failures; login should still navigate smoothly.
   }
-
-  // --- Safari / Firefox fallback: submit existing visible form ---
-  const existingForm = document.getElementById(
-    'auth-login-form'
-  ) as HTMLFormElement | null;
-
-  if (existingForm) {
-    const usernameInput = existingForm.querySelector(
-      'input[name="username"]'
-    ) as HTMLInputElement | null;
-    const passwordInput = existingForm.querySelector(
-      'input[name="password"]'
-    ) as HTMLInputElement | null;
-
-    if (usernameInput) {
-      usernameInput.value = username;
-      usernameInput.autocomplete = 'username';
-    }
-
-    if (passwordInput) {
-      passwordInput.value = password;
-      passwordInput.autocomplete = 'current-password';
-    }
-
-    existingForm.method = 'POST';
-    existingForm.action = redirectTo;
-    existingForm.submit();
-    return;
-  }
-
-  // Last fallback
-  window.location.href = redirectTo;
 };
 
 export const Route = createFileRoute('/(auth)/login')({
@@ -132,6 +80,7 @@ export const Route = createFileRoute('/(auth)/login')({
 
 function RouteComponent() {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
   const search = useSearch({ from: '/(auth)/login' });
 
   useEffect(() => {
@@ -142,6 +91,12 @@ function RouteComponent() {
     message.warning(logoutMessage);
   }, []);
 
+  useEffect(() => {
+    if (search.redirect && !getSafeAuthRedirect(search.redirect)) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [search.redirect]);
+
   const { mutate: loginMutation, isPending } = useMutation({
     mutationKey: ['authLogin'],
     mutationFn: ({ username, password }: FieldType) =>
@@ -149,20 +104,15 @@ function RouteComponent() {
     onSuccess: (response) => {
       message.success('Đăng nhập thành công!');
 
-      const redirectTo =
-        search.redirect && search.redirect !== '/login' ? search.redirect : '/';
+      const redirectTo = getSafeAuthRedirect(search.redirect) ?? '/';
 
-      const continueAfterLogin = () => {
+      const continueAfterLogin = async () => {
         const values = lastValuesRef.current;
         if (values) {
-          triggerBrowserSavePassword(
-            values.username,
-            values.password,
-            redirectTo
-          );
-        } else {
-          window.location.href = redirectTo;
+          void storeBrowserPassword(values.username, values.password);
         }
+
+        await navigate({ to: redirectTo as '/', replace: true });
       };
 
       if (response.logged_in_elsewhere) {
@@ -179,7 +129,7 @@ function RouteComponent() {
           cancelText: 'Huỷ đăng nhập',
           onOk: async () => {
             await authConfirmLogin();
-            continueAfterLogin();
+            await continueAfterLogin();
           },
           onCancel: async () => {
             await authCancelLogin();
@@ -187,7 +137,7 @@ function RouteComponent() {
           }
         });
       } else {
-        setTimeout(continueAfterLogin, 1000);
+        void continueAfterLogin();
       }
     },
     onError: (error: unknown) => {

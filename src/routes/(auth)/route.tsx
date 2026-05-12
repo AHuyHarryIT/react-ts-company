@@ -1,9 +1,12 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
+import { isLogoutRedirecting } from '@utils/authRedirect';
 
 import AuthLayout from '@layouts/AuthLayout';
 
 export const Route = createFileRoute('/(auth)')({
   beforeLoad: async ({ context }) => {
+    if (isLogoutRedirecting()) return;
+
     const { isLogged, user } = context.authenticated;
 
     // Kiểm tra localStorage trực tiếp để tránh race condition

@@ -7,6 +7,7 @@ import { authLogout } from '@services/AuthService';
 import { toggleSidebar, uiStore } from '@stores/uiStore';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
+import { finishLogoutRedirect, startLogoutRedirect } from '@utils/authRedirect';
 import { canViewTotalWorkSchedules } from '@utils/authUtil';
 import { Drawer, Layout, message } from 'antd';
 import React, { useMemo, useState } from 'react';
@@ -280,12 +281,14 @@ function Sidebar() {
     setIsLoggingOut(true);
 
     try {
+      startLogoutRedirect();
       message.loading({
         content: 'Đang đăng xuất...',
         key: 'logout',
         duration: 0.5
       });
 
+      await navigate({ to: '/login', replace: true });
       await authLogout();
 
       message.success({
@@ -293,8 +296,6 @@ function Sidebar() {
         key: 'logout',
         duration: 1
       });
-
-      navigate({ to: '/login', replace: true });
     } catch (error) {
       console.error('Logout error:', error);
       message.error({
@@ -302,8 +303,8 @@ function Sidebar() {
         key: 'logout',
         duration: 1
       });
-      navigate({ to: '/login', replace: true });
     } finally {
+      finishLogoutRedirect();
       setIsLoggingOut(false);
     }
   };

@@ -86,4 +86,4 @@ const DashboardWidget: React.FC<WidgetProps> = ({
   return content;
 };
 
-export default DashboardWidget;
+export default React.memo(DashboardWidget);

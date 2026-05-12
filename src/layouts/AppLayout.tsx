@@ -12,6 +12,7 @@ import BirthdayModal from '@components/BirthdayModal';
 import CleaningDutyModal from '@components/CleaningDuty/CleaningDutyModal';
 import MarqueeAlert from '@components/MarqueeText';
 import { NotificationRequestModal } from '@components/common/NotificationRequestModal';
+import WeatherDropAnimation from '@components/common/WeatherDropAnimation';
 import FallingStars from '@components/holiday/FallingStars';
 import HolidayGreetingModal from '@components/holiday/HolidayGreetingModal';
 import { useBirthdayNotification } from '@hooks/useBirthdayNotification';
@@ -322,6 +323,8 @@ function AppLayout() {
           </Layout>
         </Layout>
       </ConfigProvider>
+
+      <WeatherDropAnimation />
 
       <div
         aria-hidden="true"

@@ -26,7 +26,7 @@ export const ScheduleWcListSection = ({
           <List.Item.Meta
             title={
               <div
-                className={`${isWeekend ? 'text-white dark:text-black' : 'text-black dark:text-white'}`}
+                className={`${isWeekend ? 'text-gray-900 dark:text-gray-100' : 'text-black dark:text-white'}`}
               >
                 <Tag
                   children={day}

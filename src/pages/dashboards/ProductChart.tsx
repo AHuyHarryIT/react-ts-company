@@ -1,7 +1,7 @@
 import { TotalMonthQuantityType } from '@/types/totalMonthQuantityType';
 import { Bar } from '@ant-design/plots';
 import { Card, Badge } from 'antd';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { FaArrowUp, FaArrowDown, FaChartBar, FaEquals } from 'react-icons/fa';
 
 type ProductDataType = {
@@ -13,7 +13,11 @@ type ProductDataType = {
 const toNumber = (value: number | string | undefined | null) =>
   Number(value || 0);
 
-export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
+export const ProductChart = memo(function ProductChart({
+  data
+}: {
+  data: TotalMonthQuantityType[];
+}) {
   const chartData: ProductDataType[] = (data || [])
     .map((item) => ({
       product: item.product?.name || 'N/A',
@@ -265,4 +269,4 @@ export function ProductChart({ data }: { data: TotalMonthQuantityType[] }) {
       </Card>
     </div>
   );
-}
+});

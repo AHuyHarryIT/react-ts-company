@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 
 import { authLogout } from '@services/AuthService';
 import { authStore } from '@stores/authStore';
+import { finishLogoutRedirect, startLogoutRedirect } from '@utils/authRedirect';
 
 import { IconLogOut } from '@components/icons';
 import { useStore } from '@tanstack/react-store';
@@ -34,23 +35,24 @@ export default function UserDropdown() {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     try {
+      startLogoutRedirect();
       message.loading({
         content: 'Đang đăng xuất...',
         key: 'logout',
         duration: 0.5
       });
+      await navigate({ to: '/login', replace: true });
       await authLogout();
       message.success({
         content: 'Đăng xuất thành công!',
         key: 'logout',
         duration: 1
       });
-      navigate({ to: '/login', replace: true });
     } catch (error) {
       console.error('Logout error:', error);
       message.error({ content: 'Đã đăng xuất', key: 'logout', duration: 1 });
-      navigate({ to: '/login', replace: true });
     } finally {
+      finishLogoutRedirect();
       setIsLoggingOut(false);
     }
   };

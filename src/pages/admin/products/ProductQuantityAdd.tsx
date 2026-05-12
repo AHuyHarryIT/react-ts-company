@@ -253,6 +253,8 @@ export default function ProductQuantityAdd() {
                           })}
                           placeholder="Chọn sản phẩm"
                           showSearch
+                          popupMatchSelectWidth={false}
+                          dropdownStyle={{ minWidth: 360, maxWidth: '80vw' }}
                           onChange={() => {
                             // Force update to refresh dropdowns
                             form.setFieldsValue({

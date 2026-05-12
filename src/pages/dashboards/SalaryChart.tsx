@@ -3,7 +3,7 @@ import { Column } from '@ant-design/plots';
 import { uiStore } from '@stores/uiStore';
 import { useStore } from '@tanstack/react-store';
 import { Badge, Card } from 'antd';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { FaArrowUp, FaArrowDown, FaChartLine, FaEquals } from 'react-icons/fa';
 
 type salaryDataType = {
@@ -12,7 +12,11 @@ type salaryDataType = {
   index: number;
 };
 
-export function SalaryChart({ data }: { data: SalaryType[] }) {
+export const SalaryChart = memo(function SalaryChart({
+  data
+}: {
+  data: SalaryType[];
+}) {
   const { isMobile } = useStore(uiStore);
 
   const chartData: salaryDataType[] = data
@@ -332,4 +336,4 @@ export function SalaryChart({ data }: { data: SalaryType[] }) {
       </Card>
     </div>
   );
-}
+});

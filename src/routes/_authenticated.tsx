@@ -1,5 +1,6 @@
 import AppLayout from '@layouts/AppLayout';
 import { createFileRoute, redirect } from '@tanstack/react-router';
+import { getLoginRedirectSearch } from '@utils/authRedirect';
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ context, location }) => {
@@ -9,9 +10,7 @@ export const Route = createFileRoute('/_authenticated')({
     if (!isLoggedResult) {
       throw redirect({
         to: '/login',
-        search: {
-          redirect: location.href
-        }
+        search: getLoginRedirectSearch(location.href)
       });
     }
   },

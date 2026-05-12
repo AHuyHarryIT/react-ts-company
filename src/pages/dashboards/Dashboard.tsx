@@ -26,6 +26,7 @@ import {
   SUPERVISOR_ROLE_IDS,
   SUPERVISOR_ROLE_NAMES
 } from '@/constants/supervisors';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { ProductChart } from './ProductChart';
 import { SalaryChart } from './SalaryChart';
 import { motion } from 'framer-motion';
@@ -94,6 +95,21 @@ const renderIcon = (iconClass?: string | IconType): ReactNode => {
 
 // Keys rendered as chart components, NOT widget cards
 const CHART_KEYS = ['view_chart_salary', 'view_chart_product'];
+const DASHBOARD_STAT_KEYS = [
+  'view_total_employees',
+  'view_attendance_history',
+  'view_attendance_calculation',
+  'view_total_positions',
+  'view_today_employees',
+  'view_total_schedule',
+  'view_total_products',
+  'view_total_salary',
+  'view_total_history',
+  'view_request_forms',
+  'feed_back'
+];
+const DASHBOARD_CACHE_TIME = 5 * 60 * 1000;
+const DASHBOARD_GC_TIME = 30 * 60 * 1000;
 
 // ─── Capitalize helper ───────────────────────────────────────────────────────
 
@@ -114,6 +130,24 @@ export default function Dashboard() {
 
   const permissions = useMemo(() => user?.permissions ?? [], [user]);
 
+  // ── Build widget list from RBAC permissions (display_area = home or both) ──
+  const homePermissions = useMemo(() => {
+    return permissions
+      .filter((p) => {
+        const area = p.display_area?.toLowerCase();
+        return area === 'home' || area === 'both';
+      })
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id - b.id);
+  }, [permissions]);
+
+  // ── Chart visibility (from home permissions) ──
+  const showSalaryChart = homePermissions.some(
+    (p) => p.key === 'view_chart_salary'
+  );
+  const showProductChart = homePermissions.some(
+    (p) => p.key === 'view_chart_product'
+  );
+
   // Check if current user is a supervisor
   const isSupervisor = useMemo(() => {
     if (!user?.id) return false;
@@ -123,12 +157,22 @@ export default function Dashboard() {
     );
   }, [user]);
 
+  const needsDashboardData = useMemo(() => {
+    return (
+      showSalaryChart ||
+      homePermissions.some((perm) => DASHBOARD_STAT_KEYS.includes(perm.key))
+    );
+  }, [homePermissions, showSalaryChart]);
+
   // ── Dashboard statistics (admin only) ──
   const { data: dashboardResponse, isLoading: isDashboardLoading } = useQuery({
-    queryKey: ['dashboardData'],
+    queryKey: [QUERY_KEYS.DASHBOARD],
     queryFn: fetchDashboardData,
-    enabled: admin,
-    placeholderData: keepPreviousData
+    enabled: admin && needsDashboardData,
+    placeholderData: keepPreviousData,
+    staleTime: DASHBOARD_CACHE_TIME,
+    gcTime: DASHBOARD_GC_TIME,
+    refetchOnWindowFocus: false
   });
 
   const dashboardData = dashboardResponse?.dashboardData;
@@ -139,7 +183,7 @@ export default function Dashboard() {
   const monthParam = `${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
 
   const { data: productData } = useQuery({
-    queryKey: ['productChartData', monthParam, 8, 'client-product-map'],
+    queryKey: [QUERY_KEYS.PRODUCT_CHART, monthParam, 8, 'client-product-map'],
     queryFn: async () => {
       const [monthlyQuantities, productsResponse] = await Promise.all([
         getMonthlyQuantities({
@@ -167,13 +211,24 @@ export default function Dashboard() {
           };
         });
     },
-    enabled: admin,
-    placeholderData: keepPreviousData
+    enabled: admin && showProductChart,
+    placeholderData: keepPreviousData,
+    staleTime: DASHBOARD_CACHE_TIME,
+    gcTime: DASHBOARD_GC_TIME,
+    refetchOnWindowFocus: false
   });
 
   // ── Value map: permission key → dashboard statistic value ──
   const valueMap: Record<string, string | undefined> = useMemo(() => {
-    if (!dashboardData) return {};
+    const currentMonth = `Tháng ${new Date().getMonth() + 1}`;
+    const monthValues = {
+      view_po_list: currentMonth,
+      view_labels_to_print: currentMonth,
+      storage_export_product: currentMonth
+    };
+
+    if (!dashboardData) return monthValues;
+
     return {
       view_total_employees:
         dashboardData.totalEmployee?.toLocaleString() || '0',
@@ -190,22 +245,10 @@ export default function Dashboard() {
       view_total_history: dashboardData.totalHistory?.toLocaleString() || '0',
       view_request_forms:
         dashboardData.totalRequestForms?.toLocaleString() || '0',
-      view_po_list: `Tháng ${new Date().getMonth() + 1}`,
-      view_labels_to_print: `Tháng ${new Date().getMonth() + 1}`,
-      storage_export_product: `Tháng ${new Date().getMonth() + 1}`,
+      ...monthValues,
       feed_back: dashboardData.totalFeedback?.toLocaleString() || '0'
     };
   }, [dashboardData]);
-
-  // ── Build widget list from RBAC permissions (display_area = home or both) ──
-  const homePermissions = useMemo(() => {
-    return permissions
-      .filter((p) => {
-        const area = p.display_area?.toLowerCase();
-        return area === 'home' || area === 'both';
-      })
-      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id - b.id);
-  }, [permissions]);
 
   type WidgetType = {
     title: string;
@@ -226,23 +269,6 @@ export default function Dashboard() {
   };
 
   const listWidget: WidgetType[] = useMemo(() => {
-    const EXPECTED_ASYNC_KEYS = [
-      'view_total_employees',
-      'view_attendance_history',
-      'view_attendance_calculation',
-      'view_total_positions',
-      'view_today_employees',
-      'view_total_schedule',
-      'view_total_products',
-      'view_total_salary',
-      'view_total_history',
-      'view_request_forms',
-      'feed_back',
-      'view_po_list',
-      'view_labels_to_print',
-      'storage_export_product'
-    ];
-
     return homePermissions
       .filter((perm) => !CHART_KEYS.includes(perm.key))
       .map((perm) => {
@@ -255,7 +281,7 @@ export default function Dashboard() {
             admin &&
             isDashboardLoading &&
             !dashboardResponse &&
-            EXPECTED_ASYNC_KEYS.includes(perm.key)
+            DASHBOARD_STAT_KEYS.includes(perm.key)
         };
         // Special: logout is an action, not navigation
         if (perm.key === 'logout') {
@@ -305,13 +331,6 @@ export default function Dashboard() {
     return Math.ceil(count / 3);
   }, [finalWidgetList.length]);
 
-  // ── Chart visibility (from home permissions) ──
-  const showSalaryChart = homePermissions.some(
-    (p) => p.key === 'view_chart_salary'
-  );
-  const showProductChart = homePermissions.some(
-    (p) => p.key === 'view_chart_product'
-  );
   const visibleChartCount = [showSalaryChart, showProductChart].filter(
     Boolean
   ).length;
@@ -320,11 +339,13 @@ export default function Dashboard() {
 
   // ── Slide images ──
   const { data: imageList } = useQuery({
-    queryKey: ['images'],
+    queryKey: [QUERY_KEYS.IMAGES],
     queryFn: () => fetchImages({ limit: 0 }),
     placeholderData: keepPreviousData,
     // Images ít thay đổi, cache lâu hơn
-    staleTime: 5 * 60 * 1000
+    staleTime: DASHBOARD_CACHE_TIME,
+    gcTime: DASHBOARD_GC_TIME,
+    refetchOnWindowFocus: false
   });
 
   // ── Dynamic Greeting ──

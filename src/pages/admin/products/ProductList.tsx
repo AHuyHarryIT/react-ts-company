@@ -44,6 +44,8 @@ import ProductTrash from './ProductTrash';
 
 type ModalType = 'add' | 'quantityAdd' | 'quantityUpdate' | 'trash' | null;
 
+const WIDE_MODAL_WIDTH = 'calc(100vw - var(--app-sidebar-width, 0px) - 32px)';
+
 export default function ProductList() {
   const [month, setMonth] = useState<Dayjs | null>(dayjs().startOf('month'));
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -208,9 +210,12 @@ export default function ProductList() {
     { title: string; width: number | string }
   > = {
     add: { title: 'Thêm sản phẩm', width: 600 },
-    quantityAdd: { title: 'Thêm sản lượng sản xuất', width: '90vw' },
-    quantityUpdate: { title: 'Cập nhật số lượng hàng', width: '90vw' },
-    trash: { title: 'Thùng rác', width: '90vw' }
+    quantityAdd: { title: 'Thêm sản lượng sản xuất', width: WIDE_MODAL_WIDTH },
+    quantityUpdate: {
+      title: 'Cập nhật số lượng hàng',
+      width: WIDE_MODAL_WIDTH
+    },
+    trash: { title: 'Thùng rác', width: WIDE_MODAL_WIDTH }
   };
 
   const renderModalContent = () => {

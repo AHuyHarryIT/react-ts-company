@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 
 import { ApiErrorResponse, ValidationErrors } from '@/types/apiType';
 import { clearAuth } from '@stores/authStore';
+import { getLoginRedirectSearch } from '@utils/authRedirect';
 import { mapErrorCodesToMessages } from '@utils/validationMapper';
 import { message } from 'antd';
 
@@ -78,11 +79,13 @@ axiosPrivate.interceptors.response.use(
 
           // Redirect trực tiếp và ngay lập tức
           const currentPath = window.location.pathname + window.location.search;
+          const loginSearch = getLoginRedirectSearch(currentPath);
+          const loginUrl = loginSearch
+            ? `/login?redirect=${encodeURIComponent(loginSearch.redirect)}`
+            : '/login';
 
           // Force redirect to login page
-          window.location.replace(
-            `/login?redirect=${encodeURIComponent(currentPath)}`
-          );
+          window.location.replace(loginUrl);
         }
         // Nếu là login request, để component xử lý error
         break;

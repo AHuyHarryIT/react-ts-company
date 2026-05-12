@@ -1,8 +1,11 @@
-import { authCheck, authLogout } from '@services/AuthService';
+import { authLogout } from '@services/AuthService';
 import { authStore, clearAuth, setAuth } from '@stores/authStore';
+import { useStore } from '@tanstack/react-store';
 import { redirect } from '@tanstack/react-router';
 
 export const useAuth = () => {
+  const authState = useStore(authStore);
+
   const signIn = async () => {
     setAuth(true);
     redirect({ to: '/admin' });
@@ -17,7 +20,7 @@ export const useAuth = () => {
     }
   };
 
-  const user = authStore.state.user;
+  const user = authState.user;
 
   const isLogged = async () => {
     const { isAuthenticated, token, user } = authStore.state;
@@ -27,12 +30,7 @@ export const useAuth = () => {
       return false;
     }
 
-    try {
-      await authCheck();
-      return true;
-    } catch {
-      return false;
-    }
+    return true;
   };
 
   return { signIn, signOut, isLogged, user };
