@@ -259,6 +259,7 @@ export const History = () => {
           picker="month"
           format="YYYY-MM"
           placeholder="Chọn tháng"
+          inputReadOnly
           onChange={(value) => {
             setParams((prev) => ({
               ...prev,
@@ -270,12 +271,14 @@ export const History = () => {
         />
         <DatePicker.RangePicker
           placeholder={['Chọn ngày bắt đầu', 'Chọn ngày kết thúc']}
+          inputReadOnly
           onChange={(value) => {
             setParams((prev) => ({
               ...prev,
-              'filter[date_between]': value
-                ? `${dayjs(value[0]).format('YYYY-MM-DD')},${dayjs(value[1]).format('YYYY-MM-DD')}`
-                : undefined
+              'filter[date_between]':
+                value && value[0] && value[1]
+                  ? `${dayjs(value[0]).format('YYYY-MM-DD')},${dayjs(value[1]).format('YYYY-MM-DD')}`
+                  : undefined
             }));
           }}
         />

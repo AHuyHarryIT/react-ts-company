@@ -79,6 +79,32 @@ const getOpening200Quantity = (source: unknown): number => {
   return Number(stockStart200?.totalQuan || 0);
 };
 
+const toTransactionRow = (source: unknown): TransactionRow => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tx = source as any;
+  const storageProduct = tx?.storage_product || {};
+  const product = storageProduct?.product || tx?.product || {};
+  const employee = tx?.employee || {};
+  const productId = Number(tx?.product_id || storageProduct?.product_id || 0);
+
+  return {
+    id: Number(tx?.id || 0),
+    type: tx?.type === 'out' ? 'out' : 'in',
+    quantity: Number(tx?.quantity || 0),
+    created_at: String(tx?.created_at || ''),
+    lot: String(tx?.lot || storageProduct?.lot || ''),
+    bin: Number(tx?.bin ?? storageProduct?.bin ?? 0),
+    barcode: String(tx?.barcode || storageProduct?.barcode || ''),
+    product_id: productId,
+    product_code: String(tx?.product_code || product?.code || ''),
+    product_name: String(
+      tx?.product_name || product?.name || (productId ? `SP #${productId}` : '')
+    ),
+    employee_id: String(tx?.employee_id || employee?.id || ''),
+    employee_name: String(tx?.employee_name || employee?.name || '')
+  };
+};
+
 const RawTransactionHistory: React.FC = () => {
   const isMobile = useIsMobile();
   const [allTransactions, setAllTransactions] = useState<TransactionRow[]>([]);
@@ -150,7 +176,7 @@ const RawTransactionHistory: React.FC = () => {
 
         const transactionResponse = response as TransactionListResponse;
         setAllTransactions(
-          (transactionResponse.data || []) as unknown as TransactionRow[]
+          (transactionResponse.data || []).map(toTransactionRow)
         );
 
         // Store pagination meta from API
@@ -592,18 +618,18 @@ const RawTransactionHistory: React.FC = () => {
             </span>
           </div>
           <div>
-            <span className="text-xs text-gray-400">Nhập</span>
+            <span className="text-xs text-gray-400">Nhập trong kỳ</span>
             <span className="ml-1 text-sm font-bold text-green-600">
               +{formatQty(summary.totalIn)}
             </span>
           </div>
           <div>
-            <span className="text-xs text-gray-400">Xuất</span>
+            <span className="text-xs text-gray-400">Xuất trong kỳ</span>
             <span className="ml-1 text-sm font-bold text-red-500">
               -{formatQty(summary.totalOut)}
             </span>
           </div>
-          <Tooltip title="Tồn đầu kỳ 200% + Nhập - Xuất trong khoảng thời gian lọc.">
+          <Tooltip title="Tồn đầu kỳ đã bao gồm lot cũ. Biến động = Tồn đầu kỳ 200% + nhập trong kỳ - xuất trong kỳ theo ngày giao dịch.">
             <div>
               <span className="text-xs text-gray-400">Biến động</span>
               <span className="ml-1 text-sm font-bold text-blue-600">

@@ -7,6 +7,7 @@ export interface SalaryTableType {
   hours: number;
   amount: number;
   note: string | null;
+  meta?: string | null;
 }
 
 interface SalaryTableProps {
@@ -24,6 +25,22 @@ const formatNumber = (value: number) =>
 
 const formatCurrency = (value: number) =>
   value ? value.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-';
+
+const isMeaningfulNote = (note: string | null) => {
+  if (!note) return false;
+  return note.trim() !== '';
+};
+
+const normalizeNote = (note: string | null) => {
+  if (!note) return '';
+  const trimmed = note.trim();
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+    return Number(trimmed).toLocaleString('en-US', {
+      maximumFractionDigits: 2
+    });
+  }
+  return trimmed;
+};
 
 export const SalaryTable: React.FC<SalaryTableProps> = ({
   data,
@@ -74,19 +91,25 @@ export const SalaryTable: React.FC<SalaryTableProps> = ({
               </span>
             </div>
 
-            {/* Row: Hours + Note (secondary info) */}
-            <div className="ml-6 flex flex-wrap items-center gap-2">
-              {item.hours ? (
-                <Tag className="!m-0 !text-xs" color="blue">
-                  {formatNumber(item.hours)} giờ/ngày
-                </Tag>
-              ) : null}
-              {item.note ? (
-                <span className="text-xs text-gray-400 italic dark:text-gray-500">
-                  {item.note}
-                </span>
-              ) : null}
-            </div>
+            {/* Row: Secondary info with explicit labels to avoid ambiguity */}
+            {(item.meta || item.hours || isMeaningfulNote(item.note)) && (
+              <div className="mt-0.5 ml-6 flex flex-wrap items-center gap-2">
+                {item.meta ? (
+                  <Tag className="!m-0 !text-xs" color="blue">
+                    Định lượng: {item.meta}
+                  </Tag>
+                ) : item.hours ? (
+                  <Tag className="!m-0 !text-xs" color="blue">
+                    Số giờ/ngày: {formatNumber(item.hours)}
+                  </Tag>
+                ) : null}
+                {isMeaningfulNote(item.note) ? (
+                  <Tag className="!m-0 !text-xs" color="default">
+                    Ghi chú: {normalizeNote(item.note)}
+                  </Tag>
+                ) : null}
+              </div>
+            )}
           </div>
         );
       })}

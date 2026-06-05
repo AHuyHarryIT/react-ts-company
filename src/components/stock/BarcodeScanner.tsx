@@ -1,9 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo
+} from 'react';
 import { Input, Radio, notification, Alert } from 'antd';
 import type { InputRef } from 'antd';
 import { ScanOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { productService } from '@/services/ProductService';
+import ResearchStockPanel from '@/components/stock/ResearchStockPanel';
+import { StockTransactionService } from '@/services/StockTransactionService';
 import { isBarcode } from '@/utils/barcodeUtil';
 
 type ProductMap = { id: string; name: string; code: string };
@@ -14,10 +22,80 @@ interface ScanLog {
   barcode: string;
   productName: string;
   operation: 'in' | 'out';
-  duration: number;
-  success: boolean;
+  duration?: number;
+  status: 'pending' | 'success' | 'failed';
   message: string;
 }
+
+interface CurrentStockLookupItem {
+  product_id: number;
+  product_code: string;
+  product_name: string;
+  lot: string;
+  bins: string;
+  current_quantity: number;
+}
+
+interface CurrentStockLookupResponse {
+  stocks?: CurrentStockLookupItem[];
+}
+
+interface ScanQueueItem {
+  barcode: string;
+  endpoint: 'scan-in' | 'scan-out';
+  operation: 'in' | 'out';
+  cacheKey: string;
+  logId: number;
+}
+
+interface ScanApiProduct {
+  id?: number | string;
+  code?: string;
+  name?: string;
+  quanEntityBin?: number;
+}
+
+interface ScanApiStorageProduct {
+  id?: number;
+  product_id?: number | string;
+  lot?: string;
+  bin?: number;
+  quantity?: number;
+  barcode?: string;
+  product?: ScanApiProduct;
+}
+
+interface ScanApiEmployee {
+  id?: string;
+  name?: string;
+}
+
+interface ScanApiTransaction {
+  id?: number;
+  type?: 'in' | 'out';
+  quantity?: number;
+  storage_product?: ScanApiStorageProduct;
+  storageProduct?: ScanApiStorageProduct;
+  employee?: ScanApiEmployee;
+}
+
+const compareLotsNewestFirst = (a: string, b: string) => {
+  const lotPattern = /^[A-Z]-(\d{2})(\d{2})(\d{4})-([12])$/;
+  const matchA = a.match(lotPattern);
+  const matchB = b.match(lotPattern);
+
+  if (matchA && matchB) {
+    const dateA = Number(`${matchA[3]}${matchA[2]}${matchA[1]}`);
+    const dateB = Number(`${matchB[3]}${matchB[2]}${matchB[1]}`);
+    if (dateA !== dateB) return dateB - dateA;
+
+    const shiftA = Number(matchA[4]);
+    const shiftB = Number(matchB[4]);
+    if (shiftA !== shiftB) return shiftB - shiftA;
+  }
+
+  return b.localeCompare(a, 'vi');
+};
 
 // Pre-validate barcode format before hitting API
 const quickValidateBarcode = (
@@ -40,12 +118,24 @@ const BarcodeScanner: React.FC = () => {
 
   // Xuất kho 2-step state
   const [lastQrScanned, setLastQrScanned] = useState<ProductMap | null>(null);
+  const [researchProductId, setResearchProductId] = useState<number>();
+  const [researchLot, setResearchLot] = useState<string>();
+  const [isResearching, setIsResearching] = useState(false);
+  const [researchResult, setResearchResult] = useState<{
+    productName: string;
+    productCode: string;
+    lot: string;
+    quantity: number;
+    bins: number[];
+  } | null>(null);
 
   const barcodeInputRef = useRef<InputRef>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestBarcodeRef = useRef<string>('');
   const operationRef = useRef<'in' | 'out'>('in');
-  const processingRef = useRef<boolean>(false);
+  const scanQueueRef = useRef<ScanQueueItem[]>([]);
+  const queueRunningRef = useRef<boolean>(false);
+  const pendingBarcodesRef = useRef<Set<string>>(new Set());
   const recentBarcodesRef = useRef<Set<string>>(new Set());
 
   // Load products for QR matching (xuất kho flow)
@@ -60,6 +150,40 @@ const BarcodeScanner: React.FC = () => {
       })) as ProductMap[];
     }
   });
+
+  const { data: researchStocks = [], isFetching: isLoadingResearchLots } =
+    useQuery({
+      queryKey: ['stock-research-lots', researchProductId],
+      enabled: Boolean(researchProductId),
+      queryFn: async () => {
+        const result = (await StockTransactionService.getCurrentStock(
+          researchProductId,
+          undefined,
+          false,
+          1000
+        )) as {
+          success?: boolean;
+          data?: CurrentStockLookupResponse;
+        };
+        if (result?.success === false) return [];
+        return result?.data?.stocks || [];
+      }
+    });
+
+  const researchLotOptions = useMemo(() => {
+    const uniqueLots = Array.from(
+      new Set(
+        researchStocks
+          .map((item) => item.lot)
+          .filter((lot): lot is string => Boolean(lot))
+      )
+    );
+
+    return uniqueLots.sort(compareLotsNewestFirst).map((lot) => ({
+      value: lot,
+      label: lot.replace(/^[A-Z]-/, '')
+    }));
+  }, [researchStocks]);
 
   // Keep operationRef in sync & reset QR state when switching modes
   useEffect(() => {
@@ -77,7 +201,97 @@ const BarcodeScanner: React.FC = () => {
     };
   }, []);
 
-  const formatDuration = (duration: number): string => {
+  const handleResearchStock = async () => {
+    if (!researchProductId) {
+      notification.warning({
+        message: 'Thiếu mã sản phẩm',
+        description: 'Vui lòng chọn mã sản phẩm cần tìm kiếm.',
+        duration: 2
+      });
+      return;
+    }
+
+    if (!researchLot) {
+      notification.warning({
+        message: 'Thiếu lot',
+        description: 'Vui lòng chọn lot trong danh sách.',
+        duration: 2
+      });
+      return;
+    }
+
+    setIsResearching(true);
+    try {
+      const result = (await StockTransactionService.getCurrentStock(
+        researchProductId,
+        researchLot,
+        false,
+        1000
+      )) as {
+        success?: boolean;
+        message?: string;
+        data?: CurrentStockLookupResponse;
+      };
+
+      if (result?.success === false) {
+        notification.error({
+          message: 'Tìm kiếm thất bại',
+          description: result.message || 'Không thể tải số liệu kho',
+          duration: 2
+        });
+        return;
+      }
+
+      const matched = (result?.data?.stocks || []).find(
+        (item) =>
+          Number(item.product_id) === Number(researchProductId) &&
+          item.lot === researchLot
+      );
+
+      const product = products.find(
+        (item) => Number(item.id) === Number(researchProductId)
+      );
+
+      const bins =
+        matched?.bins
+          ?.split(',')
+          .map((value) => Number(value.trim()))
+          .filter((value) => Number.isFinite(value))
+          .sort((a, b) => a - b) || [];
+
+      setResearchResult({
+        productName:
+          matched?.product_name || product?.name || `SP #${researchProductId}`,
+        productCode: matched?.product_code || product?.code || '',
+        lot: researchLot,
+        quantity: Number(matched?.current_quantity || 0),
+        bins
+      });
+
+      notification.success({
+        message: 'Tìm kiếm thành công',
+        description: `Đã cập nhật số liệu kho cho lot ${researchLot}`,
+        duration: 1.5
+      });
+    } catch {
+      notification.error({
+        message: 'Lỗi hệ thống',
+        description: 'Không thể tìm kiếm số liệu kho',
+        duration: 2
+      });
+    } finally {
+      setIsResearching(false);
+    }
+  };
+
+  const handleChangeResearchProduct = (value: number) => {
+    setResearchProductId(value);
+    setResearchLot(undefined);
+    setResearchResult(null);
+  };
+
+  const formatDuration = (duration?: number): string => {
+    if (typeof duration !== 'number') return '--';
     if (duration >= 1000) return `${(duration / 1000).toFixed(1)}s`;
     return `${duration}ms`;
   };
@@ -110,7 +324,15 @@ const BarcodeScanner: React.FC = () => {
   );
 
   const appendLog = useCallback((log: Omit<ScanLog, 'id'>) => {
-    setScanLogs((prev) => [{ ...log, id: Date.now() }, ...prev.slice(0, 9)]);
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    setScanLogs((prev) => [{ ...log, id }, ...prev.slice(0, 9)]);
+    return id;
+  }, []);
+
+  const updateLog = useCallback((id: number, patch: Partial<ScanLog>) => {
+    setScanLogs((prev) =>
+      prev.map((log) => (log.id === id ? { ...log, ...patch } : log))
+    );
   }, []);
 
   // Extract product from QR string
@@ -140,13 +362,13 @@ const BarcodeScanner: React.FC = () => {
   // Main scan handler — routes to nhập or xuất flow
   const processScanInput = (rawValue: string) => {
     const trimmed = rawValue.trim();
-    if (!trimmed || processingRef.current) return;
+    if (!trimmed) return;
 
     const currentOp = operationRef.current;
 
     if (currentOp === 'in') {
       // Nhập kho: 1 step — just scan barcode
-      executeScanApi(trimmed, 'scan-in');
+      enqueueScanApi(trimmed, 'scan-in');
     } else {
       // Xuất kho: 2 steps — QR first, then Barcode
       handleExportScan(trimmed);
@@ -210,22 +432,216 @@ const BarcodeScanner: React.FC = () => {
 
       // Match OK → call scan-out
       setLastQrScanned(null);
-      executeScanApi(rawInput, 'scan-out');
+      enqueueScanApi(rawInput, 'scan-out');
     }
   };
 
-  // API call for both nhập (scan-in) and xuất (scan-out)
-  const executeScanApi = async (
+  const executeQueuedScan = useCallback(
+    async (item: ScanQueueItem) => {
+      const baseUrl = (import.meta.env.VITE_BASE_API_URL || '').replace(
+        /\/+$/,
+        ''
+      );
+      const token = localStorage.getItem('token');
+      const startTime = performance.now();
+
+      try {
+        const response = await fetch(
+          `${baseUrl}/api/stock-transactions/${item.endpoint}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ barcode: item.barcode })
+          }
+        );
+
+        const duration = Math.round(performance.now() - startTime);
+        let body: Record<string, unknown> | null = null;
+        try {
+          body = await response.json();
+        } catch {
+          // Response is not JSON — treat as error
+        }
+
+        if (response.ok || response.status === 409) {
+          recentBarcodesRef.current.add(item.cacheKey);
+          setTimeout(
+            () => recentBarcodesRef.current.delete(item.cacheKey),
+            5000
+          );
+        }
+
+        if (response.ok && body?.success !== false) {
+          setScanCount((prev) => prev + 1);
+
+          const root = (body || {}) as Record<string, unknown>;
+          const data = ((root.data as Record<string, unknown>) ||
+            root) as Record<string, unknown>;
+          const transaction = (data.transaction || root.transaction) as
+            | ScanApiTransaction
+            | undefined;
+          const storageProduct =
+            transaction?.storage_product ||
+            transaction?.storageProduct ||
+            (data.storage_product as ScanApiStorageProduct | undefined);
+          const product = storageProduct?.product;
+          const employee = transaction?.employee;
+
+          const msg =
+            (root.message as string) ||
+            (item.operation === 'in'
+              ? 'Nhập kho thành công'
+              : 'Xuất kho thành công');
+
+          const resolvedProductName = product?.name
+            ? `${product.name}${product.code ? ` (${product.code})` : ''}`
+            : getProductName(item.barcode);
+
+          const operatorSuffix = employee?.name ? ` • ${employee.name}` : '';
+
+          updateLog(item.logId, {
+            status: 'success',
+            duration,
+            message: `${msg}${operatorSuffix}`,
+            productName: resolvedProductName
+          });
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('stock:scan-success', {
+                detail: {
+                  transaction: {
+                    id: transaction?.id,
+                    type: transaction?.type || item.operation,
+                    quantity: transaction?.quantity
+                  },
+                  storage_product: storageProduct
+                    ? {
+                        id: storageProduct.id,
+                        product_id: storageProduct.product_id,
+                        lot: storageProduct.lot,
+                        bin: storageProduct.bin,
+                        quantity: storageProduct.quantity,
+                        barcode: storageProduct.barcode || item.barcode
+                      }
+                    : undefined,
+                  product: product
+                    ? {
+                        id: product.id,
+                        code: product.code,
+                        name: product.name,
+                        quanEntityBin: product.quanEntityBin
+                      }
+                    : undefined,
+                  employee: employee
+                    ? {
+                        id: employee.id,
+                        name: employee.name
+                      }
+                    : undefined
+                }
+              })
+            );
+          }
+
+          notification.success({
+            message: msg,
+            description: resolvedProductName,
+            duration: 1
+          });
+        } else {
+          const errorMsg =
+            item.operation === 'in' ? 'Lỗi nhập kho' : 'Lỗi xuất kho';
+          let serverMessage: string;
+          if (response.status === 404) {
+            serverMessage =
+              item.operation === 'out'
+                ? `Thùng chưa được nhập kho hoặc đã xuất hết (barcode: ${item.barcode})`
+                : `Không tìm thấy sản phẩm cho barcode: ${item.barcode}`;
+          } else if (response.status === 409) {
+            serverMessage =
+              item.operation === 'in'
+                ? 'Thùng này đã được nhập kho trước đó, không thể nhập trùng'
+                : 'Thùng này đã được xuất kho trước đó';
+          } else if (response.status === 422) {
+            serverMessage =
+              ((body?.error as Record<string, unknown>)?.message as string) ||
+              'Format barcode không đúng';
+          } else {
+            serverMessage =
+              (body?.message as string) ||
+              ((body?.error as Record<string, unknown>)?.message as string) ||
+              errorMsg;
+          }
+
+          updateLog(item.logId, {
+            status: 'failed',
+            duration,
+            message: serverMessage
+          });
+          notification.error({
+            message: errorMsg,
+            description: serverMessage,
+            duration: 3
+          });
+        }
+      } catch {
+        const duration = Math.round(performance.now() - startTime);
+        updateLog(item.logId, {
+          status: 'failed',
+          duration,
+          message: 'Lỗi hệ thống'
+        });
+        notification.error({
+          message: 'Lỗi hệ thống',
+          description: 'Không thể kết nối server',
+          duration: 2
+        });
+      } finally {
+        pendingBarcodesRef.current.delete(item.cacheKey);
+      }
+    },
+    [getProductName, updateLog]
+  );
+
+  const processQueue = useCallback(async () => {
+    if (queueRunningRef.current) return;
+    queueRunningRef.current = true;
+    try {
+      while (scanQueueRef.current.length > 0) {
+        const nextItem = scanQueueRef.current.shift();
+        if (!nextItem) break;
+        await executeQueuedScan(nextItem);
+      }
+    } finally {
+      queueRunningRef.current = false;
+    }
+  }, [executeQueuedScan]);
+
+  // Queue API call for both nhập (scan-in) and xuất (scan-out)
+  const enqueueScanApi = (
     barcodeValue: string,
     endpoint: 'scan-in' | 'scan-out'
   ) => {
     const trimmedBarcode = barcodeValue.trim();
-    if (!trimmedBarcode || processingRef.current) return;
+    if (!trimmedBarcode) return;
 
     const currentOp = endpoint === 'scan-in' ? 'in' : 'out';
-
-    // Skip duplicate in 5s
     const cacheKey = `${currentOp}:${trimmedBarcode}`;
+
+    if (pendingBarcodesRef.current.has(cacheKey)) {
+      notification.info({
+        message: 'Barcode đang xử lý',
+        description: 'Vui lòng chờ kết quả barcode này',
+        duration: 1
+      });
+      resetForm();
+      return;
+    }
+
     if (recentBarcodesRef.current.has(cacheKey)) {
       notification.info({
         message: 'Barcode đã quét',
@@ -250,119 +666,26 @@ const BarcodeScanner: React.FC = () => {
     }
 
     clearDebounce();
-    processingRef.current = true;
+    resetForm();
 
-    // Delay clearing input so user can see what was scanned
-    setTimeout(() => resetForm(), 500);
+    const logId = appendLog({
+      timestamp: new Date(),
+      barcode: trimmedBarcode,
+      productName: getProductName(trimmedBarcode),
+      operation: currentOp,
+      status: 'pending',
+      message: 'Đang xử lý...'
+    });
 
-    const baseUrl = (import.meta.env.VITE_BASE_API_URL || '').replace(
-      /\/+$/,
-      ''
-    );
-    const token = localStorage.getItem('token');
-    const startTime = performance.now();
-
-    try {
-      const response = await fetch(
-        `${baseUrl}/api/stock-transactions/${endpoint}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify({ barcode: trimmedBarcode })
-        }
-      );
-
-      const duration = Math.round(performance.now() - startTime);
-      let body: Record<string, unknown> | null = null;
-      try {
-        body = await response.json();
-      } catch {
-        // Response is not JSON — treat as error
-      }
-
-      if (response.ok || response.status === 409) {
-        recentBarcodesRef.current.add(cacheKey);
-        setTimeout(() => recentBarcodesRef.current.delete(cacheKey), 5000);
-      }
-
-      // Check both HTTP status and body.success
-      if (response.ok && body?.success !== false) {
-        setScanCount((prev) => prev + 1);
-        const msg =
-          currentOp === 'in' ? 'Nhập kho thành công' : 'Xuất kho thành công';
-        const pName = getProductName(trimmedBarcode);
-        appendLog({
-          timestamp: new Date(),
-          barcode: trimmedBarcode,
-          productName: pName,
-          operation: currentOp,
-          duration,
-          success: true,
-          message: msg
-        });
-        notification.success({ message: msg, description: pName, duration: 1 });
-      } else {
-        const errorMsg = currentOp === 'in' ? 'Lỗi nhập kho' : 'Lỗi xuất kho';
-        // Map common HTTP status codes to clear Vietnamese messages
-        let serverMessage: string;
-        if (response.status === 404) {
-          serverMessage =
-            currentOp === 'out'
-              ? `Thùng chưa được nhập kho hoặc đã xuất hết (barcode: ${trimmedBarcode})`
-              : `Không tìm thấy sản phẩm cho barcode: ${trimmedBarcode}`;
-        } else if (response.status === 409) {
-          serverMessage =
-            currentOp === 'in'
-              ? 'Thùng này đã được nhập kho trước đó, không thể nhập trùng'
-              : 'Thùng này đã được xuất kho trước đó';
-        } else if (response.status === 422) {
-          serverMessage =
-            ((body?.error as Record<string, unknown>)?.message as string) ||
-            'Format barcode không đúng';
-        } else {
-          serverMessage =
-            (body?.message as string) ||
-            ((body?.error as Record<string, unknown>)?.message as string) ||
-            errorMsg;
-        }
-        const pName = getProductName(trimmedBarcode);
-        appendLog({
-          timestamp: new Date(),
-          barcode: trimmedBarcode,
-          productName: pName,
-          operation: currentOp,
-          duration,
-          success: false,
-          message: serverMessage
-        });
-        notification.error({
-          message: errorMsg,
-          description: serverMessage,
-          duration: 3
-        });
-      }
-    } catch {
-      const duration = Math.round(performance.now() - startTime);
-      appendLog({
-        timestamp: new Date(),
-        barcode: trimmedBarcode,
-        productName: getProductName(trimmedBarcode),
-        operation: currentOp,
-        duration,
-        success: false,
-        message: 'Lỗi hệ thống'
-      });
-      notification.error({
-        message: 'Lỗi hệ thống',
-        description: 'Không thể kết nối server',
-        duration: 2
-      });
-    } finally {
-      processingRef.current = false;
-    }
+    pendingBarcodesRef.current.add(cacheKey);
+    scanQueueRef.current.push({
+      barcode: trimmedBarcode,
+      endpoint,
+      operation: currentOp,
+      cacheKey,
+      logId
+    });
+    void processQueue();
   };
 
   // Manual scan
@@ -452,6 +775,24 @@ const BarcodeScanner: React.FC = () => {
                 }
               />
             )}
+
+            <div className="mt-3">
+              <ResearchStockPanel
+                productOptions={products.map((item) => ({
+                  value: Number(item.id),
+                  label: `${item.code} - ${item.name}`
+                }))}
+                lotOptions={researchLotOptions}
+                productId={researchProductId}
+                lotValue={researchLot}
+                loading={isResearching}
+                lotLoading={isLoadingResearchLots}
+                result={researchResult}
+                onProductChange={handleChangeResearchProduct}
+                onLotChange={setResearchLot}
+                onSubmit={() => void handleResearchStock()}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -475,21 +816,44 @@ const BarcodeScanner: React.FC = () => {
               <div
                 key={log.id}
                 className="flex items-start gap-3 px-3 py-2 transition-colors"
-                style={{ backgroundColor: log.success ? '#fafff5' : '#fff8f7' }}
+                style={{
+                  backgroundColor:
+                    log.status === 'success'
+                      ? '#fafff5'
+                      : log.status === 'failed'
+                        ? '#fff8f7'
+                        : '#f5f8ff'
+                }}
               >
                 <div
                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
                   style={{
-                    backgroundColor: log.success ? '#52c41a' : '#ff4d4f'
+                    backgroundColor:
+                      log.status === 'success'
+                        ? '#52c41a'
+                        : log.status === 'failed'
+                          ? '#ff4d4f'
+                          : '#1677ff'
                   }}
                 >
-                  {log.operation === 'in' ? '↓' : '↑'}
+                  {log.status === 'pending'
+                    ? '~'
+                    : log.operation === 'in'
+                      ? '↓'
+                      : '↑'}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span
                       className="text-xs font-bold"
-                      style={{ color: log.success ? '#389e0d' : '#cf1322' }}
+                      style={{
+                        color:
+                          log.status === 'success'
+                            ? '#389e0d'
+                            : log.status === 'failed'
+                              ? '#cf1322'
+                              : '#1d4ed8'
+                      }}
                     >
                       {log.operation === 'in' ? 'NHẬP' : 'XUẤT'}
                     </span>
@@ -505,7 +869,12 @@ const BarcodeScanner: React.FC = () => {
                   <div
                     className="text-xs font-bold"
                     style={{
-                      color: log.duration < 1000 ? '#52c41a' : '#fa8c16'
+                      color:
+                        log.status === 'pending'
+                          ? '#9ca3af'
+                          : (log.duration || 0) < 1000
+                            ? '#52c41a'
+                            : '#fa8c16'
                     }}
                   >
                     {formatDuration(log.duration)}

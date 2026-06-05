@@ -165,6 +165,27 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
   const tableData = useMemo(() => response?.data || [], [response?.data]);
   const total = response?.total || 0;
 
+  const visibleDateKeys = useMemo(() => {
+    if (!month) {
+      return [];
+    }
+
+    const selectedMonth = dayjs(month);
+    const today = dayjs();
+
+    if (selectedMonth.isAfter(today, 'month')) {
+      return [];
+    }
+
+    const visibleDays = selectedMonth.isSame(today, 'month')
+      ? today.date()
+      : selectedMonth.daysInMonth();
+
+    return Array.from({ length: visibleDays }, (_, index) =>
+      selectedMonth.date(index + 1).format('DD-MM-YYYY')
+    );
+  }, [month]);
+
   useEffect(() => {
     if (!tableData.length) return;
 
@@ -174,6 +195,35 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
 
     setDataSource(newDataSource);
   }, [tableData]);
+
+  const visibleDataSource = useMemo(() => {
+    if (!visibleDateKeys.length) {
+      return dataSource.map((record) => ({
+        ...record,
+        total: 0,
+        times: {}
+      }));
+    }
+
+    return dataSource.map((record) => {
+      const filteredTimes: ProduceTableType['times'] = {};
+      let filteredTotal = 0;
+
+      visibleDateKeys.forEach((dateKey) => {
+        const shift1 = record.times[dateKey]?.shift1 || 0;
+        const shift2 = record.times[dateKey]?.shift2 || 0;
+
+        filteredTimes[dateKey] = { shift1, shift2 };
+        filteredTotal += shift1 + shift2;
+      });
+
+      return {
+        ...record,
+        total: filteredTotal,
+        times: filteredTimes
+      };
+    });
+  }, [dataSource, visibleDateKeys]);
 
   /* ── Mobile view ── */
   if (isMobile) {
@@ -195,7 +245,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
           <>
             {/* Cards */}
             <div className="space-y-2">
-              {dataSource.map((record, index) => (
+              {visibleDataSource.map((record, index) => (
                 <ProduceMobileCard
                   key={record.id}
                   record={record}
@@ -228,58 +278,57 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
   }
 
   /* ── Desktop table (unchanged) ── */
-  const dateColumns: TableColumnsType<ProduceTableType> = Array.from({
-    length: dayjs(month).daysInMonth()
-  }).map((_, index) => {
-    const dateObj = dayjs(month).date(index + 1);
-    const date = dateObj.format('DD-MM-YYYY');
-    const isToday = dateObj.isSame(dayjs(), 'day');
-    const dayColumnClass = isToday
-      ? 'product-day-current'
-      : index % 2 === 0
-        ? 'product-day-alt'
-        : '';
+  const dateColumns: TableColumnsType<ProduceTableType> = visibleDateKeys.map(
+    (date, index) => {
+      const dateObj = dayjs(date, 'DD-MM-YYYY');
+      const isToday = dateObj.isSame(dayjs(), 'day');
+      const dayColumnClass = isToday
+        ? 'product-day-current'
+        : index % 2 === 0
+          ? 'product-day-alt'
+          : '';
 
-    return {
-      title: (
-        <div className={`product-day-pill ${isToday ? 'is-today' : ''}`}>
-          {dateObj.format('DD/MM')}
-        </div>
-      ),
-      align: 'center',
-      width: 120,
-      children: [
-        {
-          title: <span className="product-shift-label">Ca 1</span>,
-          key: `${date}_shift1`,
-          dataIndex: ['times', date, 'shift1'],
-          align: 'center',
-          className: dayColumnClass,
-          width: 60,
-          render: (value) => {
-            if (!value) return '0';
-            return value.toLocaleString({
-              maximumFractionDigits: 0
-            });
+      return {
+        title: (
+          <div className={`product-day-pill ${isToday ? 'is-today' : ''}`}>
+            {dateObj.format('DD/MM')}
+          </div>
+        ),
+        align: 'center',
+        width: 120,
+        children: [
+          {
+            title: <span className="product-shift-label">Ca 1</span>,
+            key: `${date}_shift1`,
+            dataIndex: ['times', date, 'shift1'],
+            align: 'center',
+            className: dayColumnClass,
+            width: 60,
+            render: (value) => {
+              if (!value) return '0';
+              return value.toLocaleString({
+                maximumFractionDigits: 0
+              });
+            }
+          },
+          {
+            title: <span className="product-shift-label">Ca 2</span>,
+            key: `${date}_shift2`,
+            dataIndex: ['times', date, 'shift2'],
+            align: 'center',
+            className: dayColumnClass,
+            width: 60,
+            render: (value) => {
+              if (!value) return '0';
+              return value.toLocaleString({
+                maximumFractionDigits: 0
+              });
+            }
           }
-        },
-        {
-          title: <span className="product-shift-label">Ca 2</span>,
-          key: `${date}_shift2`,
-          dataIndex: ['times', date, 'shift2'],
-          align: 'center',
-          className: dayColumnClass,
-          width: 60,
-          render: (value) => {
-            if (!value) return '0';
-            return value.toLocaleString({
-              maximumFractionDigits: 0
-            });
-          }
-        }
-      ]
-    };
-  });
+        ]
+      };
+    }
+  );
 
   const columns: TableColumnsType<ProduceTableType> = [
     {
@@ -347,7 +396,7 @@ export const ProduceTable: React.FC<ProduceTableProps> = ({
     className: 'product-sticky-table admin-page-sticky-table',
     rowKey: (record) => ['produce', record.id].join('-'),
     columns: columns,
-    dataSource: dataSource,
+    dataSource: visibleDataSource,
     loading: queryResult.isLoading,
     sticky: {
       offsetHeader: 0

@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Table, Typography, message, Spin, Input, Select, Drawer } from 'antd';
 import { InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import AppButton from '@/components/common/AppButton';
 import RefreshButton from '@/components/common/RefreshButton';
+import ResearchStockPanel from '@/components/stock/ResearchStockPanel';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   customPaginationProps,
@@ -54,8 +56,28 @@ interface GroupedStockItem {
   bin_count: number;
   exported_quantity: number;
   exported_bins: number[];
+  export_date_displays: string[];
+  export_date_details: ExportDateDetail[];
   total_bins_init: number;
   has_exported: boolean;
+  is_export_only?: boolean;
+}
+
+interface ExportDateDetail {
+  date: string;
+  quantity: number;
+  bins: number[];
+}
+
+interface ExportInfo {
+  product_id: number;
+  product_code: string;
+  product_name: string;
+  lot: string;
+  qty: number;
+  bins: number[];
+  export_dates: string[];
+  export_date_details: ExportDateDetail[];
 }
 
 interface ProductStockGroup {
@@ -64,6 +86,7 @@ interface ProductStockGroup {
   product_code: string;
   product_name: string;
   lots: GroupedStockItem[];
+  exported_lots: GroupedStockItem[];
   lot_count: number;
   total_quantity: number;
   total_bins_init: number;
@@ -92,8 +115,32 @@ const parseLotInfo = (lot: string) => {
   return { sortableDate: '', displayDate: '', shift: '' };
 };
 
+const isLotInMonth = (lot: string, monthValue = dayjs()) => {
+  const lotDate = parseLotInfo(lot).sortableDate;
+  return Boolean(lotDate) && dayjs(lotDate).isSame(monthValue, 'month');
+};
+
+const compareLotsNewestFirst = (a: string, b: string) => {
+  const lotPattern = /^[A-Z]-(\d{2})(\d{2})(\d{4})-([12])$/;
+  const matchA = a.match(lotPattern);
+  const matchB = b.match(lotPattern);
+
+  if (matchA && matchB) {
+    const dateA = Number(`${matchA[3]}${matchA[2]}${matchA[1]}`);
+    const dateB = Number(`${matchB[3]}${matchB[2]}${matchB[1]}`);
+    if (dateA !== dateB) return dateB - dateA;
+
+    const shiftA = Number(matchA[4]);
+    const shiftB = Number(matchB[4]);
+    if (shiftA !== shiftB) return shiftB - shiftA;
+  }
+
+  return b.localeCompare(a, 'vi');
+};
+
 const CurrentStockDashboard: React.FC = () => {
   const isMobile = useIsMobile();
+  const currentMonth = useMemo(() => dayjs(), []);
   const [loading, setLoading] = useState(false);
   const [tablePagination, setTablePagination] = useState({
     current: 1,
@@ -107,24 +154,44 @@ const CurrentStockDashboard: React.FC = () => {
     lot?: string;
     showEmpty?: boolean;
   }>({ showEmpty: false });
-  const [exportData, setExportData] = useState<
-    Map<string, { qty: number; bins: number[] }>
-  >(new Map());
+  const [exportData, setExportData] = useState<Map<string, ExportInfo>>(
+    new Map()
+  );
   const [detailRecord, setDetailRecord] = useState<ProductStockGroup | null>(
     null
   );
   const [exportedDetailRecord, setExportedDetailRecord] =
     useState<ProductStockGroup | null>(null);
+  const [researchProductId, setResearchProductId] = useState<number>();
+  const [researchLot, setResearchLot] = useState<string>();
+  const [isResearching, setIsResearching] = useState(false);
+  const [researchResult, setResearchResult] = useState<{
+    productName: string;
+    productCode: string;
+    lot: string;
+    quantity: number;
+    bins: number[];
+  } | null>(null);
 
   // Build product options for filter dropdown
   const productOptions = useMemo(() => {
     if (!stockData?.stocks) return [];
     const seen = new Map<number, string>();
-    stockData.stocks.forEach((item) => {
+    stockData.stocks
+      .filter((item) => isLotInMonth(item.lot, currentMonth))
+      .forEach((item) => {
+        if (!seen.has(item.product_id)) {
+          seen.set(
+            item.product_id,
+            `${item.product_name || `SP #${item.product_id}`} (${item.product_code || ''})`
+          );
+        }
+      });
+    exportData.forEach((item) => {
       if (!seen.has(item.product_id)) {
         seen.set(
           item.product_id,
-          `${item.product_name} (${item.product_code})`
+          `${item.product_name || `SP #${item.product_id}`} (${item.product_code || ''})`
         );
       }
     });
@@ -132,7 +199,34 @@ const CurrentStockDashboard: React.FC = () => {
       value: id,
       label
     }));
-  }, [stockData]);
+  }, [stockData, currentMonth, exportData]);
+
+  const currentMonthStockRows = useMemo(() => {
+    return (
+      stockData?.stocks?.filter((item) =>
+        isLotInMonth(item.lot, currentMonth)
+      ) || []
+    );
+  }, [stockData, currentMonth]);
+
+  const currentMonthSummary = useMemo(() => {
+    const totalQuantity = currentMonthStockRows.reduce(
+      (sum, item) => sum + Number(item.current_quantity || 0),
+      0
+    );
+    const productIds = new Set(
+      currentMonthStockRows.map((item) => item.product_id)
+    );
+
+    return {
+      total_products: productIds.size,
+      total_bins: currentMonthStockRows.reduce(
+        (sum, item) => sum + Number(item.bin_count || 0),
+        0
+      ),
+      total_quantity: totalQuantity
+    };
+  }, [currentMonthStockRows]);
 
   const loadCurrentStock = useCallback(async () => {
     setLoading(true);
@@ -193,14 +287,17 @@ const CurrentStockDashboard: React.FC = () => {
     try {
       const result = await StockTransactionService.getTransactions({
         type: 'out',
-        per_page: 10000
+        from_date: currentMonth.startOf('month').format('YYYY-MM-DD'),
+        to_date: currentMonth.endOf('month').format('YYYY-MM-DD'),
+        per_page: 10000,
+        include: 'storage_product.product'
       });
       if (
         result &&
         !('success' in result && (result as ApiErrorResponse).success === false)
       ) {
         const txData = (result as TransactionListResponse).data || [];
-        const map = new Map<string, { qty: number; bins: number[] }>();
+        const map = new Map<string, ExportInfo>();
         txData.forEach((tx) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const flat = tx as any;
@@ -208,10 +305,49 @@ const CurrentStockDashboard: React.FC = () => {
           const lot = flat.lot || tx.storage_product?.lot;
           const bin = flat.bin ?? tx.storage_product?.bin;
           const qty = Number(tx.quantity || 0);
+          const exportDate = tx.created_at
+            ? dayjs(tx.created_at).format('DD/MM/YYYY')
+            : '';
           if (pId && lot) {
             const key = `${pId}_${lot}`;
-            const existing = map.get(key) || { qty: 0, bins: [] };
+            const product = tx.storage_product?.product;
+            const existing: ExportInfo = map.get(key) ?? {
+              product_id: Number(pId),
+              product_code:
+                flat.product_code || flat.product?.code || product?.code || '',
+              product_name:
+                flat.product_name ||
+                flat.product?.name ||
+                product?.name ||
+                `SP #${pId}`,
+              lot,
+              qty: 0,
+              bins: [],
+              export_dates: [],
+              export_date_details: []
+            };
             existing.qty += qty;
+            if (exportDate && !existing.export_dates.includes(exportDate)) {
+              existing.export_dates.push(exportDate);
+            }
+            if (exportDate) {
+              const dateDetail =
+                existing.export_date_details.find(
+                  (detail) => detail.date === exportDate
+                ) || null;
+              if (dateDetail) {
+                dateDetail.quantity += qty;
+                if (bin != null && !dateDetail.bins.includes(Number(bin))) {
+                  dateDetail.bins.push(Number(bin));
+                }
+              } else {
+                existing.export_date_details.push({
+                  date: exportDate,
+                  quantity: qty,
+                  bins: bin != null ? [Number(bin)] : []
+                });
+              }
+            }
             if (bin != null && !existing.bins.includes(Number(bin))) {
               existing.bins.push(Number(bin));
             }
@@ -223,7 +359,34 @@ const CurrentStockDashboard: React.FC = () => {
     } catch (error) {
       console.error('Load export data error:', error);
     }
-  }, []);
+  }, [currentMonth]);
+
+  const productInfoById = useMemo(() => {
+    const map = new Map<
+      number,
+      { product_code: string; product_name: string }
+    >();
+
+    stockData?.stocks?.forEach((item) => {
+      if (!map.has(item.product_id)) {
+        map.set(item.product_id, {
+          product_code: item.product_code || '',
+          product_name: item.product_name || `SP #${item.product_id}`
+        });
+      }
+    });
+
+    exportData.forEach((item) => {
+      if (!map.has(item.product_id)) {
+        map.set(item.product_id, {
+          product_code: item.product_code,
+          product_name: item.product_name
+        });
+      }
+    });
+
+    return map;
+  }, [stockData, exportData]);
 
   useEffect(() => {
     loadExportData();
@@ -231,9 +394,7 @@ const CurrentStockDashboard: React.FC = () => {
 
   // Transform API response to table data (lot-by-lot, memoized for stable pagination)
   const groupedStockItems = useMemo((): GroupedStockItem[] => {
-    if (!stockData?.stocks) return [];
-
-    let items = stockData.stocks;
+    let items = currentMonthStockRows;
 
     // Client-side product filter
     if (filters.productId) {
@@ -258,49 +419,100 @@ const CurrentStockDashboard: React.FC = () => {
       );
     }
 
+    const stockItems = items.map((item: CurrentStockRow) => {
+      const lotInfo = parseLotInfo(item.lot);
+      const expInfo = exportData.get(`${item.product_id}_${item.lot}`);
+      const currentQuantity = Number(item.current_quantity || 0);
+      const binCount = Number(item.bin_count || 0);
+      const exportedQty = expInfo?.qty || 0;
+      const exportedBins = expInfo?.bins || [];
+      const exportDateDisplays = expInfo?.export_dates || [];
+      const exportDateDetails = expInfo?.export_date_details || [];
+
+      return {
+        key: `${item.product_id}_${item.lot}`,
+        product_id: item.product_id,
+        product_code: item.product_code || '',
+        product_name: item.product_name || `SP #${item.product_id}`,
+        lot: item.lot,
+        lotDate: lotInfo.sortableDate,
+        lotDateDisplay: lotInfo.displayDate,
+        shift: lotInfo.shift,
+        bins: item.bins
+          ? item.bins
+              .split(',')
+              .map((b) => parseInt(b.trim()))
+              .filter((n) => !isNaN(n))
+          : [],
+        total_quantity: currentQuantity,
+        bin_count: binCount,
+        exported_quantity: exportedQty,
+        exported_bins: exportedBins,
+        export_date_displays: exportDateDisplays,
+        export_date_details: exportDateDetails,
+        total_bins_init: binCount + exportedBins.length,
+        has_exported: exportedQty > 0
+      };
+    });
+
+    const stockKeys = new Set(stockItems.map((item) => item.key));
+    const exportOnlyItems = Array.from(exportData.values())
+      .filter((item) => !stockKeys.has(`${item.product_id}_${item.lot}`))
+      .filter((item) => {
+        if (filters.productId && item.product_id !== filters.productId) {
+          return false;
+        }
+        if (!filters.lot) return true;
+
+        const search = filters.lot.toLowerCase();
+        return (
+          item.lot?.toLowerCase().includes(search) ||
+          item.product_name?.toLowerCase().includes(search) ||
+          item.product_code?.toLowerCase().includes(search)
+        );
+      })
+      .map((item): GroupedStockItem => {
+        const lotInfo = parseLotInfo(item.lot);
+        const productInfo = productInfoById.get(item.product_id);
+
+        return {
+          key: `${item.product_id}_${item.lot}`,
+          product_id: item.product_id,
+          product_code: item.product_code || productInfo?.product_code || '',
+          product_name:
+            item.product_name ||
+            productInfo?.product_name ||
+            `SP #${item.product_id}`,
+          lot: item.lot,
+          lotDate: lotInfo.sortableDate,
+          lotDateDisplay: lotInfo.displayDate,
+          shift: lotInfo.shift,
+          bins: [],
+          total_quantity: 0,
+          bin_count: 0,
+          exported_quantity: item.qty,
+          exported_bins: item.bins,
+          export_date_displays: item.export_dates,
+          export_date_details: item.export_date_details,
+          total_bins_init: 0,
+          has_exported: item.qty > 0,
+          is_export_only: true
+        };
+      });
+
     return (
-      items
-        .map((item: CurrentStockRow) => {
-          const lotInfo = parseLotInfo(item.lot);
-          const expInfo = exportData.get(`${item.product_id}_${item.lot}`);
-          const currentQuantity = Number(item.current_quantity || 0);
-          const binCount = Number(item.bin_count || 0);
-          const exportedQty = expInfo?.qty || 0;
-          const exportedBins = expInfo?.bins || [];
-          return {
-            key: `${item.product_id}_${item.lot}`,
-            product_id: item.product_id,
-            product_code: item.product_code,
-            product_name: item.product_name,
-            lot: item.lot,
-            lotDate: lotInfo.sortableDate,
-            lotDateDisplay: lotInfo.displayDate,
-            shift: lotInfo.shift,
-            bins: item.bins
-              ? item.bins
-                  .split(',')
-                  .map((b) => parseInt(b.trim()))
-                  .filter((n) => !isNaN(n))
-              : [],
-            total_quantity: currentQuantity,
-            bin_count: binCount,
-            exported_quantity: exportedQty,
-            exported_bins: exportedBins,
-            total_bins_init: binCount + exportedBins.length,
-            has_exported: exportedQty > 0
-          };
-        })
+      [...stockItems, ...exportOnlyItems]
         // Default sort: product name → newest date first
         .sort((a, b) => {
-          const nameCompare = a.product_name.localeCompare(
-            b.product_name,
+          const nameCompare = (a.product_name || '').localeCompare(
+            b.product_name || '',
             'vi'
           );
           if (nameCompare !== 0) return nameCompare;
           return b.lotDate.localeCompare(a.lotDate); // newest first
         })
     );
-  }, [stockData, filters, exportData]);
+  }, [currentMonthStockRows, filters, exportData, productInfoById]);
 
   const productStockGroups = useMemo((): ProductStockGroup[] => {
     const map = new Map<number, ProductStockGroup>();
@@ -308,27 +520,31 @@ const CurrentStockDashboard: React.FC = () => {
     groupedStockItems.forEach((item) => {
       const existing = map.get(item.product_id);
       if (existing) {
-        existing.lots.push(item);
-        existing.lot_count += 1;
-        existing.total_quantity += item.total_quantity;
-        existing.total_bins_init += item.total_bins_init;
-        existing.remaining_bins += item.bin_count;
+        if (!item.is_export_only) {
+          existing.lots.push(item);
+          existing.lot_count += 1;
+          existing.total_quantity += item.total_quantity;
+          existing.total_bins_init += item.total_bins_init;
+          existing.remaining_bins += item.bin_count;
+        }
         existing.exported_quantity += item.exported_quantity;
         existing.exported_bins_count += item.exported_bins.length;
         if (item.has_exported) {
+          existing.exported_lots.push(item);
           existing.exported_lot_count += 1;
         }
       } else {
         map.set(item.product_id, {
           key: String(item.product_id),
           product_id: item.product_id,
-          product_code: item.product_code,
-          product_name: item.product_name,
-          lots: [item],
-          lot_count: 1,
-          total_quantity: item.total_quantity,
-          total_bins_init: item.total_bins_init,
-          remaining_bins: item.bin_count,
+          product_code: item.product_code || '',
+          product_name: item.product_name || `SP #${item.product_id}`,
+          lots: item.is_export_only ? [] : [item],
+          exported_lots: item.has_exported ? [item] : [],
+          lot_count: item.is_export_only ? 0 : 1,
+          total_quantity: item.is_export_only ? 0 : item.total_quantity,
+          total_bins_init: item.is_export_only ? 0 : item.total_bins_init,
+          remaining_bins: item.is_export_only ? 0 : item.bin_count,
           exported_quantity: item.exported_quantity,
           exported_bins_count: item.exported_bins.length,
           exported_lot_count: item.has_exported ? 1 : 0
@@ -340,6 +556,11 @@ const CurrentStockDashboard: React.FC = () => {
       .map((group) => ({
         ...group,
         lots: [...group.lots].sort((a, b) => {
+          const dateCompare = b.lotDate.localeCompare(a.lotDate);
+          if (dateCompare !== 0) return dateCompare;
+          return a.lot.localeCompare(b.lot);
+        }),
+        exported_lots: [...group.exported_lots].sort((a, b) => {
           const dateCompare = b.lotDate.localeCompare(a.lotDate);
           if (dateCompare !== 0) return dateCompare;
           return a.lot.localeCompare(b.lot);
@@ -366,6 +587,100 @@ const CurrentStockDashboard: React.FC = () => {
 
   const handleLotSearch = (value: string) => {
     setFilters((prev) => ({ ...prev, lot: value || undefined }));
+  };
+
+  const researchLotOptions = useMemo(() => {
+    if (!researchProductId) return [];
+
+    const uniqueLots = Array.from(
+      new Set(
+        (stockData?.stocks || [])
+          .filter(
+            (item) => Number(item.product_id) === Number(researchProductId)
+          )
+          .map((item) => item.lot)
+          .filter((lot): lot is string => Boolean(lot))
+      )
+    );
+
+    return uniqueLots.sort(compareLotsNewestFirst).map((lot) => ({
+      value: lot,
+      label: lot.replace(/^[A-Z]-/, '')
+    }));
+  }, [researchProductId, stockData]);
+
+  const handleResearchStock = async () => {
+    if (!researchProductId) {
+      message.warning('Vui lòng chọn mã sản phẩm để tìm kiếm');
+      return;
+    }
+
+    if (!researchLot) {
+      message.warning('Vui lòng chọn lot trong danh sách');
+      return;
+    }
+
+    setIsResearching(true);
+    try {
+      const result = (await StockTransactionService.getCurrentStock(
+        researchProductId,
+        researchLot,
+        false,
+        1000
+      )) as {
+        success?: boolean;
+        message?: string;
+        data?: CurrentStockApiResponse;
+      };
+
+      if (
+        result &&
+        typeof result === 'object' &&
+        'success' in result &&
+        result.success === false
+      ) {
+        message.error(result.message || 'Tìm kiếm thất bại');
+        return;
+      }
+
+      const matched = (result?.data?.stocks || []).find(
+        (item) =>
+          Number(item.product_id) === Number(researchProductId) &&
+          item.lot === researchLot
+      );
+
+      const productFallback = productOptions.find(
+        (item) => Number(item.value) === Number(researchProductId)
+      );
+
+      const bins =
+        matched?.bins
+          ?.split(',')
+          .map((value) => parseInt(value.trim(), 10))
+          .filter((value) => !isNaN(value))
+          .sort((a, b) => a - b) || [];
+
+      setResearchResult({
+        productName:
+          matched?.product_name ||
+          String(productFallback?.label || `SP #${researchProductId}`),
+        productCode: matched?.product_code || '',
+        lot: researchLot,
+        quantity: Number(matched?.current_quantity || 0),
+        bins
+      });
+      message.success(`Đã tìm kiếm số liệu kho cho lot ${researchLot}`);
+    } catch {
+      message.error('Không thể tìm kiếm số liệu kho');
+    } finally {
+      setIsResearching(false);
+    }
+  };
+
+  const handleChangeResearchProduct = (value: number) => {
+    setResearchProductId(value);
+    setResearchLot(undefined);
+    setResearchResult(null);
   };
 
   const productColumns = [
@@ -470,12 +785,11 @@ const CurrentStockDashboard: React.FC = () => {
           return (
             <span
               onClick={() => {
-                const exportedLots = record.lots.filter(
-                  (lot) => lot.has_exported
-                );
+                const exportedLots = record.exported_lots;
                 const exportedRecord: ProductStockGroup = {
                   ...record,
                   lots: exportedLots,
+                  exported_lots: exportedLots,
                   lot_count: exportedLots.length,
                   total_quantity: exportedLots.reduce(
                     (sum, lot) => sum + lot.exported_quantity,
@@ -548,40 +862,40 @@ const CurrentStockDashboard: React.FC = () => {
         ) : stockData ? (
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
             <span className="text-xs font-medium text-gray-500">
-              Tháng {new Date().getMonth() + 1}/{new Date().getFullYear()}
+              Tháng {currentMonth.format('MM/YYYY')}
             </span>
             <div className="hidden h-4 w-px bg-gray-200 sm:block" />
             <div>
-              <span className="text-xs text-gray-400">Thùng</span>
+              <span className="text-xs text-gray-400">Thùng tháng</span>
               <span className="ml-1.5 text-base font-bold text-blue-600">
-                {Number(stockData.summary?.total_bins || 0).toLocaleString(
+                {Number(currentMonthSummary.total_bins || 0).toLocaleString(
                   'vi-VN'
                 )}
               </span>
             </div>
             <div>
-              <span className="text-xs text-gray-400">Sản phẩm</span>
+              <span className="text-xs text-gray-400">Sản phẩm tháng</span>
               <span className="ml-1.5 text-base font-bold text-purple-600">
-                {Number(stockData.summary?.total_products || 0).toLocaleString(
+                {Number(currentMonthSummary.total_products || 0).toLocaleString(
                   'vi-VN'
                 )}
               </span>
             </div>
             <div>
-              <span className="text-xs text-gray-400">Tổng SL</span>
+              <span className="text-xs text-gray-400">SL lot tháng</span>
               <span className="ml-1.5 text-base font-bold text-green-600">
-                {Number(stockData.summary?.total_quantity || 0).toLocaleString(
+                {Number(currentMonthSummary.total_quantity || 0).toLocaleString(
                   'vi-VN'
                 )}
               </span>
             </div>
             <div>
-              <span className="text-xs text-gray-400">Lots</span>
+              <span className="text-xs text-gray-400">Lots tháng</span>
               <span className="ml-1.5 text-base font-bold text-orange-500">
                 {Number(
-                  stockData.stocks
+                  currentMonthStockRows
                     ? new Set(
-                        stockData.stocks.map(
+                        currentMonthStockRows.map(
                           (item) => `${item.product_id}_${item.lot}`
                         )
                       ).size
@@ -625,6 +939,18 @@ const CurrentStockDashboard: React.FC = () => {
             className="stock-filter-control"
           />
         </div>
+
+        <ResearchStockPanel
+          productOptions={productOptions}
+          lotOptions={researchLotOptions}
+          productId={researchProductId}
+          lotValue={researchLot}
+          loading={isResearching}
+          result={researchResult}
+          onProductChange={handleChangeResearchProduct}
+          onLotChange={setResearchLot}
+          onSubmit={() => void handleResearchStock()}
+        />
       </div>
 
       {/* Desktop: Table */}
@@ -969,13 +1295,39 @@ const CurrentStockDashboard: React.FC = () => {
               >
                 <div className="mb-2 flex items-start justify-between">
                   <div>
-                    <Text code className="text-sm font-bold text-gray-800">
-                      {lot.lot}
-                    </Text>
-                    {lot.lotDateDisplay && (
-                      <div className="mt-0.5 text-xs text-gray-400">
-                        {lot.lotDateDisplay}
-                        {lot.shift ? ` · Ca ${lot.shift}` : ''}
+                    <div>
+                      <Text code className="text-sm font-bold text-gray-800">
+                        Lot:{lot.lot}
+                      </Text>
+                    </div>
+                    {(lot.export_date_details || []).length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {(lot.export_date_details || []).map((detail) => (
+                          <div
+                            key={`${lot.key}-export-date-${detail.date}`}
+                            className="rounded border border-orange-100 bg-orange-50 px-2 py-1 text-xs text-orange-700"
+                          >
+                            <Text
+                              strong
+                              className="mr-1 text-xs text-orange-800"
+                            >
+                              Ngày xuất {detail.date}:
+                            </Text>
+                            {detail.bins.length} thùng ·{' '}
+                            {Number(detail.quantity || 0).toLocaleString(
+                              'vi-VN'
+                            )}{' '}
+                            SP
+                            {detail.bins.length > 0 && (
+                              <div className="mt-1 text-orange-600">
+                                Thùng:{' '}
+                                {[...detail.bins]
+                                  .sort((a, b) => a - b)
+                                  .join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -988,30 +1340,11 @@ const CurrentStockDashboard: React.FC = () => {
                     <div className="text-[10px] text-gray-400">đã xuất</div>
                   </div>
                 </div>
-
-                <div className="text-xs text-gray-500">
-                  <span>Tổng xuất: {lot.exported_bins.length} thùng</span>
-                </div>
-
-                {lot.exported_bins.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1 border-t border-orange-100 pt-2">
-                    {lot.exported_bins
-                      .sort((a, b) => a - b)
-                      .map((bin) => (
-                        <span
-                          key={bin}
-                          className="rounded border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-xs font-medium text-orange-600"
-                        >
-                          {bin}
-                        </span>
-                      ))}
-                  </div>
-                )}
               </div>
             ))}
 
             <div className="mt-2 rounded-lg border border-orange-100 bg-orange-50 px-3 py-2.5">
-              <div className="grid grid-cols-3 gap-3 text-center text-xs">
+              <div className="grid grid-cols-2 gap-3 text-center text-xs">
                 <div>
                   <div className="text-gray-400">Lots đã xuất</div>
                   <div className="text-lg font-bold text-orange-600">
@@ -1024,12 +1357,6 @@ const CurrentStockDashboard: React.FC = () => {
                     {Number(
                       exportedDetailRecord.exported_quantity || 0
                     ).toLocaleString('vi-VN')}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-gray-400">Thùng đã xuất</div>
-                  <div className="text-lg font-bold text-orange-600">
-                    {exportedDetailRecord.exported_bins_count}
                   </div>
                 </div>
               </div>

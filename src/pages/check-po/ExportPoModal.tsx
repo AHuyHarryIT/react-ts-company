@@ -2,7 +2,9 @@ import { QueryParams } from '@/types/queryParams';
 import AppButton from '@components/common/AppButton';
 import { IconExport } from '@components/icons';
 import { productService } from '@services/ProductService';
+import { getMonthlyQuantities } from '@services/TotalQuantityService';
 import { useMutation } from '@tanstack/react-query';
+import { calculateTotalProduct } from '@utils/calculateTotalProduct';
 import { DatePicker, Modal } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -33,6 +35,16 @@ export const ExportPoModal = () => {
     mutationFn: async (params: QueryParams) => {
       const response = await productService.list(params);
       const { data } = response;
+      const [monthlyQuantitiesStatus8, monthlyQuantitiesStatus3] =
+        await Promise.all([
+          getMonthlyQuantities({ limit: 0, status: 8 }),
+          getMonthlyQuantities({ limit: 0, status: 3 })
+        ]);
+      const summaryData = calculateTotalProduct(
+        data,
+        [...monthlyQuantitiesStatus8, ...monthlyQuantitiesStatus3],
+        month.format('YYYY-MM')
+      );
 
       const dateHeaders: string[] = [];
       const daysInMonth = dayjs(month).daysInMonth();
@@ -77,6 +89,102 @@ export const ExportPoModal = () => {
         bottom: { style: 'thin' as ExcelJS.BorderStyle },
         left: { style: 'thin' as ExcelJS.BorderStyle }
       };
+
+      /**
+       * product summary sheet
+       */
+      const summarySheet = workbook.addWorksheet('TỔNG HỢP');
+      summarySheet.views = [
+        {
+          state: 'frozen',
+          xSplit: 2,
+          ySplit: 2
+        }
+      ];
+      const titleSummary = summarySheet.getCell(1, 1);
+      const headerSummary = summarySheet.getRow(2);
+
+      titleSummary.value = `BẢNG TỔNG HỢP PO THÁNG ${month.format('MM-YYYY')}`;
+      titleSummary.font = {
+        name: 'Times New Roman',
+        size: 9,
+        bold: true,
+        color: { argb: 'FE0000' }
+      };
+
+      headerSummary.values = [
+        'STT',
+        'TÊN LINH KIỆN',
+        'SỐ LƯỢNG TỒN ĐẦU KỲ',
+        'THỰC TẾ SẢN XUẤT',
+        'SỐ LƯỢNG ĐÃ XUẤT',
+        'SỐ LƯỢNG ĐÃ KIỂM 200%',
+        'SỐ LƯỢNG CHƯA KIỂM 200%',
+        'SỐ LƯỢNG TỒN CUỐI KỲ',
+        'SỐ NGÀY TỒN KHO'
+      ];
+
+      headerSummary.eachCell((cell, colNumber) => {
+        cell.font = {
+          name: 'Times New Roman',
+          size: 9,
+          bold: true
+        };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: '99CCFF' }
+        };
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'center'
+        };
+        cell.border = border;
+        summarySheet.getColumn(colNumber).width = 20;
+
+        if (colNumber === 1) {
+          summarySheet.getColumn(colNumber).width = 6;
+        }
+        if (colNumber === 2) {
+          summarySheet.getColumn(colNumber).width = 28;
+        }
+      });
+
+      const summaryFlattenedData: (string | number)[][] = summaryData.map(
+        (item, index) => [
+          index + 1,
+          item.name,
+          item.stockStartQuantity,
+          item.realityQuantity,
+          item.exportQuantity,
+          item.checked200,
+          item.notCheck200,
+          item.stockEndQuantity,
+          item.storageTime
+        ]
+      );
+
+      summaryFlattenedData.forEach((row) => {
+        const newRow = summarySheet.addRow(row);
+        newRow.eachCell((cell, colNumber) => {
+          cell.alignment = {
+            vertical: 'middle',
+            horizontal: colNumber === 2 ? 'left' : 'center'
+          };
+          cell.border = border;
+          cell.font = {
+            name: 'Times New Roman',
+            size: 9
+          };
+
+          if (colNumber >= 3 && colNumber <= 8) {
+            cell.numFmt = '#,##0';
+          }
+          if (colNumber === 9) {
+            cell.numFmt = '#,##0.0';
+          }
+        });
+      });
 
       /**
        * Product Weekly Sheet

@@ -412,10 +412,11 @@ export default function StampForm() {
                       placeholder="Chọn sản phẩm"
                       showSearch
                       className="!rounded-lg"
+                      optionFilterProp="searchText"
                       filterOption={(input, option) =>
-                        (option?.searchText as string)?.includes(
-                          input.toLowerCase()
-                        ) ?? false
+                        String(option?.searchText ?? option?.label ?? '')
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
                       }
                       onChange={() => {
                         // Nhảy focus sang nút Submit khi chọn xong sản phẩm

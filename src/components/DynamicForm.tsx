@@ -82,9 +82,9 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
             allowClear
             options={field.options}
             filterOption={(input, option) =>
-              option
-                ? option.label.toLowerCase().includes(input.toLowerCase())
-                : false
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
             }
             placeholder={`Chọn ${field.label.toLowerCase()}`}
           />
@@ -97,9 +97,9 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
             mode="multiple"
             options={field.options}
             filterOption={(input, option) =>
-              option
-                ? option.label.toLowerCase().includes(input.toLowerCase())
-                : false
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
             }
             placeholder={`Chọn ${field.label.toLowerCase()}`}
           />

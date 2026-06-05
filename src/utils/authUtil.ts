@@ -28,6 +28,13 @@ export const isAdmin = (role: string): boolean => {
   return ['admin', 'super admin', 'co admin'].includes(normalizeRoleName(role));
 };
 
+export const shouldEnforceDuplicateLoginForRole = (
+  roleName?: string | null
+): boolean => {
+  if (!roleName) return true;
+  return !['admin', 'super admin'].includes(normalizeRoleName(roleName));
+};
+
 export function requireRole(user: User | null, allowedRoles: RoleMatcher[]) {
   if (!user) {
     throw redirect({ to: '/login' });

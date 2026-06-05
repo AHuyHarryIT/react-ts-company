@@ -85,6 +85,12 @@ export const AddSalary: React.FC<AddSalaryProps> = ({ onCreated }) => {
     setOpen(false);
   };
 
+  const getErrorMessage = (error: unknown) => {
+    if (typeof error === 'string') return error;
+    if (error instanceof Error) return error.message;
+    return 'Lỗi khi thêm bản lương';
+  };
+
   const { mutate, isPending } = useMutation({
     mutationKey: ['addSalary'],
     mutationFn: (data: AddSalaryParams) => {
@@ -102,21 +108,26 @@ export const AddSalary: React.FC<AddSalaryProps> = ({ onCreated }) => {
       onCreated?.();
       queryClient.invalidateQueries({ queryKey: ['salaries'] });
     },
-    onError: () => {
-      message.error('Lỗi khi thêm bản lương');
-      console.error('Failed to add salary');
+    onError: (error: unknown) => {
+      message.error(getErrorMessage(error));
+      console.error('Failed to add salary', error);
     }
   });
 
   const onFinish: FormProps<FormField>['onFinish'] = async (
     value: FormField
   ) => {
+    if (!vvpFile || !a7aFile) {
+      message.error('Vui lòng chọn đủ file VVP và A7A');
+      return;
+    }
+
     const data: AddSalaryParams = {
       title: value.title,
       start_date: value.start_date?.format('YYYY-MM-DD') || '',
       end_date: value.end_date?.format('YYYY-MM-DD') || '',
-      importVVP: vvpFile as File,
-      importA7A: a7aFile as File
+      importVVP: vvpFile,
+      importA7A: a7aFile
     };
 
     mutate(data);

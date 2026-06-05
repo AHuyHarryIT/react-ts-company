@@ -140,11 +140,12 @@ export const ChooseProduct = () => {
                     allowClear
                     showSearch
                     placeholder="Chọn sản phẩm"
-                    filterOption={(input, option) => {
-                      if (!option?.searchText) return false;
-                      return option.searchText.includes(input.toLowerCase());
-                    }}
-                    optionFilterProp="label"
+                    optionFilterProp="searchText"
+                    filterOption={(input, option) =>
+                      String(option?.searchText ?? option?.label ?? '')
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
                   />
                 </Form.Item>
                 <Form.Item<FormValues>

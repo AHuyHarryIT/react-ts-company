@@ -496,15 +496,16 @@ export default function Detail({
   });
   const monthTableScroll = getTableScroll(maxDay);
   const saturdayTableScroll = getTableScroll(totalSaturdays);
+  const stickyHeaderOffset = 0;
   const tableSticky: TableProps<unknown>['sticky'] = isMobile
     ? undefined
     : {
-        offsetHeader: isDrawer ? 64 : 56
+        offsetHeader: stickyHeaderOffset
       };
   const scheduleTableClassName =
     'smooth-sticky-table work-schedule-sticky-table [&_.ant-table-cell-fix-left]:!max-w-none [&_.ant-table-cell-fix-left]:!whitespace-normal';
   const scheduleTableStyle = {
-    '--work-schedule-sticky-top': `${isDrawer ? 64 : 56}px`
+    '--work-schedule-sticky-top': `${stickyHeaderOffset}px`
   } as CSSProperties;
 
   const { eatRoomData, wcMenData, wcWomenData, wcTrashData } = useMemo(() => {
@@ -606,7 +607,7 @@ export default function Detail({
     const updateStickyVisibility = () => {
       frameId = 0;
       if (isMobile) return;
-      const stickyTop = isDrawer ? 64 : 56;
+      const stickyTop = stickyHeaderOffset;
 
       root
         .querySelectorAll<HTMLElement>('.work-schedule-sticky-table')

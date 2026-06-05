@@ -368,6 +368,7 @@ export default function Records() {
           picker="month"
           format="YYYY-MM"
           placeholder="Chọn tháng"
+          inputReadOnly
           value={filterType === 'month' ? month : null}
           onChange={(value) => {
             const selectedMonth = value ? dayjs(value) : dayjs();
@@ -384,6 +385,7 @@ export default function Records() {
         />
         <DatePicker.RangePicker
           placeholder={['Chọn ngày bắt đầu', 'Chọn ngày kết thúc']}
+          inputReadOnly
           value={filterType === 'range' ? dateRange : null}
           onChange={(value) => {
             if (value && value[0] && value[1]) {

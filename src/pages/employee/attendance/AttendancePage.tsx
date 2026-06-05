@@ -1055,6 +1055,7 @@ export const AttendancePage = () => {
                   value={month}
                   picker="month"
                   format="MM-YYYY"
+                  inputReadOnly
                   onChange={handleMonthChange}
                   allowClear={false}
                   style={{ width: 110 }}
@@ -1135,6 +1136,7 @@ export const AttendancePage = () => {
                   value={month}
                   picker="month"
                   format="MM-YYYY"
+                  inputReadOnly
                   onChange={handleMonthChange}
                   allowClear={false}
                   style={{ width: 140 }}

@@ -31,6 +31,7 @@ import {
   authConfirmLogin,
   authLogin
 } from '@services/AuthService';
+import { shouldEnforceDuplicateLoginForRole } from '@utils/authUtil';
 import { getSafeAuthRedirect } from '@utils/authRedirect';
 import logo from '@assets/images/logo/logoAsset.svg';
 
@@ -115,7 +116,11 @@ function RouteComponent() {
         await navigate({ to: redirectTo as '/', replace: true });
       };
 
-      if (response.logged_in_elsewhere) {
+      const shouldShowLoginConflict =
+        response.logged_in_elsewhere &&
+        shouldEnforceDuplicateLoginForRole(response.role_name);
+
+      if (shouldShowLoginConflict) {
         Modal.confirm({
           className: 'login-conflict-modal',
           centered: true,

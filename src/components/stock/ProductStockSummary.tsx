@@ -63,6 +63,14 @@ interface ExportLotDetail {
   lot: string;
   quantity: number;
   bins: number[];
+  export_dates: string[];
+  export_date_details: ExportDateDetail[];
+}
+
+interface ExportDateDetail {
+  date: string;
+  quantity: number;
+  bins: number[];
 }
 
 interface ProductSummaryRow {
@@ -131,6 +139,26 @@ const getCompactCellFontSize = (text: string) => {
   return 14;
 };
 
+const getLotMonthKey = (lot: string) => {
+  const parts = lot?.split('-') || [];
+  const dateStr = parts[1];
+  if (!dateStr || dateStr.length !== 8) return '';
+
+  return `${dateStr.substring(4, 8)}-${dateStr.substring(2, 4)}`;
+};
+
+const isLotInMonth = (lot: string, month: Dayjs) => {
+  const lotMonth = getLotMonthKey(lot);
+  return Boolean(lotMonth) && lotMonth === month.format('YYYY-MM');
+};
+
+const isOpeningStockExport = (record: ProductSummaryRow) =>
+  record.opening_quantity > 0 &&
+  record.production_quantity === 0 &&
+  record.scanned_quantity === 0 &&
+  record.exported_quantity > 0 &&
+  record.negative_stock_quantity === 0;
+
 const ProductStockSummary: React.FC = () => {
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
@@ -147,7 +175,15 @@ const ProductStockSummary: React.FC = () => {
     }[]
   >([]);
   const [exportData, setExportData] = useState<
-    Map<number, { qty: number; bins: number[]; lots: ExportLotDetail[] }>
+    Map<
+      number,
+      {
+        qty: number;
+        current_month_lot_qty: number;
+        bins: number[];
+        lots: ExportLotDetail[];
+      }
+    >
   >(new Map());
   const [searchText, setSearchText] = useState('');
   const [filterProductId, setFilterProductId] = useState<number | undefined>();
@@ -224,8 +260,20 @@ const ProductStockSummary: React.FC = () => {
           number,
           {
             qty: number;
+            currentMonthLotQty: number;
             bins: Set<number>;
-            lots: Map<string, { qty: number; bins: Set<number> }>;
+            lots: Map<
+              string,
+              {
+                qty: number;
+                bins: Set<number>;
+                exportDates: Set<string>;
+                exportDateDetails: Map<
+                  string,
+                  { qty: number; bins: Set<number> }
+                >;
+              }
+            >;
           }
         >();
         txData.forEach((tx) => {
@@ -235,22 +283,59 @@ const ProductStockSummary: React.FC = () => {
           const bin = flat.bin ?? tx.storage_product?.bin;
           const lot = String(flat.lot || tx.storage_product?.lot || '');
           const qty = Number(tx.quantity || 0);
+          const exportDate = tx.created_at
+            ? dayjs(tx.created_at).format('DD/MM/YYYY')
+            : '';
           if (pId) {
             const existing = expMap.get(pId) || {
               qty: 0,
+              currentMonthLotQty: 0,
               bins: new Set<number>(),
-              lots: new Map<string, { qty: number; bins: Set<number> }>()
+              lots: new Map<
+                string,
+                {
+                  qty: number;
+                  bins: Set<number>;
+                  exportDates: Set<string>;
+                  exportDateDetails: Map<
+                    string,
+                    { qty: number; bins: Set<number> }
+                  >;
+                }
+              >()
             };
             existing.qty += qty;
+            if (lot && isLotInMonth(lot, month)) {
+              existing.currentMonthLotQty += qty;
+            }
             if (bin != null && !Number.isNaN(Number(bin))) {
               existing.bins.add(Number(bin));
             }
             if (lot) {
               const lotInfo = existing.lots.get(lot) || {
                 qty: 0,
-                bins: new Set<number>()
+                bins: new Set<number>(),
+                exportDates: new Set<string>(),
+                exportDateDetails: new Map<
+                  string,
+                  { qty: number; bins: Set<number> }
+                >()
               };
               lotInfo.qty += qty;
+              if (exportDate) {
+                lotInfo.exportDates.add(exportDate);
+                const dateDetail = lotInfo.exportDateDetails.get(
+                  exportDate
+                ) || {
+                  qty: 0,
+                  bins: new Set<number>()
+                };
+                dateDetail.qty += qty;
+                if (bin != null && !Number.isNaN(Number(bin))) {
+                  dateDetail.bins.add(Number(bin));
+                }
+                lotInfo.exportDateDetails.set(exportDate, dateDetail);
+              }
               if (bin != null && !Number.isNaN(Number(bin))) {
                 lotInfo.bins.add(Number(bin));
               }
@@ -261,20 +346,34 @@ const ProductStockSummary: React.FC = () => {
         });
         const resultMap = new Map<
           number,
-          { qty: number; bins: number[]; lots: ExportLotDetail[] }
+          {
+            qty: number;
+            current_month_lot_qty: number;
+            bins: number[];
+            lots: ExportLotDetail[];
+          }
         >();
         expMap.forEach((v, k) => {
           const lots = Array.from(v.lots.entries())
             .map(([lot, info]) => ({
               lot,
               quantity: info.qty,
-              bins: Array.from(info.bins).sort((a, b) => a - b)
+              bins: Array.from(info.bins).sort((a, b) => a - b),
+              export_dates: Array.from(info.exportDates),
+              export_date_details: Array.from(
+                info.exportDateDetails.entries()
+              ).map(([date, detail]) => ({
+                date,
+                quantity: detail.qty,
+                bins: Array.from(detail.bins).sort((a, b) => a - b)
+              }))
             }))
             .sort((a, b) => a.lot.localeCompare(b.lot));
           const exportedBinsByLot = lots.flatMap((lot) => lot.bins);
 
           resultMap.set(k, {
             qty: v.qty,
+            current_month_lot_qty: v.currentMonthLotQty,
             bins: exportedBinsByLot,
             lots
           });
@@ -305,32 +404,35 @@ const ProductStockSummary: React.FC = () => {
     }
     if (!stockData?.stocks) return [];
     const seen = new Map<number, string>();
-    stockData.stocks.forEach((item) => {
-      if (!seen.has(item.product_id)) {
-        seen.set(
-          item.product_id,
-          `${item.product_name} (${item.product_code})`
-        );
-      }
-    });
+    stockData.stocks
+      .filter((item) => isLotInMonth(item.lot, month))
+      .forEach((item) => {
+        if (!seen.has(item.product_id)) {
+          seen.set(
+            item.product_id,
+            `${item.product_name} (${item.product_code})`
+          );
+        }
+      });
     return Array.from(seen.entries()).map(([id, label]) => ({
       value: id,
       label
     }));
-  }, [stockData, allProducts]);
+  }, [stockData, allProducts, month]);
 
   // Aggregate: group all lots by product → 1 row per product, include ALL products
   const summaryData = useMemo((): ProductSummaryRow[] => {
     // Build stock map from current stock data
     const stockItems =
-      stockData?.stocks?.filter((s) => s.current_quantity > 0) || [];
+      stockData?.stocks?.filter(
+        (s) => s.current_quantity > 0 && isLotInMonth(s.lot, month)
+      ) || [];
 
     const map = new Map<
       number,
       {
         code: string;
         name: string;
-        opening: number;
         qty: number;
         bins: number;
         lots: Set<string>;
@@ -340,7 +442,6 @@ const ProductStockSummary: React.FC = () => {
 
     stockItems.forEach((item) => {
       const existing = map.get(item.product_id);
-      const opening = getOpening200Quantity(item);
       const lotDetail: LotDetail = {
         lot: item.lot,
         quantity: Number(item.current_quantity || 0),
@@ -349,7 +450,6 @@ const ProductStockSummary: React.FC = () => {
       };
       if (existing) {
         existing.qty += Number(item.current_quantity || 0);
-        existing.opening = Math.max(existing.opening, opening);
         existing.bins += Number(item.bin_count || 0);
         existing.lots.add(item.lot);
         existing.lotDetails.push(lotDetail);
@@ -357,7 +457,6 @@ const ProductStockSummary: React.FC = () => {
         map.set(item.product_id, {
           code: item.product_code,
           name: item.product_name,
-          opening,
           qty: Number(item.current_quantity || 0),
           bins: Number(item.bin_count || 0),
           lots: new Set([item.lot]),
@@ -372,18 +471,21 @@ const ProductStockSummary: React.FC = () => {
       rows = allProducts.map((product) => {
         const stockInfo = map.get(product.id);
         const expInfo = exportData.get(product.id);
-        const openingQuantity =
-          product.opening_quantity || stockInfo?.opening || 0;
+        const openingQuantity = product.opening_quantity || 0;
         const productionQuantity = product.production_quantity || 0;
         const monthlyQuantity = openingQuantity + productionQuantity;
         const scannedQuantity = stockInfo?.qty || 0;
         const exportedQuantity = expInfo?.qty || 0;
+        const currentMonthLotExportedQuantity =
+          expInfo?.current_month_lot_qty || 0;
+        const currentMonthAccountedQuantity =
+          scannedQuantity + currentMonthLotExportedQuantity;
         const unscannedQuantity = Math.max(
-          monthlyQuantity - scannedQuantity - exportedQuantity,
+          productionQuantity - currentMonthAccountedQuantity,
           0
         );
         const overScannedQuantity = Math.max(
-          scannedQuantity + exportedQuantity - monthlyQuantity,
+          currentMonthAccountedQuantity - productionQuantity,
           0
         );
         const remainingQuantity = Math.max(
@@ -418,17 +520,21 @@ const ProductStockSummary: React.FC = () => {
     } else {
       rows = Array.from(map.entries()).map(([id, data]) => {
         const expInfo = exportData.get(id);
-        const openingQuantity = data.opening || 0;
+        const openingQuantity = 0;
         const productionQuantity = 0;
         const monthlyQuantity = openingQuantity + productionQuantity;
         const scannedQuantity = data.qty || 0;
         const exportedQuantity = expInfo?.qty || 0;
+        const currentMonthLotExportedQuantity =
+          expInfo?.current_month_lot_qty || 0;
+        const currentMonthAccountedQuantity =
+          scannedQuantity + currentMonthLotExportedQuantity;
         const unscannedQuantity = Math.max(
-          monthlyQuantity - scannedQuantity - exportedQuantity,
+          productionQuantity - currentMonthAccountedQuantity,
           0
         );
         const overScannedQuantity = Math.max(
-          scannedQuantity + exportedQuantity - monthlyQuantity,
+          currentMonthAccountedQuantity - productionQuantity,
           0
         );
         const remainingQuantity = Math.max(
@@ -470,14 +576,14 @@ const ProductStockSummary: React.FC = () => {
       const s = searchText.toLowerCase();
       rows = rows.filter(
         (r) =>
-          r.product_name.toLowerCase().includes(s) ||
-          r.product_code.toLowerCase().includes(s)
+          (r.product_name || '').toLowerCase().includes(s) ||
+          (r.product_code || '').toLowerCase().includes(s)
       );
     }
 
     // Sort by product ID
     return rows.sort((a, b) => a.product_id - b.product_id);
-  }, [stockData, filterProductId, searchText, allProducts, exportData]);
+  }, [stockData, filterProductId, searchText, allProducts, exportData, month]);
 
   // Total row
   const totals = useMemo(() => {
@@ -702,6 +808,10 @@ const ProductStockSummary: React.FC = () => {
                 +{record.over_scanned_quantity.toLocaleString('vi-VN')}
               </span>
             </div>
+          ) : isOpeningStockExport(record) ? (
+            <span className="inline-flex min-w-[96px] justify-center rounded border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700">
+              Xuất tồn đầu kỳ
+            </span>
           ) : (
             <span className="inline-flex min-w-[78px] justify-center rounded border border-green-300 bg-green-50 px-2 py-1 text-xs font-bold text-green-700">
               Đủ
@@ -1084,10 +1194,12 @@ const ProductStockSummary: React.FC = () => {
                     <div className="rounded bg-amber-50 p-2">
                       <div className="text-gray-400">Vượt/Âm</div>
                       <div className="text-sm font-bold text-amber-600">
-                        {Math.max(
-                          item.over_scanned_quantity,
-                          item.negative_stock_quantity
-                        ) || '-'}
+                        {isOpeningStockExport(item)
+                          ? 'Xuất tồn đầu kỳ'
+                          : Math.max(
+                              item.over_scanned_quantity,
+                              item.negative_stock_quantity
+                            ) || '-'}
                       </div>
                     </div>
                   </div>
@@ -1181,6 +1293,7 @@ const ProductStockSummary: React.FC = () => {
       </div>
 
       <Drawer
+        rootClassName="stock-lot-scroll-drawer stock-lot-scroll-drawer--inventory"
         title={
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
@@ -1198,7 +1311,10 @@ const ProductStockSummary: React.FC = () => {
         styles={{
           body: {
             backgroundColor: '#f8fafc',
-            padding: isMobile ? '10px' : '16px'
+            padding: isMobile ? '10px' : '16px',
+            overflowY: 'auto',
+            overscrollBehaviorY: 'contain',
+            WebkitOverflowScrolling: 'touch'
           },
           header: { borderBottom: '2px solid #e2e8f0' }
         }}
@@ -1328,6 +1444,12 @@ const ProductStockSummary: React.FC = () => {
                   {detailRecord.negative_stock_quantity.toLocaleString('vi-VN')}
                 </div>
               )}
+              {isOpeningStockExport(detailRecord) && (
+                <div className="mt-2 rounded bg-blue-50 px-2 py-1 text-center text-xs font-semibold text-blue-700">
+                  Có xuất kho từ tồn đầu kỳ, không phát sinh kiểm/quét 200%
+                  trong tháng.
+                </div>
+              )}
               <div className="mt-2 text-center">
                 <Text strong className="text-[13px] leading-none text-blue-600">
                   {detailRecord.total_bins} thùng đã quét còn tồn
@@ -1339,6 +1461,7 @@ const ProductStockSummary: React.FC = () => {
       </Drawer>
 
       <Drawer
+        rootClassName="stock-lot-scroll-drawer stock-lot-scroll-drawer--export"
         title={
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600">
@@ -1353,78 +1476,15 @@ const ProductStockSummary: React.FC = () => {
         onClose={() => setExportDetailRecord(null)}
         open={!!exportDetailRecord}
         width={isMobile ? '100vw' : 420}
-        styles={{
-          body: {
-            backgroundColor: '#fff7ed',
-            padding: isMobile ? '10px' : '16px'
-          },
-          header: { borderBottom: '2px solid #fed7aa' }
-        }}
-      >
-        {exportDetailRecord && (
-          <div className="flex flex-col gap-4">
-            {exportDetailRecord.exported_lots.map((lot, index) => (
-              <div
-                key={`${exportDetailRecord.product_id}-export-lot-${lot.lot}`}
-                className="overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm"
-              >
-                <div className="flex items-center justify-between border-b border-orange-100 bg-orange-50 px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-200 text-xs font-bold text-orange-700">
-                      {index + 1}
-                    </span>
-                    <Text className="font-semibold text-gray-700">Mã Lot:</Text>
-                    <Text
-                      code
-                      className="border border-orange-200 bg-white text-sm font-bold text-orange-700"
-                    >
-                      {lot.lot}
-                    </Text>
-                  </div>
-                  <div className="text-right">
-                    <Text strong className="block text-sm text-orange-600">
-                      {Number(lot.quantity || 0).toLocaleString('vi-VN')} SP
-                    </Text>
-                    <div className="text-[10px] text-gray-400">đã xuất</div>
-                  </div>
-                </div>
-
-                <div className="px-4 py-3">
-                  <div className="mb-2 flex items-center justify-between space-x-2">
-                    <Text
-                      type="secondary"
-                      className="text-xs font-bold text-gray-500 uppercase"
-                    >
-                      Thùng đã xuất
-                    </Text>
-                    <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-700">
-                      {lot.bins.length} thùng
-                    </span>
-                  </div>
-                  <div className="rounded-lg border border-dashed border-orange-200 bg-orange-50 p-2.5">
-                    <div className="flex flex-wrap gap-1.5">
-                      {lot.bins.map((bin) => (
-                        <div
-                          key={`${exportDetailRecord.product_id}-${lot.lot}-drawer-exported-bin-${bin}`}
-                          className="min-w-[30px] rounded border border-orange-200 bg-white px-1.5 py-0.5 text-center text-[12px] font-semibold text-orange-700 shadow-sm"
-                        >
-                          {bin}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
+        footer={
+          exportDetailRecord ? (
             <div className="rounded-lg border border-orange-100 bg-white p-3 shadow-sm">
               <div className="mb-2 flex items-center justify-between">
                 <Text strong className="text-[13px] text-orange-800 uppercase">
-                  Tổng lots / thùng:
+                  Tổng lots:
                 </Text>
                 <Text strong className="text-sm text-orange-600">
-                  {exportDetailRecord.exported_lots.length} lots ·{' '}
-                  {exportDetailRecord.exported_bins} thùng
+                  {exportDetailRecord.exported_lots.length} lots
                 </Text>
               </div>
               <div className="flex items-center justify-between">
@@ -1439,6 +1499,80 @@ const ProductStockSummary: React.FC = () => {
                 </Text>
               </div>
             </div>
+          ) : null
+        }
+        styles={{
+          body: {
+            backgroundColor: '#fff7ed',
+            padding: isMobile ? '10px' : '16px',
+            overflowY: 'auto',
+            overscrollBehaviorY: 'contain',
+            WebkitOverflowScrolling: 'auto'
+          },
+          header: { borderBottom: '2px solid #fed7aa' },
+          footer: {
+            backgroundColor: '#fff7ed',
+            borderTop: '1px solid #fed7aa',
+            padding: isMobile ? '10px' : '12px 16px'
+          }
+        }}
+      >
+        {exportDetailRecord && (
+          <div className="flex flex-col gap-4">
+            {exportDetailRecord.exported_lots.map((lot, index) => (
+              <div
+                key={`${exportDetailRecord.product_id}-export-lot-${lot.lot}`}
+                className="overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm"
+              >
+                <div className="flex items-center justify-between border-b border-orange-100 bg-orange-50 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-200 text-xs font-bold text-orange-700">
+                      {index + 1}
+                    </span>
+                    <Text
+                      code
+                      className="border border-orange-200 bg-white text-sm font-bold text-orange-700"
+                    >
+                      Lot:{lot.lot}
+                    </Text>
+                  </div>
+                  <div className="text-right">
+                    <Text strong className="block text-sm text-orange-600">
+                      {Number(lot.quantity || 0).toLocaleString('vi-VN')} SP
+                    </Text>
+                    <div className="text-[10px] text-gray-400">đã xuất</div>
+                  </div>
+                </div>
+
+                <div className="px-4 py-3">
+                  {(lot.export_date_details || []).length > 0 && (
+                    <div className="mb-2 space-y-1">
+                      {(lot.export_date_details || []).map((detail) => (
+                        <div
+                          key={`${exportDetailRecord.product_id}-${lot.lot}-export-date-${detail.date}`}
+                          className="rounded-lg border border-orange-100 bg-orange-50 px-3 py-2 text-xs text-orange-700"
+                        >
+                          <Text strong className="mr-1 text-xs text-orange-800">
+                            Ngày xuất {detail.date}:
+                          </Text>
+                          {detail.bins.length} thùng ·{' '}
+                          {Number(detail.quantity || 0).toLocaleString('vi-VN')}{' '}
+                          SP
+                          {detail.bins.length > 0 && (
+                            <div className="mt-1 text-orange-600">
+                              Thùng:{' '}
+                              {[...detail.bins]
+                                .sort((a, b) => a - b)
+                                .join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </Drawer>

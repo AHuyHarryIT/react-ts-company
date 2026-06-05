@@ -425,9 +425,15 @@ export const ExportModal = () => {
           style={{ width: '100%' }}
           placeholder={['Từ ngày', 'Đến ngày']}
           format="YYYY-MM-DD"
+          inputReadOnly
           value={dateRange}
           onChange={(dateRange) => {
-            setDateRange([dayjs(dateRange?.[0]), dayjs(dateRange?.[1])]);
+            if (dateRange && dateRange[0] && dateRange[1]) {
+              setDateRange([dayjs(dateRange[0]), dayjs(dateRange[1])]);
+              return;
+            }
+
+            setDateRange([dayjs(), dayjs()]);
           }}
         />
       </Modal>

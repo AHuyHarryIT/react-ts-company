@@ -9798,6 +9798,51 @@ html body .login-modal-sequence-root .bd-modal .ant-modal-content {
   animation: none !important;
 }
 
+/* Keep long stock lot drawers stable when scrolling large lists. */
+html body .stock-lot-scroll-drawer {
+  --stock-lot-drawer-bg: #f8fafc;
+}
+
+html body .stock-lot-scroll-drawer.stock-lot-scroll-drawer--export {
+  --stock-lot-drawer-bg: #fff7ed;
+}
+
+html body .stock-lot-scroll-drawer .ant-drawer-content,
+html body .stock-lot-scroll-drawer .ant-drawer-header,
+html body .stock-lot-scroll-drawer .ant-drawer-body {
+  background: var(--stock-lot-drawer-bg) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body .stock-lot-scroll-drawer .ant-drawer-content-wrapper,
+html body .stock-lot-scroll-drawer .ant-drawer-content {
+  background: var(--stock-lot-drawer-bg) !important;
+  overflow: hidden !important;
+}
+
+html body .stock-lot-scroll-drawer .ant-drawer-body {
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Export lots drawer: reduce repaint artifacts while fast scrolling long lists. */
+html body .stock-lot-scroll-drawer--export .ant-drawer-body {
+  -webkit-overflow-scrolling: auto !important;
+}
+
+html
+  body
+  .stock-lot-scroll-drawer--export
+  :where(.ant-drawer-body, .ant-drawer-body *) {
+  content-visibility: visible !important;
+  contain: none !important;
+  will-change: auto !important;
+  backface-visibility: visible !important;
+}
+
 @media (min-width: 768px) {
   html body .ant-modal-root .ant-modal-wrap {
     inset-inline-start: var(--app-sidebar-width, 0px) !important;

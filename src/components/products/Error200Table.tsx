@@ -157,6 +157,27 @@ export const Error200Table: React.FC<Error200TableProps> = ({
   const tableData = useMemo(() => response?.data || [], [response?.data]);
   const total = response?.total || 0;
 
+  const visibleDateKeys = useMemo(() => {
+    if (!month) {
+      return [];
+    }
+
+    const selectedMonth = dayjs(month);
+    const today = dayjs();
+
+    if (selectedMonth.isAfter(today, 'month')) {
+      return [];
+    }
+
+    const visibleDays = selectedMonth.isSame(today, 'month')
+      ? today.date()
+      : selectedMonth.daysInMonth();
+
+    return Array.from({ length: visibleDays }, (_, index) =>
+      selectedMonth.date(index + 1).format('DD-MM-YYYY')
+    );
+  }, [month]);
+
   useEffect(() => {
     if (!tableData.length) return;
 
@@ -192,6 +213,33 @@ export const Error200Table: React.FC<Error200TableProps> = ({
     setDataSource(newDataSource);
   }, [tableData]);
 
+  const visibleDataSource = useMemo(() => {
+    if (!visibleDateKeys.length) {
+      return dataSource.map((record) => ({
+        ...record,
+        total: 0,
+        times: {}
+      }));
+    }
+
+    return dataSource.map((record) => {
+      const filteredTimes: Error200TableType['times'] = {};
+      let filteredTotal = 0;
+
+      visibleDateKeys.forEach((dateKey) => {
+        const quantity = record.times[dateKey]?.quantity || 0;
+        filteredTimes[dateKey] = { quantity };
+        filteredTotal += quantity;
+      });
+
+      return {
+        ...record,
+        total: filteredTotal,
+        times: filteredTimes
+      };
+    });
+  }, [dataSource, visibleDateKeys]);
+
   /* ── Mobile view ── */
   if (isMobile) {
     return (
@@ -209,7 +257,7 @@ export const Error200Table: React.FC<Error200TableProps> = ({
         ) : (
           <>
             <div className="space-y-2">
-              {dataSource.map((record, index) => (
+              {visibleDataSource.map((record, index) => (
                 <Error200MobileCard
                   key={record.id}
                   record={record}
@@ -241,37 +289,36 @@ export const Error200Table: React.FC<Error200TableProps> = ({
   }
 
   /* ── Desktop table (unchanged) ── */
-  const dateColumns: TableColumnsType<Error200TableType> = Array.from({
-    length: dayjs(month).daysInMonth()
-  }).map((_, index) => {
-    const dateObj = dayjs(month).date(index + 1);
-    const date = dateObj.format('DD-MM-YYYY');
-    const isToday = dateObj.isSame(dayjs(), 'day');
-    const dayColumnClass = isToday
-      ? 'product-day-current'
-      : index % 2 === 0
-        ? 'product-day-alt'
-        : '';
+  const dateColumns: TableColumnsType<Error200TableType> = visibleDateKeys.map(
+    (date, index) => {
+      const dateObj = dayjs(date, 'DD-MM-YYYY');
+      const isToday = dateObj.isSame(dayjs(), 'day');
+      const dayColumnClass = isToday
+        ? 'product-day-current'
+        : index % 2 === 0
+          ? 'product-day-alt'
+          : '';
 
-    return {
-      title: (
-        <div className={`product-day-pill ${isToday ? 'is-today' : ''}`}>
-          {dateObj.format('DD/MM')}
-        </div>
-      ),
-      align: 'center',
-      dataIndex: ['times', date, 'quantity'],
-      key: `${date}_quantity`,
-      width: 88,
-      className: dayColumnClass,
-      render: (value) => {
-        if (!value) return '0';
-        return value.toLocaleString({
-          maximumFractionDigits: 0
-        });
-      }
-    };
-  });
+      return {
+        title: (
+          <div className={`product-day-pill ${isToday ? 'is-today' : ''}`}>
+            {dateObj.format('DD/MM')}
+          </div>
+        ),
+        align: 'center',
+        dataIndex: ['times', date, 'quantity'],
+        key: `${date}_quantity`,
+        width: 88,
+        className: dayColumnClass,
+        render: (value) => {
+          if (!value) return '0';
+          return value.toLocaleString({
+            maximumFractionDigits: 0
+          });
+        }
+      };
+    }
+  );
 
   const columns: TableColumnsType<Error200TableType> = [
     {
@@ -340,7 +387,7 @@ export const Error200Table: React.FC<Error200TableProps> = ({
     rowKey: (record) => ['error', record.id].join('-'),
     bordered: true,
     columns: columns,
-    dataSource: dataSource,
+    dataSource: visibleDataSource,
     loading: queryResult.isLoading,
     sticky: {
       offsetHeader: 0

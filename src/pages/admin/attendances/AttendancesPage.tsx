@@ -134,6 +134,7 @@ function FilterBar({
           picker="month"
           format="YYYY-MM"
           placeholder="Chọn tháng"
+          inputReadOnly
           value={monthValue}
           onChange={(value) => onMonthChange(value ? dayjs(value) : null)}
           className="!rounded-lg"
@@ -146,6 +147,7 @@ function FilterBar({
         </label>
         <DatePicker.RangePicker
           placeholder={['Từ ngày', 'Đến ngày']}
+          inputReadOnly
           value={rangeValue}
           onChange={(value) => {
             if (value && value[0] && value[1]) {

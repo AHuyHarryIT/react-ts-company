@@ -51,6 +51,7 @@ export const EmployeeListModal = () => {
         <div className="mb-2">Chọn ngày:</div>
         <DatePicker
           format="YYYY-MM-DD"
+          inputReadOnly
           value={dayjs(date)}
           onChange={(date) =>
             setDate(

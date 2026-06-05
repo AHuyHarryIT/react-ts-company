@@ -247,7 +247,7 @@ export const PayslipDetailContent = ({
     },
     {
       key: 'core_hours',
-      description: 'Số giờ chính (không gồm tăng ca)',
+      description: 'Lương căn bản',
       hours: salaryDetails?.core_hours || 0,
       amount: salaryDetails?.official_salary || 0,
       note: salaryDetails?.official_salary_notice || null
@@ -260,18 +260,32 @@ export const PayslipDetailContent = ({
       note: salaryDetails?.allowance_diligence_detail_notice || null
     },
     {
+      key: 'allowance_professional_detail',
+      description: 'Chuyên môn',
+      hours: 0,
+      amount: salaryDetails?.allowance_professional_detail || 0,
+      note: salaryDetails?.allowance_professional_detail_notice || null
+    },
+    {
       key: 'allowance_responsibility',
-      description: 'Trách Nhiệm',
+      description: 'Trách nhiệm',
       hours: 0,
       amount: salaryDetails?.allowance_responsibility_detail || 0,
       note: salaryDetails?.allowance_responsibility_detail_notice || null
     },
     {
       key: 'overtime_detail',
-      description: 'Số giờ tăng ca (tính riêng)',
+      description: 'Lương tăng ca',
       hours: salaryDetails?.overtime_hours_detail || 0,
       amount: salaryDetails?.overtime_salary || 0,
       note: salaryDetails?.overtime_salary_notice || null
+    },
+    {
+      key: 'reinforcement_salary',
+      description: 'Lương tăng cường',
+      hours: salaryDetails?.reinforcement_hours_detail || 0,
+      amount: salaryDetails?.reinforcement_salary || 0,
+      note: salaryDetails?.reinforcement_salary_notice || null
     },
     {
       key: 'allowance_rice',
@@ -282,7 +296,7 @@ export const PayslipDetailContent = ({
     },
     {
       key: 'allowance_shift_night',
-      description: 'Phụ cấp cơm ca đêm',
+      description: 'Phụ cấp ca đêm',
       hours: salaryDetails?.number_of_work_nights || 0,
       amount: salaryDetails?.allowance_shift_night || 0,
       note: salaryDetails?.allowance_shift_night_notice || null
@@ -344,6 +358,13 @@ export const PayslipDetailContent = ({
       note: salaryDetails?.bonuses_for_attendance_notice || null
     },
     {
+      key: 'kpi_refund_prev_month',
+      description: 'Hoàn tiền KPI tháng trước',
+      hours: 0,
+      amount: salaryDetails?.previous_month_kpi_refund || 0,
+      note: salaryDetails?.previous_month_kpi_refund_notice || null
+    },
+    {
       key: 'birthday_money',
       description: 'Tiền sinh nhật',
       hours: 0,
@@ -351,22 +372,8 @@ export const PayslipDetailContent = ({
       note: salaryDetails?.birthday_money_notice || null
     },
     {
-      key: 'sickness',
-      description: 'Hỗ trợ ốm đau',
-      hours: 0,
-      amount: salaryDetails?.sickness || 0,
-      note: salaryDetails?.sickness_notice || null
-    },
-    {
-      key: 'funeral',
-      description: 'Hỗ trợ ma chay, hiếu hỉ',
-      hours: 0,
-      amount: salaryDetails?.funeral || 0,
-      note: salaryDetails?.funeral_notice || null
-    },
-    {
       key: 'previous_period_debt',
-      description: 'Tiền lương tháng trước bị thiếu',
+      description: 'Bù tiền thiếu tháng trước',
       hours: 0,
       amount: salaryDetails?.previous_period_debt || 0,
       note: salaryDetails?.previous_period_debt_notice || null
@@ -380,15 +387,31 @@ export const PayslipDetailContent = ({
     }
   ];
 
+  const unionFeeAmount =
+    salaryDetails?.union_fee ??
+    salaryDetails?.unicon_deduction ??
+    salaryDetails?.subtract_of_violations ??
+    0;
+  const unionFeeNote =
+    salaryDetails?.union_fee_notice ??
+    salaryDetails?.unicon_deduction_notice ??
+    salaryDetails?.subtract_of_violations_notice ??
+    null;
+
   const totalReduction =
+    unionFeeAmount +
     (salaryDetails?.insurance_detail || 0) +
     (salaryDetails?.advance_money || 0) +
-    (salaryDetails?.unicon_deduction || 0) +
     (salaryDetails?.subtract_daysleave_allowed || 0) +
     (salaryDetails?.subtract_daysleave_notallowed || 0) +
     (salaryDetails?.subtract_error_serious || 0) +
     (salaryDetails?.subtract_error_minor || 0) +
     (salaryDetails?.kpi_subtraction || 0);
+  const violationCount = salaryDetails?.number_of_violations || 0;
+  const violationMeta =
+    violationCount > 0 && violationCount <= 100
+      ? `${violationCount.toLocaleString('vi-VN')} lần vi phạm`
+      : null;
 
   const deductionData: SalaryTableType[] = [
     {
@@ -407,42 +430,55 @@ export const PayslipDetailContent = ({
     },
     {
       key: 'unicon_deduction',
-      description: 'Phí công đoàn 0.5%',
-      hours: salaryDetails?.number_of_violations || 0,
-      amount: salaryDetails?.unicon_deduction || 0,
-      note: salaryDetails?.unicon_deduction_notice || null
+      description: 'Khấu trừ Công đoàn (0.5%)',
+      hours: 0,
+      amount: unionFeeAmount,
+      note: unionFeeNote,
+      meta: violationMeta
     },
     {
       key: 'subtract_daysleave_allowed',
-      description: 'Nghỉ phép được',
-      hours: salaryDetails?.daysleave_allowed || 0,
+      description: 'Nghỉ có phép',
+      hours: 0,
       amount: salaryDetails?.subtract_daysleave_allowed || 0,
-      note: salaryDetails?.subtract_daysleave_allowed_notice || null
+      note: salaryDetails?.subtract_daysleave_allowed_notice || null,
+      meta: salaryDetails?.daysleave_allowed
+        ? `${salaryDetails.daysleave_allowed.toLocaleString('vi-VN')} ngày`
+        : null
     },
     {
       key: 'subtract_daysleave_notallowed',
-      description: 'Nghỉ phép không được',
-      hours: salaryDetails?.daysleave_notallowed || 0,
+      description: 'Nghỉ không phép',
+      hours: 0,
       amount: salaryDetails?.subtract_daysleave_notallowed || 0,
-      note: salaryDetails?.subtract_daysleave_notallowed_notice || null
+      note: salaryDetails?.subtract_daysleave_notallowed_notice || null,
+      meta: salaryDetails?.daysleave_notallowed
+        ? `${salaryDetails.daysleave_notallowed.toLocaleString('vi-VN')} ngày`
+        : null
     },
     {
       key: 'subtract_error_serious',
       description: 'Lỗi nặng',
-      hours: salaryDetails?.error_serious || 0,
+      hours: 0,
       amount: salaryDetails?.subtract_error_serious || 0,
-      note: salaryDetails?.subtract_error_serious_notice || null
+      note: salaryDetails?.subtract_error_serious_notice || null,
+      meta: salaryDetails?.error_serious
+        ? `${salaryDetails.error_serious.toLocaleString('vi-VN')} lỗi`
+        : null
     },
     {
       key: 'subtract_error_minor',
       description: 'Lỗi nhẹ',
-      hours: salaryDetails?.error_minor || 0,
+      hours: 0,
       amount: salaryDetails?.subtract_error_minor || 0,
-      note: salaryDetails?.subtract_error_minor_notice || null
+      note: salaryDetails?.subtract_error_minor_notice || null,
+      meta: salaryDetails?.error_minor
+        ? `${salaryDetails.error_minor.toLocaleString('vi-VN')} lỗi`
+        : null
     },
     {
       key: 'kpi_subtraction',
-      description: 'Trừ KPI',
+      description: 'Bị trừ KPI tháng này',
       hours: 0,
       amount: salaryDetails?.kpi_subtraction || 0,
       note: salaryDetails?.kpi_subtraction_notice || null
@@ -458,10 +494,10 @@ export const PayslipDetailContent = ({
 
   const formsOfPayment = salaryDetails?.forms_of_payment || 'Chưa có thông tin';
   const actuallyReceived = salaryDetails?.actually_received || 0;
+  const totalIncome = salaryDetails?.total_income || 0;
   const companyInsuranceDetail = salaryDetails?.company_insurance_detail || 0;
-  const unionDeduction = salaryDetails?.unicon_deduction || 0;
-  const totalSalary =
-    actuallyReceived + unionDeduction * 2 + companyInsuranceDetail;
+  const unionDeduction = unionFeeAmount;
+  const totalSalary = totalIncome + unionDeduction * 4 + companyInsuranceDetail;
 
   const otherNotes = '......';
 
@@ -557,7 +593,7 @@ export const PayslipDetailContent = ({
               className={`rounded-xl border border-emerald-100 bg-white/80 ${sectionPadding} backdrop-blur-sm dark:border-emerald-900/50 dark:bg-gray-800/50`}
             >
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                💰 Các khoản lương
+                I. Các khoản lương thu nhập
               </h3>
               <SalaryTable data={incomeData} variant="income" />
             </div>
@@ -569,7 +605,7 @@ export const PayslipDetailContent = ({
               className={`rounded-xl border border-red-100 bg-white/80 ${sectionPadding} backdrop-blur-sm dark:border-red-900/50 dark:bg-gray-800/50`}
             >
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
-                📉 Các khoản trừ
+                II. Các khoản giảm trừ
               </h3>
               <SalaryTable data={deductionData} variant="deduction" />
             </div>
@@ -581,7 +617,7 @@ export const PayslipDetailContent = ({
               className={`rounded-xl border border-amber-100 bg-white/80 ${sectionPadding} backdrop-blur-sm dark:border-amber-900/50 dark:bg-gray-800/50`}
             >
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-400">
-                🏢 Tổng chi trả tháng{' '}
+                III. Tổng chi trả tháng{' '}
                 {dayjs(salary_manager?.end_date).format('MM/YYYY')}
               </h3>
               <div className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -606,7 +642,7 @@ export const PayslipDetailContent = ({
                     Công ty phải đóng Kinh phí công đoàn 2% cho người lao động:
                   </span>
                   <span className="flex-shrink-0 text-right text-sm font-semibold text-blue-600">
-                    {(unionDeduction * 2).toLocaleString('en-US', {
+                    {(unionDeduction * 4).toLocaleString('en-US', {
                       maximumFractionDigits: 0
                     })}
                   </span>

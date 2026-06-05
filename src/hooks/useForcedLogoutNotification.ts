@@ -3,6 +3,7 @@ import { useStore } from '@tanstack/react-store';
 import { message } from 'antd';
 
 import { authStore, clearAuth } from '@stores/authStore';
+import { shouldEnforceDuplicateLoginForRole } from '@utils/authUtil';
 import { echo } from '@utils/lib/echo';
 
 type AuthSessionRevokedPayload = {
@@ -14,10 +15,16 @@ type AuthSessionRevokedPayload = {
 const DEFAULT_MESSAGE = 'Tài khoản của bạn đã được đăng nhập ở nơi khác.';
 
 export function useForcedLogoutNotification() {
-  const { authChannelName, sessionId } = useStore(authStore);
+  const { authChannelName, sessionId, user } = useStore(authStore);
 
   useEffect(() => {
-    if (!authChannelName || !sessionId) return;
+    if (
+      !authChannelName ||
+      !sessionId ||
+      !shouldEnforceDuplicateLoginForRole(user?.role.name)
+    ) {
+      return;
+    }
 
     const eventName = '.auth.session-revoked';
     const channel = echo.private(authChannelName);
@@ -44,5 +51,5 @@ export function useForcedLogoutNotification() {
       channel.stopListening(eventName, handler);
       echo.leave(authChannelName);
     };
-  }, [authChannelName, sessionId]);
+  }, [authChannelName, sessionId, user?.role.name]);
 }
