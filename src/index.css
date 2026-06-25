@@ -7115,7 +7115,6 @@ html body .ant-picker-dropdown {
   z-index: 4200 !important;
   pointer-events: auto !important;
   isolation: isolate !important;
-  transform: none;
   will-change: auto !important;
 }
 
@@ -7127,10 +7126,31 @@ html body .ant-picker-dropdown .ant-picker-panel-container {
   position: relative;
   z-index: 1;
   pointer-events: auto !important;
-  transform: none !important;
   will-change: auto !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+html body .ant-select-dropdown,
+html body .ant-picker-dropdown .ant-picker-panel-container {
+  max-width: calc(100vw - 16px) !important;
+}
+
+html body .ant-select-dropdown .ant-select-item-option-content {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  html body .ant-select-dropdown {
+    min-width: min(14rem, calc(100vw - 16px)) !important;
+  }
+
+  html body .ant-picker-dropdown .ant-picker-panel-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 html body .ant-picker-dropdown :where(.ant-picker-panel, .ant-picker-panel *) {

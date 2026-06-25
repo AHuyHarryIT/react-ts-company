@@ -11,6 +11,7 @@ export type FieldType =
   | 'checkbox-group'
   | 'textarea'
   | 'date'
+  | 'native-date'
   | 'time'
   | 'datetime'
   | 'file'

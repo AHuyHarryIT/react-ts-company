@@ -268,6 +268,7 @@ function AppLayout() {
   return (
     <>
       <ConfigProvider
+        popupOverflow="viewport"
         theme={{
           token: {
             borderRadius: 12,

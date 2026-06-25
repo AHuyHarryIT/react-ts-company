@@ -115,6 +115,7 @@ export const ExportPoModal = () => {
       headerSummary.values = [
         'STT',
         'TÊN LINH KIỆN',
+        'SỐ LƯỢNG CON/THÙNG',
         'SỐ LƯỢNG TỒN ĐẦU KỲ',
         'THỰC TẾ SẢN XUẤT',
         'SỐ LƯỢNG ĐÃ XUẤT',
@@ -154,6 +155,7 @@ export const ExportPoModal = () => {
         (item, index) => [
           index + 1,
           item.name,
+          item.quanEntityBin,
           item.stockStartQuantity,
           item.realityQuantity,
           item.exportQuantity,
@@ -177,10 +179,10 @@ export const ExportPoModal = () => {
             size: 9
           };
 
-          if (colNumber >= 3 && colNumber <= 8) {
+          if (colNumber >= 3 && colNumber <= 9) {
             cell.numFmt = '#,##0';
           }
-          if (colNumber === 9) {
+          if (colNumber === 10) {
             cell.numFmt = '#,##0.0';
           }
         });

@@ -108,8 +108,23 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         return (
           <DatePicker
             {...commonProps}
+            allowClear
+            className="dynamic-form-date-picker"
+            classNames={{
+              popup: { root: 'dynamic-form-date-picker-dropdown' }
+            }}
+            inputReadOnly
+            placement="bottomLeft"
             style={{ width: '100%' }}
-            format="YYYY-MM-DD"
+            format="DD/MM/YYYY"
+            placeholder={`Chọn ${field.label.toLowerCase()}`}
+          />
+        );
+      case 'native-date':
+        return (
+          <Input
+            {...commonProps}
+            type="date"
             placeholder={`Chọn ${field.label.toLowerCase()}`}
           />
         );

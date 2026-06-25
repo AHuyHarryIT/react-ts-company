@@ -106,7 +106,7 @@ export default function EmployeeList() {
   const handleAttendanceClick = () => {
     Modal.confirm({
       title: 'Thông báo',
-      content: 'Bạn vui lòng đổi mạng Vinh Vinh Phát để tiếp tục',
+      content: 'Bạn vui lòng đổi mạng A7A để tiếp tục',
       okText: 'Tiếp tục',
       cancelText: 'Hủy',
       onOk: () => {

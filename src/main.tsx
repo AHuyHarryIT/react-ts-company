@@ -18,7 +18,7 @@ if (!rootElement.innerHTML) {
   const root = createRoot(rootElement);
   root.render(
     <StrictMode>
-      <ConfigProvider locale={viVN}>
+      <ConfigProvider locale={viVN} popupOverflow="viewport">
         <AntApp>
           <App />
         </AntApp>

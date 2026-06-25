@@ -1,10 +1,10 @@
-model = "cx/gpt-5.5"
-model_provider = "router"
+model = "cx/gpt-5.5-codex-high"
+model_provider = "9router"
 
-[model_providers.router]
+[model_providers.9router]
 name = "9router"
 base_url = "http://localhost:20128/v1"
-env_key = "NINEROUTER_API_KEY"
+env_key = "sk-2a2cbfd7776b4242-ugf9ej-3079acf9"
 
 [mcp_servers.gitnexus]
 command = "./plugins/gitnexus/scripts/gitnexus-mcp-node20.sh"

@@ -127,6 +127,19 @@ export const PoSummaryTable: React.FC<PoSummaryTableProps> = ({
         <div>
           Số lượng
           <br />
+          con/thùng
+        </div>
+      ),
+      width: 110,
+      align: 'center',
+      dataIndex: 'quanEntityBin',
+      render: renderNumber
+    },
+    {
+      title: (
+        <div>
+          Số lượng
+          <br />
           tồn đầu kỳ
         </div>
       ),
